@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutaciones | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .mutation-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin: 4px 0;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .mutation-btn:hover { border-color: #f43f5e; }
+        .mutation-btn.active { border-color: #f43f5e; background: rgba(244, 63, 94, 0.2); }
+        .mutation-btn .icon { margin-right: 8px; }
+        .info-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            border-left: 3px solid #f43f5e;
+        }
+        .info-box h4 { color: #f43f5e; font-size: 12px; margin: 0 0 8px 0; }
+        .info-box p { color: #94a3b8; font-size: 10px; margin: 0; line-height: 1.5; }
+        .sequence-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+        }
+        .sequence-label { color: #64748b; font-size: 9px; margin-bottom: 4px; }
+        .sequence-text { font-size: 12px; letter-spacing: 3px; font-family: monospace; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #f43f5e; color: #f43f5e; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #f43f5e; }
+        .effect-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            margin-top: 8px;
+        }
+        .effect-silent { background: #22c55e; color: #0f172a; }
+        .effect-missense { background: #fbbf24; color: #0f172a; }
+        .effect-nonsense { background: #ef4444; color: #fff; }
+        .effect-frameshift { background: #d946ef; color: #fff; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">⚠️ Mutaciones</h2>
+        <p class="text-slate-500 text-xs mb-4">Tipos de mutaciones y sus efectos</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                Las <span class="text-pink-400">mutaciones</span> alteran la secuencia del DNA. Pueden ser silenciosas, missense, nonsense o frameshift según su efecto en la proteína.
+            </p>
+            <a href="guides/mutaciones.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: tipos, causas, reparación
+            </a>
+        </div>
+
+        <div class="text-slate-400 text-xs mb-2">Tipo de mutación:</div>
+
+        <button class="mutation-btn active" data-type="none">
+            <span class="icon">○</span> Sin mutación (referencia)
+        </button>
+        <button class="mutation-btn" data-type="substitution">
+            <span class="icon">↔</span> Sustitución
+        </button>
+        <button class="mutation-btn" data-type="insertion">
+            <span class="icon">+</span> Inserción
+        </button>
+        <button class="mutation-btn" data-type="deletion">
+            <span class="icon">−</span> Deleción
+        </button>
+
+        <div class="sequence-box">
+            <div class="sequence-label">ADN Original</div>
+            <div class="sequence-text text-slate-400" id="original-dna">ATG GCA TTC...</div>
+        </div>
+
+        <div class="sequence-box">
+            <div class="sequence-label">ADN Mutado</div>
+            <div class="sequence-text text-rose-400" id="mutated-dna">ATG GCA TTC...</div>
+        </div>
+
+        <div class="sequence-box">
+            <div class="sequence-label">Proteína Original</div>
+            <div class="sequence-text text-emerald-400" id="original-protein">Met-Ala-Phe...</div>
+        </div>
+
+        <div class="sequence-box">
+            <div class="sequence-label">Proteína Mutada</div>
+            <div class="sequence-text text-amber-400" id="mutated-protein">Met-Ala-Phe...</div>
+        </div>
+
+        <div class="info-box" id="info-box">
+            <h4>Secuencia normal</h4>
+            <p>Sin mutaciones. La proteína se traduce correctamente.</p>
+            <span class="effect-tag effect-silent">Sin efecto</span>
+        </div>
+
+        <button class="btn" id="new-mutation">↻ Nueva mutación aleatoria</button>
+        <button class="btn" id="reset">↺ Restaurar original</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Efectos de mutaciones</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Silenciosa (mismo aa)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Missense (cambia aa)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Nonsense (codón STOP)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>Frameshift (cambia marco)</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Nota:</strong> Las mutaciones pueden ser beneficiosas, neutras o deletéreas según el contexto evolutivo.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Genetic code
+        const codonTable = {
+            'TTT': 'Phe', 'TTC': 'Phe', 'TTA': 'Leu', 'TTG': 'Leu',
+            'TCT': 'Ser', 'TCC': 'Ser', 'TCA': 'Ser', 'TCG': 'Ser',
+            'TAT': 'Tyr', 'TAC': 'Tyr', 'TAA': 'STOP', 'TAG': 'STOP',
+            'TGT': 'Cys', 'TGC': 'Cys', 'TGA': 'STOP', 'TGG': 'Trp',
+            'CTT': 'Leu', 'CTC': 'Leu', 'CTA': 'Leu', 'CTG': 'Leu',
+            'CCT': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+            'CAT': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
+            'CGT': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
+            'ATT': 'Ile', 'ATC': 'Ile', 'ATA': 'Ile', 'ATG': 'Met',
+            'ACT': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+            'AAT': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys',
+            'AGT': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg',
+            'GTT': 'Val', 'GTC': 'Val', 'GTA': 'Val', 'GTG': 'Val',
+            'GCT': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+            'GAT': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
+            'GGT': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+        };
+
+        const baseColors = { 'A': '#ef4444', 'T': '#38bdf8', 'G': '#fbbf24', 'C': '#22c55e' };
+
+        const aminoColors = {
+            'Phe': '#ef4444', 'Leu': '#f97316', 'Ile': '#f59e0b', 'Met': '#eab308',
+            'Val': '#84cc16', 'Ser': '#22c55e', 'Pro': '#10b981', 'Thr': '#14b8a6',
+            'Ala': '#06b6d4', 'Tyr': '#0ea5e9', 'His': '#3b82f6', 'Gln': '#6366f1',
+            'Asn': '#8b5cf6', 'Lys': '#a855f7', 'Asp': '#d946ef', 'Glu': '#ec4899',
+            'Cys': '#f43f5e', 'Trp': '#64748b', 'Arg': '#78716c', 'Gly': '#a3a3a3',
+            'STOP': '#1e293b'
+        };
+
+        // State
+        let originalDNA = [];
+        let mutatedDNA = [];
+        let mutationType = 'none';
+        let mutationPosition = -1;
+        let mutationEffect = 'none';
+
+        function generateDNA() {
+            originalDNA = ['A', 'T', 'G']; // Start codon
+
+            const bases = ['A', 'T', 'G', 'C'];
+            for (let i = 0; i < 24; i++) { // 8 more codons
+                originalDNA.push(bases[Math.floor(Math.random() * 4)]);
+            }
+
+            // Ensure no premature STOP codons
+            for (let i = 0; i < originalDNA.length - 2; i += 3) {
+                const codon = originalDNA.slice(i, i + 3).join('');
+                if (codonTable[codon] === 'STOP' && i < originalDNA.length - 3) {
+                    originalDNA[i + 2] = bases[Math.floor(Math.random() * 4)];
+                }
+            }
+
+            mutatedDNA = [...originalDNA];
+            mutationType = 'none';
+            mutationPosition = -1;
+        }
+
+        function translateDNA(dna) {
+            const protein = [];
+            for (let i = 0; i < dna.length - 2; i += 3) {
+                const codon = dna.slice(i, i + 3).join('');
+                const amino = codonTable[codon];
+                if (amino) {
+                    protein.push(amino);
+                    if (amino === 'STOP') break;
+                }
+            }
+            return protein;
+        }
+
+        function applyMutation(type) {
+            mutatedDNA = [...originalDNA];
+            mutationType = type;
+
+            if (type === 'none') {
+                mutationPosition = -1;
+                mutationEffect = 'none';
+                return;
+            }
+
+            // Pick random position (not first codon)
+            mutationPosition = 3 + Math.floor(Math.random() * (originalDNA.length - 6));
+
+            const bases = ['A', 'T', 'G', 'C'];
+
+            if (type === 'substitution') {
+                const oldBase = mutatedDNA[mutationPosition];
+                let newBase;
+                do {
+                    newBase = bases[Math.floor(Math.random() * 4)];
+                } while (newBase === oldBase);
+                mutatedDNA[mutationPosition] = newBase;
+            } else if (type === 'insertion') {
+                const newBase = bases[Math.floor(Math.random() * 4)];
+                mutatedDNA.splice(mutationPosition, 0, newBase);
+            } else if (type === 'deletion') {
+                mutatedDNA.splice(mutationPosition, 1);
+            }
+
+            // Determine effect
+            const origProtein = translateDNA(originalDNA);
+            const mutProtein = translateDNA(mutatedDNA);
+
+            if (type === 'insertion' || type === 'deletion') {
+                mutationEffect = 'frameshift';
+            } else {
+                // Check for silent, missense, or nonsense
+                const codonIndex = Math.floor(mutationPosition / 3);
+
+                if (mutProtein.includes('STOP') && mutProtein.indexOf('STOP') < origProtein.length) {
+                    mutationEffect = 'nonsense';
+                } else if (origProtein[codonIndex] === mutProtein[codonIndex]) {
+                    mutationEffect = 'silent';
+                } else {
+                    mutationEffect = 'missense';
+                }
+            }
+        }
+
+        function updateUI() {
+            // Format DNA sequences
+            let origStr = '';
+            let mutStr = '';
+
+            for (let i = 0; i < Math.max(originalDNA.length, mutatedDNA.length); i++) {
+                if (i > 0 && i % 3 === 0) {
+                    origStr += ' ';
+                    mutStr += ' ';
+                }
+                origStr += originalDNA[i] || '-';
+                mutStr += mutatedDNA[i] || '-';
+            }
+
+            document.getElementById('original-dna').textContent = origStr.substring(0, 35) + '...';
+            document.getElementById('mutated-dna').textContent = mutStr.substring(0, 35) + '...';
+
+            // Translate and display proteins
+            const origProtein = translateDNA(originalDNA);
+            const mutProtein = translateDNA(mutatedDNA);
+
+            document.getElementById('original-protein').textContent =
+                origProtein.slice(0, 6).join('-') + '...';
+            document.getElementById('mutated-protein').textContent =
+                mutProtein.slice(0, 6).join('-') + (mutProtein.length > 6 ? '...' : '');
+
+            // Update info box
+            const infoBox = document.getElementById('info-box');
+            const info = {
+                'none': {
+                    title: 'Secuencia normal',
+                    desc: 'Sin mutaciones. La proteína se traduce correctamente.',
+                    effect: 'silent',
+                    tag: 'Sin efecto'
+                },
+                'substitution': {
+                    title: 'Mutación por sustitución',
+                    desc: `Base ${originalDNA[mutationPosition]} → ${mutatedDNA[mutationPosition]} en posición ${mutationPosition + 1}. ` +
+                          (mutationEffect === 'silent' ? 'No cambia el aminoácido (degeneración del código).' :
+                           mutationEffect === 'missense' ? 'Cambia el aminoácido resultante.' :
+                           'Crea un codón de parada prematuro.'),
+                    effect: mutationEffect,
+                    tag: mutationEffect === 'silent' ? 'Silenciosa' :
+                         mutationEffect === 'missense' ? 'Missense' : 'Nonsense'
+                },
+                'insertion': {
+                    title: 'Mutación por inserción',
+                    desc: `Base ${mutatedDNA[mutationPosition]} insertada en posición ${mutationPosition + 1}. Cambia el marco de lectura de todos los codones siguientes.`,
+                    effect: 'frameshift',
+                    tag: 'Frameshift'
+                },
+                'deletion': {
+                    title: 'Mutación por deleción',
+                    desc: `Base ${originalDNA[mutationPosition]} eliminada de posición ${mutationPosition + 1}. Cambia el marco de lectura de todos los codones siguientes.`,
+                    effect: 'frameshift',
+                    tag: 'Frameshift'
+                }
+            };
+
+            const i = info[mutationType];
+            infoBox.innerHTML = `
+                <h4>${i.title}</h4>
+                <p>${i.desc}</p>
+                <span class="effect-tag effect-${i.effect}">${i.tag}</span>
+            `;
+        }
+
+        function drawDNAStrand(y, dna, label, isMutated) {
+            const startX = 400;
+            const baseWidth = 28;
+
+            // Label
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(label, startX - 20, y + 5);
+
+            // Draw bases
+            dna.forEach((base, i) => {
+                const x = startX + i * baseWidth;
+
+                // Highlight mutation position
+                const isMutationSite = isMutated && (
+                    (mutationType === 'substitution' && i === mutationPosition) ||
+                    (mutationType === 'insertion' && i === mutationPosition) ||
+                    (mutationType === 'deletion' && i === mutationPosition)
+                );
+
+                // Codon grouping background
+                if (i % 3 === 0) {
+                    const codonIdx = Math.floor(i / 3);
+                    ctx.fillStyle = codonIdx % 2 === 0 ? 'rgba(30, 41, 59, 0.5)' : 'rgba(51, 65, 85, 0.3)';
+                    ctx.fillRect(x - 4, y - 18, baseWidth * 3 - 2, 36);
+                }
+
+                // Base circle
+                ctx.beginPath();
+                ctx.arc(x + 10, y, isMutationSite ? 14 : 11, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[base];
+
+                if (isMutationSite) {
+                    ctx.shadowColor = '#f43f5e';
+                    ctx.shadowBlur = 20;
+                }
+
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Mutation marker
+                if (isMutationSite) {
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                // Base letter
+                ctx.fillStyle = '#0f172a';
+                ctx.font = `bold ${isMutationSite ? 12 : 10}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(base, x + 10, y + 4);
+            });
+
+            // Direction labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText("5'", startX - 10, y - 25);
+            ctx.textAlign = 'right';
+            ctx.fillText("3'", startX + dna.length * baseWidth + 10, y - 25);
+        }
+
+        function drawProteinChain(y, protein, label, isMutated) {
+            const startX = 400;
+            const aminoWidth = 50;
+
+            // Label
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText(label, startX - 20, y + 5);
+
+            // Draw amino acids
+            protein.forEach((amino, i) => {
+                const x = startX + i * aminoWidth;
+                const origProtein = translateDNA(originalDNA);
+
+                // Check if this position differs from original
+                const isDifferent = isMutated && (i >= origProtein.length || origProtein[i] !== amino);
+
+                ctx.beginPath();
+                ctx.arc(x + 20, y, isDifferent ? 18 : 15, 0, Math.PI * 2);
+                ctx.fillStyle = aminoColors[amino] || '#64748b';
+
+                if (isDifferent) {
+                    ctx.shadowColor = amino === 'STOP' ? '#ef4444' : '#fbbf24';
+                    ctx.shadowBlur = 15;
+                }
+
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                if (isDifferent) {
+                    ctx.strokeStyle = amino === 'STOP' ? '#ef4444' : '#fbbf24';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+
+                // Amino acid abbreviation
+                ctx.fillStyle = amino === 'STOP' ? '#fff' : '#0f172a';
+                ctx.font = `bold ${isDifferent ? 10 : 9}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(amino === 'STOP' ? 'STOP' : amino, x + 20, y + 3);
+
+                // Peptide bond
+                if (i > 0 && amino !== 'STOP' && protein[i - 1] !== 'STOP') {
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 15, y);
+                    ctx.lineTo(x + 5, y);
+                    ctx.stroke();
+                }
+            });
+        }
+
+        function drawMutationDiagram() {
+            if (mutationType === 'none') return;
+
+            const centerX = W / 2 + 200;
+            const centerY = H / 2;
+
+            // Mutation type visualization
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+            ctx.fillRect(centerX - 150, centerY - 80, 300, 160);
+
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(centerX - 150, centerY - 80, 300, 160);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+
+            const titles = {
+                'substitution': 'SUSTITUCIÓN',
+                'insertion': 'INSERCIÓN',
+                'deletion': 'DELECIÓN'
+            };
+            ctx.fillText(titles[mutationType], centerX, centerY - 55);
+
+            // Draw diagram
+            if (mutationType === 'substitution') {
+                // Original
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('Original:', centerX - 80, centerY - 20);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY - 20, 15, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[originalDNA[mutationPosition]];
+                ctx.fill();
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 12px monospace';
+                ctx.fillText(originalDNA[mutationPosition], centerX, centerY - 16);
+
+                // Arrow
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = '20px monospace';
+                ctx.fillText('↓', centerX, centerY + 15);
+
+                // Mutated
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('Mutada:', centerX - 80, centerY + 40);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY + 40, 15, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[mutatedDNA[mutationPosition]];
+                ctx.shadowColor = '#f43f5e';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 12px monospace';
+                ctx.fillText(mutatedDNA[mutationPosition], centerX, centerY + 44);
+
+            } else if (mutationType === 'insertion') {
+                // Show insertion
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('Base insertada:', centerX, centerY);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY + 30, 18, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[mutatedDNA[mutationPosition]];
+                ctx.shadowColor = '#f43f5e';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 14px monospace';
+                ctx.fillText(mutatedDNA[mutationPosition], centerX, centerY + 35);
+
+                ctx.fillStyle = '#d946ef';
+                ctx.font = '9px monospace';
+                ctx.fillText('→ Frameshift', centerX, centerY + 60);
+
+            } else if (mutationType === 'deletion') {
+                // Show deletion
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('Base eliminada:', centerX, centerY);
+
+                ctx.beginPath();
+                ctx.arc(centerX, centerY + 30, 18, 0, Math.PI * 2);
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = baseColors[originalDNA[mutationPosition]];
+                ctx.globalAlpha = 0.3;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = 'bold 20px monospace';
+                ctx.fillText('✕', centerX, centerY + 36);
+
+                ctx.fillStyle = '#d946ef';
+                ctx.font = '9px monospace';
+                ctx.fillText('→ Frameshift', centerX, centerY + 60);
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Tipos de Mutaciones y sus Efectos', W / 2, 40);
+
+            const baseY = H / 2 - 100;
+
+            // Draw original DNA
+            drawDNAStrand(baseY - 40, originalDNA, 'ADN Original', false);
+
+            // Draw mutated DNA
+            drawDNAStrand(baseY + 40, mutatedDNA, 'ADN Mutado', true);
+
+            // Draw proteins
+            const origProtein = translateDNA(originalDNA);
+            const mutProtein = translateDNA(mutatedDNA);
+
+            drawProteinChain(baseY + 140, origProtein, 'Proteína Orig.', false);
+            drawProteinChain(baseY + 220, mutProtein, 'Proteína Mut.', true);
+
+            // Draw mutation diagram
+            drawMutationDiagram();
+
+            // Effect indicator
+            if (mutationType !== 'none') {
+                const effectColors = {
+                    'silent': '#22c55e',
+                    'missense': '#fbbf24',
+                    'nonsense': '#ef4444',
+                    'frameshift': '#d946ef'
+                };
+
+                const effectNames = {
+                    'silent': 'SILENCIOSA',
+                    'missense': 'MISSENSE',
+                    'nonsense': 'NONSENSE',
+                    'frameshift': 'FRAMESHIFT'
+                };
+
+                ctx.fillStyle = effectColors[mutationEffect];
+                ctx.font = 'bold 14px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Efecto: ${effectNames[mutationEffect]}`, W / 2, H - 40);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.querySelectorAll('.mutation-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mutation-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                applyMutation(btn.dataset.type);
+                updateUI();
+            });
+        });
+
+        document.getElementById('new-mutation').addEventListener('click', () => {
+            const types = ['substitution', 'insertion', 'deletion'];
+            const randomType = types[Math.floor(Math.random() * 3)];
+
+            document.querySelectorAll('.mutation-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.type === randomType);
+            });
+
+            applyMutation(randomType);
+            updateUI();
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            document.querySelectorAll('.mutation-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.type === 'none');
+            });
+            applyMutation('none');
+            updateUI();
+        });
+
+        generateDNA();
+        updateUI();
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Volcanes — Guia · Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #d97706;
+            --color-shield: #22c55e;
+            --color-strato: #ef4444;
+            --color-caldera: #a855f7;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(217, 119, 6, 0.1); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(217, 119, 6, 0.05); }
+        .section { margin-top: 1.5rem; }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* Experiments */
+        .experiment { border-left: 3px solid var(--accent); }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--bg-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+        .experiment-title { font-weight: 600; color: var(--text-primary); }
+        .hypothesis { background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 0.375rem; padding: 0.75rem; margin: 0.75rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem; }
+
+        /* Connections */
+        .connection { display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); }
+        .connection:hover { border-color: var(--accent); }
+        .connection-icon { width: 36px; height: 36px; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .connection-content { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+        .connection-link { font-size: 0.7rem; color: var(--accent); margin-top: 0.25rem; display: inline-block; }
+
+        /* Reflections */
+        .reflection { background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), transparent); border: 1px solid rgba(217, 119, 6, 0.2); }
+        .reflection h2 { color: var(--accent); }
+        .reflection li { color: var(--text-secondary); }
+        .reflection li::marker { color: var(--accent); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); }
+        .guide-nav a:hover { border-color: var(--accent); color: var(--text-primary); text-decoration: none; }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Geology Visual Lab</a>
+                    <span> / </span>
+                    <span>Volcanes</span>
+                </nav>
+                <h1>Volcanes — Guia</h1>
+                <div class="subtitle">Tipos, estructura y el Indice de Explosividad Volcanica</div>
+            </div>
+            <div class="header-actions">
+                <a href="../volcanes.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">El concepto</div>
+                <p class="lead">
+                    Un <span class="em">volcan</span> es una valvula de escape para el interior fundido
+                    de la Tierra. Su forma, comportamiento y peligrosidad dependen de una variable clave:
+                    la <strong>viscosidad del magma</strong>.
+                </p>
+                <div class="chips">
+                    <span class="chip">Volcan escudo</span>
+                    <span class="chip">Estratovolcan</span>
+                    <span class="chip">Caldera</span>
+                    <span class="chip">Indice VEI</span>
+                    <span class="chip">Viscosidad</span>
+                </div>
+                <div class="two" style="margin-top: 1rem;">
+                    <div>
+                        <h2>La regla de oro</h2>
+                        <p>
+                            Magma fluido (basaltico) = erupciones tranquilas, lava que fluye.
+                            Magma viscoso (granitico) = erupciones explosivas, fragmentos violentos.
+                            La viscosidad depende del contenido de silice (SiO₂).
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Por que importa</h2>
+                        <p>
+                            500 millones de personas viven cerca de volcanes activos. Predecir
+                            el tipo de erupcion puede salvar vidas. La forma del volcan nos dice
+                            que tipo de erupciones esperar.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Escala VEI</div>
+                <p style="margin-top: 0.5rem;">El <strong>Indice de Explosividad Volcanica</strong> es logaritmico (como Richter):</p>
+                <div class="legend" style="flex-direction: column; gap: 0.5rem; margin-top: 0.75rem;">
+                    <div class="legend-item">
+                        <span class="swatch" style="background: #22c55e"></span>
+                        <div><strong>VEI 0-2:</strong> Efusivo — Hawaii, Islandia</div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: #eab308"></span>
+                        <div><strong>VEI 3-4:</strong> Explosivo — Etna, Stromboli</div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: #f97316"></span>
+                        <div><strong>VEI 5-6:</strong> Paroxismico — Pinatubo, St. Helens</div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: #ef4444"></span>
+                        <div><strong>VEI 7-8:</strong> Supervolcan — Yellowstone, Toba</div>
+                    </div>
+                </div>
+                <div class="callout" style="margin-top: 0.75rem;">
+                    <p style="margin: 0;"><strong>Cada nivel VEI:</strong> 10× mas volumen eyectado que el anterior.</p>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Volcano Types -->
+        <section class="three section">
+            <div class="card" style="border-top: 3px solid var(--color-shield);">
+                <h2 style="color: var(--color-shield);">Volcan Escudo</h2>
+                <p>
+                    Perfil amplio y bajo, como un escudo tendido. Laderas de 2-10°.
+                    Magma basaltico muy fluido que recorre grandes distancias.
+                </p>
+                <ul>
+                    <li>Erupciones efusivas, continuas</li>
+                    <li>Lava fluye en rios y lagos</li>
+                    <li>Baja peligrosidad (predecible)</li>
+                    <li><strong>Ejemplos:</strong> Mauna Loa, Kilauea, Piton de la Fournaise</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-strato);">
+                <h2 style="color: var(--color-strato);">Estratovolcan</h2>
+                <p>
+                    Cono alto y empinado. Capas alternas de lava y piroclastos.
+                    Magma andesitico-dacitico viscoso.
+                </p>
+                <ul>
+                    <li>Erupciones explosivas, episodicas</li>
+                    <li>Flujos piroclasticos mortales</li>
+                    <li>Alta peligrosidad (impredecible)</li>
+                    <li><strong>Ejemplos:</strong> Fuji, Vesuvio, Popocatepetl</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-caldera);">
+                <h2 style="color: var(--color-caldera);">Caldera</h2>
+                <p>
+                    Depresion circular gigante (km) tras colapso del techo de la camara.
+                    Erupciones catastroficas cada 100,000+ años.
+                </p>
+                <ul>
+                    <li>VEI 7-8: civilizaciones enteras afectadas</li>
+                    <li>Inviernos volcanicos globales</li>
+                    <li>Extremadamente raras</li>
+                    <li><strong>Ejemplos:</strong> Yellowstone, Toba, Santorini</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">1</span>
+                        <span class="experiment-title">Perfil vs viscosidad</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "La forma del volcan esta determinada por la fluidez del magma"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Selecciona "Escudo" — nota las laderas suaves</li>
+                        <li>Cambia a "Estratovolcan" — laderas empinadas</li>
+                        <li>Observa el angulo: 5° vs 30°</li>
+                        <li>Relaciona con viscosidad del magma</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Conecta:</strong> Como miel vs agua en una superficie.
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">2</span>
+                        <span class="experiment-title">VEI y comportamiento</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "A mayor VEI, la erupcion pasa de efusiva a explosiva"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Fija VEI = 1 y observa: lava fluye</li>
+                        <li>Sube a VEI = 4: fragmentos, ceniza</li>
+                        <li>Sube a VEI = 7: colapso, columna</li>
+                        <li>Nota cambio cualitativo, no solo cuantitativo</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Reflexiona:</strong> ¿Por que el gas atrapado causa explosion?
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">3</span>
+                        <span class="experiment-title">Camara magmatica</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "El tamaño de la camara determina el potencial destructivo"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Activa la vista de corte transversal</li>
+                        <li>Compara camaras: escudo vs caldera</li>
+                        <li>Nota la diferencia de volumen: 10³ vs 10⁶ km³</li>
+                        <li>Relaciona con frecuencia de erupciones</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Paradoja:</strong> Calderas son raras pero devastadoras.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Conexiones interdisciplinarias</div>
+            <div class="two">
+                <a href="tectonica-placas.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(217, 119, 6, 0.15); color: #d97706;">🌍</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Tectonica de Placas</div>
+                        <div class="connection-desc">
+                            Los volcanes no estan al azar. Aparecen en bordes de subduccion
+                            (estratovolcanes) y puntos calientes (escudos). La tectonica explica donde.
+                        </div>
+                        <span class="connection-link">Ver simulacion →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Chemistry/Chemistry Visual Lab/diagrama-fases.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">🧪</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Diagrama de Fases</div>
+                        <div class="connection-desc">
+                            El magma es roca fundida. La transicion solido-liquido depende de presion y
+                            temperatura. Al ascender, la presion baja y los gases disueltos escapan explosivamente.
+                        </div>
+                        <span class="connection-link">Chemistry Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Physics/Physics Visual Lab/termodinamica.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">🔥</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Termodinamica</div>
+                        <div class="connection-desc">
+                            La camara magmatica es un sistema termodinamico: presion, temperatura, volumen.
+                            La expansion adiabatica de gases impulsa erupciones explosivas.
+                        </div>
+                        <span class="connection-link">Physics Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Chemistry/Chemistry Visual Lab/viscosidad.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">💧</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Viscosidad de Fluidos</div>
+                        <div class="connection-desc">
+                            La viscosidad del magma (10² - 10⁸ Pa·s) depende del contenido de SiO₂.
+                            Mas silice = mas enlaces = mas viscoso = mas explosivo.
+                        </div>
+                        <span class="connection-link">Chemistry Visual Lab →</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Key Insight -->
+        <section class="card callout-accent section">
+            <div class="kicker">Insight fundamental</div>
+            <h2 style="margin-top: 0.5rem;">Volcanes como termostato planetario</h2>
+            <p>
+                Las erupciones volcanicas liberan CO₂ (calentamiento) y aerosoles de SO₂ (enfriamiento).
+                A escala geologica, los volcanes han regulado el clima terrestre durante miles de millones de años.
+            </p>
+            <p>
+                La erupcion del Pinatubo (1991, VEI 6) enfrio la Tierra 0.5°C durante 2 años.
+                La erupcion de Toba hace 74,000 años pudo causar un "cuello de botella" en la poblacion humana.
+                Los volcanes son agentes de cambio a escala planetaria.
+            </p>
+        </section>
+
+        <!-- Limitations -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2 style="margin-top: 0.5rem;">Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <p><strong>En la simulacion:</strong></p>
+                    <ul>
+                        <li>Tipos discretos (escudo/estrato/caldera)</li>
+                        <li>VEI como slider continuo</li>
+                        <li>Camara magmatica estatica</li>
+                        <li>Erupcion instantanea</li>
+                    </ul>
+                </div>
+                <div>
+                    <p><strong>En la realidad:</strong></p>
+                    <ul>
+                        <li>Espectro continuo de tipos</li>
+                        <li>VEI calculado post-erupcion</li>
+                        <li>Camara evoluciona (cristalizacion, inyeccion)</li>
+                        <li>Erupciones duran dias a años</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reflection Questions -->
+        <section class="card reflection section">
+            <h2>Preguntas para reflexionar</h2>
+            <ol style="margin-top: 0.75rem;">
+                <li>¿Por que Hawaii tiene volcanes escudo y los Andes estratovolcanes? (Pista: tipo de limite de placa)</li>
+                <li>Si una botella de refresco es un modelo de magma con gas, ¿que representa agitar la botella?</li>
+                <li>¿Por que las erupciones de supervolcanes son tan raras? ¿Que limita su frecuencia?</li>
+                <li>Si pudieras medir una sola cosa para predecir una erupcion, ¿que elegirias y por que?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="terremotos.html">← Ondas Sismicas</a>
+            <a href="tectonica-placas.html">Tectonica de Placas →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Geology Visual Lab — Volcanes
+    </footer>
+</body>
+</html>

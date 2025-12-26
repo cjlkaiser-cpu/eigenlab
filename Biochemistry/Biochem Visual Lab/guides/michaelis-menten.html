@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Michaelis-Menten — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        .equation { font-family: 'JetBrains Mono', monospace; background: var(--bg-panel); padding: 0.75rem 1rem; border-radius: 0.375rem; font-size: 0.9rem; text-align: center; margin-top: 0.75rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Michaelis-Menten</nav>
+                <h1>Michaelis-Menten — Guía</h1>
+                <div class="subtitle">Cinética enzimática: la matemática de la catálisis biológica</div>
+            </div>
+            <a href="../michaelis-menten.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es Michaelis-Menten?</div>
+                <p class="lead">La ecuación de <span class="em">Michaelis-Menten</span> describe cómo la velocidad de una reacción enzimática depende de la concentración de sustrato. A bajas [S], la velocidad es proporcional a [S]; a altas [S], la enzima se satura y alcanza V<sub>max</sub>.</p>
+                <div class="equation">v = V<sub>max</sub> · [S] / (K<sub>m</sub> + [S])</div>
+                <div class="chips">
+                    <span class="chip">V<sub>max</sub></span>
+                    <span class="chip">K<sub>m</sub></span>
+                    <span class="chip">Saturación</span>
+                    <span class="chip">Hipérbola</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Michaelis & Menten (1913):</strong> Propusieron el modelo del complejo enzima-sustrato. Briggs y Haldane lo refinaron con el estado estacionario.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Parámetros clave</div>
+                <ul>
+                    <li><strong>V<sub>max</sub>:</strong> Velocidad máxima (todas las enzimas saturadas)</li>
+                    <li><strong>K<sub>m</sub>:</strong> [S] a la cual v = V<sub>max</sub>/2</li>
+                    <li><strong>k<sub>cat</sub>:</strong> Número de recambio (turnover number)</li>
+                    <li><strong>k<sub>cat</sub>/K<sub>m</sub>:</strong> Eficiencia catalítica</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Significado de K<sub>m</sub></h2>
+                <ul>
+                    <li><strong>K<sub>m</sub> bajo:</strong> Alta afinidad por sustrato</li>
+                    <li><strong>K<sub>m</sub> alto:</strong> Baja afinidad</li>
+                    <li>Independiente de [E] total</li>
+                    <li>Característico de cada par enzima-sustrato</li>
+                    <li>Aproxima K<sub>d</sub> si k<sub>cat</sub> << k<sub>-1</sub></li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Tipos de inhibición</h2>
+                <ul>
+                    <li><strong>Competitiva:</strong> Aumenta K<sub>m</sub> aparente, V<sub>max</sub> intacta</li>
+                    <li><strong>No competitiva:</strong> Disminuye V<sub>max</sub>, K<sub>m</sub> intacta</li>
+                    <li><strong>Acompetitiva:</strong> Disminuye ambos proporcionalmente</li>
+                    <li><strong>Mixta:</strong> Afecta ambos de forma desigual</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Explora la cinética enzimática y comprende cómo los inhibidores alteran los parámetros.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>Construcción de la curva de saturación</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>La velocidad sigue una hipérbola rectangular: crece linealmente a bajas [S] y se aplana a altas [S].</p>
+                </div>
+                <ol>
+                    <li>Comienza con [S] = 0 y aumenta gradualmente</li>
+                    <li>Registra la velocidad inicial para cada [S]</li>
+                    <li>Identifica el punto donde v = V<sub>max</sub>/2 → ese [S] es K<sub>m</sub></li>
+                    <li>Observa cómo la curva se aplana al acercarse a V<sub>max</sub></li>
+                    <li>Verifica que nunca se alcanza V<sub>max</sub> exactamente (asíntota)</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Curva hiperbólica que satura. K<sub>m</sub> marca el punto de inflexión operativo.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>Inhibición competitiva</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Un inhibidor competitivo compite por el sitio activo, aumentando el K<sub>m</sub> aparente sin afectar V<sub>max</sub>.</p>
+                </div>
+                <ol>
+                    <li>Construye la curva de saturación sin inhibidor</li>
+                    <li>Añade inhibidor competitivo a concentración fija</li>
+                    <li>Observa que V<sub>max</sub> se mantiene igual</li>
+                    <li>Nota que K<sub>m</sub> aparente aumenta</li>
+                    <li>Aumenta [S] → el inhibidor es "desplazado"</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> A [S] muy alta, el sustrato vence al inhibidor y se recupera V<sub>max</sub>.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>Inhibición no competitiva</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Un inhibidor no competitivo reduce V<sub>max</sub> sin cambiar K<sub>m</sub>, ya que no afecta la unión del sustrato.</p>
+                </div>
+                <ol>
+                    <li>Establece la curva basal sin inhibidor</li>
+                    <li>Añade inhibidor no competitivo</li>
+                    <li>Observa que V<sub>max</sub> disminuye</li>
+                    <li>Verifica que K<sub>m</sub> permanece igual</li>
+                    <li>Nota que aumentar [S] NO supera la inhibición</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> La curva se "aplasta" pero mantiene su forma relativa. El inhibidor bloquea la catálisis, no la unión.</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">💊</div>
+                    <div>
+                        <h4>Farmacología</h4>
+                        <p>Los fármacos como estatinas, inhibidores de proteasa y AINEs actúan como inhibidores enzimáticos.</p>
+                        <a href="glucolisis.html">Ver Glucólisis →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-math">📈</div>
+                    <div>
+                        <h4>Funciones hiperbólicas</h4>
+                        <p>La ecuación es una hipérbola rectangular, similar a funciones de saturación en física y economía.</p>
+                        <a href="../../../Mathematics/Math Visual Lab/funciones.html">Ver Funciones →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-chemistry">⚗️</div>
+                    <div>
+                        <h4>Catálisis química</h4>
+                        <p>La saturación del catalizador es análoga al modelo de Langmuir de adsorción en superficies.</p>
+                        <a href="../../../Chemistry/Chemistry Visual Lab/cinetica.html">Ver Cinética →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔄</div>
+                    <div>
+                        <h4>Regulación metabólica</h4>
+                        <p>El K<sub>m</sub> de enzimas reguladoras determina el flujo en vías metabólicas.</p>
+                        <a href="krebs.html">Ver Ciclo de Krebs →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Estado estacionario idealizado:</strong> Asume que [ES] es constante, lo cual toma tiempo en establecerse.</li>
+                <li><strong>Una enzima, un sustrato:</strong> No modela enzimas alostéricas ni sustratos múltiples.</li>
+                <li><strong>Inhibición simple:</strong> La realidad incluye inhibición mixta, irreversible, y dependiente del tiempo.</li>
+                <li><strong>Condiciones ideales:</strong> No considera efectos de pH, temperatura, ni fuerzas iónicas.</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué las enzimas con K<sub>m</sub> similar a la concentración fisiológica del sustrato son buenas reguladoras?</li>
+                <li>¿Cómo distinguirías experimentalmente entre inhibición competitiva y no competitiva?</li>
+                <li>¿Por qué la eficiencia catalítica (k<sub>cat</sub>/K<sub>m</sub>) tiene un límite superior (~10⁸-10⁹ M⁻¹s⁻¹)?</li>
+                <li>¿Qué tipo de inhibición usarías para diseñar un fármaco contra una enzima viral?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="fermentacion.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Fermentación</div>
+                </div>
+            </a>
+            <a href="adn-replicacion.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Replicación ADN</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Michaelis-Menten
+    </footer>
+</body>
+</html>

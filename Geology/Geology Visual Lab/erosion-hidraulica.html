@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erosion Hidraulica WASM - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #d97706;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #f59e0b;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(245, 158, 11, 0.05));
+            border: 1px solid rgba(217, 119, 6, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(217, 119, 6, 0.5);
+        }
+
+        .preset-btn {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .preset-btn:hover {
+            border-color: rgba(217, 119, 6, 0.5);
+            background: rgba(217, 119, 6, 0.1);
+        }
+        .preset-btn.active {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.2);
+        }
+
+        .view-mode {
+            transition: all 0.2s;
+        }
+        .view-mode:hover {
+            background: rgba(217, 119, 6, 0.1);
+        }
+        .view-mode.active {
+            background: rgba(217, 119, 6, 0.2);
+            border-color: #d97706;
+        }
+
+        #canvas {
+            cursor: crosshair;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Loading overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="text-center">
+            <div class="w-12 h-12 border-2 border-amber-500/30 border-t-amber-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-amber-400 mono">Cargando motor de erosion...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-amber-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-amber-400 transition">Geology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Erosion Hidraulica</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-amber-400 font-medium glow-text">Erosion Hidraulica</span>
+                            <span class="text-gray-600 text-sm ml-2">Simulacion por Gotas</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Gotas:</span>
+                        <span id="droplet-count" class="text-amber-400 mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Iteraciones:</span>
+                        <span id="iterations" class="text-amber-400 mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">FPS:</span>
+                        <span id="fps-display" class="text-amber-400 mono">60</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+
+            <!-- Stats overlay -->
+            <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs mono">
+                <div class="flex gap-6">
+                    <div>
+                        <span class="text-gray-500">Erosion total:</span>
+                        <span id="erosion" class="text-amber-400 ml-1">0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Deposito total:</span>
+                        <span id="deposit" class="text-amber-400 ml-1">0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Altura max:</span>
+                        <span id="max-height" class="text-amber-400 ml-1">1.00</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs">
+                <p class="text-gray-400"><span class="text-amber-400">Click</span>: Elevar terreno</p>
+                <p class="text-gray-400"><span class="text-amber-400">Shift+Click</span>: Bajar terreno</p>
+                <p class="text-gray-400"><span class="text-amber-400">Ctrl+Click</span>: Aplanar</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950/50 overflow-y-auto p-4 flex flex-col gap-4">
+            <!-- Algorithm info -->
+            <div class="math-box rounded-lg p-4">
+                <h3 class="text-sm font-medium text-amber-400 mb-2">Transporte de Sedimentos</h3>
+                <div class="mono text-xs text-gray-400 space-y-1">
+                    <p>C = v * slope * water</p>
+                    <p class="text-gray-600 text-[10px]">C: capacidad | v: velocidad | slope: pendiente</p>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Tipo de Erosion</h3>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="preset-btn active rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="gentle">
+                        Suave
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="river">
+                        Rio
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="canyon">
+                        Canon
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="coastal">
+                        Costa
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="volcanic">
+                        Volcanico
+                    </button>
+                </div>
+            </div>
+
+            <!-- Terrain initialization -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Terreno Inicial</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button id="init-noise" class="py-2 px-3 bg-gray-800 rounded text-gray-300 text-xs hover:bg-gray-700 transition">
+                        Ruido
+                    </button>
+                    <button id="init-mountain" class="py-2 px-3 bg-gray-800 rounded text-gray-300 text-xs hover:bg-gray-700 transition">
+                        Montana
+                    </button>
+                    <button id="init-ridges" class="py-2 px-3 bg-gray-800 rounded text-gray-300 text-xs hover:bg-gray-700 transition">
+                        Cordillera
+                    </button>
+                    <button id="init-flat" class="py-2 px-3 bg-gray-800 rounded text-gray-300 text-xs hover:bg-gray-700 transition">
+                        Plano
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation control -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Simulacion</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Gotas por frame</label>
+                            <span id="droplets-value" class="mono text-amber-400">100</span>
+                        </div>
+                        <input type="range" id="droplets-slider" min="10" max="500" step="10" value="100" class="w-full">
+                    </div>
+                    <div class="flex gap-2">
+                        <button id="pause-btn" class="flex-1 py-2 px-4 bg-amber-500/20 border border-amber-500/50 rounded text-amber-400 text-sm hover:bg-amber-500/30 transition">
+                            Pausar
+                        </button>
+                        <button id="step-btn" class="py-2 px-4 bg-gray-800 rounded text-gray-300 text-sm hover:bg-gray-700 transition">
+                            Paso
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Physics parameters -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Parametros</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Inercia</label>
+                            <span id="inertia-value" class="mono text-amber-400">0.05</span>
+                        </div>
+                        <input type="range" id="inertia-slider" min="0" max="0.3" step="0.01" value="0.05" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Velocidad erosion</label>
+                            <span id="erode-value" class="mono text-amber-400">0.30</span>
+                        </div>
+                        <input type="range" id="erode-slider" min="0.1" max="1" step="0.05" value="0.3" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Velocidad deposito</label>
+                            <span id="deposit-slider-value" class="mono text-amber-400">0.30</span>
+                        </div>
+                        <input type="range" id="deposit-slider" min="0.1" max="1" step="0.05" value="0.3" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Capacidad sedimento</label>
+                            <span id="capacity-value" class="mono text-amber-400">4.0</span>
+                        </div>
+                        <input type="range" id="capacity-slider" min="1" max="15" step="0.5" value="4" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Radio de erosion</label>
+                            <span id="radius-value" class="mono text-amber-400">3</span>
+                        </div>
+                        <input type="range" id="radius-slider" min="1" max="8" step="1" value="3" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Persistencia agua</label>
+                            <span id="evaporate-value" class="mono text-amber-400">0.003</span>
+                        </div>
+                        <input type="range" id="evaporate-slider" min="0.001" max="0.02" step="0.001" value="0.003" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Vida maxima gota</label>
+                            <span id="lifetime-value" class="mono text-amber-400">200</span>
+                        </div>
+                        <input type="range" id="lifetime-slider" min="50" max="500" step="10" value="200" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Visualizacion</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="view-mode active border border-gray-800 rounded px-3 py-2 text-xs" data-view="terrain">
+                        Terreno
+                    </button>
+                    <button class="view-mode border border-gray-800 rounded px-3 py-2 text-xs" data-view="water">
+                        Agua
+                    </button>
+                    <button class="view-mode border border-gray-800 rounded px-3 py-2 text-xs" data-view="slope">
+                        Pendiente
+                    </button>
+                    <button class="view-mode border border-gray-800 rounded px-3 py-2 text-xs" data-view="3d">
+                        3D
+                    </button>
+                </div>
+            </div>
+
+            <!-- Thermal erosion -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Erosion Termica</h3>
+                <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                    <input type="checkbox" id="thermal" class="accent-amber-500" checked>
+                    <span>Activar deslizamiento</span>
+                </label>
+            </div>
+
+            <!-- Guide link -->
+            <a href="guides/erosion-hidraulica.md" class="block mt-auto py-2 px-4 bg-gray-900 rounded text-center text-amber-400 text-sm hover:bg-gray-800 transition">
+                Ver Guia Educativa
+            </a>
+        </aside>
+    </main>
+
+    <!-- WASM Module -->
+    <script src="eigenlab-core.js"></script>
+    <script>
+        // ====================================================================
+        // Configuration
+        // ====================================================================
+        const CONFIG = {
+            resolution: 256,
+            dropletsPerFrame: 100,
+            viewMode: 'terrain',
+            paused: false,
+            thermalErosion: true,
+            brushRadius: 30,
+            brushStrength: 0.1
+        };
+
+        // ====================================================================
+        // State
+        // ====================================================================
+        let Module = null;
+        let erosionSimulator = null;
+        let canvas, ctx;
+        let width, height;
+        let lastTime = 0;
+        let frameCount = 0;
+        let fps = 60;
+        let currentPreset = 'gentle';
+
+        // Mouse interaction
+        let mouseDown = false;
+        let mouseMode = 'raise'; // 'raise', 'lower', 'flatten'
+        let mousePos = { x: 0, y: 0 };
+
+        // Image data for rendering
+        let imageData = null;
+
+        // ====================================================================
+        // Initialization
+        // ====================================================================
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                width = rect.width;
+                height = rect.height;
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Load WASM
+            try {
+                Module = await EigenLabCore();
+                console.log('EigenLab WASM loaded');
+                document.getElementById('loading').classList.add('hidden');
+
+                initErosion();
+                setupControls();
+                setupMouseInteraction();
+
+                requestAnimationFrame(animate);
+            } catch (error) {
+                console.error('Failed to load WASM:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center">
+                        <p class="text-red-400">Error cargando WASM</p>
+                        <p class="text-gray-500 text-sm mt-2">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function initErosion() {
+            let config = Module.erosionPresetGentle();
+            config.width = CONFIG.resolution;
+            config.height = CONFIG.resolution;
+            // Better defaults for visible, persistent erosion
+            config.evaporateSpeed = 0.003;  // Much slower evaporation
+            config.maxLifetime = 200;       // Longer droplet life
+
+            erosionSimulator = new Module.ErosionSimulator(config);
+            erosionSimulator.initializeNoise(4.0, 6);
+
+            imageData = ctx.createImageData(CONFIG.resolution, CONFIG.resolution);
+
+            // Sync sliders with initial config
+            document.getElementById('evaporate-slider').value = config.evaporateSpeed;
+            document.getElementById('evaporate-value').textContent = config.evaporateSpeed.toFixed(3);
+            document.getElementById('lifetime-slider').value = config.maxLifetime;
+            document.getElementById('lifetime-value').textContent = config.maxLifetime;
+        }
+
+        function applyPreset(preset) {
+            currentPreset = preset;
+            let config;
+
+            switch (preset) {
+                case 'gentle': config = Module.erosionPresetGentle(); break;
+                case 'river': config = Module.erosionPresetRiver(); break;
+                case 'canyon': config = Module.erosionPresetCanyon(); break;
+                case 'coastal': config = Module.erosionPresetCoastal(); break;
+                case 'volcanic': config = Module.erosionPresetVolcanic(); break;
+                default: config = Module.erosionPresetGentle();
+            }
+
+            config.width = CONFIG.resolution;
+            config.height = CONFIG.resolution;
+            // Override evaporateSpeed with lower default for better experience
+            if (preset === 'gentle') {
+                config.evaporateSpeed = 0.003;
+                config.maxLifetime = 200;
+            }
+            erosionSimulator.setConfig(config);
+
+            // Update sliders
+            document.getElementById('inertia-slider').value = config.inertia;
+            document.getElementById('inertia-value').textContent = config.inertia.toFixed(2);
+            document.getElementById('erode-slider').value = config.erodeSpeed;
+            document.getElementById('erode-value').textContent = config.erodeSpeed.toFixed(2);
+            document.getElementById('deposit-slider').value = config.depositSpeed;
+            document.getElementById('deposit-slider-value').textContent = config.depositSpeed.toFixed(2);
+            document.getElementById('capacity-slider').value = config.sedimentCapacity;
+            document.getElementById('capacity-value').textContent = config.sedimentCapacity.toFixed(1);
+            document.getElementById('radius-slider').value = config.erosionRadius;
+            document.getElementById('radius-value').textContent = config.erosionRadius;
+            document.getElementById('evaporate-slider').value = config.evaporateSpeed;
+            document.getElementById('evaporate-value').textContent = config.evaporateSpeed.toFixed(3);
+            document.getElementById('lifetime-slider').value = config.maxLifetime;
+            document.getElementById('lifetime-value').textContent = config.maxLifetime;
+        }
+
+        function updateErosionConfig() {
+            // Build config from current slider values
+            let config = Module.erosionPresetGentle();
+            config.width = CONFIG.resolution;
+            config.height = CONFIG.resolution;
+            config.inertia = parseFloat(document.getElementById('inertia-slider').value);
+            config.erodeSpeed = parseFloat(document.getElementById('erode-slider').value);
+            config.depositSpeed = parseFloat(document.getElementById('deposit-slider').value);
+            config.sedimentCapacity = parseFloat(document.getElementById('capacity-slider').value);
+            config.erosionRadius = parseInt(document.getElementById('radius-slider').value);
+            config.evaporateSpeed = parseFloat(document.getElementById('evaporate-slider').value);
+            config.maxLifetime = parseInt(document.getElementById('lifetime-slider').value);
+            erosionSimulator.setConfig(config);
+        }
+
+        // ====================================================================
+        // Controls
+        // ====================================================================
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    applyPreset(btn.dataset.preset);
+                });
+            });
+
+            // Terrain initialization
+            document.getElementById('init-noise').addEventListener('click', () => {
+                erosionSimulator.initializeNoise(4.0, 6);
+            });
+            document.getElementById('init-mountain').addEventListener('click', () => {
+                const center = { x: CONFIG.resolution / 2, y: CONFIG.resolution / 2 };
+                erosionSimulator.initializeMountain(center, CONFIG.resolution * 0.4, 1.0);
+            });
+            document.getElementById('init-ridges').addEventListener('click', () => {
+                erosionSimulator.initializeRidges(5, 0.8);
+            });
+            document.getElementById('init-flat').addEventListener('click', () => {
+                erosionSimulator.initializeFlat(0.3);
+            });
+
+            // Simulation control
+            const dropletsSlider = document.getElementById('droplets-slider');
+            dropletsSlider.addEventListener('input', e => {
+                CONFIG.dropletsPerFrame = parseInt(e.target.value);
+                document.getElementById('droplets-value').textContent = CONFIG.dropletsPerFrame;
+            });
+
+            document.getElementById('pause-btn').addEventListener('click', () => {
+                CONFIG.paused = !CONFIG.paused;
+                document.getElementById('pause-btn').textContent = CONFIG.paused ? 'Reanudar' : 'Pausar';
+            });
+
+            document.getElementById('step-btn').addEventListener('click', () => {
+                if (CONFIG.paused) {
+                    erosionSimulator.simulateDroplets(CONFIG.dropletsPerFrame);
+                    if (CONFIG.thermalErosion) {
+                        erosionSimulator.simulateThermalErosion();
+                    }
+                }
+            });
+
+            // Physics sliders
+            setupSlider('inertia', val => erosionSimulator.setInertia(val));
+            setupSlider('erode', val => erosionSimulator.setErosionSpeed(val));
+            setupSlider('deposit', val => erosionSimulator.setDepositSpeed(val), 'deposit-slider-value');
+            setupSlider('capacity', val => erosionSimulator.setCapacity(val));
+            setupSlider('radius', val => erosionSimulator.setErosionRadius(Math.round(val)));
+            setupSlider('evaporate', val => erosionSimulator.setEvaporateSpeed(val));
+            setupSlider('lifetime', val => {
+                // Update maxLifetime via config rebuild
+                updateErosionConfig();
+            });
+
+            // Visualization
+            document.querySelectorAll('.view-mode').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.view-mode').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    CONFIG.viewMode = btn.dataset.view;
+                });
+            });
+
+            // Thermal erosion
+            document.getElementById('thermal').addEventListener('change', e => {
+                CONFIG.thermalErosion = e.target.checked;
+            });
+        }
+
+        function setupSlider(name, callback, valueId = null) {
+            const slider = document.getElementById(`${name}-slider`);
+            const valueEl = document.getElementById(valueId || `${name}-value`);
+
+            slider.addEventListener('input', e => {
+                const val = parseFloat(e.target.value);
+                valueEl.textContent = Number.isInteger(val) ? val : val.toFixed(2);
+                callback(val);
+            });
+        }
+
+        // ====================================================================
+        // Mouse Interaction
+        // ====================================================================
+        function setupMouseInteraction() {
+            canvas.addEventListener('mousedown', e => {
+                mouseDown = true;
+                updateMouseMode(e);
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                mouseDown = false;
+            });
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mousePos.x = e.clientX - rect.left;
+                mousePos.y = e.clientY - rect.top;
+
+                if (mouseDown) {
+                    applyBrush();
+                }
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                mouseDown = false;
+            });
+        }
+
+        function updateMouseMode(e) {
+            if (e.ctrlKey || e.metaKey) {
+                mouseMode = 'flatten';
+            } else if (e.shiftKey) {
+                mouseMode = 'lower';
+            } else {
+                mouseMode = 'raise';
+            }
+        }
+
+        function applyBrush() {
+            // Convert screen to terrain coordinates
+            const scale = CONFIG.resolution / Math.min(width, height);
+            const offsetX = (width - CONFIG.resolution / scale) / 2;
+            const offsetY = (height - CONFIG.resolution / scale) / 2;
+
+            const terrainX = (mousePos.x - offsetX) * scale;
+            const terrainY = (mousePos.y - offsetY) * scale;
+
+            if (terrainX >= 0 && terrainX < CONFIG.resolution &&
+                terrainY >= 0 && terrainY < CONFIG.resolution) {
+
+                const brushRadiusTerrain = CONFIG.brushRadius * scale;
+
+                switch (mouseMode) {
+                    case 'raise':
+                        erosionSimulator.raise(terrainX, terrainY, brushRadiusTerrain, CONFIG.brushStrength);
+                        break;
+                    case 'lower':
+                        erosionSimulator.lower(terrainX, terrainY, brushRadiusTerrain, CONFIG.brushStrength);
+                        break;
+                    case 'flatten':
+                        const targetHeight = erosionSimulator.heightAtInterp(terrainX, terrainY);
+                        erosionSimulator.flatten(terrainX, terrainY, brushRadiusTerrain, targetHeight);
+                        break;
+                }
+            }
+        }
+
+        // ====================================================================
+        // Animation Loop
+        // ====================================================================
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.1);
+            lastTime = time;
+
+            // FPS counter
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1 / dt);
+                document.getElementById('fps-display').textContent = fps;
+            }
+
+            // Simulate erosion
+            if (!CONFIG.paused) {
+                erosionSimulator.simulateDroplets(CONFIG.dropletsPerFrame);
+                if (CONFIG.thermalErosion) {
+                    erosionSimulator.simulateThermalErosion();
+                }
+            }
+
+            // Update stats
+            if (frameCount % 10 === 0) {
+                erosionSimulator.computeStatistics();
+                updateStats();
+            }
+
+            // Draw
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        function updateStats() {
+            const stats = erosionSimulator.stats();
+            document.getElementById('droplet-count').textContent = stats.totalDroplets.toLocaleString();
+            document.getElementById('iterations').textContent = stats.iterations;
+            document.getElementById('erosion').textContent = stats.totalErosion.toFixed(2);
+            document.getElementById('deposit').textContent = stats.totalDeposition.toFixed(2);
+            document.getElementById('max-height').textContent = stats.maxHeight.toFixed(2);
+        }
+
+        // ====================================================================
+        // Drawing
+        // ====================================================================
+        function draw() {
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, width, height);
+
+            // Get render buffer based on view mode
+            let buffer;
+            switch (CONFIG.viewMode) {
+                case 'terrain':
+                    buffer = Module.renderErosionTerrain(erosionSimulator);
+                    break;
+                case 'water':
+                    buffer = Module.renderErosionWater(erosionSimulator);
+                    break;
+                case 'slope':
+                    buffer = Module.renderErosionSlope(erosionSimulator);
+                    break;
+                case '3d':
+                    draw3D();
+                    return;
+                default:
+                    buffer = Module.renderErosionTerrain(erosionSimulator);
+            }
+
+            // Copy to ImageData (buffer is ABGR, ImageData is RGBA)
+            const pixels = imageData.data;
+            for (let i = 0; i < buffer.length; i++) {
+                const val = buffer[i];
+                const idx = i * 4;
+                pixels[idx + 0] = val & 0xFF;           // R
+                pixels[idx + 1] = (val >> 8) & 0xFF;    // G
+                pixels[idx + 2] = (val >> 16) & 0xFF;   // B
+                pixels[idx + 3] = 255;                   // A
+            }
+
+            // Scale and draw
+            const scale = Math.min(width, height) / CONFIG.resolution;
+            const offsetX = (width - CONFIG.resolution * scale) / 2;
+            const offsetY = (height - CONFIG.resolution * scale) / 2;
+
+            // Create temporary canvas for scaling
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = CONFIG.resolution;
+            tempCanvas.height = CONFIG.resolution;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.putImageData(imageData, 0, 0);
+
+            ctx.imageSmoothingEnabled = false;
+            ctx.drawImage(tempCanvas, offsetX, offsetY, CONFIG.resolution * scale, CONFIG.resolution * scale);
+
+            // Draw brush preview
+            if (mouseDown || true) {
+                const brushX = mousePos.x;
+                const brushY = mousePos.y;
+                ctx.beginPath();
+                ctx.arc(brushX, brushY, CONFIG.brushRadius, 0, Math.PI * 2);
+                ctx.strokeStyle = mouseMode === 'raise' ? 'rgba(217, 119, 6, 0.5)' :
+                                  mouseMode === 'lower' ? 'rgba(239, 68, 68, 0.5)' :
+                                  'rgba(59, 130, 246, 0.5)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+            }
+        }
+
+        function draw3D() {
+            // Simple pseudo-3D visualization
+            const heightMap = Module.getErosionHeightMap(erosionSimulator);
+            const res = CONFIG.resolution;
+
+            const scale = Math.min(width, height) / res * 0.8;
+            const offsetX = width / 2;
+            const offsetY = height * 0.7;
+            const heightScale = 150;
+
+            ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
+            ctx.lineWidth = 1;
+
+            // Draw lines from back to front
+            for (let y = 0; y < res; y += 4) {
+                ctx.beginPath();
+                for (let x = 0; x < res; x += 2) {
+                    const h = heightMap[y * res + x];
+
+                    // Isometric projection
+                    const screenX = offsetX + (x - res / 2) * scale * 0.7 - (y - res / 2) * scale * 0.4;
+                    const screenY = offsetY + (y - res / 2) * scale * 0.3 - h * heightScale;
+
+                    if (x === 0) {
+                        ctx.moveTo(screenX, screenY);
+                    } else {
+                        ctx.lineTo(screenX, screenY);
+                    }
+                }
+                ctx.stroke();
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

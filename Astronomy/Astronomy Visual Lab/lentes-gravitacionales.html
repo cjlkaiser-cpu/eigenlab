@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lentes Gravitacionales - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas { cursor: move; }
+        .glow-text { text-shadow: 0 0 20px rgba(139, 92, 246, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-violet-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-violet-400 font-medium">Lentes</span> Gravitacionales
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">θ<sub>E</sub> = <span id="einstein-radius" class="text-violet-400">0.00</span>"</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Arrastra la lente · Rueda para zoom
+            </div>
+            <!-- Legend -->
+            <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 rounded-full bg-yellow-400"></div>
+                    <span class="text-gray-400">Fuente (galaxia)</span>
+                </div>
+                <div class="flex items-center gap-2 mb-1">
+                    <div class="w-3 h-3 rounded-full bg-violet-500"></div>
+                    <span class="text-gray-400">Lente (masa)</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <div class="w-3 h-3 rounded-full border border-cyan-400"></div>
+                    <span class="text-gray-400">Imágenes</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-violet-400 glow-text">Parámetros</h2>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Las <span class="text-indigo-400">lentes gravitacionales</span> ocurren cuando la masa curva el espacio-tiempo, desviando la luz. Predichas por Einstein (1915), confirmadas en 1919.
+                </p>
+                <a href="guides/lentes-gravitacionales.html" class="mt-2 flex items-center gap-2 text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center">?</span>
+                    Guía: anillo de Einstein, materia oscura
+                </a>
+            </div>
+
+            <!-- Lens Mass -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Masa de la Lente:
+                    <span id="mass-value" class="text-violet-400 mono">10¹²</span> M☉
+                </label>
+                <input type="range" id="mass" min="10" max="15" step="0.1" value="12" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Masa típica de galaxia: 10¹¹-10¹³ M☉</p>
+            </div>
+
+            <!-- Source Distance -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Distancia Fuente:
+                    <span id="ds-value" class="text-cyan-400 mono">2.0</span> Gpc
+                </label>
+                <input type="range" id="ds" min="0.5" max="5" step="0.1" value="2" class="w-full">
+            </div>
+
+            <!-- Lens Distance -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Distancia Lente:
+                    <span id="dl-value" class="text-cyan-400 mono">1.0</span> Gpc
+                </label>
+                <input type="range" id="dl" min="0.1" max="2" step="0.1" value="1" class="w-full">
+            </div>
+
+            <!-- Source Size -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Tamaño Fuente:
+                    <span id="source-size-value" class="text-yellow-400 mono">1.0</span>"
+                </label>
+                <input type="range" id="source-size" min="0.1" max="3" step="0.1" value="1" class="w-full">
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- View Options -->
+            <div class="mb-6 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-rays" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                    <span class="text-sm text-gray-400">Mostrar rayos de luz</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-einstein-ring" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                    <span class="text-sm text-gray-400">Anillo de Einstein</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-critical" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                    <span class="text-sm text-gray-400">Curva crítica/cáustica</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="distort-background" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                    <span class="text-sm text-gray-400">Distorsionar fondo</span>
+                </label>
+            </div>
+
+            <!-- Presets -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Configuraciones</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="loadPreset('einstein-ring')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Anillo Einstein</button>
+                    <button onclick="loadPreset('double')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Imagen Doble</button>
+                    <button onclick="loadPreset('arc')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Arco Gigante</button>
+                    <button onclick="loadPreset('quad')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Cruz Einstein</button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mb-6 space-y-2">
+                <button id="reset-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                    Centrar Lente
+                </button>
+                <button id="animate-btn" class="w-full py-2 px-4 bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 rounded-lg text-sm transition">
+                    <span id="animate-text">Animar Fuente</span>
+                </button>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-violet-400 mb-3">Ecuación de la Lente</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        β = θ - α(θ)
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        θ<sub>E</sub> = √(4GM D<sub>LS</sub>/(c² D<sub>L</sub> D<sub>S</sub>))
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        α = θ<sub>E</sub>²/θ
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La luz de una fuente distante se curva al pasar cerca de una masa. Esto crea <span class="text-violet-400">imágenes múltiples</span>, arcos y anillos.
+                </p>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <p class="text-xs text-gray-500">
+                        <span class="text-cyan-400">Magnificación</span>: Las lentes gravitacionales amplifican la luz, permitiendo ver galaxias muy lejanas.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Image Info -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Imágenes Formadas</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Número</div>
+                        <div id="image-count" class="text-violet-400">2</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Magnificación</div>
+                        <div id="magnification" class="text-cyan-400">1.0x</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Separación</div>
+                        <div id="separation" class="text-yellow-400">0.0"</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Tipo</div>
+                        <div id="lens-type" class="text-pink-400">-</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Physical constants
+        const c = 3e8; // m/s
+        const G = 6.67e-11; // N m²/kg²
+        const Msun = 2e30; // kg
+        const pc = 3.086e16; // m
+
+        // Parameters
+        let logMass = 12; // log10(M/Msun)
+        let Ds = 2; // Gpc (source distance)
+        let Dl = 1; // Gpc (lens distance)
+        let sourceSize = 1; // arcseconds
+
+        // Lens position (in arcseconds from center)
+        let lensX = 0;
+        let lensY = 0;
+
+        // Source position
+        let sourceX = 0;
+        let sourceY = 0;
+
+        // View
+        let scale = 50; // pixels per arcsecond
+        let centerX, centerY;
+
+        // Options
+        let showRays = true;
+        let showEinsteinRing = true;
+        let showCritical = false;
+        let distortBackground = true;
+        let isAnimating = false;
+        let animationTime = 0;
+
+        // Interaction
+        let isDragging = false;
+        let dragTarget = null; // 'lens' or 'source'
+        let lastMouse = { x: 0, y: 0 };
+
+        // Background stars
+        let backgroundStars = [];
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            centerX = canvas.offsetWidth / 2;
+            centerY = canvas.offsetHeight / 2;
+
+            // Generate background stars
+            backgroundStars = [];
+            for (let i = 0; i < 300; i++) {
+                backgroundStars.push({
+                    x: (Math.random() - 0.5) * 20, // arcseconds
+                    y: (Math.random() - 0.5) * 20,
+                    size: Math.random() * 1.5 + 0.5,
+                    brightness: Math.random() * 0.5 + 0.3
+                });
+            }
+        }
+
+        function getEinsteinRadius() {
+            // θE in arcseconds
+            const M = Math.pow(10, logMass) * Msun;
+            const DL = Dl * 1e9 * pc;
+            const DS = Ds * 1e9 * pc;
+            const DLS = DS - DL;
+
+            if (DLS <= 0) return 0;
+
+            // θE = sqrt(4GM/c² * DLS/(DL*DS)) in radians
+            const thetaE_rad = Math.sqrt(4 * G * M / (c * c) * DLS / (DL * DS));
+            // Convert to arcseconds
+            return thetaE_rad * 206265;
+        }
+
+        function deflectionAngle(theta, thetaE) {
+            // Point mass lens: α = θE²/θ
+            if (Math.abs(theta) < 0.001) return 0;
+            return thetaE * thetaE / theta;
+        }
+
+        function getImagePositions(beta, thetaE) {
+            // Lens equation: β = θ - θE²/θ
+            // Solving: θ² - βθ - θE² = 0
+            // θ = (β ± sqrt(β² + 4θE²))/2
+
+            const discriminant = beta * beta + 4 * thetaE * thetaE;
+            const sqrtD = Math.sqrt(discriminant);
+
+            return {
+                theta1: (beta + sqrtD) / 2, // Primary image (same side as source)
+                theta2: (beta - sqrtD) / 2  // Secondary image (opposite side)
+            };
+        }
+
+        function getMagnification(theta, thetaE) {
+            // μ = θ/β * dθ/dβ for point mass
+            const theta4 = Math.pow(theta, 4);
+            const thetaE4 = Math.pow(thetaE, 4);
+            if (theta4 < thetaE4 * 0.01) return 100; // Cap magnification
+            return Math.abs(theta4 / (theta4 - thetaE4));
+        }
+
+        function lensDistort(x, y, lx, ly, thetaE) {
+            // Apply lensing distortion to a point
+            const dx = x - lx;
+            const dy = y - ly;
+            const r = Math.sqrt(dx * dx + dy * dy);
+
+            if (r < 0.01) return { x, y };
+
+            const alpha = thetaE * thetaE / r;
+            const factor = 1 + alpha / r;
+
+            return {
+                x: lx + dx * factor,
+                y: ly + dy * factor
+            };
+        }
+
+        function worldToScreen(x, y) {
+            return {
+                x: centerX + x * scale,
+                y: centerY - y * scale
+            };
+        }
+
+        function screenToWorld(sx, sy) {
+            return {
+                x: (sx - centerX) / scale,
+                y: -(sy - centerY) / scale
+            };
+        }
+
+        function drawBackground() {
+            const thetaE = getEinsteinRadius();
+
+            backgroundStars.forEach(star => {
+                let drawX = star.x;
+                let drawY = star.y;
+
+                if (distortBackground && thetaE > 0) {
+                    const distorted = lensDistort(star.x, star.y, lensX, lensY, thetaE);
+                    drawX = distorted.x;
+                    drawY = distorted.y;
+                }
+
+                const pos = worldToScreen(drawX, drawY);
+                const w = canvas.offsetWidth;
+                const h = canvas.offsetHeight;
+
+                if (pos.x < 0 || pos.x > w || pos.y < 0 || pos.y > h) return;
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${star.brightness})`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawLens() {
+            const pos = worldToScreen(lensX, lensY);
+            const thetaE = getEinsteinRadius();
+            const einsteinPixels = thetaE * scale;
+
+            // Einstein ring
+            if (showEinsteinRing && thetaE > 0) {
+                ctx.strokeStyle = 'rgba(139, 92, 246, 0.4)';
+                ctx.setLineDash([5, 5]);
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, einsteinPixels, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Critical curve (for point mass, same as Einstein ring)
+            if (showCritical && thetaE > 0) {
+                ctx.strokeStyle = 'rgba(236, 72, 153, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, einsteinPixels, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Caustic (point for point mass)
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Lens (mass)
+            const gradient = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, 20);
+            gradient.addColorStop(0, 'rgba(139, 92, 246, 0.8)');
+            gradient.addColorStop(0.5, 'rgba(139, 92, 246, 0.3)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, 8, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label
+            ctx.fillStyle = '#8b5cf6';
+            ctx.font = '10px Inter';
+            ctx.fillText('Lente', pos.x - 15, pos.y + 25);
+        }
+
+        function drawSource() {
+            const pos = worldToScreen(sourceX, sourceY);
+            const sizePixels = sourceSize * scale;
+
+            // Source galaxy
+            ctx.fillStyle = 'rgba(250, 204, 21, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(pos.x, pos.y, sizePixels * 1.5, sizePixels, Math.PI / 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, sizePixels * 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Label
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '10px Inter';
+            ctx.fillText('Fuente', pos.x - 18, pos.y - sizePixels - 5);
+        }
+
+        function drawImages() {
+            const thetaE = getEinsteinRadius();
+            if (thetaE <= 0) return;
+
+            // Distance from lens to source
+            const dx = sourceX - lensX;
+            const dy = sourceY - lensY;
+            const beta = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx);
+
+            const images = getImagePositions(beta, thetaE);
+            const sizePixels = sourceSize * scale;
+
+            // Calculate total magnification
+            const mu1 = getMagnification(images.theta1, thetaE);
+            const mu2 = getMagnification(Math.abs(images.theta2), thetaE);
+            const totalMag = mu1 + mu2;
+
+            // Draw light rays
+            if (showRays) {
+                const sourcePos = worldToScreen(sourceX, sourceY);
+                const lensPos = worldToScreen(lensX, lensY);
+
+                // Image 1
+                const img1X = lensX + Math.cos(angle) * images.theta1;
+                const img1Y = lensY + Math.sin(angle) * images.theta1;
+                const img1Pos = worldToScreen(img1X, img1Y);
+
+                ctx.strokeStyle = 'rgba(34, 211, 238, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(sourcePos.x, sourcePos.y);
+                ctx.quadraticCurveTo(lensPos.x, lensPos.y, img1Pos.x, img1Pos.y);
+                ctx.stroke();
+
+                // Image 2
+                const img2X = lensX + Math.cos(angle) * images.theta2;
+                const img2Y = lensY + Math.sin(angle) * images.theta2;
+                const img2Pos = worldToScreen(img2X, img2Y);
+
+                ctx.beginPath();
+                ctx.moveTo(sourcePos.x, sourcePos.y);
+                ctx.quadraticCurveTo(lensPos.x, lensPos.y, img2Pos.x, img2Pos.y);
+                ctx.stroke();
+            }
+
+            // Draw images
+            // Image 1 (primary, positive parity)
+            const img1X = lensX + Math.cos(angle) * images.theta1;
+            const img1Y = lensY + Math.sin(angle) * images.theta1;
+            const pos1 = worldToScreen(img1X, img1Y);
+            const size1 = sizePixels * Math.sqrt(mu1) * 0.5;
+
+            // Tangential stretch for arcs
+            const stretch1 = Math.min(3, mu1 / 2);
+            ctx.save();
+            ctx.translate(pos1.x, pos1.y);
+            ctx.rotate(angle + Math.PI / 2);
+
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.6)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size1 * stretch1, size1, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = '#22d3ee';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size1 * stretch1, size1, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.restore();
+
+            // Image 2 (secondary, negative parity - inverted)
+            const img2X = lensX + Math.cos(angle) * images.theta2;
+            const img2Y = lensY + Math.sin(angle) * images.theta2;
+            const pos2 = worldToScreen(img2X, img2Y);
+            const size2 = sizePixels * Math.sqrt(mu2) * 0.5;
+            const stretch2 = Math.min(3, mu2 / 2);
+
+            ctx.save();
+            ctx.translate(pos2.x, pos2.y);
+            ctx.rotate(angle + Math.PI / 2);
+
+            ctx.fillStyle = 'rgba(34, 211, 238, 0.4)';
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size2 * stretch2, size2, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.strokeStyle = 'rgba(34, 211, 238, 0.8)';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.ellipse(0, 0, size2 * stretch2, size2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+            ctx.restore();
+
+            // Einstein ring when source is near center
+            if (beta < thetaE * 0.3 && showEinsteinRing) {
+                const ringPos = worldToScreen(lensX, lensY);
+                const ringRadius = thetaE * scale;
+
+                ctx.strokeStyle = 'rgba(34, 211, 238, 0.8)';
+                ctx.lineWidth = sizePixels * 0.5;
+                ctx.beginPath();
+                ctx.arc(ringPos.x, ringPos.y, ringRadius, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Update info panel
+            document.getElementById('einstein-radius').textContent = thetaE.toFixed(2);
+            document.getElementById('image-count').textContent = beta < 0.01 ? 'Anillo' : '2';
+            document.getElementById('magnification').textContent = totalMag.toFixed(1) + 'x';
+            document.getElementById('separation').textContent = (images.theta1 - images.theta2).toFixed(2) + '"';
+
+            if (beta < thetaE * 0.1) {
+                document.getElementById('lens-type').textContent = 'Anillo';
+            } else if (beta < thetaE * 0.5) {
+                document.getElementById('lens-type').textContent = 'Arco';
+            } else {
+                document.getElementById('lens-type').textContent = 'Doble';
+            }
+        }
+
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Background
+            drawBackground();
+
+            // Source (true position)
+            drawSource();
+
+            // Images
+            drawImages();
+
+            // Lens
+            drawLens();
+        }
+
+        function animate() {
+            if (isAnimating) {
+                animationTime += 0.02;
+                // Move source in a circle around the lens
+                const radius = 1.5 * getEinsteinRadius();
+                sourceX = lensX + Math.cos(animationTime) * radius;
+                sourceY = lensY + Math.sin(animationTime) * radius;
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        function loadPreset(type) {
+            const thetaE = getEinsteinRadius();
+
+            switch (type) {
+                case 'einstein-ring':
+                    sourceX = lensX;
+                    sourceY = lensY;
+                    break;
+                case 'double':
+                    sourceX = lensX + thetaE * 1.5;
+                    sourceY = lensY;
+                    break;
+                case 'arc':
+                    sourceX = lensX + thetaE * 0.3;
+                    sourceY = lensY + thetaE * 0.1;
+                    break;
+                case 'quad':
+                    // For quad, we'd need elliptical mass distribution
+                    // Approximate with offset
+                    sourceX = lensX + thetaE * 0.2;
+                    sourceY = lensY + thetaE * 0.2;
+                    break;
+            }
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const world = screenToWorld(mx, my);
+
+            // Check if clicking on lens or source
+            const lensPos = worldToScreen(lensX, lensY);
+            const sourcePos = worldToScreen(sourceX, sourceY);
+
+            const distToLens = Math.sqrt(Math.pow(mx - lensPos.x, 2) + Math.pow(my - lensPos.y, 2));
+            const distToSource = Math.sqrt(Math.pow(mx - sourcePos.x, 2) + Math.pow(my - sourcePos.y, 2));
+
+            if (distToLens < 30) {
+                dragTarget = 'lens';
+                isDragging = true;
+            } else if (distToSource < 30) {
+                dragTarget = 'source';
+                isDragging = true;
+            } else {
+                dragTarget = 'source'; // Default: move source
+                sourceX = world.x;
+                sourceY = world.y;
+            }
+
+            lastMouse = { x: mx, y: my };
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+
+            const dx = (mx - lastMouse.x) / scale;
+            const dy = -(my - lastMouse.y) / scale;
+
+            if (dragTarget === 'lens') {
+                lensX += dx;
+                lensY += dy;
+            } else {
+                sourceX += dx;
+                sourceY += dy;
+            }
+
+            lastMouse = { x: mx, y: my };
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const factor = e.deltaY < 0 ? 1.1 : 0.9;
+            scale = Math.max(10, Math.min(200, scale * factor));
+        });
+
+        // Controls
+        document.getElementById('mass').addEventListener('input', (e) => {
+            logMass = parseFloat(e.target.value);
+            document.getElementById('mass-value').textContent = '10' + superscript(Math.round(logMass));
+        });
+
+        function superscript(n) {
+            const supers = { '0': '⁰', '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹' };
+            return String(n).split('').map(d => supers[d] || d).join('');
+        }
+
+        document.getElementById('ds').addEventListener('input', (e) => {
+            Ds = parseFloat(e.target.value);
+            document.getElementById('ds-value').textContent = Ds.toFixed(1);
+            // Ensure Dl < Ds
+            if (Dl >= Ds) {
+                Dl = Ds * 0.5;
+                document.getElementById('dl').value = Dl;
+                document.getElementById('dl-value').textContent = Dl.toFixed(1);
+            }
+        });
+
+        document.getElementById('dl').addEventListener('input', (e) => {
+            Dl = parseFloat(e.target.value);
+            document.getElementById('dl-value').textContent = Dl.toFixed(1);
+        });
+
+        document.getElementById('source-size').addEventListener('input', (e) => {
+            sourceSize = parseFloat(e.target.value);
+            document.getElementById('source-size-value').textContent = sourceSize.toFixed(1);
+        });
+
+        document.getElementById('show-rays').addEventListener('change', (e) => {
+            showRays = e.target.checked;
+        });
+
+        document.getElementById('show-einstein-ring').addEventListener('change', (e) => {
+            showEinsteinRing = e.target.checked;
+        });
+
+        document.getElementById('show-critical').addEventListener('change', (e) => {
+            showCritical = e.target.checked;
+        });
+
+        document.getElementById('distort-background').addEventListener('change', (e) => {
+            distortBackground = e.target.checked;
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            lensX = 0;
+            lensY = 0;
+        });
+
+        document.getElementById('animate-btn').addEventListener('click', () => {
+            isAnimating = !isAnimating;
+            document.getElementById('animate-text').textContent = isAnimating ? 'Detener' : 'Animar Fuente';
+        });
+
+        window.addEventListener('resize', initCanvas);
+
+        // Initialize
+        initCanvas();
+        animate();
+    </script>
+</body>
+</html>

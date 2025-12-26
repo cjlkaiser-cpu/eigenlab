@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replicación del ADN — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Replicación ADN</nav>
+                <h1>Replicación del ADN — Guía</h1>
+                <div class="subtitle">Copiando el genoma con precisión: la maquinaria de la herencia</div>
+            </div>
+            <a href="../adn-replicacion.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la replicación?</div>
+                <p class="lead">La <span class="em">replicación del ADN</span> es el proceso semiconservativo por el cual cada hebra sirve de molde para sintetizar una nueva. Ocurre en la fase S del ciclo celular y es esencial para la división celular.</p>
+                <div class="chips">
+                    <span class="chip">Semiconservativa</span>
+                    <span class="chip">5' → 3'</span>
+                    <span class="chip">Horquilla</span>
+                    <span class="chip">Fragmentos Okazaki</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Watson & Crick (1953):</strong> "No ha escapado a nuestra atención que el apareamiento específico que postulamos sugiere inmediatamente un posible mecanismo de copia."</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Enzimas principales</div>
+                <ul>
+                    <li><strong>Helicasa:</strong> Abre la doble hélice</li>
+                    <li><strong>Primasa:</strong> Sintetiza primers de RNA</li>
+                    <li><strong>DNA Pol III:</strong> Sintetiza DNA (5'→3')</li>
+                    <li><strong>DNA Pol I:</strong> Remueve primers, rellena</li>
+                    <li><strong>Ligasa:</strong> Une fragmentos de Okazaki</li>
+                    <li><strong>Topoisomerasa:</strong> Relaja tensión torsional</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Hebra continua (leading)</h2>
+                <ul>
+                    <li>Sintetizada en dirección 5' → 3'</li>
+                    <li>Misma dirección que avanza la horquilla</li>
+                    <li>Solo necesita un primer inicial</li>
+                    <li>Síntesis continua y eficiente</li>
+                    <li>DNA Pol III trabaja sin interrupción</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Hebra discontinua (lagging)</h2>
+                <ul>
+                    <li>También 5' → 3' pero opuesta a la horquilla</li>
+                    <li>Fragmentos de Okazaki (100-200 nt en eucariotas)</li>
+                    <li>Múltiples primers (cada ~200 nt)</li>
+                    <li>DNA Pol I reemplaza RNA por DNA</li>
+                    <li>Ligasa une los fragmentos al final</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Observa la maquinaria de replicación en acción y comprende la asimetría de la horquilla.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>Semiconservación de Meselson-Stahl</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Después de una ronda de replicación, cada molécula hija contiene una hebra original y una nueva.</p>
+                </div>
+                <ol>
+                    <li>Observa la doble hélice parental (ambas hebras "viejas")</li>
+                    <li>Inicia la replicación y sigue una horquilla</li>
+                    <li>Identifica qué hebra es molde y cuál es nueva</li>
+                    <li>Al completar, verifica que cada hija tiene una hebra de cada tipo</li>
+                    <li>Imagina una segunda ronda: ¿cuántas moléculas tendrían ambas hebras nuevas?</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Tras n rondas, 2 de 2ⁿ moléculas conservan una hebra original (semiconservación).</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>El problema de la hebra rezagada</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>La síntesis de la hebra lagging requiere fragmentos porque DNA Pol solo sintetiza 5'→3'.</p>
+                </div>
+                <ol>
+                    <li>Observa la helicasa abriendo la horquilla</li>
+                    <li>Sigue la síntesis continua en la hebra leading</li>
+                    <li>Nota cómo la hebra lagging "espera" para tener suficiente molde expuesto</li>
+                    <li>Observa la primasa sintetizando un nuevo primer</li>
+                    <li>Ve cómo se forma un fragmento de Okazaki y luego se une al anterior</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> La asimetría direccional de DNA Pol obliga a la síntesis discontinua.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>Fidelidad y corrección de errores</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>La DNA Pol tiene actividad exonucleasa 3'→5' que corrige errores de apareamiento.</p>
+                </div>
+                <ol>
+                    <li>Observa la incorporación normal de nucleótidos (A-T, G-C)</li>
+                    <li>Simula un error de apareamiento (ej: G-T)</li>
+                    <li>Observa cómo la polimerasa detecta la distorsión</li>
+                    <li>Ve la actividad exonucleasa removiendo el nucleótido incorrecto</li>
+                    <li>Observa la reinserción del nucleótido correcto</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> La tasa de error final es ~10⁻¹⁰ gracias a múltiples mecanismos de corrección.</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biology">🧬</div>
+                    <div>
+                        <h4>Mitosis</h4>
+                        <p>La replicación en fase S prepara los cromosomas para la división mitótica.</p>
+                        <a href="../../../Biology/Biology Visual Lab/mitosis.html">Ver Mitosis →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">📝</div>
+                    <div>
+                        <h4>Transcripción</h4>
+                        <p>Usa el mismo principio de complementariedad pero produce RNA.</p>
+                        <a href="transcripcion.html">Ver Transcripción →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔬</div>
+                    <div>
+                        <h4>Mutaciones</h4>
+                        <p>Errores no corregidos en la replicación generan mutaciones heredables.</p>
+                        <a href="mutaciones.html">Ver Mutaciones →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-chemistry">🔥</div>
+                    <div>
+                        <h4>PCR</h4>
+                        <p>La reacción en cadena de la polimerasa replica ADN in vitro con Taq polimerasa termoestable.</p>
+                        <a href="../../../Chemistry/Chemistry Visual Lab/cinetica.html">Ver Cinética →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Escala temporal:</strong> La replicación real toma horas; aquí se acelera drásticamente.</li>
+                <li><strong>Complejidad del replisoma:</strong> El complejo real tiene ~30 proteínas trabajando coordinadamente.</li>
+                <li><strong>Orígenes múltiples:</strong> Los eucariotas tienen miles de orígenes de replicación simultáneos.</li>
+                <li><strong>Cromatina:</strong> No muestra el desempaquetamiento de histonas ni la remodelación de cromatina.</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué la evolución no "inventó" una DNA polimerasa que sintetice en ambas direcciones?</li>
+                <li>¿Qué pasaría si la ligasa no funcionara correctamente?</li>
+                <li>¿Por qué los virus de RNA mutan más rápido que los organismos con DNA?</li>
+                <li>¿Cómo explica la replicación semiconservativa la estabilidad genética entre generaciones?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="michaelis-menten.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Michaelis-Menten</div>
+                </div>
+            </a>
+            <a href="transcripcion.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Transcripción</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Replicación ADN
+    </footer>
+</body>
+</html>

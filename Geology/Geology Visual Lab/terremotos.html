@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ondas Sísmicas - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background: #030712; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #d97706;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), rgba(239, 68, 68, 0.05));
+            border: 1px solid rgba(217, 119, 6, 0.3);
+        }
+
+        .glow-amber { text-shadow: 0 0 20px rgba(217, 119, 6, 0.6); }
+        .wave-p { color: #60a5fa; }
+        .wave-s { color: #4ade80; }
+        .wave-surface { color: #f87171; }
+
+        .seismograph {
+            background: linear-gradient(180deg, #030712 0%, #0a0f1a 100%);
+            border: 1px solid #1f2937;
+            border-radius: 8px;
+        }
+
+        @keyframes pulse-station {
+            0%, 100% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(1.5); }
+        }
+        .station-active {
+            animation: pulse-station 0.3s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-2px); }
+            75% { transform: translateX(2px); }
+        }
+        .shaking {
+            animation: shake 0.1s linear infinite;
+        }
+
+        .station-chip {
+            transition: all 0.15s ease;
+        }
+        .station-chip:hover {
+            transform: translateX(2px);
+        }
+        .station-chip.selected {
+            border-color: var(--station-color);
+            box-shadow: 0 0 10px var(--station-glow);
+        }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+    </style>
+</head>
+<body class="text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-gray-950/90 backdrop-blur-sm sticky top-0 z-50">
+        <div class="px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-500 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-amber-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-amber-400 transition">Geology</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-400">Ondas Sísmicas</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-amber-500 font-medium glow-amber">Ondas Sísmicas</span>
+                            <span class="text-gray-600 text-sm ml-2">Red Sísmica Multiestación</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="bg-gray-900 rounded-lg px-3 py-1.5 border border-gray-800">
+                        <span class="text-gray-500 text-xs">M</span>
+                        <span id="mag-display" class="text-amber-400 mono font-semibold ml-1">6.0</span>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg px-3 py-1.5 border border-gray-800">
+                        <span class="text-gray-500 text-xs">Prof.</span>
+                        <span id="depth-display" class="text-amber-400 mono ml-1">30</span>
+                        <span class="text-gray-600 text-xs">km</span>
+                    </div>
+                    <div class="bg-gray-900 rounded-lg px-3 py-1.5 border border-gray-800">
+                        <span class="text-gray-500 text-xs">t</span>
+                        <span id="time-display" class="text-amber-400 mono ml-1">0.0</span>
+                        <span class="text-gray-600 text-xs">s</span>
+                    </div>
+                    <div id="status-indicator" class="flex items-center gap-2 bg-gray-900 rounded-lg px-3 py-1.5 border border-gray-800">
+                        <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+                        <span class="text-gray-400 text-xs">Listo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-61px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main Earth visualization -->
+            <div class="flex-1 relative" id="earth-container">
+                <canvas id="earth-canvas" class="w-full h-full cursor-grab"></canvas>
+
+                <!-- Legend overlay -->
+                <div class="absolute top-4 left-4 bg-gray-950/95 border border-gray-800 rounded-xl p-3 text-xs backdrop-blur-sm">
+                    <div class="font-medium text-gray-300 mb-2 flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                        Capas Terrestres
+                    </div>
+                    <div class="space-y-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-2 rounded-sm bg-gradient-to-r from-[#1e3a5f] to-[#2d4a6f]"></span>
+                            <span class="text-gray-400">Corteza</span>
+                            <span class="text-gray-600 mono text-[10px] ml-auto">0-35 km</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-2 rounded-sm bg-gradient-to-r from-[#92400e] to-[#a85512]"></span>
+                            <span class="text-gray-400">Manto</span>
+                            <span class="text-gray-600 mono text-[10px] ml-auto">35-2900 km</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-2 rounded-sm bg-gradient-to-r from-[#dc2626] to-[#ef4444]"></span>
+                            <span class="text-gray-400">Núcleo Ext.</span>
+                            <span class="text-gray-600 mono text-[10px] ml-auto">2900-5100 km</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-4 h-2 rounded-sm bg-gradient-to-r from-[#fbbf24] to-[#fcd34d]"></span>
+                            <span class="text-gray-400">Núcleo Int.</span>
+                            <span class="text-gray-600 mono text-[10px] ml-auto">5100-6371 km</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase display -->
+                <div class="absolute top-4 right-4 bg-gray-950/95 border border-gray-800 rounded-xl p-3 backdrop-blur-sm">
+                    <div class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Fase</div>
+                    <div id="phase-display" class="text-amber-400 font-medium text-sm">Esperando sismo</div>
+                </div>
+
+                <!-- Drag hint -->
+                <div class="absolute top-20 right-4 bg-gray-950/90 border border-gray-700 rounded-lg px-3 py-2 text-xs text-gray-400 backdrop-blur-sm" id="drag-hint">
+                    <span class="text-amber-400">⟷</span> Arrastra estaciones sobre la superficie
+                </div>
+
+                <!-- Keyboard hints -->
+                <div class="absolute bottom-4 right-4 text-[10px] text-gray-600 flex gap-3">
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500">S</kbd> Sismo</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500">Space</kbd> Pausa</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500">R</kbd> Reset</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded text-gray-500">N</kbd> Nueva estación</span>
+                </div>
+            </div>
+
+            <!-- Seismograph -->
+            <div class="h-48 border-t border-gray-800 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <div class="flex items-center gap-4">
+                        <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">Sismograma</span>
+                        <span id="seismo-station-label" class="text-xs text-amber-400 mono">Estación 1</span>
+                    </div>
+                    <div class="flex gap-4 text-xs">
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-3 h-0.5 bg-blue-400 rounded"></span>
+                            <span class="wave-p">P</span>
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-3 h-0.5 bg-green-400 rounded"></span>
+                            <span class="wave-s">S</span>
+                        </span>
+                        <span class="flex items-center gap-1.5">
+                            <span class="w-3 h-0.5 bg-red-400 rounded"></span>
+                            <span class="wave-surface">Superficial</span>
+                        </span>
+                    </div>
+                </div>
+                <canvas id="seismograph" class="seismograph w-full h-32"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-800 bg-gray-950 p-5 overflow-y-auto">
+            <!-- Earthquake Parameters -->
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span>
+                    Parámetros del Sismo
+                </h3>
+
+                <div class="space-y-4 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                    <div>
+                        <div class="flex justify-between text-xs mb-2">
+                            <span class="text-gray-400">Magnitud (M)</span>
+                            <span id="mag-value" class="text-amber-400 mono">6.0</span>
+                        </div>
+                        <input type="range" id="magnitude" min="1" max="9" step="0.1" value="6" class="w-full">
+                        <div class="flex justify-between text-[10px] text-gray-600 mt-1">
+                            <span>1.0</span>
+                            <span>Richter</span>
+                            <span>9.0</span>
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="flex justify-between text-xs mb-2">
+                            <span class="text-gray-400">Profundidad</span>
+                            <span class="text-amber-400 mono"><span id="depth-value">30</span> km</span>
+                        </div>
+                        <input type="range" id="depth" min="5" max="300" step="5" value="30" class="w-full">
+                        <div class="flex justify-between text-[10px] text-gray-600 mt-1">
+                            <span>5 (superficial)</span>
+                            <span>300 (profundo)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <button id="trigger-btn" class="w-full mt-4 py-3 px-4 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white rounded-xl text-sm font-medium flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-900/30">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    Generar Sismo
+                </button>
+            </div>
+
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Las <span class="text-amber-400">ondas P</span> (compresion) viajan mas rapido que las <span class="text-amber-400">ondas S</span> (cizalla). La diferencia de llegada indica distancia al epicentro.
+                </p>
+                <a href="guides/terremotos.html" class="mt-3 flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: tipos de ondas, sismogramas, triangulacion
+                </a>
+            </div>
+
+            <!-- Stations -->
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center justify-between">
+                    <span class="flex items-center gap-2">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+                        Estaciones Sísmicas
+                    </span>
+                    <button id="add-station-btn" class="text-emerald-400 hover:text-emerald-300 transition text-lg leading-none" title="Añadir estación">+</button>
+                </h3>
+
+                <div id="stations-list" class="space-y-2 max-h-48 overflow-y-auto">
+                    <!-- Stations will be added here dynamically -->
+                </div>
+
+                <p class="text-[10px] text-gray-600 mt-2">
+                    Click para seleccionar · Arrastra para mover · Max 5 estaciones
+                </p>
+            </div>
+
+            <!-- Wave Types -->
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
+                    Tipos de Ondas
+                </h3>
+
+                <div class="space-y-2 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="show-p" checked class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-blue-500 focus:ring-blue-500">
+                        <span class="w-3 h-3 rounded-full bg-blue-500 shadow-lg shadow-blue-500/30"></span>
+                        <span class="text-sm text-gray-400 group-hover:text-gray-300">Ondas P</span>
+                        <span class="text-[10px] text-gray-600 ml-auto">6-8 km/s</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="show-s" checked class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-green-500 focus:ring-green-500">
+                        <span class="w-3 h-3 rounded-full bg-green-500 shadow-lg shadow-green-500/30"></span>
+                        <span class="text-sm text-gray-400 group-hover:text-gray-300">Ondas S</span>
+                        <span class="text-[10px] text-gray-600 ml-auto">3-4 km/s</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group">
+                        <input type="checkbox" id="show-surface" checked class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-red-500 focus:ring-red-500">
+                        <span class="w-3 h-3 rounded-full bg-red-500 shadow-lg shadow-red-500/30"></span>
+                        <span class="text-sm text-gray-400 group-hover:text-gray-300">Superficiales</span>
+                        <span class="text-[10px] text-gray-600 ml-auto">2-3 km/s</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer group pt-2 border-t border-gray-800">
+                        <input type="checkbox" id="show-rays" class="w-4 h-4 rounded bg-gray-800 border-gray-700 text-amber-500 focus:ring-amber-500">
+                        <span class="text-sm text-gray-400 group-hover:text-gray-300">Mostrar rayos sísmicos</span>
+                    </label>
+                </div>
+
+                <div class="mt-3 p-3 bg-gray-900 rounded-lg text-[10px] text-gray-500 leading-relaxed border border-gray-800">
+                    <strong class="wave-p">P:</strong> Compresión longitudinal. Atraviesan sólidos y líquidos.<br>
+                    <strong class="wave-s">S:</strong> Cizalla transversal. Solo sólidos (no núcleo ext.).<br>
+                    <strong class="wave-surface">Sup:</strong> Love y Rayleigh. Las más destructivas.
+                </div>
+            </div>
+
+            <!-- Simulation -->
+            <div class="mb-6">
+                <h3 class="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 flex items-center gap-2">
+                    <span class="w-1.5 h-1.5 rounded-full bg-purple-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800 mb-3">
+                    <div class="flex justify-between text-xs mb-2">
+                        <span class="text-gray-400">Velocidad</span>
+                        <span id="speed-value" class="text-purple-400 mono">1.0x</span>
+                    </div>
+                    <input type="range" id="speed" min="0.5" max="5" step="0.5" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition border border-gray-700">
+                        ⏸ Pausar
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2.5 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition border border-gray-700">
+                        ↺ Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Math Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-xs font-semibold text-amber-400 mb-3">Triangulación Sísmica</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-300">Δt</span>
+                        <span>= t<sub>S</sub> - t<sub>P</sub></span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-amber-300">D</span>
+                        <span>= Δt × (v<sub>P</sub>·v<sub>S</sub>)/(v<sub>P</sub>-v<sub>S</sub>)</span>
+                    </div>
+                    <div class="mt-3 pt-3 border-t border-amber-900/30 text-gray-500 text-[10px] leading-relaxed">
+                        Con 3+ estaciones se puede triangular el epicentro mediante la intersección de círculos de distancia.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Wave Velocities Table -->
+            <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <h3 class="text-xs font-semibold text-gray-400 mb-3">Velocidades por Capa (km/s)</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between items-center py-1">
+                        <span class="text-gray-500">Corteza</span>
+                        <div class="flex gap-4 mono">
+                            <span class="wave-p">P: 6.0</span>
+                            <span class="wave-s">S: 3.5</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-1 border-t border-gray-800">
+                        <span class="text-gray-500">Manto</span>
+                        <div class="flex gap-4 mono">
+                            <span class="wave-p">P: 8-13</span>
+                            <span class="wave-s">S: 4-7</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-1 border-t border-gray-800">
+                        <span class="text-gray-500">Núcleo Ext.</span>
+                        <div class="flex gap-4 mono">
+                            <span class="wave-p">P: 8-10</span>
+                            <span class="text-gray-600">S: 0 ❌</span>
+                        </div>
+                    </div>
+                    <div class="flex justify-between items-center py-1 border-t border-gray-800">
+                        <span class="text-gray-500">Núcleo Int.</span>
+                        <div class="flex gap-4 mono">
+                            <span class="wave-p">P: 11</span>
+                            <span class="wave-s">S: 3.6</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ===== CANVAS SETUP =====
+        const earthCanvas = document.getElementById('earth-canvas');
+        const earthCtx = earthCanvas.getContext('2d');
+        const seismoCanvas = document.getElementById('seismograph');
+        const seismoCtx = seismoCanvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        // ===== CONSTANTS =====
+        const EARTH_RADIUS = 6371;
+        const MAX_STATIONS = 5;
+        const LAYERS = [
+            { name: 'Inner Core', outer: 1220, color: '#fbbf24', colorDark: '#d97706', pSpeed: 11, sSpeed: 3.6 },
+            { name: 'Outer Core', outer: 3480, color: '#dc2626', colorDark: '#991b1b', pSpeed: 9, sSpeed: 0, liquid: true },
+            { name: 'Lower Mantle', outer: 5700, color: '#a85512', colorDark: '#7c2d12', pSpeed: 12, sSpeed: 6 },
+            { name: 'Upper Mantle', outer: 6270, color: '#92400e', colorDark: '#78350f', pSpeed: 8, sSpeed: 4.5 },
+            { name: 'Crust', outer: 6371, color: '#1e3a5f', colorDark: '#0f172a', pSpeed: 6, sSpeed: 3.5 }
+        ];
+
+        // Station colors
+        const STATION_COLORS = [
+            { main: '#d97706', light: '#f59e0b', glow: 'rgba(217, 119, 6, 0.5)' },
+            { main: '#0891b2', light: '#22d3ee', glow: 'rgba(8, 145, 178, 0.5)' },
+            { main: '#7c3aed', light: '#a78bfa', glow: 'rgba(124, 58, 237, 0.5)' },
+            { main: '#dc2626', light: '#f87171', glow: 'rgba(220, 38, 38, 0.5)' },
+            { main: '#16a34a', light: '#4ade80', glow: 'rgba(22, 163, 74, 0.5)' }
+        ];
+
+        // ===== STATE =====
+        const state = {
+            magnitude: 6.0,
+            depth: 30,
+            time: 0,
+            running: false,
+            paused: false,
+            speed: 1,
+            showP: true,
+            showS: true,
+            showSurface: true,
+            showRays: false,
+            selectedStation: 0,
+            draggingStation: null
+        };
+
+        // Stations array - each station has position, arrivals, and state
+        let stations = [];
+
+        // Waves storage
+        let waves = { p: [], s: [], surface: [] };
+
+        // Canvas geometry (calculated on resize)
+        let geometry = { cx: 0, cy: 0, scale: 0, surfaceR: 0 };
+
+        // ===== STATION MANAGEMENT =====
+        function createStation(angle) {
+            const id = stations.length;
+            const colors = STATION_COLORS[id % STATION_COLORS.length];
+            const distanceKm = angle * EARTH_RADIUS;
+
+            return {
+                id,
+                angle,
+                distanceKm,
+                colors,
+                name: `Estación ${id + 1}`,
+                pArrived: false,
+                sArrived: false,
+                surfaceArrived: false,
+                arrivals: { p: 0, s: 0, surface: 0 },
+                pTime: null,
+                sTime: null
+            };
+        }
+
+        function addStation(angle = null) {
+            if (stations.length >= MAX_STATIONS) return;
+
+            // Default angles for new stations
+            const defaultAngles = [
+                Math.PI * 0.25,
+                Math.PI * 0.5,
+                Math.PI * 0.75,
+                Math.PI * 0.35,
+                Math.PI * 0.65
+            ];
+
+            const newAngle = angle !== null ? angle : defaultAngles[stations.length] || Math.PI * 0.5;
+            const station = createStation(newAngle);
+            stations.push(station);
+
+            updateStationsList();
+            selectStation(station.id);
+        }
+
+        function removeStation(id) {
+            if (stations.length <= 1) return;
+
+            stations = stations.filter(s => s.id !== id);
+
+            // Reassign IDs
+            stations.forEach((s, i) => {
+                s.id = i;
+                s.name = `Estación ${i + 1}`;
+                s.colors = STATION_COLORS[i % STATION_COLORS.length];
+            });
+
+            if (state.selectedStation >= stations.length) {
+                state.selectedStation = stations.length - 1;
+            }
+
+            updateStationsList();
+        }
+
+        function selectStation(id) {
+            state.selectedStation = id;
+            updateStationsList();
+            updateSeismographLabel();
+        }
+
+        function updateStationsList() {
+            const container = document.getElementById('stations-list');
+            container.innerHTML = '';
+
+            stations.forEach(station => {
+                const isSelected = station.id === state.selectedStation;
+                const div = document.createElement('div');
+                div.className = `station-chip flex items-center gap-3 p-2.5 rounded-lg border cursor-pointer ${
+                    isSelected
+                        ? 'bg-gray-800/80 border-gray-600'
+                        : 'bg-gray-900/50 border-gray-800 hover:bg-gray-800/50'
+                }`;
+                div.style.setProperty('--station-color', station.colors.main);
+                div.style.setProperty('--station-glow', station.colors.glow);
+                if (isSelected) div.classList.add('selected');
+
+                // Convert visual seconds to real seconds for display
+                const pDisplay = station.pTime !== null ? (station.pTime * TIME_SCALE).toFixed(0) + 's' : '--';
+                const sDisplay = station.sTime !== null ? (station.sTime * TIME_SCALE).toFixed(0) + 's' : '--';
+
+                div.innerHTML = `
+                    <span class="w-3 h-3 rounded-full flex-shrink-0" style="background: ${station.colors.main}; box-shadow: 0 0 8px ${station.colors.glow}"></span>
+                    <div class="flex-1 min-w-0">
+                        <div class="text-xs font-medium text-gray-300">${station.name}</div>
+                        <div class="text-[10px] text-gray-500 mono">${Math.round(station.distanceKm).toLocaleString()} km</div>
+                    </div>
+                    <div class="text-right text-[10px] mono space-y-0.5">
+                        <div class="wave-p">${pDisplay}</div>
+                        <div class="wave-s">${sDisplay}</div>
+                    </div>
+                    ${stations.length > 1 ? `
+                        <button class="remove-station text-gray-600 hover:text-red-400 transition text-lg leading-none ml-1" data-id="${station.id}">×</button>
+                    ` : ''}
+                `;
+
+                div.addEventListener('click', (e) => {
+                    if (!e.target.classList.contains('remove-station')) {
+                        selectStation(station.id);
+                    }
+                });
+
+                const removeBtn = div.querySelector('.remove-station');
+                if (removeBtn) {
+                    removeBtn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        removeStation(station.id);
+                    });
+                }
+
+                container.appendChild(div);
+            });
+        }
+
+        function updateSeismographLabel() {
+            const station = stations[state.selectedStation];
+            if (station) {
+                document.getElementById('seismo-station-label').textContent = station.name;
+                document.getElementById('seismo-station-label').style.color = station.colors.main;
+            }
+        }
+
+        // ===== RESIZE =====
+        function resize() {
+            const earthRect = earthCanvas.parentElement.getBoundingClientRect();
+            earthCanvas.width = earthRect.width * dpr;
+            earthCanvas.height = earthRect.height * dpr;
+            earthCanvas.style.width = earthRect.width + 'px';
+            earthCanvas.style.height = earthRect.height + 'px';
+
+            const seismoRect = seismoCanvas.parentElement.getBoundingClientRect();
+            seismoCanvas.width = seismoRect.width * dpr;
+            seismoCanvas.height = 128 * dpr;
+
+            // Calculate geometry
+            const w = earthRect.width;
+            const h = earthRect.height;
+            const margin = 50;
+            const maxRadius = Math.min(w / 2 - margin, h - margin - 30);
+
+            geometry.scale = maxRadius / EARTH_RADIUS;
+            geometry.cx = w / 2;
+            geometry.cy = h - 20;
+            geometry.surfaceR = EARTH_RADIUS * geometry.scale;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ===== DRAG & DROP =====
+        let isDragging = false;
+        let dragStartAngle = 0;
+
+        function getAngleFromMouse(e) {
+            const rect = earthCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left - geometry.cx;
+            const y = e.clientY - rect.top - geometry.cy;
+
+            // Calculate angle from center, relative to top (-π/2)
+            let angle = Math.atan2(x, -y);
+
+            // Clamp to surface arc (0 to π)
+            angle = Math.max(0, Math.min(Math.PI, angle));
+
+            return angle;
+        }
+
+        function getStationAtPosition(e) {
+            const rect = earthCanvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+
+            for (const station of stations) {
+                const stationAngle = -Math.PI / 2 + station.angle;
+                const stationX = geometry.cx + Math.cos(stationAngle) * geometry.surfaceR;
+                const stationY = geometry.cy + Math.sin(stationAngle) * geometry.surfaceR;
+
+                const dx = mouseX - stationX;
+                const dy = mouseY - stationY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < 25) return station;
+            }
+            return null;
+        }
+
+        earthCanvas.addEventListener('mousedown', (e) => {
+            const station = getStationAtPosition(e);
+            if (station) {
+                state.draggingStation = station.id;
+                isDragging = true;
+                earthCanvas.style.cursor = 'grabbing';
+                selectStation(station.id);
+            }
+        });
+
+        earthCanvas.addEventListener('mousemove', (e) => {
+            if (isDragging && state.draggingStation !== null) {
+                const newAngle = getAngleFromMouse(e);
+                const station = stations[state.draggingStation];
+                if (station) {
+                    station.angle = newAngle;
+                    station.distanceKm = newAngle * EARTH_RADIUS;
+                    updateStationsList();
+                }
+            } else {
+                // Change cursor on hover
+                const station = getStationAtPosition(e);
+                earthCanvas.style.cursor = station ? 'grab' : 'default';
+            }
+        });
+
+        earthCanvas.addEventListener('mouseup', () => {
+            isDragging = false;
+            state.draggingStation = null;
+            earthCanvas.style.cursor = 'default';
+        });
+
+        earthCanvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            state.draggingStation = null;
+        });
+
+        // ===== CORE FUNCTIONS =====
+        // Time scale: 1 visual second = 100 real seconds (for readable simulation)
+        const TIME_SCALE = 100;
+
+        function triggerEarthquake() {
+            reset();
+            state.running = true;
+            state.time = 0;
+
+            // Calculate arrival times for each station
+            const avgPSpeed = 7; // km/s average
+            const avgSSpeed = 4; // km/s average
+            const surfaceSpeed = 3; // km/s
+
+            stations.forEach(station => {
+                station.pArrived = false;
+                station.sArrived = false;
+                station.surfaceArrived = false;
+                station.pTime = null;
+                station.sTime = null;
+
+                // Arrival times scaled for visualization (visual seconds)
+                station.arrivals.p = (station.distanceKm / avgPSpeed) / TIME_SCALE;
+                station.arrivals.s = (station.distanceKm / avgSSpeed) / TIME_SCALE;
+                station.arrivals.surface = (station.distanceKm / surfaceSpeed) / TIME_SCALE;
+            });
+
+            // Create wave fronts
+            const waveCount = 6;
+            for (let i = 0; i < waveCount; i++) {
+                waves.p.push({ progress: 0, delay: i * 0.08, opacity: 1 - i * 0.12, active: true });
+                waves.s.push({ progress: 0, delay: i * 0.12, opacity: 1 - i * 0.12, active: true });
+                waves.surface.push({ progress: 0, delay: i * 0.15, opacity: 1 - i * 0.12, active: true });
+            }
+
+            updateStatus('active', 'Sismo activo');
+            document.getElementById('phase-display').textContent = 'Propagación inicial';
+            updateStationsList();
+
+            // Shake effect
+            document.getElementById('earth-container').classList.add('shaking');
+            setTimeout(() => {
+                document.getElementById('earth-container').classList.remove('shaking');
+            }, 500);
+        }
+
+        function reset() {
+            state.running = false;
+            state.time = 0;
+            state.paused = false;
+            waves = { p: [], s: [], surface: [] };
+
+            stations.forEach(station => {
+                station.pArrived = false;
+                station.sArrived = false;
+                station.surfaceArrived = false;
+                station.pTime = null;
+                station.sTime = null;
+            });
+
+            document.getElementById('time-display').textContent = '0.0';
+            document.getElementById('phase-display').textContent = 'Esperando sismo';
+            document.getElementById('pause-btn').innerHTML = '⏸ Pausar';
+            updateStatus('ready', 'Listo');
+            updateStationsList();
+        }
+
+        function updateStatus(status, text) {
+            const indicator = document.getElementById('status-indicator');
+            const dot = indicator.querySelector('span:first-child');
+            const label = indicator.querySelector('span:last-child');
+
+            dot.className = 'w-2 h-2 rounded-full transition-all';
+            if (status === 'active') {
+                dot.classList.add('bg-amber-500', 'shadow-lg', 'shadow-amber-500/50');
+                dot.style.animation = 'pulse 1s ease-in-out infinite';
+            } else if (status === 'paused') {
+                dot.classList.add('bg-yellow-500');
+                dot.style.animation = 'none';
+            } else {
+                dot.classList.add('bg-gray-600');
+                dot.style.animation = 'none';
+            }
+            label.textContent = text;
+        }
+
+        // ===== DRAWING =====
+        function drawEarth() {
+            const w = earthCanvas.width / dpr;
+            const h = earthCanvas.height / dpr;
+
+            earthCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Background with subtle gradient
+            const bgGrad = earthCtx.createRadialGradient(w/2, h, 0, w/2, h, h);
+            bgGrad.addColorStop(0, '#0a0f1a');
+            bgGrad.addColorStop(1, '#030712');
+            earthCtx.fillStyle = bgGrad;
+            earthCtx.fillRect(0, 0, w, h);
+
+            const { cx, cy, scale, surfaceR } = geometry;
+
+            // Draw layers with gradients
+            [...LAYERS].reverse().forEach(layer => {
+                const r = layer.outer * scale;
+                const grad = earthCtx.createRadialGradient(cx, cy - r * 0.3, 0, cx, cy, r);
+                grad.addColorStop(0, layer.color);
+                grad.addColorStop(0.7, layer.color);
+                grad.addColorStop(1, layer.colorDark);
+
+                earthCtx.fillStyle = grad;
+                earthCtx.beginPath();
+                earthCtx.arc(cx, cy, r, Math.PI, 0);
+                earthCtx.fill();
+
+                // Subtle layer boundary glow
+                earthCtx.strokeStyle = 'rgba(255, 255, 255, 0.08)';
+                earthCtx.lineWidth = 1;
+                earthCtx.beginPath();
+                earthCtx.arc(cx, cy, r, Math.PI, 0);
+                earthCtx.stroke();
+            });
+
+            // Surface line with glow
+            earthCtx.strokeStyle = '#22c55e';
+            earthCtx.shadowColor = '#22c55e';
+            earthCtx.shadowBlur = 8;
+            earthCtx.lineWidth = 3;
+            earthCtx.beginPath();
+            earthCtx.moveTo(cx - surfaceR, cy);
+            earthCtx.lineTo(cx + surfaceR, cy);
+            earthCtx.stroke();
+            earthCtx.shadowBlur = 0;
+
+            // Epicenter and Hypocenter
+            const focusDepth = Math.min(state.depth, EARTH_RADIUS - 100);
+            const focusR = (EARTH_RADIUS - focusDepth) * scale;
+            const focusX = cx;
+            const focusY = cy - focusR;
+
+            // Line from hypocenter to epicenter
+            earthCtx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
+            earthCtx.setLineDash([4, 4]);
+            earthCtx.lineWidth = 1;
+            earthCtx.beginPath();
+            earthCtx.moveTo(focusX, focusY);
+            earthCtx.lineTo(focusX, cy - surfaceR);
+            earthCtx.stroke();
+            earthCtx.setLineDash([]);
+
+            // Hypocenter (focus) with glow
+            earthCtx.fillStyle = '#ef4444';
+            earthCtx.shadowColor = '#ef4444';
+            earthCtx.shadowBlur = 20;
+            earthCtx.beginPath();
+            earthCtx.arc(focusX, focusY, 10, 0, Math.PI * 2);
+            earthCtx.fill();
+            earthCtx.shadowBlur = 0;
+
+            // Epicenter marker
+            earthCtx.fillStyle = '#fbbf24';
+            earthCtx.shadowColor = '#fbbf24';
+            earthCtx.shadowBlur = 10;
+            earthCtx.beginPath();
+            earthCtx.arc(focusX, cy - surfaceR, 6, 0, Math.PI * 2);
+            earthCtx.fill();
+            earthCtx.shadowBlur = 0;
+
+            // Draw waves
+            if (state.running) {
+                drawWaves(earthCtx, cx, cy, scale, focusX, focusY, surfaceR);
+            }
+
+            // Draw all stations
+            stations.forEach((station, idx) => {
+                drawStation(earthCtx, station, cx, cy, surfaceR, idx === state.selectedStation);
+            });
+
+            // Labels
+            earthCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            earthCtx.font = '11px Inter';
+            earthCtx.textAlign = 'center';
+            earthCtx.fillText('Epicentro', focusX, cy - surfaceR - 15);
+            if (state.depth > 40) {
+                earthCtx.fillText('Hipocentro', focusX + 55, focusY + 4);
+            }
+        }
+
+        function drawStation(ctx, station, cx, cy, surfaceR, isSelected) {
+            const stationAngle = -Math.PI / 2 + station.angle;
+            const stationX = cx + Math.cos(stationAngle) * surfaceR;
+            const stationY = cy + Math.sin(stationAngle) * surfaceR;
+
+            const colors = station.colors;
+            const isReceiving = station.pArrived || station.sArrived || station.surfaceArrived;
+
+            // Station base
+            ctx.fillStyle = '#1f2937';
+            ctx.beginPath();
+            ctx.ellipse(stationX, stationY + 3, 12, 4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Selection ring
+            if (isSelected) {
+                ctx.strokeStyle = colors.main;
+                ctx.lineWidth = 2;
+                ctx.shadowColor = colors.glow;
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(stationX, stationY - 5, 20, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.shadowBlur = 0;
+            }
+
+            // Station triangle with glow when receiving
+            if (isReceiving) {
+                ctx.shadowColor = colors.main;
+                ctx.shadowBlur = 15;
+            }
+            ctx.fillStyle = isReceiving ? colors.light : colors.main;
+            ctx.beginPath();
+            ctx.moveTo(stationX, stationY - 18);
+            ctx.lineTo(stationX - 10, stationY + 2);
+            ctx.lineTo(stationX + 10, stationY + 2);
+            ctx.closePath();
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Antenna
+            ctx.strokeStyle = '#9ca3af';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(stationX, stationY - 18);
+            ctx.lineTo(stationX, stationY - 28);
+            ctx.stroke();
+
+            // Signal waves when active
+            if (isReceiving) {
+                for (let i = 1; i <= 3; i++) {
+                    ctx.strokeStyle = colors.glow.replace('0.5', `${0.6 - i * 0.15}`);
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.arc(stationX, stationY - 28, i * 6, -Math.PI * 0.8, -Math.PI * 0.2);
+                    ctx.stroke();
+                }
+            }
+
+            // Station label
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText(station.name, stationX, stationY + 18);
+        }
+
+        function drawWaves(ctx, cx, cy, scale, focusX, focusY, surfaceR) {
+            const time = state.time;
+
+            // Maximum wave travel time (already in visual seconds)
+            const maxTravelTime = Math.max(...stations.map(s => s.arrivals.surface)) * 1.3;
+
+            // P waves (fastest)
+            if (state.showP) {
+                waves.p.forEach(wave => {
+                    const elapsed = time - wave.delay;
+                    if (elapsed < 0) return;
+
+                    // Wave progress as fraction of max travel (time is already in visual seconds)
+                    const waveProgress = elapsed / (maxTravelTime || 1);
+
+                    if (waveProgress > 0 && waveProgress < 2) {
+                        const angle = waveProgress * Math.PI * 0.5;
+                        ctx.strokeStyle = `rgba(96, 165, 250, ${wave.opacity * (1 - waveProgress * 0.4)})`;
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = '#3b82f6';
+                        ctx.shadowBlur = 5;
+
+                        // Left arc
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR - 5, -Math.PI / 2, -Math.PI / 2 - angle, true);
+                        ctx.stroke();
+
+                        // Right arc
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR - 5, -Math.PI / 2, -Math.PI / 2 + angle);
+                        ctx.stroke();
+
+                        ctx.shadowBlur = 0;
+
+                        // Check station arrivals (compare elapsed time with station arrival time)
+                        stations.forEach(station => {
+                            if (elapsed >= station.arrivals.p && !station.pArrived) {
+                                station.pArrived = true;
+                                station.pTime = elapsed; // Store in visual seconds
+                                updateStationsList();
+                                if (station.id === state.selectedStation) {
+                                    document.getElementById('phase-display').textContent = 'Onda P detectada';
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            // S waves (slower)
+            if (state.showS) {
+                waves.s.forEach(wave => {
+                    const elapsed = time - wave.delay;
+                    if (elapsed < 0) return;
+
+                    // S waves are slower, so they cover less distance in the same time
+                    const sWaveProgress = elapsed / (maxTravelTime * 7/3 || 1); // Adjust for S wave speed
+
+                    if (sWaveProgress > 0 && sWaveProgress < 2) {
+                        const angle = sWaveProgress * Math.PI * 0.5;
+                        ctx.strokeStyle = `rgba(74, 222, 128, ${wave.opacity * (1 - sWaveProgress * 0.4)})`;
+                        ctx.lineWidth = 3;
+                        ctx.shadowColor = '#22c55e';
+                        ctx.shadowBlur = 5;
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR - 10, -Math.PI / 2, -Math.PI / 2 - angle, true);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR - 10, -Math.PI / 2, -Math.PI / 2 + angle);
+                        ctx.stroke();
+
+                        ctx.shadowBlur = 0;
+
+                        // Check station arrivals
+                        stations.forEach(station => {
+                            if (elapsed >= station.arrivals.s && !station.sArrived) {
+                                station.sArrived = true;
+                                station.sTime = elapsed; // Store in visual seconds
+                                updateStationsList();
+                                if (station.id === state.selectedStation) {
+                                    document.getElementById('phase-display').textContent = 'Onda S detectada';
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Surface waves (slowest)
+            if (state.showSurface) {
+                waves.surface.forEach(wave => {
+                    const elapsed = time - wave.delay;
+                    if (elapsed < 0) return;
+
+                    // Surface waves are slowest
+                    const surfWaveProgress = elapsed / (maxTravelTime * 7/3 * 4/3 || 1); // Adjust for surface wave speed
+
+                    if (surfWaveProgress > 0 && surfWaveProgress < 2) {
+                        const angle = surfWaveProgress * Math.PI * 0.5;
+                        ctx.strokeStyle = `rgba(248, 113, 113, ${wave.opacity * (1 - surfWaveProgress * 0.35)})`;
+                        ctx.lineWidth = 4;
+                        ctx.shadowColor = '#ef4444';
+                        ctx.shadowBlur = 8;
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR + 3, -Math.PI / 2, -Math.PI / 2 - angle, true);
+                        ctx.stroke();
+
+                        ctx.beginPath();
+                        ctx.arc(cx, cy, surfaceR + 3, -Math.PI / 2, -Math.PI / 2 + angle);
+                        ctx.stroke();
+
+                        ctx.shadowBlur = 0;
+
+                        // Check station arrivals
+                        stations.forEach(station => {
+                            if (elapsed >= station.arrivals.surface && !station.surfaceArrived) {
+                                station.surfaceArrived = true;
+                                updateStationsList();
+                                if (station.id === state.selectedStation) {
+                                    document.getElementById('phase-display').textContent = 'Ondas superficiales';
+                                }
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Draw seismic rays if enabled
+            if (state.showRays && time > 0.2) {
+                drawSeismicRays(ctx, cx, cy, scale, focusX, focusY, surfaceR, time);
+            }
+        }
+
+        function drawSeismicRays(ctx, cx, cy, scale, focusX, focusY, surfaceR, time) {
+            const rayCount = 12;
+            const rayProgress = Math.min(1, time * 2);
+
+            ctx.lineWidth = 1;
+
+            for (let i = 0; i < rayCount; i++) {
+                const baseAngle = (i / rayCount) * Math.PI - Math.PI / 2;
+
+                if (state.showP && rayProgress > 0) {
+                    ctx.strokeStyle = 'rgba(96, 165, 250, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(focusX, focusY);
+
+                    const targetX = cx + Math.cos(baseAngle) * surfaceR * rayProgress;
+                    const targetY = cy + Math.sin(baseAngle) * surfaceR * rayProgress;
+                    ctx.lineTo(targetX, targetY);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawSeismograph() {
+            const w = seismoCanvas.width / dpr;
+            const h = seismoCanvas.height / dpr;
+
+            seismoCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Background
+            const bgGrad = seismoCtx.createLinearGradient(0, 0, 0, h);
+            bgGrad.addColorStop(0, '#0a0f1a');
+            bgGrad.addColorStop(1, '#030712');
+            seismoCtx.fillStyle = bgGrad;
+            seismoCtx.fillRect(0, 0, w, h);
+
+            // Grid lines
+            seismoCtx.strokeStyle = 'rgba(255, 255, 255, 0.03)';
+            seismoCtx.lineWidth = 1;
+            for (let i = 1; i < 4; i++) {
+                const y = h * i / 4;
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(0, y);
+                seismoCtx.lineTo(w, y);
+                seismoCtx.stroke();
+            }
+            for (let i = 1; i < 10; i++) {
+                const x = w * i / 10;
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(x, 0);
+                seismoCtx.lineTo(x, h);
+                seismoCtx.stroke();
+            }
+
+            // Center line
+            seismoCtx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            seismoCtx.beginPath();
+            seismoCtx.moveTo(0, h / 2);
+            seismoCtx.lineTo(w, h / 2);
+            seismoCtx.stroke();
+
+            const station = stations[state.selectedStation];
+            if (!station || !state.running) {
+                // Flat line when idle
+                seismoCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                seismoCtx.lineWidth = 1;
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(0, h / 2);
+                seismoCtx.lineTo(w, h / 2);
+                seismoCtx.stroke();
+                return;
+            }
+
+            const amplitude = state.magnitude * 8;
+            // Duration in visual seconds (arrivals are already scaled)
+            const maxArrival = Math.max(station.arrivals.p, station.arrivals.s, station.arrivals.surface);
+            const totalDuration = maxArrival * 1.5;
+            const pixelsPerSecond = w / totalDuration;
+            const currentTime = state.time; // Already in visual seconds
+
+            // Draw arrival markers
+            if (station.pArrived && station.pTime !== null) {
+                const pX = station.pTime * pixelsPerSecond;
+                seismoCtx.strokeStyle = 'rgba(96, 165, 250, 0.5)';
+                seismoCtx.setLineDash([3, 3]);
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(pX, 0);
+                seismoCtx.lineTo(pX, h);
+                seismoCtx.stroke();
+                seismoCtx.setLineDash([]);
+
+                seismoCtx.fillStyle = '#60a5fa';
+                seismoCtx.font = '10px JetBrains Mono';
+                seismoCtx.fillText('P', pX + 4, 12);
+            }
+
+            if (station.sArrived && station.sTime !== null) {
+                const sX = station.sTime * pixelsPerSecond;
+                seismoCtx.strokeStyle = 'rgba(74, 222, 128, 0.5)';
+                seismoCtx.setLineDash([3, 3]);
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(sX, 0);
+                seismoCtx.lineTo(sX, h);
+                seismoCtx.stroke();
+                seismoCtx.setLineDash([]);
+
+                seismoCtx.fillStyle = '#4ade80';
+                seismoCtx.fillText('S', sX + 4, 12);
+            }
+
+            if (station.surfaceArrived) {
+                const surfX = station.arrivals.surface * pixelsPerSecond;
+                seismoCtx.strokeStyle = 'rgba(248, 113, 113, 0.5)';
+                seismoCtx.setLineDash([3, 3]);
+                seismoCtx.beginPath();
+                seismoCtx.moveTo(surfX, 0);
+                seismoCtx.lineTo(surfX, h);
+                seismoCtx.stroke();
+                seismoCtx.setLineDash([]);
+
+                seismoCtx.fillStyle = '#f87171';
+                seismoCtx.fillText('L/R', surfX + 4, 12);
+            }
+
+            // Current time marker
+            const timeX = Math.min(currentTime * pixelsPerSecond, w - 5);
+            seismoCtx.strokeStyle = station.colors.glow.replace('0.5', '0.6');
+            seismoCtx.setLineDash([2, 2]);
+            seismoCtx.beginPath();
+            seismoCtx.moveTo(timeX, 0);
+            seismoCtx.lineTo(timeX, h);
+            seismoCtx.stroke();
+            seismoCtx.setLineDash([]);
+
+            // Draw trace
+            seismoCtx.beginPath();
+            seismoCtx.strokeStyle = '#e2e8f0';
+            seismoCtx.lineWidth = 1.2;
+
+            const pArrivalTime = station.pTime || station.arrivals.p;
+            const sArrivalTime = station.sTime || station.arrivals.s;
+            const surfArrivalTime = station.arrivals.surface;
+
+            for (let x = 0; x < Math.min(timeX, w); x++) {
+                const t = x / pixelsPerSecond;
+                let y = h / 2;
+
+                // P wave contribution (high frequency, quick decay)
+                if (station.pArrived && t >= pArrivalTime) {
+                    const dt = t - pArrivalTime;
+                    const decay = Math.exp(-dt * 0.4);
+                    const pWave = Math.sin(dt * 25) * amplitude * 0.5 * decay;
+                    y += pWave;
+                }
+
+                // S wave contribution (medium frequency, slower decay)
+                if (station.sArrived && t >= sArrivalTime) {
+                    const dt = t - sArrivalTime;
+                    const decay = Math.exp(-dt * 0.25);
+                    const sWave = Math.sin(dt * 15) * amplitude * 0.8 * decay;
+                    y += sWave;
+                }
+
+                // Surface wave contribution (low frequency, long duration - most destructive)
+                if (station.surfaceArrived && t >= surfArrivalTime) {
+                    const dt = t - surfArrivalTime;
+                    const decay = Math.exp(-dt * 0.1);
+                    const surfWave = Math.sin(dt * 6) * amplitude * 1.5 * decay;
+                    y += surfWave;
+                }
+
+                // Add some noise
+                y += (Math.random() - 0.5) * 2;
+
+                // Clamp to canvas
+                y = Math.max(5, Math.min(h - 5, y));
+
+                if (x === 0) seismoCtx.moveTo(x, y);
+                else seismoCtx.lineTo(x, y);
+            }
+            seismoCtx.stroke();
+
+            // Time labels (show in real seconds)
+            seismoCtx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            seismoCtx.font = '9px JetBrains Mono';
+            const labelInterval = totalDuration / 5;
+            for (let t = 0; t <= totalDuration; t += labelInterval) {
+                const x = t * pixelsPerSecond;
+                if (x > 20 && x < w - 20) {
+                    seismoCtx.fillText((t * TIME_SCALE).toFixed(0) + 's', x, h - 3);
+                }
+            }
+        }
+
+        function updateSimulation(dt) {
+            if (!state.running || state.paused) return;
+
+            state.time += dt * state.speed;
+            // Display time in real seconds (visual time * TIME_SCALE)
+            document.getElementById('time-display').textContent = (state.time * TIME_SCALE).toFixed(0);
+
+            // Check if all waves have passed all stations
+            const allComplete = stations.every(s => s.surfaceArrived);
+            const maxTime = Math.max(...stations.map(s => s.arrivals.surface)) * 1.5;
+
+            if (state.time > maxTime && allComplete) {
+                state.running = false;
+                updateStatus('ready', 'Completado');
+                document.getElementById('phase-display').textContent = 'Simulación completa';
+            }
+        }
+
+        // ===== ANIMATION LOOP =====
+        let lastTime = 0;
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+
+            updateSimulation(dt);
+            drawEarth();
+            drawSeismograph();
+
+            requestAnimationFrame(animate);
+        }
+
+        // ===== EVENT LISTENERS =====
+        document.getElementById('magnitude').addEventListener('input', (e) => {
+            state.magnitude = parseFloat(e.target.value);
+            document.getElementById('mag-value').textContent = state.magnitude.toFixed(1);
+            document.getElementById('mag-display').textContent = state.magnitude.toFixed(1);
+        });
+
+        document.getElementById('depth').addEventListener('input', (e) => {
+            state.depth = parseFloat(e.target.value);
+            document.getElementById('depth-value').textContent = state.depth;
+            document.getElementById('depth-display').textContent = state.depth;
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            state.speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = state.speed.toFixed(1) + 'x';
+        });
+
+        document.getElementById('show-p').addEventListener('change', (e) => state.showP = e.target.checked);
+        document.getElementById('show-s').addEventListener('change', (e) => state.showS = e.target.checked);
+        document.getElementById('show-surface').addEventListener('change', (e) => state.showSurface = e.target.checked);
+        document.getElementById('show-rays').addEventListener('change', (e) => state.showRays = e.target.checked);
+
+        document.getElementById('trigger-btn').addEventListener('click', triggerEarthquake);
+        document.getElementById('reset-btn').addEventListener('click', reset);
+        document.getElementById('add-station-btn').addEventListener('click', () => addStation());
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            state.paused = !state.paused;
+            document.getElementById('pause-btn').innerHTML = state.paused ? '▶ Reanudar' : '⏸ Pausar';
+            updateStatus(state.paused ? 'paused' : 'active', state.paused ? 'Pausado' : 'Sismo activo');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (state.running) {
+                    state.paused = !state.paused;
+                    document.getElementById('pause-btn').innerHTML = state.paused ? '▶ Reanudar' : '⏸ Pausar';
+                    updateStatus(state.paused ? 'paused' : 'active', state.paused ? 'Pausado' : 'Sismo activo');
+                }
+            } else if (e.code === 'KeyR') {
+                reset();
+            } else if (e.code === 'KeyS' && !e.ctrlKey && !e.metaKey) {
+                triggerEarthquake();
+            } else if (e.code === 'KeyN') {
+                addStation();
+            } else if (e.code === 'Digit1') {
+                const cb = document.getElementById('show-p');
+                cb.checked = !cb.checked;
+                state.showP = cb.checked;
+            } else if (e.code === 'Digit2') {
+                const cb = document.getElementById('show-s');
+                cb.checked = !cb.checked;
+                state.showS = cb.checked;
+            } else if (e.code === 'Digit3') {
+                const cb = document.getElementById('show-surface');
+                cb.checked = !cb.checked;
+                state.showSurface = cb.checked;
+            } else if (e.code === 'Tab') {
+                e.preventDefault();
+                const nextStation = (state.selectedStation + 1) % stations.length;
+                selectStation(nextStation);
+            }
+        });
+
+        // Initialize with one station
+        addStation(Math.PI * 0.35);
+
+        // Hide drag hint after a few seconds
+        setTimeout(() => {
+            document.getElementById('drag-hint').style.opacity = '0';
+            setTimeout(() => {
+                document.getElementById('drag-hint').style.display = 'none';
+            }, 500);
+        }, 5000);
+
+        // Start animation
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

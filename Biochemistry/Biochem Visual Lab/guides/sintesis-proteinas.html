@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sintesis de Proteinas — Guia · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(236, 72, 153, 0.1); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; } .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { background: var(--accent); color: white; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        .experiment-title { font-weight: 600; font-size: 0.95rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .connection { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); text-decoration: none; transition: all 0.2s; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .connection-icon { width: 2rem; height: 2rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; flex-shrink: 0; }
+        .connection-icon.icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .connection-icon.icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .connection-icon.icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .connection-icon.icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .connection-text { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); }
+        .connection-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Limitations */
+        .limitations { background: var(--bg-panel); border: 1px dashed var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { margin-top: 0; font-size: 0.85rem; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1)); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { margin-top: 0; }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+        .guide-nav a:hover { color: var(--accent); background: var(--accent-dim); }
+        .guide-nav .next { margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Sintesis Proteinas</nav>
+                <h1>Sintesis de Proteinas — Guia</h1>
+                <div class="subtitle">Del gen a la proteina funcional</div>
+            </div>
+            <a href="../sintesis-proteinas.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Vista integrada</div>
+                <p class="lead">La <span class="em">sintesis de proteinas</span> integra todo el dogma central: transcripcion (DNA→RNA), procesamiento del mRNA en eucariotas, exportacion nuclear, y traduccion (RNA→proteina). Es el proceso mas costoso energeticamente en la celula.</p>
+                <div class="chips"><span class="chip">Transcripcion</span><span class="chip">Procesamiento</span><span class="chip">Exportacion</span><span class="chip">Traduccion</span><span class="chip">Plegamiento</span></div>
+                <div class="callout"><p><strong>Dogma central (Crick, 1958):</strong> DNA → RNA → Proteina. Con excepciones notables: retrovirus (RNA→DNA via transcriptasa reversa) y priones (proteina→proteina).</p></div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Diferencias Pro/Eucariota</div>
+                <ul>
+                    <li><strong>Procariotas:</strong> Transcripcion y traduccion acopladas</li>
+                    <li><strong>Eucariotas:</strong> Separadas por membrana nuclear</li>
+                    <li><strong>mRNA procariota:</strong> Policistronico, sin cap ni poly-A</li>
+                    <li><strong>mRNA eucariota:</strong> Monocistronico, procesado extensamente</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Procesamiento del mRNA (eucariotas)</h2>
+                <ul>
+                    <li><strong>5' cap:</strong> 7-metilguanosina protege y facilita exportacion</li>
+                    <li><strong>Splicing:</strong> Espliceosoma remueve intrones, une exones</li>
+                    <li><strong>Poly-A:</strong> Cola de ~200 adeninas estabiliza mRNA</li>
+                    <li><strong>Splicing alternativo:</strong> Un gen → multiples proteinas</li>
+                </ul>
+                <p style="margin-top: 0.75rem; font-size: 0.8rem;"><strong>Dato:</strong> ~95% del transcrito primario humano se descarta como intrones.</p>
+            </div>
+            <div class="card">
+                <h2>Destino de proteinas</h2>
+                <ul>
+                    <li><strong>Citoplasma:</strong> Ribosomas libres (enzimas solubles)</li>
+                    <li><strong>Secrecion/membrana:</strong> RER + Golgi (senal peptido)</li>
+                    <li><strong>Mitocondria:</strong> Senal de importacion N-terminal</li>
+                    <li><strong>Nucleo:</strong> NLS (senal de localizacion nuclear)</li>
+                    <li><strong>Peroxisoma:</strong> SKL C-terminal</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="experiments">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">1</span>
+                    <span class="experiment-title">Costo energetico total</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>El costo energetico de sintetizar una proteina de N aminoacidos es aproximadamente 4N ATP (2 para aminoacil-tRNA + 2 para elongacion), mas el costo de transcripcion (~2 ATP por nucleotido).</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Selecciona un gen de 300 codones (900 nt de CDS)</li>
+                    <li>Calcula ATP para transcripcion: ~2 ATP x 900 nt = 1800 ATP</li>
+                    <li>Calcula ATP para traduccion: ~4 ATP x 300 aa = 1200 ATP</li>
+                    <li>Anade costos de plegamiento (chaperonas usan ATP) — estima ~200 ATP adicionales</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Una proteina de 300 aa cuesta ~3200 ATP. Compara con la sintesis de ~1000 ATP por molecula de glucosa oxidada. Reflexiona por que las celulas reciclan proteinas en lugar de degradarlas todas.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">2</span>
+                    <span class="experiment-title">Cuello de botella del proceso</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>El paso limitante en la sintesis de proteinas es la traduccion (no la transcripcion), porque multiples ribosomas pueden traducir simultaneamente un mismo mRNA (polisomas).</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Mide la tasa de transcripcion: ~20-50 nt/segundo en eucariotas</li>
+                    <li>Mide la tasa de traduccion: ~5-20 aa/segundo por ribosoma</li>
+                    <li>Calcula cuantos ribosomas caben en un mRNA (1 cada ~30-40 nt)</li>
+                    <li>Calcula produccion total de proteina por mRNA por minuto</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Aunque traduccion es "lenta", los polisomas amplifican la produccion. Calcula que un mRNA puede producir ~40-50 copias de proteina antes de degradarse. Esto explica por que bloquear traduccion (antibioticos) es tan efectivo.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">3</span>
+                    <span class="experiment-title">Efecto del uso de codones</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>Los genes altamente expresados usan preferentemente codones "optimos" que corresponden a tRNAs abundantes, lo que acelera la traduccion y reduce errores.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Compara la secuencia de un gen altamente expresado (ej: histonas, actina)</li>
+                    <li>Analiza el uso de codones vs. un gen poco expresado</li>
+                    <li>Simula traduccion con codones optimos vs. codones raros</li>
+                    <li>Mide la tasa de produccion y la frecuencia de errores (stalling)</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Codones raros causan pausas ribosomales que pueden ser regulatorias (plegamiento co-traduccional) o problematicas. La optimizacion de codones es crucial en biotecnologia para expresion heterologa.</p>
+            </div>
+        </section>
+
+        <section class="card section">
+            <div class="kicker">Conexiones interdisciplinarias</div>
+            <h2 style="margin-top: 0.5rem;">Este concepto integra multiples simulaciones</h2>
+            <div class="connections">
+                <a href="transcripcion.html" class="connection">
+                    <span class="connection-icon icon-biochem">📝</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Transcripcion</div>
+                        <div class="connection-desc">Primer paso: RNA polimerasa lee DNA y produce mRNA</div>
+                    </div>
+                </a>
+                <a href="traduccion.html" class="connection">
+                    <span class="connection-icon icon-biochem">🔄</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Traduccion</div>
+                        <div class="connection-desc">Ribosoma decodifica mRNA en cadena polipeptidica</div>
+                    </div>
+                </a>
+                <a href="plegamiento.html" class="connection">
+                    <span class="connection-icon icon-biochem">🎯</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Plegamiento</div>
+                        <div class="connection-desc">Cadena lineal → estructura 3D funcional</div>
+                    </div>
+                </a>
+                <a href="../../../Physics/Physics Visual Lab/termodinamica.html" class="connection">
+                    <span class="connection-icon icon-physics">🔥</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Termodinamica</div>
+                        <div class="connection-desc">Costo energetico y eficiencia del proceso</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="limitations">
+            <h3>Limitaciones del modelo</h3>
+            <ul>
+                <li><strong>Simplificacion espacial:</strong> No modela el transporte fisico entre compartimentos (nucleo→citoplasma→ER)</li>
+                <li><strong>Tiempo real:</strong> En la realidad, transcripcion toma minutos, traduccion segundos-minutos, plegamiento milisegundos-minutos</li>
+                <li><strong>Regulacion omitida:</strong> miRNAs, RNA-binding proteins, y degradacion de mRNA no se muestran</li>
+                <li><strong>Modificaciones:</strong> No incluye modificaciones post-traduccionales (fosforilacion, glicosilacion, etc.)</li>
+            </ul>
+        </div>
+
+        <div class="reflection">
+            <h3>Preguntas de reflexion</h3>
+            <ul>
+                <li>Por que crees que las celulas evolucionaron para separar transcripcion y traduccion en eucariotas, cuando en procariotas estan acopladas?</li>
+                <li>Si el splicing alternativo permite que un gen produzca multiples proteinas, como afecta esto nuestra estimacion del numero de "genes" necesarios para un organismo complejo?</li>
+                <li>Muchos antibioticos funcionan bloqueando la traduccion bacteriana. Por que no afectan a las celulas humanas, si el proceso es fundamentalmente similar?</li>
+                <li>Como podria una mutacion en la senal de localizacion (NLS, senal ER) afectar la funcion de una proteina aunque su secuencia catalitica este intacta?</li>
+            </ul>
+        </div>
+
+        <nav class="guide-nav">
+            <a href="regulacion-genica.html" class="prev">← Regulacion Genica</a>
+            <a href="glucolisis.html" class="next">Glucolisis →</a>
+        </nav>
+    </main>
+    <footer><a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Sintesis Proteinas</footer>
+</body>
+</html>

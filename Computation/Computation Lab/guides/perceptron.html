@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perceptron — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+            --color-violet: #a855f7;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .pill-muted:hover { border-color: var(--border); background: var(--bg-panel); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-violet); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--color-violet); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--color-violet); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); font-size: 0.8rem; }
+        .eq span:first-child { color: var(--text-secondary); }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: var(--color-violet);
+            color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(168, 85, 247, 0.1);
+            border-left: 3px solid var(--color-violet);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-violet);
+        }
+
+        .reflection ol { margin: 0; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Perceptron</span>
+                </nav>
+                <h1>Perceptron — Guia</h1>
+                <div class="subtitle">La neurona artificial: donde el aprendizaje encuentra la geometria</div>
+            </div>
+            <div class="header-actions">
+                <a href="../perceptron-playground.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Una neurona = un clasificador lineal</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es un Perceptron?</div>
+                <p class="lead">
+                    El <span class="em">Perceptron</span> es el modelo mas simple de neurona artificial:
+                    una funcion que traza una linea (o hiperplano) para dividir el espacio en dos regiones.
+                    Es un clasificador binario que <strong>aprende</strong> de ejemplos.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Clasificador binario</span>
+                    <span class="chip">Frontera lineal</span>
+                    <span class="chip">Aprendizaje supervisado</span>
+                    <span class="chip">Rosenblatt 1957</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <h2>La intuicion geometrica</h2>
+                        <p class="mini">
+                            El perceptron encuentra una linea que separa puntos rojos de azules.
+                            Los <strong>pesos</strong> determinan la orientacion de la linea.
+                            El <strong>bias</strong> la desplaza. La "receta" de la linea se
+                            ajusta con cada error hasta que clasifica correctamente.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Que observar</h2>
+                        <ul class="mini">
+                            <li>La <strong>linea de decision</strong> rota y se desplaza.</li>
+                            <li>Cada error causa un ajuste visible.</li>
+                            <li>La convergencia depende de la <em>separabilidad</em>.</li>
+                            <li>XOR es el enemigo clasico del perceptron.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">La ecuacion fundamental</div>
+                <pre>y = sign(w · x + b)
+
+donde:
+  x = vector de entrada (x1, x2)
+  w = vector de pesos (w1, w2)
+  b = bias (desplazamiento)
+  w·x = w1*x1 + w2*x2
+  sign(z) = +1 si z≥0, -1 si z<0</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Visualizacion</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #3b82f6"></span>Clase -1 (azul)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #ef4444"></span>Clase +1 (rojo)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #a855f7"></span>Frontera de decision</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Regla de aprendizaje del Perceptron</h2>
+                <p>
+                    El perceptron ajusta sus pesos <strong>solo cuando se equivoca</strong>:
+                </p>
+                <div class="callout callout-accent">
+                    <p>
+                        <code>Si y_pred != y_real:</code><br>
+                        <code>&nbsp;&nbsp;w = w + α * y_real * x</code><br>
+                        <code>&nbsp;&nbsp;b = b + α * y_real</code><br><br>
+                        donde α = learning rate (tasa de aprendizaje)
+                    </p>
+                </div>
+                <p class="mini">
+                    <strong>Intuicion:</strong> Si clasificamos un punto rojo como azul,
+                    "empujamos" la linea hacia el lado rojo. El learning rate controla
+                    la magnitud del empujon.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Teorema de convergencia</h2>
+                <div class="equations">
+                    <div class="eq"><span>Datos linealmente separables</span><code>Converge siempre</code></div>
+                    <div class="eq"><span>Datos NO separables</span><code>Oscila infinitamente</code></div>
+                </div>
+                <div class="callout">
+                    <p>
+                        <strong>Novikov 1962:</strong> Si existe un hiperplano que separa las clases,
+                        el perceptron lo encontrara en un numero finito de pasos. El numero de
+                        errores esta acotado por <code>(R/γ)²</code> donde R = radio de los datos,
+                        γ = margen de separacion.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Geometria de la frontera</h2>
+                <p>
+                    La ecuacion <code>w·x + b = 0</code> define la frontera de decision:
+                </p>
+                <ul>
+                    <li><strong>w</strong> es el vector <em>normal</em> a la frontera (perpendicular)</li>
+                    <li><strong>b</strong> controla la distancia al origen</li>
+                    <li>Cambiar w rota la linea</li>
+                    <li>Cambiar b la desplaza paralelamente</li>
+                </ul>
+                <div class="callout">
+                    <p class="mini">
+                        En 2D la frontera es una linea. En 3D, un plano.
+                        En n dimensiones, un hiperplano de n-1 dimensiones.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>El problema XOR: limites fundamentales</h2>
+                <p>
+                    El XOR no es linealmente separable:
+                </p>
+                <ul>
+                    <li>(0,0) → 0 &nbsp;y&nbsp; (1,1) → 0 &nbsp; (clase 0)</li>
+                    <li>(0,1) → 1 &nbsp;y&nbsp; (1,0) → 1 &nbsp; (clase 1)</li>
+                </ul>
+                <p class="mini">
+                    No existe ninguna linea recta que separe las clases 0 y 1.
+                    Esta limitacion, demostrada por Minsky y Papert (1969),
+                    casi mato el campo de redes neuronales por decadas.
+                </p>
+                <div class="badge b-bad" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-bad)"></span>
+                    XOR requiere no-linealidad
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto del aprendizaje del perceptron.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">Aprendiendo AND y OR</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> El perceptron puede aprender las funciones
+                logicas AND y OR porque son linealmente separables.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Coloca puntos para la funcion AND: (0,0)→azul, (0,1)→azul, (1,0)→azul, (1,1)→rojo</li>
+                        <li>Entrena el perceptron — observa cuantas epocas toma</li>
+                        <li>Verifica que la linea separa correctamente</li>
+                        <li>Ahora reconfigura para OR: solo (0,0)→azul, resto→rojo</li>
+                        <li>Compara: cual es mas facil de separar?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        AND requiere que la linea este cerca de la esquina (1,1).
+                        OR requiere que este cerca de (0,0). Ambas son separables,
+                        pero las lineas optimas son muy diferentes.
+                    </p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        AND y OR convergen siempre
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">El fracaso con XOR</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> El perceptron nunca convergera para XOR
+                porque ninguna linea puede separar las clases.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Coloca los 4 puntos XOR: (0,0)→azul, (1,1)→azul, (0,1)→rojo, (1,0)→rojo</li>
+                        <li>Entrena el perceptron durante 100+ epocas</li>
+                        <li>Observa como la linea oscila sin converger</li>
+                        <li>Detente y analiza: que puntos estan siempre mal clasificados?</li>
+                        <li>Dibuja mentalmente: existe alguna linea que funcione?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El perceptron entra en un ciclo: corrige un error, causa otro.
+                        Los puntos diagonalmente opuestos estan en la misma clase,
+                        pero no son "vecinos" — imposible de separar linealmente.
+                    </p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        XOR oscila indefinidamente
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">El efecto del learning rate</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Un learning rate muy alto causa oscilaciones,
+                uno muy bajo hace la convergencia lenta, pero ambos eventualmente convergen
+                si los datos son separables.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Crea un dataset linealmente separable (ej: dos clusters alejados)</li>
+                        <li>Entrena con learning rate = 0.01 — cuenta epocas</li>
+                        <li>Reinicia y entrena con learning rate = 1.0</li>
+                        <li>Observa: cual converge mas rapido? cual oscila mas?</li>
+                        <li>Prueba learning rate = 0.001 — que pasa?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El learning rate es un <strong>hiperparametro</strong>.
+                        No se aprende de los datos — tu lo eliges. Este balance
+                        entre velocidad y estabilidad aparece en todo machine learning.
+                    </p>
+                    <div class="callout">
+                        <p class="mini">
+                            <strong>Regla practica:</strong> Empieza con α=0.1.
+                            Si oscila, reduce. Si es muy lento, aumenta.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../perceptron-playground.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">El perceptron en contexto</h2>
+            <p>La neurona artificial conecta con modelos de toda la ciencia.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">La neurona biologica: el modelo original</span>
+            </div>
+            <p>
+                El perceptron es una simplificacion extrema de la neurona real.
+                Las dendritas reciben senales (entradas), el soma las integra (suma ponderada),
+                y el axon dispara si supera el umbral (funcion signo). El modelo de
+                Hodgkin-Huxley captura la dinamica real; el perceptron captura la esencia.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/neurona.html">Neurona</a> —
+                potencial de accion con ecuaciones diferenciales.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #fbbf24"></span>
+                <span class="connection-title">Compuertas logicas: el perceptron como hardware</span>
+            </div>
+            <p>
+                Un perceptron puede implementar AND, OR y NOT pero no XOR.
+                Las compuertas logicas son "perceptrones fijos" — no aprenden,
+                estan pre-programados. La equivalencia revela que el perceptron
+                tiene el mismo poder expresivo que los circuitos sin memoria.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../logic-gates-sandbox.html">Logic Gates</a> —
+                construye AND y OR con compuertas, luego comparalos con el perceptron.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">Seleccion natural: aprendizaje por retroalimentacion</span>
+            </div>
+            <p>
+                El perceptron ajusta pesos basandose en errores — retroalimentacion negativa.
+                La seleccion natural "ajusta" genotipos basandose en fitness.
+                Ambos son algoritmos de optimizacion iterativa: probar, evaluar, corregir.
+                El algoritmo genetico es la version estocastica y paralela del perceptron.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/evolucion.html">Algoritmo Genetico</a> —
+                optimizacion por seleccion.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #06b6d4"></span>
+                <span class="connection-title">Equilibrio de Le Chatelier: sistemas que se corrigen</span>
+            </div>
+            <p>
+                Cuando un sistema quimico en equilibrio es perturbado, se ajusta para
+                contrarrestar la perturbacion. El perceptron hace lo mismo: un error
+                causa un ajuste que reduce el error. Ambos son sistemas con realimentacion
+                negativa que buscan un punto estable.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Chemistry/Chemistry Visual Lab/le-chatelier.html">Le Chatelier</a> —
+                equilibrio quimico como optimizacion.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Donde falla el perceptron</h2>
+            <ul>
+                <li>
+                    <strong>Solo clasificacion binaria:</strong> Para multiples clases,
+                    necesitas varios perceptrones (one-vs-all) o softmax.
+                </li>
+                <li>
+                    <strong>Solo fronteras lineales:</strong> No puede aprender curvas,
+                    circulos o regiones desconectadas. XOR es el caso canonico.
+                </li>
+                <li>
+                    <strong>Sin margen:</strong> Encuentra <em>alguna</em> linea separadora,
+                    no la mejor. SVM optimiza el margen.
+                </li>
+                <li>
+                    <strong>Sensible a outliers:</strong> Un punto mal etiquetado puede
+                    distorsionar toda la frontera.
+                </li>
+            </ul>
+            <div class="callout callout-accent">
+                <p>
+                    <strong>La solucion historica:</strong> Redes multicapa (MLP) con
+                    backpropagation (1986) resolvieron XOR y mucho mas. Cada capa agrega
+                    no-linealidad, permitiendo fronteras arbitrariamente complejas.
+                </p>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Historia</div>
+            <h2 style="margin-top:0.5rem">Del hype al invierno y de vuelta</h2>
+            <ul>
+                <li><strong>1943:</strong> McCulloch-Pitts proponen el modelo de neurona formal</li>
+                <li><strong>1957:</strong> Rosenblatt inventa el perceptron. Gran entusiasmo.</li>
+                <li><strong>1969:</strong> Minsky y Papert publican "Perceptrons". Muestran XOR.</li>
+                <li><strong>1970s-80s:</strong> "Invierno de la IA". Poco financiamiento.</li>
+                <li><strong>1986:</strong> Rumelhart et al. popularizan backpropagation.</li>
+                <li><strong>2012:</strong> AlexNet. Deep learning explota. Segundo verano.</li>
+            </ul>
+            <p class="mini">
+                El perceptron es ahora el "Hello World" del machine learning:
+                simple, instructivo, y punto de partida para todo lo demas.
+            </p>
+        </section>
+
+        <!-- PREGUNTAS DE REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ol>
+                <li>
+                    El perceptron ajusta pesos cuando se equivoca. Que pasaria si
+                    tambien ajustara cuando acierta (refuerzo positivo)?
+                </li>
+                <li>
+                    XOR requiere al menos 2 perceptrones en una capa oculta.
+                    Como se conectarian para resolver el problema?
+                </li>
+                <li>
+                    El teorema de convergencia garantiza que el perceptron encuentra
+                    una solucion, pero no la "mejor". Como definirias "mejor"?
+                </li>
+                <li>
+                    Las neuronas biologicas tienen miles de sinapsis y dinamicas temporales.
+                    Que simplificaciones hace el perceptron y que se pierde?
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Perceptron Guide
+    </footer>
+</body>
+</html>

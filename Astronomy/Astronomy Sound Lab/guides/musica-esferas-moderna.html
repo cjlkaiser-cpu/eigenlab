@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Musica de las Esferas — Guia · Astronomy Sound Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #030712; --bg-secondary: #0f172a; --bg-panel: #1e293b; --text-primary: #f8fafc; --text-secondary: #94a3b8; --border: #334155; --accent: #6366f1; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; } .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1rem; }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Astronomy Sound Lab</a> / Musica Esferas</nav>
+                <h1>Musica de las Esferas — Guia</h1>
+                <div class="subtitle">Sonificacion de orbitas planetarias</div>
+            </div>
+            <a href="../musica-esferas-moderna.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es la musica de las esferas?</div>
+                <p class="lead">La <span class="em">musica de las esferas</span> es una antigua idea filosofica que asocia las orbitas planetarias con armonia musical. Pitagoras creyo que el cosmos producia musica inaudible para humanos.</p>
+                <div class="chips"><span class="chip">Pitagoras</span><span class="chip">Kepler</span><span class="chip">Armonicos</span><span class="chip">Sonificacion</span></div>
+                <div class="callout"><p><strong>Harmonices Mundi (1619):</strong> Kepler asocio cada planeta con notas musicales basadas en sus velocidades orbitales.</p></div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Mapeo clasico (Kepler)</div>
+                <ul>
+                    <li><strong>Mercurio:</strong> Movimiento rapido, registro agudo</li>
+                    <li><strong>Venus:</strong> Orbita casi circular, monotono</li>
+                    <li><strong>Tierra:</strong> Mi-Fa (miseria-fames)</li>
+                    <li><strong>Marte:</strong> Amplio rango, excentrico</li>
+                </ul>
+            </aside>
+        </section>
+        <section class="two">
+            <div class="card">
+                <h2>Sonificacion moderna</h2>
+                <ul>
+                    <li><strong>Periodo orbital → frecuencia:</strong> Planetas internos agudos</li>
+                    <li><strong>Distancia → volumen:</strong> Cercanos mas fuertes</li>
+                    <li><strong>Excentricidad → vibrato:</strong> Orbitas elipticas</li>
+                    <li><strong>Inclinacion → pan estereo:</strong> Posicion en el cielo</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Periodos orbitales</h2>
+                <ul>
+                    <li><strong>Mercurio:</strong> 88 dias</li>
+                    <li><strong>Venus:</strong> 225 dias</li>
+                    <li><strong>Tierra:</strong> 365 dias</li>
+                    <li><strong>Jupiter:</strong> 12 anos</li>
+                </ul>
+            </div>
+        </section>
+        <section class="card section">
+            <div class="kicker">Experimento guiado</div>
+            <h2 style="margin-top: 0.5rem;">Escuchar el sistema solar</h2>
+            <ol>
+                <li>Activa cada planeta individualmente</li>
+                <li>Nota las frecuencias: Mercurio agudo, Jupiter grave</li>
+                <li>Escucha todos juntos — la "sinfonia" planetaria</li>
+                <li>Experimenta con diferentes escalas musicales</li>
+            </ol>
+        </section>
+        <section class="card section">
+            <div class="kicker">Conexiones</div>
+            <h2 style="margin-top: 0.5rem;">Donde mas aparece</h2>
+            <ul>
+                <li><strong>Data sonification:</strong> Hacer audibles datos cientificos</li>
+                <li><strong>Accesibilidad:</strong> Ciencia para personas ciegas</li>
+                <li><strong>Arte:</strong> Instalaciones sonoras basadas en astronomia</li>
+            </ul>
+        </section>
+    </main>
+    <footer><a href="../../../_portal/index.html">EigenLab</a> — Astronomy Sound Lab — Musica Esferas</footer>
+</body>
+</html>

@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expansion del Universo — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #6366f1;
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--accent); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--accent); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); }
+
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); font-size: 0.8rem; }
+        .eq span:first-child { color: var(--text-secondary); }
+        .eq code { color: var(--accent); }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1.5rem; }
+
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--text-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; flex-shrink: 0; }
+
+        .hypothesis { background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); padding: 0.75rem; border-radius: 0 0.375rem 0.375rem 0; margin: 0.75rem 0; }
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 0.75rem; }
+        .connection-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .connection-icon { width: 10px; height: 10px; border-radius: 50%; }
+        .connection-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .connection p { margin: 0; }
+
+        .reflection { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--text-primary); margin-bottom: 0.75rem; }
+        .reflection ul { margin: 0; }
+
+        .timeline { border-left: 2px solid var(--border); padding-left: 1.25rem; margin-top: 0.75rem; }
+        .timeline-item { position: relative; padding-bottom: 1rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.4rem; top: 0.25rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary); }
+        .timeline-year { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+        .timeline-text { font-size: 0.8rem; color: var(--text-secondary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Astronomy Visual Lab</a>
+                    <span> / </span>
+                    <span>Expansion del Universo</span>
+                </nav>
+                <h1>Expansion del Universo — Guia</h1>
+                <div class="subtitle">El espacio mismo se estira, y las galaxias viajan con el</div>
+            </div>
+            <div class="header-actions">
+                <a href="../expansion-universo.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>v = H₀ × d</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    La <span class="em">expansion del universo</span> es uno de los descubrimientos
+                    mas profundos del siglo XX: las galaxias se alejan unas de otras porque
+                    <strong>el espacio mismo se estira</strong>. No es que las galaxias "vuelen"
+                    a traves del espacio — es el tejido del cosmos el que crece.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Ley de Hubble</span>
+                    <span class="chip">Redshift</span>
+                    <span class="chip">Big Bang</span>
+                    <span class="chip">Factor de escala</span>
+                    <span class="chip">Coordenadas comoviles</span>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem">
+                    <p>
+                        <strong>Idea central:</strong> No hay un "centro" de la expansion.
+                        Desde cualquier galaxia, todas las demas parecen alejarse.
+                        Es como puntos dibujados en un globo que se infla: todos se alejan
+                        de todos, pero ningun punto es especial.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">La ecuacion fundamental</div>
+                <pre>Ley de Hubble-Lemaitre:
+
+  v = H₀ × d
+
+donde:
+  v = velocidad de recesion (km/s)
+  H₀ = constante de Hubble (~70 km/s/Mpc)
+  d = distancia (Mpc)
+
+Redshift:
+  z = Δλ/λ ≈ v/c  (para v << c)
+
+Factor de escala:
+  1 + z = a(t_ahora) / a(t_emision)</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados visuales</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #6366f1"></span>Galaxia cercana (z bajo)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #fbbf24"></span>Galaxia lejana (z medio)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #ef4444"></span>Galaxia muy lejana (z alto)</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- CONCEPTOS CLAVE -->
+        <section class="two">
+            <div class="card">
+                <h2>Redshift: la huella de la expansion</h2>
+                <p>
+                    Cuando una galaxia se aleja, la luz que emite se "estira" junto con el espacio.
+                    Las longitudes de onda aumentan, desplazandose hacia el rojo:
+                </p>
+                <ul>
+                    <li><strong>z = 0:</strong> Galaxia en reposo (teorico)</li>
+                    <li><strong>z = 0.1:</strong> Luz estirada 10%, ~400 Mpc de distancia</li>
+                    <li><strong>z = 1:</strong> Luz duplicada en longitud de onda</li>
+                    <li><strong>z = 10:</strong> Galaxias primitivas, primeros mil millones de anos</li>
+                </ul>
+                <div class="callout">
+                    <p class="mini">
+                        El redshift cosmologico NO es efecto Doppler clasico. Es el espacio
+                        estirandose mientras la luz viaja, no la fuente moviendose "a traves" del espacio.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>La constante de Hubble: H₀</h2>
+                <div class="equations">
+                    <div class="eq"><span>Planck (CMB)</span><code>67.4 km/s/Mpc</code></div>
+                    <div class="eq"><span>Supernovas (local)</span><code>73.0 km/s/Mpc</code></div>
+                    <div class="eq"><span>Tension de Hubble</span><code>~9% discrepancia</code></div>
+                </div>
+                <p class="mini" style="margin-top: 0.75rem">
+                    La "tension de Hubble" es uno de los mayores misterios actuales de la cosmologia.
+                    Las mediciones locales y cosmicas no coinciden. ¿Nueva fisica?
+                </p>
+                <div class="badge b-warn" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-warn)"></span>
+                    Problema abierto en cosmologia
+                </div>
+            </div>
+        </section>
+
+        <!-- COORDENADAS -->
+        <section class="two">
+            <div class="card">
+                <h2>Coordenadas comoviles vs fisicas</h2>
+                <p>
+                    Hay dos formas de medir distancias en un universo en expansion:
+                </p>
+                <ul>
+                    <li><strong>Coordenadas fisicas:</strong> La distancia "real" en un momento dado.
+                    Cambia con el tiempo porque el espacio se expande.</li>
+                    <li><strong>Coordenadas comoviles:</strong> Distancia "congelada" que no cambia.
+                    Las galaxias mantienen posiciones fijas en coordenadas comoviles.</li>
+                </ul>
+                <div class="callout">
+                    <p class="mono" style="font-size: 0.8rem">
+                        d_fisica(t) = a(t) × d_comovil
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>El factor de escala a(t)</h2>
+                <p>
+                    El factor de escala describe cuanto ha crecido el universo:
+                </p>
+                <ul>
+                    <li><strong>a = 0:</strong> Big Bang (singularidad)</li>
+                    <li><strong>a = 1:</strong> Hoy (por convencion)</li>
+                    <li><strong>a > 1:</strong> Futuro (universo mas grande)</li>
+                </ul>
+                <p class="mini">
+                    En la simulacion, el factor de escala crece exponencialmente
+                    (aproximacion de universo dominado por energia oscura).
+                </p>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto de la expansion cosmica.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">No hay centro: cambia de observador</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Desde cualquier galaxia, todas las demas parecen
+                alejarse. Ningun punto es el "centro" de la expansion.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Observa las galaxias desde el origen (posicion inicial)</li>
+                        <li>Nota los vectores de velocidad: todos apuntan hacia afuera</li>
+                        <li><strong>Haz click en una galaxia lejana</strong> para centrar la vista</li>
+                        <li>Observa: ahora todas las galaxias se alejan de TI</li>
+                        <li>Repite con varias galaxias diferentes</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Observa el diagrama de Hubble:</strong> La relacion
+                    lineal v = H₀d se mantiene sin importar desde donde mires.</p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        Principio cosmologico: homogeneidad
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">El diagrama de Hubble: velocidad vs distancia</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Las galaxias mas lejanas se alejan mas rapido.
+                La relacion es lineal: duplicar la distancia duplica la velocidad.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Observa el <strong>mini diagrama de Hubble</strong> (esquina inferior derecha)</li>
+                        <li>El eje X es distancia (Mpc), el eje Y es velocidad (km/s)</li>
+                        <li>La linea punteada es la prediccion teorica: v = H₀d</li>
+                        <li>Cambia H₀ con el slider y observa como rota la linea</li>
+                        <li>Aumenta el numero de galaxias para ver mas puntos</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Dispersion:</strong> En datos reales, hay dispersion
+                    por velocidades peculiares (movimiento local de galaxias dentro de cumulos).</p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        H₀ mas alto = expansion mas rapida
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Redshift y el color de las galaxias</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Las galaxias mas lejanas aparecen mas rojas
+                porque su luz ha sido estirada durante el viaje cosmico.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Activa <strong>"Color por redshift"</strong></li>
+                        <li>Observa: galaxias cercanas son azuladas, lejanas son rojizas</li>
+                        <li>Aumenta H₀ al maximo — las galaxias se enrojecen mas</li>
+                        <li>Deja correr el tiempo — observa como todo se enrojece gradualmente</li>
+                        <li>Activa <strong>"Grilla comovil"</strong> para ver el espacio estirandose</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>CMB:</strong> La radiacion cosmica de fondo tiene z ≈ 1100.
+                    Fue emitida como luz visible/UV pero ahora la vemos como microondas.</p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        z > 10: universo primitivo
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../expansion-universo.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">La expansion en contexto cosmico</h2>
+            <p>La expansion del universo conecta con multiples fenomenos astronomicos.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #8b5cf6"></span>
+                <span class="connection-title">Agujeros negros: expansion vs gravedad</span>
+            </div>
+            <p>
+                La expansion cosmica y la gravedad son fuerzas opuestas. A escalas cosmicas,
+                la expansion domina. A escalas de galaxias y cumulos, la gravedad gana y
+                mantiene las estructuras unidas. Los agujeros negros son victorias locales
+                de la gravedad contra la expansion.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../agujero-negro.html">Agujero Negro</a> —
+                gravedad extrema, sin escape.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">Diagrama H-R: las velas estandar</span>
+            </div>
+            <p>
+                Para medir distancias cosmicas necesitamos "velas estandar" — objetos
+                de brillo conocido. Las supernovas Tipo Ia tienen brillo uniforme.
+                Comparando brillo aparente vs absoluto, calculamos la distancia.
+                Asi se descubrio la aceleracion de la expansion en 1998.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../diagrama-hr.html">Diagrama H-R</a> —
+                clasificacion estelar y evolucion.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Lentes gravitacionales: midiendo la expansion</span>
+            </div>
+            <p>
+                Los lentes gravitacionales crean multiples imagenes de objetos lejanos.
+                El tiempo que tarda la luz en cada trayectoria depende de H₀.
+                Midiendo delays temporales en quasares con lensing, podemos calcular
+                la constante de Hubble de forma independiente.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../lentes-gravitacionales.html">Lentes Gravitacionales</a> —
+                luz curvada por masa.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Que NO muestra esta simulacion</h2>
+            <div class="grid">
+                <div>
+                    <ul>
+                        <li><strong>3D:</strong> El universo es tridimensional, la simulacion
+                        es 2D. Las distancias angulares no se representan correctamente.</li>
+                        <li><strong>Friedmann completo:</strong> La evolucion del factor de escala
+                        es simplificada. En realidad depende de radiacion, materia y energia oscura.</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Velocidades peculiares:</strong> Las galaxias reales tienen
+                        movimientos locales de ~300 km/s que anaden dispersion al diagrama de Hubble.</li>
+                        <li><strong>Horizonte cosmico:</strong> No se muestra el limite observable
+                        del universo (~46 Gly de radio comovil).</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Historia</div>
+            <h2 style="margin-top:0.5rem">Del universo estatico a la expansion acelerada</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-year">1917</div>
+                    <div class="timeline-text">Einstein propone un universo estatico. Anade la constante cosmologica Λ para evitar el colapso.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1927</div>
+                    <div class="timeline-text">Georges Lemaitre deriva la ley de expansion y propone el "atomo primigenio" (Big Bang).</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1929</div>
+                    <div class="timeline-text">Edwin Hubble publica datos observacionales: las galaxias se alejan proporcionalmente a su distancia.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1965</div>
+                    <div class="timeline-text">Penzias y Wilson descubren el CMB — evidencia del Big Bang caliente.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1998</div>
+                    <div class="timeline-text">Supernovas Ia revelan que la expansion se ACELERA. Energia oscura. Nobel 2011.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2018</div>
+                    <div class="timeline-text">La "tension de Hubble" se confirma: mediciones locales y cosmicas no coinciden.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ul>
+                <li>Si el espacio se expande, por que la Tierra no se aleja del Sol? Por que no crecemos?</li>
+                <li>Hubble encontro una relacion lineal v = Hd. Que forma tendria si vivieramos en un universo que no se expande uniformemente?</li>
+                <li>El CMB tiene z ≈ 1100. Cuanto era el factor de escala cuando se emitio esa luz?</li>
+                <li>La expansion se acelera. Que pasara con galaxias muy lejanas en el futuro? Las seguiremos viendo?</li>
+                <li>Einstein llamo a la constante cosmologica su "mayor error". Por que cambio de opinion la comunidad cientifica en 1998?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="card section">
+            <div class="kicker">En resumen</div>
+            <h2 style="margin-top:0.5rem">El universo como un globo que se infla</h2>
+            <p>
+                La expansion del universo es quizas el descubrimiento mas importante de la
+                cosmologia moderna. Nos dice que el universo tiene una historia — hubo un
+                comienzo (Big Bang) y habra un final (Big Freeze, Big Rip, o algo desconocido).
+            </p>
+            <p>
+                Esta simulacion te permite experimentar la <strong>democracia cosmica</strong>:
+                no hay centro, no hay borde, todos los puntos son equivalentes.
+                Cambiar de observador no cambia la fisica — solo la perspectiva.
+            </p>
+            <p class="mini" style="margin-top: 1rem">
+                El espacio no es un escenario fijo. Es un actor dinamico en el drama cosmico.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Expansion del Universo
+    </footer>
+</body>
+</html>

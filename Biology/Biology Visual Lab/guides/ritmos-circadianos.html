@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Ritmos Circadianos | Biology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a;
+            --color-surface: #141414;
+            --color-surface-elevated: #1a1a1a;
+            --color-border: #262626;
+            --color-text: #e5e5e5;
+            --color-text-secondary: #a3a3a3;
+            --color-accent: #10b981;
+            --color-accent-dim: rgba(16, 185, 129, 0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif;
+            --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-serif);
+            font-size: 19px;
+            line-height: 1.7;
+            color: var(--color-text);
+            background-color: var(--color-bg);
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        header {
+            margin-bottom: 3rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .breadcrumb {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            color: var(--color-text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            font-family: var(--font-serif);
+            font-size: 2.5rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--color-text);
+            letter-spacing: -0.02em;
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--color-text-secondary);
+            font-style: italic;
+        }
+
+        h2 {
+            font-family: var(--font-sans);
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--color-accent);
+            margin-top: 3rem;
+            margin-bottom: 1.25rem;
+        }
+
+        h3 {
+            font-family: var(--font-serif);
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+
+        p {
+            margin-bottom: 1.25rem;
+        }
+
+        .intro {
+            font-size: 1.15rem;
+            color: var(--color-text-secondary);
+            border-left: 3px solid var(--color-accent);
+            padding-left: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .concept-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .concept-card {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 1.5rem;
+        }
+
+        .concept-card h4 {
+            font-family: var(--font-sans);
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-accent);
+        }
+
+        .concept-card p {
+            font-size: 0.95rem;
+            margin-bottom: 0;
+            color: var(--color-text-secondary);
+        }
+
+        .equation-block {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            text-align: center;
+        }
+
+        .equation {
+            font-family: var(--font-mono);
+            font-size: 1.2rem;
+            color: var(--color-accent);
+            margin-bottom: 1rem;
+        }
+
+        .equation-note {
+            font-size: 0.9rem;
+            color: var(--color-text-secondary);
+        }
+
+        .experiment-box {
+            background: linear-gradient(135deg, var(--color-accent-dim), transparent);
+            border: 1px solid var(--color-accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .experiment-box h4 {
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: var(--color-accent);
+            margin-bottom: 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .experiment-box ol {
+            margin-left: 1.5rem;
+            color: var(--color-text-secondary);
+        }
+
+        .experiment-box li {
+            margin-bottom: 0.5rem;
+        }
+
+        ul, ol {
+            margin-left: 1.5rem;
+            margin-bottom: 1.25rem;
+        }
+
+        li {
+            margin-bottom: 0.5rem;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            font-size: 0.9em;
+            background: var(--color-surface);
+            padding: 0.15em 0.4em;
+            border-radius: 4px;
+            color: var(--color-accent);
+        }
+
+        .highlight {
+            background: var(--color-accent-dim);
+            padding: 1rem 1.5rem;
+            border-radius: 8px;
+            margin: 1.5rem 0;
+        }
+
+        .connection-list {
+            list-style: none;
+            margin-left: 0;
+        }
+
+        .connection-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .connection-list li:last-child {
+            border-bottom: none;
+        }
+
+        .connection-icon {
+            width: 24px;
+            height: 24px;
+            background: var(--color-accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            flex-shrink: 0;
+            margin-top: 0.25rem;
+        }
+
+        .connection-text {
+            flex: 1;
+        }
+
+        .connection-text strong {
+            color: var(--color-text);
+        }
+
+        .connection-text a {
+            color: var(--color-accent);
+            text-decoration: none;
+        }
+
+        .connection-text a:hover {
+            text-decoration: underline;
+        }
+
+        blockquote {
+            border-left: 3px solid var(--color-accent);
+            padding-left: 1.5rem;
+            margin: 1.5rem 0;
+            color: var(--color-text-secondary);
+            font-style: italic;
+        }
+
+        .history-timeline {
+            border-left: 2px solid var(--color-border);
+            padding-left: 2rem;
+            margin: 1.5rem 0;
+        }
+
+        .history-event {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .history-event::before {
+            content: '';
+            position: absolute;
+            left: -2.35rem;
+            top: 0.5rem;
+            width: 10px;
+            height: 10px;
+            background: var(--color-accent);
+            border-radius: 50%;
+        }
+
+        .history-date {
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            color: var(--color-accent);
+        }
+
+        .back-button {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem 1.5rem;
+            background: var(--color-accent);
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            font-family: var(--font-sans);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-top: 2rem;
+            transition: opacity 0.2s;
+        }
+
+        .back-button:hover {
+            opacity: 0.9;
+        }
+
+        footer {
+            margin-top: 4rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--color-border);
+            text-align: center;
+            color: var(--color-text-secondary);
+            font-size: 0.9rem;
+        }
+
+        .table-wrapper {
+            overflow-x: auto;
+            margin: 1.5rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        th {
+            font-family: var(--font-sans);
+            font-weight: 600;
+            color: var(--color-accent);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            color: var(--color-text-secondary);
+        }
+
+        td code {
+            font-size: 0.85rem;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="../../../_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biology Visual Lab</a> /
+            <span>Ritmos Circadianos</span>
+        </nav>
+        <h1>Ritmos Circadianos</h1>
+        <p class="subtitle">El reloj interno que sincroniza la vida con la rotación de la Tierra</p>
+    </header>
+
+    <main>
+        <p class="intro">
+            Los ritmos circadianos son oscilaciones biológicas de aproximadamente 24 horas que gobiernan prácticamente todos los procesos fisiológicos. Desde el sueño y la vigilia hasta la temperatura corporal, la liberación de hormonas y la expresión génica, nuestro cuerpo sigue un reloj interno ancestral.
+        </p>
+
+        <h2>Por qué importa</h2>
+
+        <p>
+            Vivimos en una sociedad que desafía constantemente nuestros ritmos naturales: trabajo nocturno, viajes transmeridianos, luz artificial a cualquier hora, pantallas que emiten luz azul antes de dormir. Comprender los ritmos circadianos es esencial para entender el sueño, la salud mental, el metabolismo y el envejecimiento.
+        </p>
+
+        <p>
+            El descubrimiento del mecanismo molecular del reloj circadiano fue reconocido con el <strong>Premio Nobel de Medicina 2017</strong>, otorgado a Jeffrey Hall, Michael Rosbash y Michael Young por sus estudios en <em>Drosophila</em>.
+        </p>
+
+        <h2>Conceptos Clave</h2>
+
+        <div class="concept-grid">
+            <div class="concept-card">
+                <h4>Núcleo Supraquiasmático (SCN)</h4>
+                <p>El "reloj maestro" ubicado en el hipotálamo. Contiene ~20,000 neuronas que se sincronizan entre sí y coordinan los relojes periféricos de todo el cuerpo.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Zeitgebers</h4>
+                <p>"Dadores de tiempo" — señales externas que sincronizan el reloj. La luz es el principal zeitgeber, pero también influyen la alimentación, ejercicio y temperatura.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Período Endógeno</h4>
+                <p>Sin señales externas, el reloj humano tiene un período de ~24.2 horas. La luz diaria "resetea" el reloj para mantenerlo sincronizado con las 24 horas reales.</p>
+            </div>
+            <div class="concept-card">
+                <h4>Cronotipos</h4>
+                <p>Variaciones individuales en la fase del reloj. Las "alondras" tienen fases adelantadas; los "búhos" tienen fases retrasadas. Es genético, no solo preferencia.</p>
+            </div>
+        </div>
+
+        <h2>El Mecanismo Molecular</h2>
+
+        <p>
+            El reloj circadiano funciona mediante un <strong>bucle de retroalimentación transcripcional-traduccional</strong> (TTFL). Es uno de los ejemplos más elegantes de regulación génica en biología.
+        </p>
+
+        <div class="equation-block">
+            <div class="equation">CLOCK + BMAL1 → activación de PER y CRY</div>
+            <div class="equation">PER + CRY → inhibición de CLOCK/BMAL1</div>
+            <p class="equation-note">Este ciclo toma aproximadamente 24 horas en completarse</p>
+        </div>
+
+        <h3>Los Genes Reloj</h3>
+
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Gen</th>
+                        <th>Función</th>
+                        <th>Pico de expresión</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>CLOCK</code></td>
+                        <td>Factor de transcripción activador</td>
+                        <td>Constante</td>
+                    </tr>
+                    <tr>
+                        <td><code>BMAL1</code></td>
+                        <td>Dimeriza con CLOCK</td>
+                        <td>Día</td>
+                    </tr>
+                    <tr>
+                        <td><code>PER1/2/3</code></td>
+                        <td>Represor del dímero CLOCK/BMAL1</td>
+                        <td>Tarde/Noche</td>
+                    </tr>
+                    <tr>
+                        <td><code>CRY1/2</code></td>
+                        <td>Represor, dimeriza con PER</td>
+                        <td>Noche</td>
+                    </tr>
+                    <tr>
+                        <td><code>REV-ERB</code></td>
+                        <td>Represor de BMAL1</td>
+                        <td>Día</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <h2>Ritmos Fisiológicos</h2>
+
+        <h3>Melatonina</h3>
+        <p>
+            La "hormona del sueño" es producida por la glándula pineal durante la noche. Su síntesis es inhibida por la luz, especialmente la luz azul (450-480 nm). El pico ocurre alrededor de las 2-4 AM.
+        </p>
+
+        <h3>Cortisol</h3>
+        <p>
+            El "hormona del estrés" tiene un ritmo circadiano pronunciado. Presenta un pico matutino llamado <strong>CAR (Cortisol Awakening Response)</strong> que nos ayuda a despertar y preparar el metabolismo para el día.
+        </p>
+
+        <h3>Temperatura Corporal</h3>
+        <p>
+            La temperatura central oscila ~1°C a lo largo del día. El mínimo ocurre antes del amanecer (~36.2°C) y el máximo en la tarde (~37.2°C). El sueño se facilita cuando la temperatura desciende.
+        </p>
+
+        <h2>Experimenta</h2>
+
+        <div class="experiment-box">
+            <h4>🔬 Experimento 1: El ritmo de melatonina</h4>
+            <ol>
+                <li>Inicia la simulación a las 18:00</li>
+                <li>Observa cómo la melatonina (curva amarilla) comienza a subir al anochecer</li>
+                <li>Nota el pico alrededor de las 2-3 AM</li>
+                <li>¿Qué pasaría si te expusieras a luz brillante a medianoche?</li>
+            </ol>
+        </div>
+
+        <div class="experiment-box">
+            <h4>🔬 Experimento 2: Simular jet lag</h4>
+            <ol>
+                <li>Haz clic en "Jet Lag: +6h (Vuelo a Europa)"</li>
+                <li>Observa cómo el reloj interno (anillo rojo punteado) queda desfasado</li>
+                <li>¿Cuántos días tarda en resincronizarse?</li>
+                <li>¿Por qué es más difícil adaptarse viajando hacia el este que hacia el oeste?</li>
+            </ol>
+        </div>
+
+        <div class="experiment-box">
+            <h4>🔬 Experimento 3: Luz azul nocturna</h4>
+            <ol>
+                <li>Ajusta la hora a las 22:00</li>
+                <li>Haz clic en "Luz Azul Nocturna (Pantallas)"</li>
+                <li>Observa cómo la melatonina se suprime temporalmente</li>
+                <li>¿Esto explica por qué cuesta dormir después de usar el móvil en la cama?</li>
+            </ol>
+        </div>
+
+        <div class="experiment-box">
+            <h4>🔬 Experimento 4: Cronotipos</h4>
+            <ol>
+                <li>Selecciona el cronotipo "Alondra" y observa las curvas</li>
+                <li>Cambia a "Búho" y compara</li>
+                <li>¿A qué hora ocurre el pico de alerta en cada caso?</li>
+                <li>¿Por qué un "búho" rinde mal en clases a las 8 AM?</li>
+            </ol>
+        </div>
+
+        <h2>Historia</h2>
+
+        <div class="history-timeline">
+            <div class="history-event">
+                <span class="history-date">1729</span>
+                <p><strong>Jean-Jacques d'Ortous de Mairan</strong> descubre que las plantas mimosa mantienen sus movimientos de hojas incluso en oscuridad constante — primera evidencia de un reloj endógeno.</p>
+            </div>
+            <div class="history-event">
+                <span class="history-date">1972</span>
+                <p>Se identifica el <strong>núcleo supraquiasmático (SCN)</strong> como el reloj maestro en mamíferos. Lesiones del SCN eliminan los ritmos circadianos.</p>
+            </div>
+            <div class="history-event">
+                <span class="history-date">1984</span>
+                <p><strong>Jeffrey Hall y Michael Rosbash</strong> clonan el gen <em>period</em> en <em>Drosophila</em>, iniciando la era molecular de la cronobiología.</p>
+            </div>
+            <div class="history-event">
+                <span class="history-date">1994</span>
+                <p><strong>Joseph Takahashi</strong> descubre <em>Clock</em>, el primer gen reloj en mamíferos, demostrando conservación evolutiva.</p>
+            </div>
+            <div class="history-event">
+                <span class="history-date">1998</span>
+                <p>Se descubre que las células ganglionares retinianas con <strong>melanopsina</strong> son los fotorreceptores circadianos, distintos de conos y bastones.</p>
+            </div>
+            <div class="history-event">
+                <span class="history-date">2017</span>
+                <p><strong>Premio Nobel de Fisiología o Medicina</strong> a Hall, Rosbash y Young por el mecanismo molecular del reloj circadiano.</p>
+            </div>
+        </div>
+
+        <h2>Conexiones</h2>
+
+        <ul class="connection-list">
+            <li>
+                <span class="connection-icon">⚡</span>
+                <span class="connection-text">
+                    <strong><a href="neurona.html">Potencial de Acción</a></strong> — Las neuronas del SCN disparan con un ritmo circadiano. Su actividad es mayor durante el día subjetivo.
+                </span>
+            </li>
+            <li>
+                <span class="connection-icon">🌙</span>
+                <span class="connection-text">
+                    <strong><a href="../../Astronomy/Astronomy Visual Lab/fases-lunares.html">Fases Lunares</a></strong> — Los ritmos circadianos evolucionaron para sincronizarse con el ciclo día-noche de ~24h. Los ritmos circalunares (~28 días) también existen.
+                </span>
+            </li>
+            <li>
+                <span class="connection-icon">🌡️</span>
+                <span class="connection-text">
+                    <strong><a href="../../Astronomy/Astronomy Visual Lab/estaciones.html">Estaciones</a></strong> — La duración del día (fotoperíodo) varía con las estaciones y afecta los ritmos circadianos, causando SAD (trastorno afectivo estacional).
+                </span>
+            </li>
+            <li>
+                <span class="connection-icon">📊</span>
+                <span class="connection-text">
+                    <strong><a href="../../Mathematics/Math Visual Lab/trigonometria.html">Trigonometría</a></strong> — Los ritmos circadianos se modelan matemáticamente como funciones sinusoidales: concentración = A·sin(ωt + φ) + B.
+                </span>
+            </li>
+            <li>
+                <span class="connection-icon">🧬</span>
+                <span class="connection-text">
+                    <strong><a href="genetica-poblacional.html">Genética Poblacional</a></strong> — Los polimorfismos en genes reloj (como PER3) varían entre poblaciones y explican diferencias en cronotipos.
+                </span>
+            </li>
+        </ul>
+
+        <h2>Limitaciones del Modelo</h2>
+
+        <div class="highlight">
+            <ul>
+                <li><strong>Simplificación del mecanismo molecular</strong> — El bucle TTFL real involucra decenas de genes, modificaciones postraduccionales, y retroalimentación a múltiples niveles.</li>
+                <li><strong>Relojes periféricos</strong> — Cada tejido tiene su propio reloj que puede desincronizarse del SCN. La simulación solo muestra el ritmo central.</li>
+                <li><strong>Variabilidad individual</strong> — Los cronotipos son un espectro, no tres categorías discretas. La genética, edad y ambiente influyen.</li>
+                <li><strong>Otros zeitgebers</strong> — La alimentación, ejercicio y temperatura también sincronizan el reloj, pero la simulación solo modela la luz.</li>
+                <li><strong>Edad</strong> — Los ritmos circadianos cambian con la edad: los adolescentes tienden a ser "búhos", los ancianos "alondras".</li>
+            </ul>
+        </div>
+
+        <h2>Implicaciones Clínicas</h2>
+
+        <ul>
+            <li><strong>Cronoterapia</strong>: Administrar medicamentos en el momento óptimo del día. La quimioterapia puede ser más efectiva y menos tóxica según el timing.</li>
+            <li><strong>Trastorno de fase retrasada</strong>: Común en adolescentes. Tratamiento con luz brillante matutina y melatonina nocturna.</li>
+            <li><strong>Trabajo por turnos</strong>: Asociado con mayor riesgo de cáncer, diabetes, y enfermedades cardiovasculares por disrupción crónica.</li>
+            <li><strong>Jet lag social</strong>: Diferencia entre horario de sueño en días laborales vs. fin de semana. Tan perjudicial como el jet lag real.</li>
+        </ul>
+
+        <h2>Para Profundizar</h2>
+
+        <ul>
+            <li><strong>Melanopsina</strong>: El fotopigmento de las células ganglionares retinianas intrínsecamente fotosensibles (ipRGCs) que detectan luz para el reloj.</li>
+            <li><strong>Cronofarmacología</strong>: La efectividad de muchos fármacos depende de la hora de administración.</li>
+            <li><strong>Microbioma circadiano</strong>: Las bacterias intestinales también tienen ritmos circadianos y afectan el metabolismo del huésped.</li>
+            <li><strong>Ritmos ultradianos</strong>: Ciclos más cortos que 24h, como las fases del sueño (~90 min) o los pulsos de hormona del crecimiento.</li>
+        </ul>
+
+        <a href="../ritmos-circadianos.html" class="back-button">
+            ← Volver a la simulación
+        </a>
+    </main>
+
+    <footer>
+        <p>Biology Visual Lab — EigenLab</p>
+    </footer>
+</body>
+</html>

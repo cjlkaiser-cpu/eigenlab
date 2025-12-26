@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oscilaciones y Ondas - Caminos - EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #22c55e;
+            --accent-glow: rgba(34, 197, 94, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+        }
+
+        .header-content { max-width: 900px; margin: 0 auto; }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb a { color: var(--text-secondary); }
+        .breadcrumb a:hover { color: var(--text-primary); text-decoration: none; }
+
+        .path-label {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .header .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 650px; }
+
+        .main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+        .intro {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .intro h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+        .intro p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .intro p:last-child { margin-bottom: 0; }
+
+        .key-concepts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+        .concept {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            color: var(--text-primary);
+        }
+
+        .journey { position: relative; }
+
+        .journey::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+        }
+
+        .stop { position: relative; padding-left: 60px; margin-bottom: 2rem; }
+        .stop:last-child { margin-bottom: 0; }
+
+        .stop-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .stop-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .stop-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+
+        .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .stop-title { font-size: 1.125rem; font-weight: 600; }
+
+        .stop-lab {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.25rem;
+        }
+
+        .stop-description { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+
+        .stop-connection {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .stop-connection strong { color: var(--accent); }
+
+        .stop-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .stop-link:hover { text-decoration: none; filter: brightness(1.1); transform: translateX(4px); }
+
+        .summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .summary h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .summary p { color: var(--text-secondary); font-size: 0.9rem; font-style: italic; }
+
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer a { color: var(--text-secondary); font-size: 0.875rem; }
+        .footer a:hover { color: var(--text-primary); }
+
+        @media (max-width: 640px) {
+            .stop { padding-left: 50px; }
+            .journey::before { left: 15px; }
+            .stop-number { width: 32px; height: 32px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <nav class="breadcrumb">
+                <a href="../index.html">EigenLab</a> /
+                <a href="index.html">Caminos</a> /
+                Oscilaciones
+            </nav>
+            <span class="path-label">Camino 2</span>
+            <h1>Oscilaciones y Ondas</h1>
+            <p class="subtitle">
+                Movimiento periodico, resonancia, interferencia.
+                Desde el vaiven de un pendulo hasta la sintesis de sonidos complejos.
+            </p>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="intro">
+            <h2>La idea central</h2>
+            <p>
+                Una oscilacion es un movimiento que se repite. Pero de esa simplicidad emerge una riqueza
+                extraordinaria: resonancia, batidos, armonicos, ondas estacionarias. Fourier demostro que
+                cualquier senal periodica puede descomponerse en senos y cosenos.
+            </p>
+            <p>
+                En este camino veras como el pendulo simple lleva a las ondas, las ondas a Fourier,
+                Fourier a la resonancia, y todo culmina en los metronomos que se sincronizan solos.
+            </p>
+            <div class="key-concepts">
+                <span class="concept">Frecuencia y periodo</span>
+                <span class="concept">Resonancia</span>
+                <span class="concept">Interferencia</span>
+                <span class="concept">Armonicos</span>
+                <span class="concept">Sincronizacion</span>
+            </div>
+        </section>
+
+        <div class="journey">
+            <!-- Stop 1: Pendulo simple -->
+            <div class="stop">
+                <div class="stop-number">1</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Pendulo Simple</h3>
+                        <span class="stop-lab">Physics Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        El oscilador mas basico. Para angulos pequenos, el periodo solo depende de la longitud
+                        y la gravedad — no de la masa ni de la amplitud. Esta "isocronia" fascino a Galileo
+                        y llevo a los relojes de pendulo.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Patron clave:</strong> La ecuacion del movimiento armonico simple:
+                        θ'' = -(g/L)θ. Esta ecuacion aparecera una y otra vez en diferentes contextos.
+                    </div>
+                    <a href="../../Physics/Physics Visual Lab/pendulum.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 2: Ondas -->
+            <div class="stop">
+                <div class="stop-number">2</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Ondas y Superposicion</h3>
+                        <span class="stop-lab">Physics Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Cuando muchos osciladores estan conectados, las perturbaciones viajan como ondas.
+                        Dos ondas pueden sumarse (interferencia constructiva) o cancelarse (destructiva).
+                        Ondas estacionarias aparecen en cuerdas de guitarra y tubos de organo.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con el pendulo:</strong> Cada punto de la onda oscila como un
+                        pendulo. La onda es la propagacion coordinada de muchas oscilaciones.
+                    </div>
+                    <a href="../../Physics/Physics Visual Lab/wave-superposition.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 3: Fourier -->
+            <div class="stop">
+                <div class="stop-number">3</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Sintesis de Fourier</h3>
+                        <span class="stop-lab">Physics Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Cualquier forma de onda periodica puede construirse sumando senos. Una onda cuadrada
+                        es la suma de infinitos armonicos impares. El timbre de un violin vs una flauta es
+                        la diferencia en sus armonicos.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con las ondas:</strong> La superposicion que viste en las ondas
+                        ahora se formaliza matematicamente. Fourier es la herramienta para analizar y
+                        sintetizar cualquier senal periodica.
+                    </div>
+                    <a href="../../Physics/Physics Visual Lab/fourier-synthesis.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 4: Resonancia -->
+            <div class="stop">
+                <div class="stop-number">4</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Resonancia</h3>
+                        <span class="stop-lab">Physics Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Cuando la frecuencia de una fuerza externa coincide con la frecuencia natural del
+                        sistema, la amplitud crece dramaticamente. Asi se rompen copas con la voz,
+                        colapsan puentes, y funcionan los hornos microondas.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con Fourier:</strong> Cada sistema tiene frecuencias naturales
+                        (sus "armonicos"). La resonancia ocurre cuando excitas exactamente una de ellas.
+                        Es Fourier aplicado a la energia.
+                    </div>
+                    <a href="../../Physics/Physics Visual Lab/resonance.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 5: Metronomo -->
+            <div class="stop">
+                <div class="stop-number">5</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Metronomos Sincronizados</h3>
+                        <span class="stop-lab">Physics Sound Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Varios metronomos sobre una base comun, empezando en fases distintas, terminan
+                        sincronizandose. Huygens lo descubrio con relojes de pendulo en 1665.
+                        Es el mismo fenomeno que sincroniza luciernagas y neuronas.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Sintesis final:</strong> La sincronizacion es resonancia entre osciladores
+                        acoplados. Los metronomos "escuchan" a sus vecinos a traves de la base y ajustan
+                        su fase hasta coincidir — emergencia de orden desde el caos inicial.
+                    </div>
+                    <a href="../../Physics/Physics Sound Lab/index.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <section class="summary">
+            <h2>Lo que conecta estas simulaciones</h2>
+            <p>
+                "Todo lo que oscila comparte la misma matematica. La ecuacion diferencial del pendulo
+                es la ecuacion del circuito LC, del atomo vibrante, de la cuerda de violin.
+                Aprender una es aprender todas."
+            </p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <a href="chaos.html">← Anterior: Caos</a>
+        <a href="states.html">Siguiente: Estados →</a>
+    </footer>
+</body>
+</html>

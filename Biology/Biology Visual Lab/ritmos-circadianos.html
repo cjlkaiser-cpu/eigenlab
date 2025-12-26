@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ritmos Circadianos - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #34d399;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(52, 211, 153, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .clock-ring {
+            stroke-linecap: round;
+        }
+
+        .phase-indicator {
+            transition: all 0.3s;
+        }
+
+        .guide-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            color: #6ee7b7;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        .guide-link:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+        .guide-icon {
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Ritmos Circadianos</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-emerald-400 font-medium glow-text">Ritmos Circadianos</span>
+                            <span class="text-gray-600 text-sm ml-2">Reloj Biológico</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Hora:</span>
+                        <span id="time-display" class="text-emerald-400 mono">00:00</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Día:</span>
+                        <span id="day-display" class="text-emerald-400 mono">1</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span id="phase-icon" class="text-2xl">🌙</span>
+                        <span id="phase-display" class="text-yellow-400">Noche</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 flex flex-col bg-gray-950">
+            <!-- Main clock visualization -->
+            <div class="flex-1 relative flex items-center justify-center overflow-hidden">
+                <canvas id="clock-canvas" class="max-w-full max-h-full"></canvas>
+
+                <!-- Legend -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Biomarcadores</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-0.5 bg-amber-400"></span>
+                            <span class="text-amber-400">Melatonina</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-0.5 bg-red-400"></span>
+                            <span class="text-red-400">Temperatura</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-0.5 bg-blue-400"></span>
+                            <span class="text-blue-400">Cortisol</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-8 h-0.5 bg-emerald-400"></span>
+                            <span class="text-emerald-400">Alerta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Current state -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-2">Estado actual</div>
+                    <div id="state-display" class="text-emerald-400 font-medium">Sueño profundo</div>
+                    <div id="state-tip" class="text-xs text-gray-500 mt-1">Regeneración celular</div>
+                </div>
+            </div>
+
+            <!-- Rhythms graph -->
+            <div class="h-44 border-t border-gray-900 bg-gray-950 p-4">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500">Ritmos biológicos (24h)</span>
+                    <div class="flex gap-4 text-xs">
+                        <span class="text-amber-400">Melatonina</span>
+                        <span class="text-red-400">Temperatura</span>
+                        <span class="text-blue-400">Cortisol</span>
+                    </div>
+                </div>
+                <canvas id="rhythm-canvas" class="w-full h-32 bg-gray-900/50 rounded-lg"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-96 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-emerald-400 glow-text">Controles</h2>
+
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El <span class="text-emerald-400">reloj circadiano</span> es un sistema molecular que sincroniza los procesos biológicos con el ciclo día-noche de ~24 horas.
+                </p>
+                <a href="guides/ritmos-circadianos.html" class="guide-link">
+                    <span class="guide-icon">?</span>
+                    <span>Guía: Genes reloj, SCN, zeitgebers</span>
+                </a>
+            </div>
+
+            <!-- Time Control -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Control de Tiempo
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-emerald-400 mono">60</span>x
+                    </label>
+                    <input type="range" id="speed-slider" min="1" max="360" value="60" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">1min real = <span id="speed-equiv" class="text-gray-500">1h simulada</span></div>
+                </div>
+
+                <div class="flex gap-2 mb-4">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Pausar
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">Ir a hora específica</label>
+                    <div class="grid grid-cols-4 gap-2">
+                        <button onclick="setTime(6)" class="py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs">06:00</button>
+                        <button onclick="setTime(12)" class="py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs">12:00</button>
+                        <button onclick="setTime(18)" class="py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs">18:00</button>
+                        <button onclick="setTime(0)" class="py-2 bg-gray-900 hover:bg-gray-800 rounded text-xs">00:00</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Light Exposure -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                    Exposición a Luz
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Intensidad: <span id="light-value" class="text-yellow-400 mono">0</span> lux
+                    </label>
+                    <input type="range" id="light-slider" min="0" max="10000" value="0" step="100" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>Oscuridad</span>
+                        <span>Luz solar</span>
+                    </div>
+                </div>
+
+                <label class="flex items-center gap-3 mb-4 cursor-pointer">
+                    <input type="checkbox" id="auto-light" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-500">
+                    <span class="text-sm text-gray-400">Ciclo natural día/noche</span>
+                </label>
+            </div>
+
+            <!-- Disruptions -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    Disrupciones
+                </h3>
+
+                <div class="space-y-2">
+                    <button onclick="simulateJetLag(6)" class="w-full py-2 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition text-left">
+                        Jet Lag: +6h (Vuelo a Europa)
+                    </button>
+                    <button onclick="simulateJetLag(-8)" class="w-full py-2 px-4 bg-red-500/10 hover:bg-red-500/20 text-red-400 rounded-lg text-sm transition text-left">
+                        Jet Lag: -8h (Vuelo a Asia)
+                    </button>
+                    <button onclick="simulateNightShift()" class="w-full py-2 px-4 bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 rounded-lg text-sm transition text-left">
+                        Trabajo Nocturno
+                    </button>
+                    <button onclick="simulateBlueLight()" class="w-full py-2 px-4 bg-blue-500/10 hover:bg-blue-500/20 text-blue-400 rounded-lg text-sm transition text-left">
+                        Luz Azul Nocturna (Pantallas)
+                    </button>
+                </div>
+            </div>
+
+            <!-- Molecular Clock -->
+            <div class="mb-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Genes Reloj</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex items-center justify-between">
+                        <span class="text-cyan-400">CLOCK/BMAL1</span>
+                        <div class="w-24 h-2 bg-gray-800 rounded overflow-hidden">
+                            <div id="clock-bmal1-bar" class="h-full bg-cyan-400 transition-all" style="width: 50%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-violet-400">PER</span>
+                        <div class="w-24 h-2 bg-gray-800 rounded overflow-hidden">
+                            <div id="per-bar" class="h-full bg-violet-400 transition-all" style="width: 30%"></div>
+                        </div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-pink-400">CRY</span>
+                        <div class="w-24 h-2 bg-gray-800 rounded overflow-hidden">
+                            <div id="cry-bar" class="h-full bg-pink-400 transition-all" style="width: 30%"></div>
+                        </div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 mt-3">Bucle de retroalimentación transcripcional-traduccional (~24h)</p>
+            </div>
+
+            <!-- Math Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-emerald-400 mb-3">El Modelo</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>Melatonina(t) = A·sin(ω(t-φ)) + B</div>
+                    <div class="mt-2 text-gray-500">donde:</div>
+                    <div class="pl-2">ω = 2π/24h (frecuencia)</div>
+                    <div class="pl-2">φ = fase (sincronizada con luz)</div>
+                </div>
+            </div>
+
+            <!-- Chronotype -->
+            <div class="p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Cronotipos</h3>
+                <div class="grid grid-cols-3 gap-2 text-xs">
+                    <button onclick="setChronotype('lark')" class="py-2 px-3 bg-gray-800 hover:bg-emerald-500/20 rounded text-center transition" id="btn-lark">
+                        <div class="text-lg mb-1">🌅</div>
+                        <div class="text-gray-400">Alondra</div>
+                    </button>
+                    <button onclick="setChronotype('normal')" class="py-2 px-3 bg-emerald-500/20 hover:bg-emerald-500/30 rounded text-center transition" id="btn-normal">
+                        <div class="text-lg mb-1">🌞</div>
+                        <div class="text-gray-400">Normal</div>
+                    </button>
+                    <button onclick="setChronotype('owl')" class="py-2 px-3 bg-gray-800 hover:bg-emerald-500/20 rounded text-center transition" id="btn-owl">
+                        <div class="text-lg mb-1">🦉</div>
+                        <div class="text-gray-400">Búho</div>
+                    </button>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const clockCanvas = document.getElementById('clock-canvas');
+        const rhythmCanvas = document.getElementById('rhythm-canvas');
+        const clockCtx = clockCanvas.getContext('2d');
+        const rhythmCtx = rhythmCanvas.getContext('2d');
+
+        // State
+        let time = 0; // Hours (0-24)
+        let day = 1;
+        let speed = 60; // 60x speed
+        let isPaused = false;
+        let chronotypeShift = 0; // Hours shift for chronotype
+        let jetLagOffset = 0; // Jet lag desynchronization
+        let blueLightEffect = 0; // Blue light suppression of melatonin
+        let autoLight = true;
+        let manualLight = 0;
+
+        // DOM elements
+        const timeDisplay = document.getElementById('time-display');
+        const dayDisplay = document.getElementById('day-display');
+        const phaseDisplay = document.getElementById('phase-display');
+        const phaseIcon = document.getElementById('phase-icon');
+        const stateDisplay = document.getElementById('state-display');
+        const stateTip = document.getElementById('state-tip');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const speedEquiv = document.getElementById('speed-equiv');
+        const lightSlider = document.getElementById('light-slider');
+        const lightValue = document.getElementById('light-value');
+        const autoLightCheckbox = document.getElementById('auto-light');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        function resizeCanvases() {
+            const clockContainer = clockCanvas.parentElement;
+            const clockRect = clockContainer.getBoundingClientRect();
+            // Use the smaller dimension for a square clock
+            const clockSize = Math.min(clockRect.width, clockRect.height) * 0.95;
+
+            clockCanvas.style.width = clockSize + 'px';
+            clockCanvas.style.height = clockSize + 'px';
+            clockCanvas.width = clockSize * 2;
+            clockCanvas.height = clockSize * 2;
+            clockCtx.setTransform(1, 0, 0, 1, 0, 0);
+            clockCtx.scale(2, 2);
+
+            const rhythmRect = rhythmCanvas.getBoundingClientRect();
+            rhythmCanvas.width = rhythmRect.width * 2;
+            rhythmCanvas.height = rhythmRect.height * 2;
+            rhythmCtx.setTransform(1, 0, 0, 1, 0, 0);
+            rhythmCtx.scale(2, 2);
+        }
+
+        // Circadian rhythm functions
+        function getMelatonin(t) {
+            // Peaks around 2-3 AM, minimal during day
+            const phase = (t + chronotypeShift - jetLagOffset + 24) % 24;
+            const peak = 3; // Peak at 3 AM
+            const val = Math.max(0, Math.cos((phase - peak) * Math.PI / 12) * 0.5 + 0.5);
+            // Blue light suppresses melatonin
+            return Math.max(0, val - blueLightEffect * 0.5);
+        }
+
+        function getTemperature(t) {
+            // Minimum around 4-5 AM, maximum around 6-7 PM
+            const phase = (t + chronotypeShift - jetLagOffset + 24) % 24;
+            const min = 5; // Minimum at 5 AM
+            return Math.cos((phase - min - 12) * Math.PI / 12) * 0.5 + 0.5;
+        }
+
+        function getCortisol(t) {
+            // Peaks around 8 AM (cortisol awakening response)
+            const phase = (t + chronotypeShift - jetLagOffset + 24) % 24;
+            const peak = 8;
+            const baseLevel = 0.2;
+            const awakening = Math.max(0, 1 - Math.abs(phase - peak) / 4);
+            return Math.min(1, baseLevel + awakening * 0.8);
+        }
+
+        function getAlertness(t) {
+            // Based on temperature and cortisol
+            return (getTemperature(t) * 0.6 + getCortisol(t) * 0.4) * (1 - getMelatonin(t) * 0.5);
+        }
+
+        function getLightLevel(t) {
+            if (!autoLight) return manualLight;
+            // Natural daylight cycle
+            const phase = (t + 24) % 24;
+            if (phase >= 6 && phase <= 20) {
+                // Daytime: peak at noon
+                return 10000 * Math.sin((phase - 6) * Math.PI / 14);
+            }
+            return 0;
+        }
+
+        function getClockBmal1(t) {
+            // CLOCK/BMAL1 active during day
+            const phase = (t + chronotypeShift + 24) % 24;
+            return Math.cos((phase - 12) * Math.PI / 12) * 0.5 + 0.5;
+        }
+
+        function getPer(t) {
+            // PER peaks in evening
+            const phase = (t + chronotypeShift + 24) % 24;
+            return Math.cos((phase - 18) * Math.PI / 12) * 0.5 + 0.5;
+        }
+
+        function getCry(t) {
+            // CRY similar to PER
+            const phase = (t + chronotypeShift + 24) % 24;
+            return Math.cos((phase - 20) * Math.PI / 12) * 0.5 + 0.5;
+        }
+
+        function getStateInfo(t) {
+            const phase = (t + chronotypeShift + 24) % 24;
+
+            if (phase >= 0 && phase < 3) return { state: 'Sueño profundo', tip: 'Regeneración celular, consolidación de memoria' };
+            if (phase >= 3 && phase < 6) return { state: 'Sueño REM', tip: 'Temperatura mínima, sueños intensos' };
+            if (phase >= 6 && phase < 9) return { state: 'Despertar', tip: 'Pico de cortisol, aumento de alerta' };
+            if (phase >= 9 && phase < 12) return { state: 'Alta concentración', tip: 'Mejor rendimiento cognitivo' };
+            if (phase >= 12 && phase < 14) return { state: 'Post-almuerzo', tip: 'Bajón de alerta temporal' };
+            if (phase >= 14 && phase < 17) return { state: 'Coordinación óptima', tip: 'Mejor tiempo de reacción' };
+            if (phase >= 17 && phase < 19) return { state: 'Pico físico', tip: 'Máxima fuerza muscular' };
+            if (phase >= 19 && phase < 21) return { state: 'Atardecer', tip: 'Inicio de producción de melatonina' };
+            if (phase >= 21 && phase < 23) return { state: 'Pre-sueño', tip: 'Melatonina alta, somnolencia' };
+            return { state: 'Medianoche', tip: 'Transición al sueño profundo' };
+        }
+
+        function formatTime(t) {
+            const h = Math.floor(t) % 24;
+            const m = Math.floor((t % 1) * 60);
+            return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+        }
+
+        function setTime(h) {
+            time = h;
+        }
+
+        function setChronotype(type) {
+            document.getElementById('btn-lark').classList.remove('bg-emerald-500/20');
+            document.getElementById('btn-normal').classList.remove('bg-emerald-500/20');
+            document.getElementById('btn-owl').classList.remove('bg-emerald-500/20');
+            document.getElementById('btn-lark').classList.add('bg-gray-800');
+            document.getElementById('btn-normal').classList.add('bg-gray-800');
+            document.getElementById('btn-owl').classList.add('bg-gray-800');
+
+            if (type === 'lark') {
+                chronotypeShift = -2;
+                document.getElementById('btn-lark').classList.remove('bg-gray-800');
+                document.getElementById('btn-lark').classList.add('bg-emerald-500/20');
+            } else if (type === 'owl') {
+                chronotypeShift = 2;
+                document.getElementById('btn-owl').classList.remove('bg-gray-800');
+                document.getElementById('btn-owl').classList.add('bg-emerald-500/20');
+            } else {
+                chronotypeShift = 0;
+                document.getElementById('btn-normal').classList.remove('bg-gray-800');
+                document.getElementById('btn-normal').classList.add('bg-emerald-500/20');
+            }
+        }
+
+        function simulateJetLag(hours) {
+            jetLagOffset = hours;
+            // Gradually recover (about 1 hour per day)
+        }
+
+        function simulateNightShift() {
+            // Shift phase by 12 hours
+            jetLagOffset = 12;
+        }
+
+        function simulateBlueLight() {
+            blueLightEffect = 0.8;
+            setTimeout(() => { blueLightEffect = 0; }, 5000);
+        }
+
+        function drawClock() {
+            const width = clockCanvas.width / 2;
+            const height = clockCanvas.height / 2;
+            const cx = width / 2;
+            const cy = height / 2;
+            const radius = Math.min(width, height) * 0.38;
+
+            clockCtx.fillStyle = '#030712';
+            clockCtx.fillRect(0, 0, width, height);
+
+            // Background gradient for day/night
+            const lightLevel = getLightLevel(time);
+            const isDaytime = lightLevel > 500;
+
+            // Outer glow based on light
+            const gradient = clockCtx.createRadialGradient(cx, cy, radius * 0.8, cx, cy, radius * 1.3);
+            if (isDaytime) {
+                gradient.addColorStop(0, 'rgba(251, 191, 36, 0.1)');
+                gradient.addColorStop(1, 'transparent');
+            } else {
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 0.1)');
+                gradient.addColorStop(1, 'transparent');
+            }
+            clockCtx.fillStyle = gradient;
+            clockCtx.fillRect(0, 0, width, height);
+
+            // Clock face
+            clockCtx.strokeStyle = '#374151';
+            clockCtx.lineWidth = 3;
+            clockCtx.beginPath();
+            clockCtx.arc(cx, cy, radius, 0, Math.PI * 2);
+            clockCtx.stroke();
+
+            // Hour markers
+            for (let i = 0; i < 24; i++) {
+                const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+                const inner = radius * 0.85;
+                const outer = radius * (i % 6 === 0 ? 0.95 : 0.9);
+
+                clockCtx.strokeStyle = i % 6 === 0 ? '#9ca3af' : '#4b5563';
+                clockCtx.lineWidth = i % 6 === 0 ? 2 : 1;
+                clockCtx.beginPath();
+                clockCtx.moveTo(cx + Math.cos(angle) * inner, cy + Math.sin(angle) * inner);
+                clockCtx.lineTo(cx + Math.cos(angle) * outer, cy + Math.sin(angle) * outer);
+                clockCtx.stroke();
+
+                // Hour labels
+                if (i % 6 === 0) {
+                    clockCtx.fillStyle = '#9ca3af';
+                    clockCtx.font = '14px Inter';
+                    clockCtx.textAlign = 'center';
+                    clockCtx.textBaseline = 'middle';
+                    const labelR = radius * 0.75;
+                    clockCtx.fillText(i.toString(), cx + Math.cos(angle) * labelR, cy + Math.sin(angle) * labelR);
+                }
+            }
+
+            // Day/Night arcs
+            // Night arc (21:00 - 06:00)
+            clockCtx.strokeStyle = 'rgba(99, 102, 241, 0.3)';
+            clockCtx.lineWidth = 8;
+            clockCtx.beginPath();
+            clockCtx.arc(cx, cy, radius * 0.65, (21/24) * Math.PI * 2 - Math.PI/2, (6/24) * Math.PI * 2 - Math.PI/2);
+            clockCtx.stroke();
+
+            // Day arc (06:00 - 21:00)
+            clockCtx.strokeStyle = 'rgba(251, 191, 36, 0.3)';
+            clockCtx.beginPath();
+            clockCtx.arc(cx, cy, radius * 0.65, (6/24) * Math.PI * 2 - Math.PI/2, (21/24) * Math.PI * 2 - Math.PI/2);
+            clockCtx.stroke();
+
+            // Rhythm rings
+            const ringRadius = radius * 0.5;
+
+            // Melatonin ring
+            drawRhythmRing(cx, cy, ringRadius, getMelatonin, '#fbbf24', 0.15);
+
+            // Temperature ring
+            drawRhythmRing(cx, cy, ringRadius * 0.8, getTemperature, '#f87171', 0.1);
+
+            // Cortisol ring
+            drawRhythmRing(cx, cy, ringRadius * 0.6, getCortisol, '#60a5fa', 0.1);
+
+            // Current time hand
+            const timeAngle = (time / 24) * Math.PI * 2 - Math.PI / 2;
+            clockCtx.strokeStyle = '#10b981';
+            clockCtx.lineWidth = 4;
+            clockCtx.lineCap = 'round';
+            clockCtx.beginPath();
+            clockCtx.moveTo(cx, cy);
+            clockCtx.lineTo(cx + Math.cos(timeAngle) * radius * 0.7, cy + Math.sin(timeAngle) * radius * 0.7);
+            clockCtx.stroke();
+
+            // Center dot
+            clockCtx.fillStyle = '#10b981';
+            clockCtx.beginPath();
+            clockCtx.arc(cx, cy, 8, 0, Math.PI * 2);
+            clockCtx.fill();
+
+            // Jet lag indicator
+            if (Math.abs(jetLagOffset) > 0.1) {
+                const offsetAngle = (jetLagOffset / 24) * Math.PI * 2;
+                clockCtx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+                clockCtx.lineWidth = 2;
+                clockCtx.setLineDash([4, 4]);
+                clockCtx.beginPath();
+                clockCtx.arc(cx, cy, radius * 0.55, timeAngle, timeAngle + offsetAngle, jetLagOffset < 0);
+                clockCtx.stroke();
+                clockCtx.setLineDash([]);
+
+                // Jet lag label
+                clockCtx.fillStyle = '#ef4444';
+                clockCtx.font = '11px Inter';
+                clockCtx.textAlign = 'center';
+                clockCtx.fillText(`Jet Lag: ${jetLagOffset > 0 ? '+' : ''}${jetLagOffset.toFixed(1)}h`, cx, cy + radius + 20);
+            }
+        }
+
+        function drawRhythmRing(cx, cy, radius, fn, color, alpha) {
+            clockCtx.strokeStyle = color;
+            clockCtx.lineWidth = 3;
+            clockCtx.globalAlpha = alpha;
+            clockCtx.beginPath();
+            for (let i = 0; i <= 360; i++) {
+                const t = (i / 360) * 24;
+                const val = fn(t);
+                const r = radius * (0.5 + val * 0.5);
+                const angle = (i / 360) * Math.PI * 2 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+                if (i === 0) clockCtx.moveTo(x, y);
+                else clockCtx.lineTo(x, y);
+            }
+            clockCtx.closePath();
+            clockCtx.stroke();
+
+            // Current value indicator
+            clockCtx.globalAlpha = 1;
+            const currentVal = fn(time);
+            const currentR = radius * (0.5 + currentVal * 0.5);
+            const currentAngle = (time / 24) * Math.PI * 2 - Math.PI / 2;
+            clockCtx.fillStyle = color;
+            clockCtx.beginPath();
+            clockCtx.arc(cx + Math.cos(currentAngle) * currentR, cy + Math.sin(currentAngle) * currentR, 5, 0, Math.PI * 2);
+            clockCtx.fill();
+        }
+
+        function drawRhythms() {
+            const width = rhythmCanvas.width / 2;
+            const height = rhythmCanvas.height / 2;
+
+            rhythmCtx.fillStyle = '#0f172a';
+            rhythmCtx.fillRect(0, 0, width, height);
+
+            const padding = 30;
+            const graphWidth = width - 2 * padding;
+            const graphHeight = height - 2 * padding;
+
+            // Grid
+            rhythmCtx.strokeStyle = '#1f2937';
+            rhythmCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const x = padding + (i / 4) * graphWidth;
+                rhythmCtx.beginPath();
+                rhythmCtx.moveTo(x, padding);
+                rhythmCtx.lineTo(x, height - padding);
+                rhythmCtx.stroke();
+
+                // Hour labels
+                const hour = i * 6;
+                rhythmCtx.fillStyle = '#6b7280';
+                rhythmCtx.font = '10px Inter';
+                rhythmCtx.textAlign = 'center';
+                rhythmCtx.fillText(`${hour}:00`, x, height - 10);
+            }
+
+            // Draw curves
+            const curves = [
+                { fn: getMelatonin, color: '#fbbf24', name: 'Melatonina' },
+                { fn: getTemperature, color: '#f87171', name: 'Temp' },
+                { fn: getCortisol, color: '#60a5fa', name: 'Cortisol' }
+            ];
+
+            curves.forEach(curve => {
+                rhythmCtx.strokeStyle = curve.color;
+                rhythmCtx.lineWidth = 2;
+                rhythmCtx.beginPath();
+                for (let i = 0; i <= graphWidth; i++) {
+                    const t = (i / graphWidth) * 24;
+                    const val = curve.fn(t);
+                    const x = padding + i;
+                    const y = height - padding - val * graphHeight;
+                    if (i === 0) rhythmCtx.moveTo(x, y);
+                    else rhythmCtx.lineTo(x, y);
+                }
+                rhythmCtx.stroke();
+            });
+
+            // Current time marker
+            const currentX = padding + (time / 24) * graphWidth;
+            rhythmCtx.strokeStyle = '#10b981';
+            rhythmCtx.lineWidth = 2;
+            rhythmCtx.setLineDash([4, 4]);
+            rhythmCtx.beginPath();
+            rhythmCtx.moveTo(currentX, padding);
+            rhythmCtx.lineTo(currentX, height - padding);
+            rhythmCtx.stroke();
+            rhythmCtx.setLineDash([]);
+        }
+
+        function updateDisplay() {
+            timeDisplay.textContent = formatTime(time);
+            dayDisplay.textContent = day;
+
+            const lightLevel = getLightLevel(time);
+            const isDaytime = lightLevel > 500;
+            phaseIcon.textContent = isDaytime ? '☀️' : '🌙';
+            phaseDisplay.textContent = isDaytime ? 'Día' : 'Noche';
+            phaseDisplay.className = isDaytime ? 'text-yellow-400' : 'text-indigo-400';
+
+            const stateInfo = getStateInfo(time);
+            stateDisplay.textContent = stateInfo.state;
+            stateTip.textContent = stateInfo.tip;
+
+            // Gene expression bars
+            document.getElementById('clock-bmal1-bar').style.width = (getClockBmal1(time) * 100) + '%';
+            document.getElementById('per-bar').style.width = (getPer(time) * 100) + '%';
+            document.getElementById('cry-bar').style.width = (getCry(time) * 100) + '%';
+
+            // Light display
+            if (autoLight) {
+                lightSlider.value = getLightLevel(time);
+                lightValue.textContent = Math.round(getLightLevel(time));
+            }
+        }
+
+        function animate() {
+            if (!isPaused) {
+                // Advance time (speed = multiplier, so 60x means 1 second = 1 minute)
+                time += (speed / 3600); // Convert to hours per frame (assuming 60fps)
+                if (time >= 24) {
+                    time -= 24;
+                    day++;
+                    // Jet lag recovery (1h per day)
+                    if (Math.abs(jetLagOffset) > 0) {
+                        jetLagOffset *= 0.9;
+                        if (Math.abs(jetLagOffset) < 0.1) jetLagOffset = 0;
+                    }
+                }
+            }
+
+            updateDisplay();
+            drawClock();
+            drawRhythms();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        speedSlider.addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            speedValue.textContent = speed;
+            const minutes = Math.round(speed / 60);
+            speedEquiv.textContent = minutes >= 1 ? `${minutes}h simulada` : `${speed} min simulados`;
+        });
+
+        lightSlider.addEventListener('input', (e) => {
+            if (!autoLight) {
+                manualLight = parseFloat(e.target.value);
+                lightValue.textContent = manualLight;
+            }
+        });
+
+        autoLightCheckbox.addEventListener('change', (e) => {
+            autoLight = e.target.checked;
+            lightSlider.disabled = autoLight;
+        });
+
+        pauseBtn.addEventListener('click', () => {
+            isPaused = !isPaused;
+            pauseBtn.textContent = isPaused ? 'Reanudar' : 'Pausar';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            time = 6; // Start at 6 AM
+            day = 1;
+            jetLagOffset = 0;
+            blueLightEffect = 0;
+            chronotypeShift = 0;
+            setChronotype('normal');
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // Initialize
+        resizeCanvases();
+        time = 6; // Start at 6 AM
+        animate();
+    </script>
+</body>
+</html>

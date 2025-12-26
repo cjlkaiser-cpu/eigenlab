@@ -1,0 +1,921 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erupciones Volcánicas - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ef4444;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #f87171;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(239, 68, 68, 0.1), rgba(217, 119, 6, 0.05));
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+        }
+
+        .vei-bar {
+            height: 8px;
+            background: linear-gradient(to right,
+                #22c55e 0%,
+                #84cc16 12.5%,
+                #eab308 25%,
+                #f97316 37.5%,
+                #ef4444 50%,
+                #dc2626 62.5%,
+                #b91c1c 75%,
+                #7f1d1d 87.5%,
+                #450a0a 100%);
+            border-radius: 4px;
+        }
+
+        .volcano-type {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .volcano-type:hover {
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .volcano-type.active {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-red-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-red-400 transition">Geology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Erupciones Volcánicas</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-red-500 font-medium glow-text">Erupciones Volcánicas</span>
+                            <span class="text-gray-600 text-sm ml-2">Escudo, Estratovolcán, Caldera</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">VEI:</span>
+                        <span id="vei-display" class="text-red-500 mono font-bold">3</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">T:</span>
+                        <span id="temp-display" class="text-orange-500 mono">900</span>
+                        <span class="text-gray-600">°C</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Presión:</span>
+                        <span id="pressure-display" class="text-amber-500 mono">0</span>
+                        <span class="text-gray-600">%</span>
+                    </div>
+                    <div id="status-indicator" class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-gray-600"></span>
+                        <span class="text-gray-500 text-xs">Inactivo</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="volcano-canvas" class="w-full h-full"></canvas>
+
+            <!-- Volcano info overlay -->
+            <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                <div class="font-medium text-red-400 mb-2" id="volcano-name">Estratovolcán</div>
+                <div class="space-y-1 text-gray-400">
+                    <div>Composición: <span id="magma-type" class="text-gray-300">Andesita</span></div>
+                    <div>Viscosidad: <span id="viscosity-label" class="text-gray-300">Alta</span></div>
+                    <div>Estilo: <span id="eruption-style" class="text-gray-300">Explosivo</span></div>
+                </div>
+            </div>
+
+            <!-- Phase indicator -->
+            <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                <div class="text-xs text-gray-500 mb-1">Fase</div>
+                <div id="phase-display" class="text-red-500 font-medium">Reposo</div>
+            </div>
+
+            <!-- Magma chamber indicator -->
+            <div class="absolute bottom-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                <div class="font-medium text-orange-500 mb-2">Cámara Magmática</div>
+                <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                    <span class="text-gray-500">Profundidad:</span>
+                    <span class="mono text-gray-300">5-10 km</span>
+                    <span class="text-gray-500">Temperatura:</span>
+                    <span id="chamber-temp" class="mono text-orange-400">900°C</span>
+                    <span class="text-gray-500">Gas disuelto:</span>
+                    <span id="gas-content" class="mono text-amber-400">3.0%</span>
+                </div>
+            </div>
+
+            <!-- VEI Scale -->
+            <div class="absolute bottom-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 w-64">
+                <div class="text-xs text-gray-500 mb-2">Índice de Explosividad Volcánica (VEI)</div>
+                <div class="vei-bar mb-2"></div>
+                <div class="flex justify-between text-xs text-gray-600">
+                    <span>0</span>
+                    <span>4</span>
+                    <span>8</span>
+                </div>
+                <div id="vei-example" class="text-xs text-gray-500 mt-2">
+                    VEI 3: Nevado del Ruiz
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Volcano Type -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-red-500"></span>
+                    Tipo de Volcán
+                </h3>
+
+                <div class="space-y-2">
+                    <div class="volcano-type p-3 border border-gray-800 rounded-lg" data-type="shield">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-green-400 font-medium">Escudo</span>
+                            <span class="text-xs text-gray-600">(Kilauea, Mauna Loa)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Basáltico, fluido, efusivo. Pendientes suaves.</div>
+                    </div>
+                    <div class="volcano-type active p-3 border border-gray-800 rounded-lg" data-type="strato">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-orange-400 font-medium">Estratovolcán</span>
+                            <span class="text-xs text-gray-600">(Fuji, Vesuvio)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Andesítico, viscoso, explosivo. Cono clásico.</div>
+                    </div>
+                    <div class="volcano-type p-3 border border-gray-800 rounded-lg" data-type="caldera">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-red-400 font-medium">Caldera</span>
+                            <span class="text-xs text-gray-600">(Yellowstone, Santorini)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Riolítico, muy viscoso, super-explosivo.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El tipo de volcan depende de la <span class="text-amber-400">viscosidad del magma</span>. Magma fluido = escudo. Magma viscoso = estratovolcan explosivo. El <span class="text-amber-400">VEI</span> mide la escala de erupcion.
+                </p>
+                <a href="guides/volcanes.html" class="mt-3 flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: tipos, escala VEI, flujos piroclasticos
+                </a>
+            </div>
+
+            <!-- Magma Properties -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                    Propiedades del Magma
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Viscosidad: <span id="viscosity-value" class="text-orange-400 mono">0.65</span>
+                    </label>
+                    <input type="range" id="viscosity" min="0.1" max="1" step="0.01" value="0.65" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>Fluido (basalto)</span>
+                        <span>Viscoso (riolita)</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Contenido de gas: <span id="gas-value" class="text-amber-400 mono">3.0</span>%
+                    </label>
+                    <input type="range" id="gas" min="0.5" max="6" step="0.1" value="3" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>0.5%</span>
+                        <span>6% (explosivo)</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Temperatura: <span id="temp-value" class="text-red-400 mono">900</span>°C
+                    </label>
+                    <input type="range" id="temperature" min="700" max="1200" step="10" value="900" class="w-full">
+                </div>
+            </div>
+
+            <!-- Eruption Control -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Control de Erupción
+                </h3>
+
+                <button id="erupt-btn" class="w-full py-2.5 px-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm transition font-medium flex items-center justify-center gap-2 mb-3">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/>
+                    </svg>
+                    Iniciar Erupción
+                </button>
+
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Pausar
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visual Options -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-chamber" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500">
+                        <span class="text-sm text-gray-400">Cámara magmática</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-convection" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-red-500">
+                        <span class="text-sm text-gray-400">Convección del magma</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-ash" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-gray-500">
+                        <span class="text-sm text-gray-400">Columna de ceniza</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-pyroclasts" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-amber-500">
+                        <span class="text-sm text-gray-400">Piroclastos</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Math Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-red-400 mb-3">Viscosidad del Magma</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>η = A · exp(E<sub>a</sub> / RT)</div>
+                    <div class="mt-2 text-gray-500 text-xs">
+                        η = viscosidad (Pa·s)<br>
+                        E<sub>a</sub> = energía de activación<br>
+                        T = temperatura (K)<br>
+                        <br>
+                        SiO<sub>2</sub> alto → viscosidad alta<br>
+                        SiO<sub>2</sub> bajo → viscosidad baja
+                    </div>
+                </div>
+            </div>
+
+            <!-- VEI Table -->
+            <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Escala VEI</h3>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-400">VEI 0-1</span>
+                        <span class="text-gray-500">Efusivo, flujos de lava</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-yellow-400">VEI 2-3</span>
+                        <span class="text-gray-500">Explosivo moderado</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-orange-400">VEI 4-5</span>
+                        <span class="text-gray-500">Paroxístico</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-red-400">VEI 6-7</span>
+                        <span class="text-gray-500">Colosal, pliniano</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-red-600">VEI 8</span>
+                        <span class="text-gray-500">Supervolcánico</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard shortcuts -->
+            <div class="text-xs text-gray-600 border-t border-gray-800 pt-4">
+                <div class="font-medium text-gray-500 mb-2">Atajos de teclado</div>
+                <div class="grid grid-cols-2 gap-1">
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">Space</kbd> Pausar</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">E</kbd> Erupción</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">R</kbd> Reset</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">1-3</kbd> Tipo</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('volcano-canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        // Volcano types configuration
+        const VOLCANO_TYPES = {
+            shield: {
+                name: 'Volcán Escudo',
+                magmaType: 'Basalto',
+                viscosity: 0.2,
+                gas: 1,
+                style: 'Efusivo',
+                baseVEI: 0,
+                slope: 0.15,
+                color: '#22c55e'
+            },
+            strato: {
+                name: 'Estratovolcán',
+                magmaType: 'Andesita',
+                viscosity: 0.65,
+                gas: 3,
+                style: 'Explosivo',
+                baseVEI: 3,
+                slope: 0.5,
+                color: '#f97316'
+            },
+            caldera: {
+                name: 'Caldera',
+                magmaType: 'Riolita',
+                viscosity: 0.9,
+                gas: 5,
+                style: 'Super-explosivo',
+                baseVEI: 6,
+                slope: 0.2,
+                color: '#ef4444'
+            }
+        };
+
+        // State
+        const state = {
+            type: 'strato',
+            viscosity: 0.65,
+            gas: 3,
+            temperature: 900,
+            erupting: false,
+            paused: false,
+            pressure: 0,
+            eruptionTime: 0,
+            showChamber: true,
+            showConvection: true,
+            showAsh: true,
+            showPyroclasts: true
+        };
+
+        // Particles
+        let lavaParticles = [];
+        let ashParticles = [];
+        let pyroclasts = [];
+
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function calculateVEI() {
+            const volcanoVEI = VOLCANO_TYPES[state.type].baseVEI;
+            const gasBonus = (state.gas - 1) * 0.5;
+            const viscosityBonus = state.viscosity * 2;
+            return Math.min(8, Math.max(0, Math.round(volcanoVEI + gasBonus + viscosityBonus - 2)));
+        }
+
+        function updateDisplays() {
+            const vei = calculateVEI();
+            document.getElementById('vei-display').textContent = vei;
+            document.getElementById('temp-display').textContent = state.temperature;
+            document.getElementById('pressure-display').textContent = Math.round(state.pressure);
+            document.getElementById('chamber-temp').textContent = state.temperature + '°C';
+            document.getElementById('gas-content').textContent = state.gas.toFixed(1) + '%';
+
+            const examples = [
+                'VEI 0: Kilauea (efusivo)',
+                'VEI 1: Stromboli (stromboliano)',
+                'VEI 2: Galeras (vulcaniano)',
+                'VEI 3: Nevado del Ruiz',
+                'VEI 4: Eyjafjallajökull 2010',
+                'VEI 5: St. Helens 1980',
+                'VEI 6: Pinatubo 1991',
+                'VEI 7: Tambora 1815',
+                'VEI 8: Yellowstone (supervolcán)'
+            ];
+            document.getElementById('vei-example').textContent = examples[vei];
+        }
+
+        function setVolcanoType(type) {
+            state.type = type;
+            const config = VOLCANO_TYPES[type];
+
+            state.viscosity = config.viscosity;
+            state.gas = config.gas;
+
+            document.getElementById('viscosity').value = config.viscosity;
+            document.getElementById('gas').value = config.gas;
+            document.getElementById('viscosity-value').textContent = config.viscosity.toFixed(2);
+            document.getElementById('gas-value').textContent = config.gas.toFixed(1);
+
+            document.getElementById('volcano-name').textContent = config.name;
+            document.getElementById('magma-type').textContent = config.magmaType;
+            document.getElementById('viscosity-label').textContent = config.viscosity > 0.6 ? 'Alta' : config.viscosity > 0.3 ? 'Media' : 'Baja';
+            document.getElementById('eruption-style').textContent = config.style;
+
+            document.querySelectorAll('.volcano-type').forEach(el => {
+                el.classList.toggle('active', el.dataset.type === type);
+            });
+
+            updateDisplays();
+        }
+
+        function startEruption() {
+            state.erupting = true;
+            state.eruptionTime = 0;
+            state.pressure = 100;
+            lavaParticles = [];
+            ashParticles = [];
+            pyroclasts = [];
+
+            document.getElementById('phase-display').textContent = 'Erupción activa';
+            updateStatusIndicator('erupting');
+        }
+
+        function reset() {
+            state.erupting = false;
+            state.paused = false;
+            state.pressure = 0;
+            state.eruptionTime = 0;
+            lavaParticles = [];
+            ashParticles = [];
+            pyroclasts = [];
+
+            document.getElementById('phase-display').textContent = 'Reposo';
+            document.getElementById('pause-btn').textContent = 'Pausar';
+            updateStatusIndicator('inactive');
+            updateDisplays();
+        }
+
+        function updateStatusIndicator(status) {
+            const indicator = document.getElementById('status-indicator');
+            const dot = indicator.querySelector('span:first-child');
+            const label = indicator.querySelector('span:last-child');
+
+            dot.className = 'w-2 h-2 rounded-full';
+            if (status === 'erupting') {
+                dot.classList.add('bg-red-500', 'animate-pulse');
+                label.textContent = 'Erupción';
+            } else if (status === 'paused') {
+                dot.classList.add('bg-yellow-500');
+                label.textContent = 'Pausado';
+            } else {
+                dot.classList.add('bg-gray-600');
+                label.textContent = 'Inactivo';
+            }
+        }
+
+        function draw() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Sky gradient
+            const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+            skyGrad.addColorStop(0, '#0f172a');
+            skyGrad.addColorStop(1, '#1e293b');
+            ctx.fillStyle = skyGrad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Ground
+            ctx.fillStyle = '#292524';
+            ctx.fillRect(0, h * 0.65, w, h * 0.35);
+
+            const cx = w / 2;
+            const baseY = h * 0.65;
+            const config = VOLCANO_TYPES[state.type];
+
+            // Draw magma chamber if enabled
+            if (state.showChamber) {
+                drawMagmaChamber(cx, baseY, w, h);
+            }
+
+            // Draw volcano based on type
+            drawVolcano(cx, baseY, w, h, config);
+
+            // Draw eruption effects
+            if (state.erupting || lavaParticles.length > 0) {
+                if (state.showAsh && state.erupting) drawAshColumn(cx, baseY, config);
+                if (state.showPyroclasts) drawPyroclasts(cx, baseY);
+                drawLava(cx, baseY, config);
+            }
+
+            // Update particles
+            if (!state.paused) {
+                updateParticles();
+            }
+        }
+
+        function drawMagmaChamber(cx, baseY, w, h) {
+            const chamberY = baseY + h * 0.2;
+            const chamberW = w * 0.2;
+            const chamberH = h * 0.12;
+
+            // Chamber glow
+            const glowGrad = ctx.createRadialGradient(cx, chamberY, 0, cx, chamberY, chamberW);
+            glowGrad.addColorStop(0, 'rgba(239, 68, 68, 0.4)');
+            glowGrad.addColorStop(0.5, 'rgba(217, 119, 6, 0.2)');
+            glowGrad.addColorStop(1, 'transparent');
+            ctx.fillStyle = glowGrad;
+            ctx.fillRect(cx - chamberW, chamberY - chamberH, chamberW * 2, chamberH * 2);
+
+            // Chamber shape
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.ellipse(cx, chamberY, chamberW * 0.7, chamberH * 0.6, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Magma texture
+            ctx.fillStyle = '#ef4444';
+            ctx.beginPath();
+            ctx.ellipse(cx, chamberY - chamberH * 0.1, chamberW * 0.5, chamberH * 0.4, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Conduit
+            ctx.fillStyle = '#dc2626';
+            ctx.beginPath();
+            ctx.moveTo(cx - 12, chamberY - chamberH * 0.5);
+            ctx.lineTo(cx + 12, chamberY - chamberH * 0.5);
+            ctx.lineTo(cx + 6, baseY);
+            ctx.lineTo(cx - 6, baseY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Convection currents
+            if (state.showConvection && state.erupting) {
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+                ctx.lineWidth = 2;
+
+                for (let i = 0; i < 6; i++) {
+                    const t = (Date.now() / 1000 + i * 0.5) % 2;
+                    const x = cx + (i - 2.5) * 25;
+                    const startY = chamberY + chamberH * 0.3;
+                    const endY = chamberY - chamberH * 0.3;
+                    const y = startY + (endY - startY) * (t / 2);
+                    const alpha = t < 1 ? t : 2 - t;
+
+                    ctx.globalAlpha = alpha * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawVolcano(cx, baseY, w, h, config) {
+            const slope = config.slope;
+            const volcanoHeight = h * 0.32;
+            const baseWidth = volcanoHeight / slope;
+            const craterWidth = 25 + (1 - slope) * 35;
+
+            // Volcano gradient
+            const volcGrad = ctx.createLinearGradient(cx - baseWidth, 0, cx + baseWidth, 0);
+            volcGrad.addColorStop(0, '#1c1917');
+            volcGrad.addColorStop(0.3, '#44403c');
+            volcGrad.addColorStop(0.5, '#57534e');
+            volcGrad.addColorStop(0.7, '#44403c');
+            volcGrad.addColorStop(1, '#1c1917');
+
+            ctx.fillStyle = volcGrad;
+            ctx.beginPath();
+            ctx.moveTo(cx - baseWidth, baseY);
+            ctx.lineTo(cx - craterWidth, baseY - volcanoHeight);
+            ctx.lineTo(cx + craterWidth, baseY - volcanoHeight);
+            ctx.lineTo(cx + baseWidth, baseY);
+            ctx.closePath();
+            ctx.fill();
+
+            // Snow cap for stratovolcano
+            if (state.type === 'strato') {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.beginPath();
+                ctx.moveTo(cx - craterWidth - 18, baseY - volcanoHeight + 25);
+                ctx.lineTo(cx - craterWidth, baseY - volcanoHeight);
+                ctx.lineTo(cx + craterWidth, baseY - volcanoHeight);
+                ctx.lineTo(cx + craterWidth + 18, baseY - volcanoHeight + 25);
+                ctx.closePath();
+                ctx.fill();
+            }
+
+            // Crater
+            ctx.fillStyle = '#0c0a09';
+            ctx.beginPath();
+            ctx.ellipse(cx, baseY - volcanoHeight + 4, craterWidth, 8, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Crater glow during eruption
+            if (state.erupting) {
+                const glowIntensity = 0.5 + Math.sin(Date.now() / 200) * 0.3;
+                ctx.fillStyle = `rgba(239, 68, 68, ${glowIntensity})`;
+                ctx.beginPath();
+                ctx.ellipse(cx, baseY - volcanoHeight + 6, craterWidth * 0.7, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            return { craterY: baseY - volcanoHeight, craterWidth };
+        }
+
+        function drawLava(cx, baseY, config) {
+            const volcanoHeight = baseY * 0.32 / 0.65;
+            const craterY = baseY - volcanoHeight;
+
+            // Generate new lava particles
+            if (!state.paused && state.erupting && Math.random() < 0.4 * (1 - state.viscosity + 0.3)) {
+                const angle = (Math.random() - 0.5) * Math.PI * 0.5 - Math.PI / 2;
+                const speed = 4 + Math.random() * 6 * (1 - state.viscosity * 0.5);
+
+                lavaParticles.push({
+                    x: cx + (Math.random() - 0.5) * 20,
+                    y: craterY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed * 2,
+                    size: 3 + Math.random() * 5,
+                    life: 1,
+                    hue: 15 + Math.random() * 30
+                });
+            }
+
+            // Draw lava particles
+            lavaParticles.forEach(p => {
+                const alpha = p.life;
+                ctx.fillStyle = `hsla(${p.hue}, 100%, ${50 + (1 - p.life) * 20}%, ${alpha})`;
+                ctx.shadowColor = `hsl(${p.hue}, 100%, 50%)`;
+                ctx.shadowBlur = 8;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        function drawAshColumn(cx, baseY, config) {
+            const volcanoHeight = baseY * 0.32 / 0.65;
+            const craterY = baseY - volcanoHeight;
+            const columnHeight = 150 + state.gas * 40 + (state.viscosity * 80);
+
+            // Generate ash particles
+            if (!state.paused && Math.random() < 0.6) {
+                ashParticles.push({
+                    x: cx + (Math.random() - 0.5) * 25,
+                    y: craterY,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: -3 - Math.random() * 4,
+                    size: 12 + Math.random() * 25,
+                    life: 1
+                });
+            }
+
+            // Draw ash cloud
+            ashParticles.forEach(p => {
+                const alpha = p.life * 0.4;
+                ctx.fillStyle = `rgba(87, 83, 78, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Main ash column
+            const gradient = ctx.createLinearGradient(cx, craterY, cx, craterY - columnHeight);
+            gradient.addColorStop(0, 'rgba(87, 83, 78, 0.7)');
+            gradient.addColorStop(0.5, 'rgba(87, 83, 78, 0.3)');
+            gradient.addColorStop(1, 'rgba(87, 83, 78, 0)');
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.moveTo(cx - 18, craterY);
+            ctx.quadraticCurveTo(cx - 50, craterY - columnHeight * 0.5, cx - 70, craterY - columnHeight);
+            ctx.lineTo(cx + 70, craterY - columnHeight);
+            ctx.quadraticCurveTo(cx + 50, craterY - columnHeight * 0.5, cx + 18, craterY);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawPyroclasts(cx, baseY) {
+            const volcanoHeight = baseY * 0.32 / 0.65;
+            const craterY = baseY - volcanoHeight;
+
+            // Generate pyroclasts
+            if (!state.paused && state.erupting && Math.random() < 0.12 * state.viscosity) {
+                const angle = (Math.random() - 0.5) * Math.PI * 0.7 - Math.PI / 2;
+                const speed = 8 + Math.random() * 7;
+
+                pyroclasts.push({
+                    x: cx + (Math.random() - 0.5) * 12,
+                    y: craterY,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed * 1.5,
+                    size: 4 + Math.random() * 10,
+                    rotation: Math.random() * Math.PI * 2,
+                    rotSpeed: (Math.random() - 0.5) * 0.3,
+                    life: 1
+                });
+            }
+
+            // Draw pyroclasts
+            pyroclasts.forEach(p => {
+                ctx.save();
+                ctx.translate(p.x, p.y);
+                ctx.rotate(p.rotation);
+
+                const alpha = p.life;
+                ctx.fillStyle = `rgba(68, 64, 60, ${alpha})`;
+
+                ctx.beginPath();
+                for (let i = 0; i < 6; i++) {
+                    const angle = (i / 6) * Math.PI * 2;
+                    const r = p.size * (0.7 + Math.sin(i * 2.3) * 0.3);
+                    const x = Math.cos(angle) * r;
+                    const y = Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+            });
+        }
+
+        function updateParticles() {
+            const gravity = 0.15;
+
+            // Update lava
+            lavaParticles = lavaParticles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += gravity;
+                p.life -= 0.01;
+                return p.life > 0 && p.y < canvas.height / dpr;
+            });
+
+            // Update ash
+            ashParticles = ashParticles.filter(p => {
+                p.x += p.vx + (Math.random() - 0.5) * 2;
+                p.y += p.vy;
+                p.size += 0.6;
+                p.life -= 0.008;
+                return p.life > 0;
+            });
+
+            // Update pyroclasts
+            pyroclasts = pyroclasts.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += gravity * 1.5;
+                p.rotation += p.rotSpeed;
+                p.life -= 0.008;
+                return p.life > 0 && p.y < canvas.height / dpr;
+            });
+
+            // Update eruption
+            if (state.erupting) {
+                state.eruptionTime += 1/60;
+                state.pressure = Math.max(0, state.pressure - 0.08);
+
+                if (state.pressure <= 0) {
+                    state.erupting = false;
+                    document.getElementById('phase-display').textContent = 'Enfriamiento';
+                    setTimeout(() => {
+                        document.getElementById('phase-display').textContent = 'Reposo';
+                        updateStatusIndicator('inactive');
+                    }, 3000);
+                }
+
+                updateDisplays();
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.volcano-type').forEach(el => {
+            el.addEventListener('click', () => setVolcanoType(el.dataset.type));
+        });
+
+        document.getElementById('viscosity').addEventListener('input', (e) => {
+            state.viscosity = parseFloat(e.target.value);
+            document.getElementById('viscosity-value').textContent = state.viscosity.toFixed(2);
+            document.getElementById('viscosity-label').textContent = state.viscosity > 0.6 ? 'Alta' : state.viscosity > 0.3 ? 'Media' : 'Baja';
+            updateDisplays();
+        });
+
+        document.getElementById('gas').addEventListener('input', (e) => {
+            state.gas = parseFloat(e.target.value);
+            document.getElementById('gas-value').textContent = state.gas.toFixed(1);
+            updateDisplays();
+        });
+
+        document.getElementById('temperature').addEventListener('input', (e) => {
+            state.temperature = parseInt(e.target.value);
+            document.getElementById('temp-value').textContent = state.temperature;
+            updateDisplays();
+        });
+
+        document.getElementById('show-chamber').addEventListener('change', (e) => state.showChamber = e.target.checked);
+        document.getElementById('show-convection').addEventListener('change', (e) => state.showConvection = e.target.checked);
+        document.getElementById('show-ash').addEventListener('change', (e) => state.showAsh = e.target.checked);
+        document.getElementById('show-pyroclasts').addEventListener('change', (e) => state.showPyroclasts = e.target.checked);
+
+        document.getElementById('erupt-btn').addEventListener('click', startEruption);
+        document.getElementById('reset-btn').addEventListener('click', reset);
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            state.paused = !state.paused;
+            document.getElementById('pause-btn').textContent = state.paused ? 'Reanudar' : 'Pausar';
+            if (state.erupting) {
+                updateStatusIndicator(state.paused ? 'paused' : 'erupting');
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                state.paused = !state.paused;
+                document.getElementById('pause-btn').textContent = state.paused ? 'Reanudar' : 'Pausar';
+                if (state.erupting) {
+                    updateStatusIndicator(state.paused ? 'paused' : 'erupting');
+                }
+            } else if (e.code === 'KeyE') {
+                startEruption();
+            } else if (e.code === 'KeyR') {
+                reset();
+            } else if (e.code === 'Digit1') {
+                setVolcanoType('shield');
+            } else if (e.code === 'Digit2') {
+                setVolcanoType('strato');
+            } else if (e.code === 'Digit3') {
+                setVolcanoType('caldera');
+            }
+        });
+
+        // Initialize
+        setVolcanoType('strato');
+        animate();
+    </script>
+</body>
+</html>

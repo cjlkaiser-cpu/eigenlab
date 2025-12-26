@@ -1,0 +1,1284 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erosión | Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #030712;
+            color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Range slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #d97706;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Accent colors */
+        .accent { color: #d97706; }
+        .accent-bg { background: #d97706; }
+
+        /* Erosion type colors */
+        .hydric-color { color: #3b82f6; }
+        .wind-color { color: #f59e0b; }
+        .glacial-color { color: #06b6d4; }
+        .coastal-color { color: #0ea5e9; }
+        .hydric-bg { background: #3b82f6; }
+        .wind-bg { background: #f59e0b; }
+        .glacial-bg { background: #06b6d4; }
+        .coastal-bg { background: #0ea5e9; }
+
+        /* Button styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+        }
+        .btn-secondary:hover {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        /* Header display boxes */
+        .header-display {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            min-width: 100px;
+        }
+        .header-display.active {
+            border-color: #d97706;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.2);
+        }
+
+        /* Erosion type selector */
+        .erosion-selector {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+        .erosion-btn {
+            padding: 0.75rem 0.5rem;
+            border-radius: 0.5rem;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            background: #1e293b;
+        }
+        .erosion-btn:hover {
+            transform: translateY(-2px);
+            border-color: #475569;
+        }
+        .erosion-btn.active {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.15);
+        }
+
+        /* Info card styles */
+        .info-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Stats bar */
+        .stat-bar {
+            height: 8px;
+            background: #1e293b;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        .stat-bar-fill {
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+
+        /* Overlay panels on canvas */
+        .canvas-overlay {
+            position: absolute;
+            pointer-events: none;
+        }
+        .canvas-overlay.interactive {
+            pointer-events: auto;
+        }
+
+        /* Keyboard hint */
+        kbd {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: #94a3b8;
+        }
+
+        /* Terrain profile indicator */
+        .terrain-profile {
+            height: 40px;
+            background: #0f172a;
+            border-radius: 0.375rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .terrain-line {
+            stroke: #d97706;
+            stroke-width: 2;
+            fill: none;
+        }
+        .terrain-fill {
+            fill: rgba(217, 119, 6, 0.2);
+        }
+
+        /* Animation for running state */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 5px rgba(217, 119, 6, 0.3); }
+            50% { box-shadow: 0 0 15px rgba(217, 119, 6, 0.6); }
+        }
+        .running .header-display.active {
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen" id="body">
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-700/50 px-4 py-2 flex-shrink-0">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-2 text-sm">
+                    <a href="../../_portal/index.html" class="text-slate-400 hover:text-amber-500 transition-colors">EigenLab</a>
+                    <span class="text-slate-600">/</span>
+                    <a href="index.html" class="text-slate-400 hover:text-amber-500 transition-colors">Geology</a>
+                    <span class="text-slate-600">/</span>
+                    <span class="text-white font-medium">Erosión</span>
+                </nav>
+            </div>
+
+            <!-- Live displays -->
+            <div class="flex items-center gap-3">
+                <div class="header-display" id="display-type">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Tipo</div>
+                    <div class="text-sm font-semibold hydric-color mono">Hídrica</div>
+                </div>
+                <div class="header-display active" id="display-time">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Tiempo</div>
+                    <div class="text-sm font-semibold accent mono">0 años</div>
+                </div>
+                <div class="header-display" id="display-eroded">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Erosionado</div>
+                    <div class="text-sm font-semibold text-red-400 mono">0 m³</div>
+                </div>
+                <div class="header-display" id="display-deposited">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Depositado</div>
+                    <div class="text-sm font-semibold text-emerald-400 mono">0 m³</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex flex-1 overflow-hidden">
+        <!-- Canvas area -->
+        <div class="flex-1 relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+
+            <!-- Legend overlay -->
+            <div class="canvas-overlay top-4 left-4">
+                <div class="info-card p-3">
+                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Erosión Activa</div>
+                    <div class="space-y-1.5" id="erosion-legend">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full hydric-bg"></div>
+                            <span class="text-xs text-slate-300">Hídrica (lluvia, ríos)</span>
+                        </div>
+                    </div>
+                    <div class="mt-3 pt-2 border-t border-slate-700/50">
+                        <div class="text-[10px] text-slate-500 mb-1">Perfil Original</div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-8 h-0.5 bg-slate-500 opacity-50"></div>
+                            <span class="text-[10px] text-slate-500">vs Actual</span>
+                            <div class="w-8 h-0.5 bg-amber-500"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Erosion info overlay -->
+            <div class="canvas-overlay top-4 right-4" id="erosion-info">
+                <div class="info-card p-3 max-w-xs">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xl" id="info-icon">🌧️</span>
+                        <div>
+                            <div class="text-xs font-semibold text-white" id="info-title">Erosión Hídrica</div>
+                            <div class="text-[10px] text-slate-400" id="info-subtitle">Agua y lluvia</div>
+                        </div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 leading-relaxed" id="info-description">
+                        El agua de lluvia y ríos desgasta el terreno, formando valles en V, cañones y deltas.
+                    </p>
+                    <div class="flex gap-2 mt-2 pt-2 border-t border-slate-700/50">
+                        <div class="flex-1">
+                            <div class="text-[9px] text-slate-500 uppercase">Resultado</div>
+                            <div class="text-[10px] text-amber-400" id="info-result">Valles en V</div>
+                        </div>
+                        <div class="flex-1">
+                            <div class="text-[9px] text-slate-500 uppercase">Velocidad</div>
+                            <div class="text-[10px] text-blue-400" id="info-speed">Rápida</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats overlay -->
+            <div class="canvas-overlay bottom-4 left-4" id="stats-overlay">
+                <div class="info-card p-3 w-64">
+                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Estadísticas</div>
+                    <div class="space-y-2">
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1">
+                                <span class="text-slate-400">Material erosionado</span>
+                                <span class="mono text-red-400" id="stat-eroded">0%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill bg-red-500" id="stat-eroded-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1">
+                                <span class="text-slate-400">Sedimento depositado</span>
+                                <span class="mono text-emerald-400" id="stat-deposited">0%</span>
+                            </div>
+                            <div class="stat-bar">
+                                <div class="stat-bar-fill bg-emerald-500" id="stat-deposited-bar" style="width: 0%"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-[10px] mb-1">
+                                <span class="text-slate-400">Balance neto</span>
+                                <span class="mono text-amber-400" id="stat-balance">0 m³</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Keyboard shortcuts -->
+            <div class="canvas-overlay bottom-4 right-4">
+                <div class="flex gap-2 text-[10px] text-slate-500">
+                    <span><kbd>1</kbd>-<kbd>4</kbd> Tipo</span>
+                    <span><kbd>Space</kbd> Play/Pausa</span>
+                    <span><kbd>R</kbd> Reset</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="w-80 bg-slate-900/95 border-l border-slate-700/50 flex flex-col overflow-hidden flex-shrink-0">
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+
+                <!-- Explanation + Guide -->
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        La <span class="text-amber-400">erosion</span> esculpe el paisaje: el agua crea valles en V, los glaciares valles en U, el viento forma dunas, las olas tallan acantilados.
+                    </p>
+                    <a href="guides/erosion.html" class="mt-3 flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                        <span class="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">?</span>
+                        Guia completa: agentes, landforms, tasas
+                    </a>
+                </div>
+
+                <!-- Erosion Type Selection -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
+                        </svg>
+                        Tipo de Erosión
+                    </h3>
+                    <div class="erosion-selector">
+                        <button class="erosion-btn active" data-type="hydric">
+                            <div class="text-2xl mb-1">🌧️</div>
+                            <div class="text-xs font-medium hydric-color">Hídrica</div>
+                            <div class="text-[10px] text-slate-500">Agua y ríos</div>
+                        </button>
+                        <button class="erosion-btn" data-type="wind">
+                            <div class="text-2xl mb-1">💨</div>
+                            <div class="text-xs font-medium wind-color">Eólica</div>
+                            <div class="text-[10px] text-slate-500">Viento</div>
+                        </button>
+                        <button class="erosion-btn" data-type="glacial">
+                            <div class="text-2xl mb-1">🧊</div>
+                            <div class="text-xs font-medium glacial-color">Glaciar</div>
+                            <div class="text-[10px] text-slate-500">Hielo</div>
+                        </button>
+                        <button class="erosion-btn" data-type="coastal">
+                            <div class="text-2xl mb-1">🌊</div>
+                            <div class="text-xs font-medium coastal-color">Costera</div>
+                            <div class="text-[10px] text-slate-500">Olas</div>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Parameters -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        </svg>
+                        Parámetros
+                    </h3>
+                    <div class="space-y-4 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Intensidad</span>
+                                <span class="mono accent" id="intensity-value">50%</span>
+                            </div>
+                            <input type="range" id="intensity-slider" class="w-full" min="10" max="100" value="50">
+                            <div class="flex justify-between text-[9px] text-slate-600 mt-0.5">
+                                <span>Suave</span>
+                                <span>Extrema</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Dureza de roca</span>
+                                <span class="mono accent" id="hardness-value">Media</span>
+                            </div>
+                            <input type="range" id="hardness-slider" class="w-full" min="1" max="100" value="50">
+                            <div class="flex justify-between text-[9px] text-slate-600 mt-0.5">
+                                <span>Blanda</span>
+                                <span>Muy dura</span>
+                            </div>
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Velocidad simulación</span>
+                                <span class="mono accent" id="speed-value">x100</span>
+                            </div>
+                            <input type="range" id="speed-slider" class="w-full" min="10" max="1000" value="100" step="10">
+                            <div class="flex justify-between text-[9px] text-slate-600 mt-0.5">
+                                <span>x10</span>
+                                <span>x1000</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Controls -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Controles
+                    </h3>
+                    <div class="flex gap-2">
+                        <button class="btn btn-primary flex-1" id="play-btn">
+                            <span class="mr-1">▶</span> Simular
+                        </button>
+                        <button class="btn btn-secondary" id="reset-btn">Reset</button>
+                    </div>
+                </section>
+
+                <!-- Terrain Profile -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                        </svg>
+                        Perfil del Terreno
+                    </h3>
+                    <div class="terrain-profile">
+                        <svg id="terrain-svg" class="w-full h-full" viewBox="0 0 200 40" preserveAspectRatio="none">
+                            <path class="terrain-fill" id="terrain-fill-path"></path>
+                            <path class="terrain-line" id="terrain-line-path"></path>
+                            <path stroke="#64748b" stroke-width="1" stroke-dasharray="2,2" fill="none" id="original-terrain-path"></path>
+                        </svg>
+                    </div>
+                </section>
+
+                <!-- Math Box -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Ecuación de Erosión
+                    </h3>
+                    <div class="bg-gradient-to-br from-amber-950/30 to-slate-900 rounded-lg p-3 border border-amber-900/30">
+                        <div class="text-center space-y-2">
+                            <div class="text-[10px] text-slate-500 uppercase mb-2">Tasa de Erosión</div>
+                            <div class="mono text-sm text-amber-400">
+                                E = K · R · S · L · C
+                            </div>
+                            <div class="text-[10px] text-slate-500 mt-2 leading-relaxed">
+                                K = erosividad del agente<br>
+                                R = resistencia de roca<br>
+                                S = pendiente<br>
+                                L = longitud<br>
+                                C = cobertura vegetal
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Guide -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Formas Resultantes
+                    </h3>
+                    <div class="bg-slate-800/50 rounded-lg p-3 border border-slate-700/50 space-y-2">
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🌧️</span>
+                            <div class="flex-1">
+                                <div class="text-xs text-slate-300">Hídrica</div>
+                                <div class="text-[10px] text-slate-500">Valles en V, cañones, deltas</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">💨</span>
+                            <div class="flex-1">
+                                <div class="text-xs text-slate-300">Eólica</div>
+                                <div class="text-[10px] text-slate-500">Dunas, yardangs, ventifactos</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🧊</span>
+                            <div class="flex-1">
+                                <div class="text-xs text-slate-300">Glaciar</div>
+                                <div class="text-[10px] text-slate-500">Valles en U, circos, morrenas</div>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="text-lg">🌊</span>
+                            <div class="flex-1">
+                                <div class="text-xs text-slate-300">Costera</div>
+                                <div class="text-[10px] text-slate-500">Acantilados, arcos, playas</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ===== CONFIGURATION =====
+        const CONFIG = {
+            erosionType: 'hydric',
+            intensity: 50,
+            hardness: 50,
+            speed: 100,
+            running: false,
+            simulatedYears: 0
+        };
+
+        // Erosion types data
+        const EROSION_TYPES = {
+            hydric: {
+                name: 'Erosión Hídrica',
+                subtitle: 'Agua y lluvia',
+                icon: '🌧️',
+                color: '#3b82f6',
+                colorClass: 'hydric-color',
+                description: 'El agua de lluvia y ríos desgasta el terreno, formando valles en V, cañones y deltas. Es el tipo más común de erosión.',
+                result: 'Valles en V',
+                speed: 'Rápida',
+                skyColors: ['#1e3a5f', '#374151'],
+                particleColor: '#60a5fa',
+                terrainType: 'mountain',
+                gravity: 300,
+                particleCount: 8
+            },
+            wind: {
+                name: 'Erosión Eólica',
+                subtitle: 'Viento y arena',
+                icon: '💨',
+                color: '#f59e0b',
+                colorClass: 'wind-color',
+                description: 'El viento transporta partículas que desgastan las rocas y forman dunas. Predomina en desiertos y zonas áridas.',
+                result: 'Dunas',
+                speed: 'Lenta',
+                skyColors: ['#78350f', '#451a03'],
+                particleColor: '#fcd34d',
+                terrainType: 'desert',
+                gravity: 0,
+                particleCount: 15
+            },
+            glacial: {
+                name: 'Erosión Glaciar',
+                subtitle: 'Hielo y glaciares',
+                icon: '🧊',
+                color: '#06b6d4',
+                colorClass: 'glacial-color',
+                description: 'Los glaciares avanzan lentamente, excavando valles en U profundos. Forman circos, aristas y morrenas.',
+                result: 'Valles en U',
+                speed: 'Muy lenta',
+                skyColors: ['#0c4a6e', '#1e3a5f'],
+                particleColor: '#e0f2fe',
+                terrainType: 'mountain',
+                gravity: 50,
+                particleCount: 3
+            },
+            coastal: {
+                name: 'Erosión Costera',
+                subtitle: 'Olas y mareas',
+                icon: '🌊',
+                color: '#0ea5e9',
+                colorClass: 'coastal-color',
+                description: 'Las olas golpean la costa constantemente, creando acantilados, cuevas, arcos y pilares de roca.',
+                result: 'Acantilados',
+                speed: 'Media',
+                skyColors: ['#0369a1', '#0c4a6e'],
+                particleColor: '#38bdf8',
+                terrainType: 'cliff',
+                gravity: 100,
+                particleCount: 5
+            }
+        };
+
+        // ===== CANVAS SETUP =====
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        // Terrain data
+        let terrain = [];
+        let originalTerrain = [];
+        let sediment = [];
+        let particles = [];
+        const TERRAIN_RESOLUTION = 200;
+
+        // Stats
+        let stats = {
+            eroded: 0,
+            deposited: 0,
+            maxErosion: 1000
+        };
+
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            initTerrain();
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ===== DOM ELEMENTS =====
+        const erosionBtns = document.querySelectorAll('.erosion-btn');
+        const intensitySlider = document.getElementById('intensity-slider');
+        const intensityValue = document.getElementById('intensity-value');
+        const hardnessSlider = document.getElementById('hardness-slider');
+        const hardnessValue = document.getElementById('hardness-value');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const playBtn = document.getElementById('play-btn');
+        const resetBtn = document.getElementById('reset-btn');
+
+        // Header displays
+        const displayType = document.getElementById('display-type').querySelector('div:last-child');
+        const displayTime = document.getElementById('display-time').querySelector('div:last-child');
+        const displayEroded = document.getElementById('display-eroded').querySelector('div:last-child');
+        const displayDeposited = document.getElementById('display-deposited').querySelector('div:last-child');
+
+        // Info panel
+        const infoIcon = document.getElementById('info-icon');
+        const infoTitle = document.getElementById('info-title');
+        const infoSubtitle = document.getElementById('info-subtitle');
+        const infoDescription = document.getElementById('info-description');
+        const infoResult = document.getElementById('info-result');
+        const infoSpeed = document.getElementById('info-speed');
+
+        // Stats
+        const statEroded = document.getElementById('stat-eroded');
+        const statErodedBar = document.getElementById('stat-eroded-bar');
+        const statDeposited = document.getElementById('stat-deposited');
+        const statDepositedBar = document.getElementById('stat-deposited-bar');
+        const statBalance = document.getElementById('stat-balance');
+
+        // ===== EVENT HANDLERS =====
+        erosionBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                erosionBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                CONFIG.erosionType = btn.dataset.type;
+                updateInfoPanel();
+                initTerrain();
+            });
+        });
+
+        intensitySlider.addEventListener('input', (e) => {
+            CONFIG.intensity = parseInt(e.target.value);
+            intensityValue.textContent = CONFIG.intensity + '%';
+        });
+
+        hardnessSlider.addEventListener('input', (e) => {
+            CONFIG.hardness = parseInt(e.target.value);
+            const labels = ['Muy blanda', 'Blanda', 'Media', 'Dura', 'Muy dura'];
+            hardnessValue.textContent = labels[Math.floor(CONFIG.hardness / 25)];
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            CONFIG.speed = parseInt(e.target.value);
+            speedValue.textContent = 'x' + CONFIG.speed;
+        });
+
+        playBtn.addEventListener('click', () => {
+            CONFIG.running = !CONFIG.running;
+            playBtn.innerHTML = CONFIG.running ? '<span class="mr-1">⏸</span> Pausar' : '<span class="mr-1">▶</span> Simular';
+            document.getElementById('body').classList.toggle('running', CONFIG.running);
+        });
+
+        resetBtn.addEventListener('click', () => {
+            CONFIG.running = false;
+            CONFIG.simulatedYears = 0;
+            stats = { eroded: 0, deposited: 0, maxErosion: 1000 };
+            playBtn.innerHTML = '<span class="mr-1">▶</span> Simular';
+            document.getElementById('body').classList.remove('running');
+            initTerrain();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === '1') selectErosionType('hydric');
+            if (e.key === '2') selectErosionType('wind');
+            if (e.key === '3') selectErosionType('glacial');
+            if (e.key === '4') selectErosionType('coastal');
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                playBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+        });
+
+        function selectErosionType(type) {
+            erosionBtns.forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.type === type);
+            });
+            CONFIG.erosionType = type;
+            updateInfoPanel();
+            initTerrain();
+        }
+
+        function updateInfoPanel() {
+            const type = EROSION_TYPES[CONFIG.erosionType];
+            infoIcon.textContent = type.icon;
+            infoTitle.textContent = type.name;
+            infoSubtitle.textContent = type.subtitle;
+            infoDescription.textContent = type.description;
+            infoResult.textContent = type.result;
+            infoSpeed.textContent = type.speed;
+
+            displayType.textContent = type.name.split(' ')[1];
+            displayType.className = `text-sm font-semibold ${type.colorClass} mono`;
+        }
+
+        // ===== TERRAIN GENERATION =====
+        function initTerrain() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const type = EROSION_TYPES[CONFIG.erosionType];
+
+            terrain = [];
+            originalTerrain = [];
+            sediment = [];
+            particles = [];
+
+            const baseY = h * 0.75;
+
+            for (let i = 0; i < TERRAIN_RESOLUTION; i++) {
+                const x = (i / TERRAIN_RESOLUTION) * w;
+                let height = 0;
+
+                switch (type.terrainType) {
+                    case 'mountain':
+                        // Central mountain peak
+                        const mountainX = (i / TERRAIN_RESOLUTION - 0.5) * 2;
+                        height = Math.exp(-mountainX * mountainX * 2) * h * 0.45;
+                        // Add roughness
+                        height += Math.sin(i * 0.15) * 8 + Math.sin(i * 0.07) * 15;
+                        height += Math.random() * 5;
+                        break;
+
+                    case 'desert':
+                        // Rolling dunes
+                        height = h * 0.12;
+                        height += Math.sin(i * 0.03) * 25;
+                        height += Math.sin(i * 0.08) * 12;
+                        height += Math.sin(i * 0.15) * 5;
+                        break;
+
+                    case 'cliff':
+                        // Coastal cliff
+                        if (i < TERRAIN_RESOLUTION * 0.4) {
+                            height = h * 0.4 + Math.sin(i * 0.1) * 5;
+                        } else if (i < TERRAIN_RESOLUTION * 0.55) {
+                            const t = (i - TERRAIN_RESOLUTION * 0.4) / (TERRAIN_RESOLUTION * 0.15);
+                            height = h * 0.4 * (1 - t * t);
+                        } else {
+                            height = -h * 0.1; // Below water
+                        }
+                        height += Math.sin(i * 0.2) * 3;
+                        break;
+                }
+
+                const y = baseY - Math.max(-h * 0.1, height);
+                terrain.push({ x, y, originalY: y });
+                originalTerrain.push({ x, y });
+                sediment.push(0);
+            }
+        }
+
+        // ===== PARTICLE SYSTEM =====
+        function spawnParticles() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const type = EROSION_TYPES[CONFIG.erosionType];
+            const count = Math.floor(CONFIG.intensity / 100 * type.particleCount);
+
+            for (let i = 0; i < count; i++) {
+                let p = { type: CONFIG.erosionType };
+
+                switch (CONFIG.erosionType) {
+                    case 'hydric':
+                        p.x = Math.random() * w;
+                        p.y = -10;
+                        p.vx = (Math.random() - 0.5) * 30;
+                        p.vy = 80 + Math.random() * 120;
+                        p.size = 2 + Math.random() * 2;
+                        p.life = 1;
+                        p.sediment = 0;
+                        break;
+
+                    case 'wind':
+                        p.x = -10;
+                        p.y = h * (0.2 + Math.random() * 0.5);
+                        p.vx = 60 + Math.random() * 80;
+                        p.vy = (Math.random() - 0.5) * 20;
+                        p.size = 1 + Math.random() * 3;
+                        p.life = 1;
+                        p.sediment = 0;
+                        p.phase = Math.random() * Math.PI * 2;
+                        break;
+
+                    case 'glacial':
+                        if (Math.random() < 0.15) {
+                            const peakIndex = Math.floor(TERRAIN_RESOLUTION * 0.5);
+                            p.x = terrain[peakIndex].x + (Math.random() - 0.5) * 50;
+                            p.y = terrain[peakIndex].y - 30;
+                            p.vx = (Math.random() - 0.5) > 0 ? 8 : -8;
+                            p.vy = 3;
+                            p.size = 15 + Math.random() * 20;
+                            p.life = 1;
+                            p.sediment = 0;
+                        } else {
+                            continue;
+                        }
+                        break;
+
+                    case 'coastal':
+                        if (Math.random() < 0.4) {
+                            p.x = w + 10;
+                            p.y = h * 0.72 + (Math.random() - 0.5) * 30;
+                            p.vx = -60 - Math.random() * 60;
+                            p.vy = (Math.random() - 0.5) * 15;
+                            p.size = 10 + Math.random() * 15;
+                            p.life = 1;
+                            p.sediment = 0;
+                            p.wavePhase = Math.random() * Math.PI * 2;
+                        } else {
+                            continue;
+                        }
+                        break;
+                }
+
+                particles.push(p);
+            }
+        }
+
+        function updateParticles(dt) {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const type = EROSION_TYPES[CONFIG.erosionType];
+            const erosionRate = (CONFIG.intensity / 100) * (1 - CONFIG.hardness / 150) * 2;
+
+            particles = particles.filter(p => {
+                // Update position based on type
+                switch (p.type) {
+                    case 'hydric':
+                        p.vy += type.gravity * dt;
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
+                        break;
+
+                    case 'wind':
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt + Math.sin(p.phase + p.x * 0.03) * dt * 30;
+                        p.phase += dt * 3;
+                        break;
+
+                    case 'glacial':
+                        p.x += p.vx * dt;
+                        p.y += p.vy * dt;
+                        // Follow terrain slope
+                        const idx = Math.floor((p.x / w) * TERRAIN_RESOLUTION);
+                        if (idx > 0 && idx < TERRAIN_RESOLUTION - 1) {
+                            const slope = (terrain[idx + 1].y - terrain[idx - 1].y) / 2;
+                            p.vy += slope * 0.1;
+                            p.vx += Math.sign(slope) * 2;
+                        }
+                        break;
+
+                    case 'coastal':
+                        p.x += p.vx * dt;
+                        p.y += Math.sin(p.wavePhase) * 3;
+                        p.wavePhase += dt * 4;
+                        break;
+                }
+
+                // Terrain collision and erosion
+                const terrainIndex = Math.floor((p.x / w) * TERRAIN_RESOLUTION);
+                if (terrainIndex >= 0 && terrainIndex < TERRAIN_RESOLUTION) {
+                    const terrainY = terrain[terrainIndex].y;
+                    const originalY = terrain[terrainIndex].originalY;
+
+                    if (p.y >= terrainY - p.size / 2) {
+                        // Erode terrain
+                        const maxErosion = 80; // Max erosion depth
+                        const erosionAmount = erosionRate * p.size * dt * 0.8;
+
+                        if (terrain[terrainIndex].y < originalY + maxErosion) {
+                            terrain[terrainIndex].y += erosionAmount;
+                            p.sediment += erosionAmount;
+                            stats.eroded += erosionAmount * 0.05;
+                        }
+
+                        // Behavior after collision
+                        if (p.type === 'hydric') {
+                            p.vy = -p.vy * 0.2;
+                            // Flow downhill
+                            if (terrainIndex < TERRAIN_RESOLUTION - 1) {
+                                const nextY = terrain[terrainIndex + 1].y;
+                                if (nextY > terrainY) {
+                                    p.vx += 30;
+                                } else {
+                                    p.vx -= 30;
+                                }
+                            }
+                            // Deposit sediment in valleys
+                            if (p.sediment > 0.5) {
+                                const deposit = p.sediment * 0.4;
+                                terrain[terrainIndex].y -= deposit * 0.3;
+                                stats.deposited += deposit * 0.03;
+                                p.sediment -= deposit;
+                            }
+                        } else if (p.type === 'coastal') {
+                            p.vx *= -0.3;
+                            p.life -= 0.4;
+                            // Deposit on beach
+                            if (terrainIndex < TERRAIN_RESOLUTION * 0.6) {
+                                stats.deposited += erosionAmount * 0.3;
+                            }
+                        } else if (p.type === 'glacial') {
+                            // Glaciers deposit moraines
+                            if (Math.abs(p.vx) < 5) {
+                                terrain[terrainIndex].y -= p.sediment * 0.1;
+                                stats.deposited += p.sediment * 0.02;
+                                p.sediment = 0;
+                            }
+                        } else if (p.type === 'wind') {
+                            // Wind deposits in lee side
+                            p.life -= 0.3;
+                            if (p.vx > 0) {
+                                const depositIdx = Math.min(terrainIndex + 5, TERRAIN_RESOLUTION - 1);
+                                terrain[depositIdx].y -= p.sediment * 0.2;
+                                stats.deposited += p.sediment * 0.02;
+                            }
+                        }
+                    }
+                }
+
+                // Decay
+                p.life -= dt * 0.15;
+
+                // Bounds check
+                return p.life > 0 && p.x > -20 && p.x < w + 20 && p.y < h + 20;
+            });
+        }
+
+        // ===== DRAWING FUNCTIONS =====
+        function drawSky() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const type = EROSION_TYPES[CONFIG.erosionType];
+
+            const grad = ctx.createLinearGradient(0, 0, 0, h * 0.8);
+            grad.addColorStop(0, type.skyColors[0]);
+            grad.addColorStop(1, type.skyColors[1]);
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Sun/moon based on type
+            if (CONFIG.erosionType === 'wind') {
+                // Hot desert sun
+                const sunGrad = ctx.createRadialGradient(w * 0.8, h * 0.15, 0, w * 0.8, h * 0.15, 50);
+                sunGrad.addColorStop(0, '#fef3c7');
+                sunGrad.addColorStop(0.3, '#fbbf24');
+                sunGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = sunGrad;
+                ctx.beginPath();
+                ctx.arc(w * 0.8, h * 0.15, 50, 0, Math.PI * 2);
+                ctx.fill();
+            } else if (CONFIG.erosionType === 'glacial') {
+                // Cold moon
+                ctx.fillStyle = 'rgba(241, 245, 249, 0.8)';
+                ctx.beginPath();
+                ctx.arc(w * 0.85, h * 0.12, 25, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Clouds for hydric
+            if (CONFIG.erosionType === 'hydric' && CONFIG.running) {
+                ctx.fillStyle = 'rgba(148, 163, 184, 0.4)';
+                for (let i = 0; i < 5; i++) {
+                    const cx = (i * w / 4 + Date.now() * 0.01) % (w + 100) - 50;
+                    ctx.beginPath();
+                    ctx.ellipse(cx, h * 0.1, 60, 25, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+        }
+
+        function drawTerrain() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const type = EROSION_TYPES[CONFIG.erosionType];
+
+            // Main terrain fill
+            let terrainColors;
+            switch (CONFIG.erosionType) {
+                case 'hydric':
+                    terrainColors = ['#78350f', '#57534e', '#292524'];
+                    break;
+                case 'wind':
+                    terrainColors = ['#fcd34d', '#d97706', '#78350f'];
+                    break;
+                case 'glacial':
+                    terrainColors = ['#f1f5f9', '#64748b', '#334155'];
+                    break;
+                case 'coastal':
+                    terrainColors = ['#78350f', '#57534e', '#1e293b'];
+                    break;
+            }
+
+            const terrainGrad = ctx.createLinearGradient(0, h * 0.3, 0, h);
+            terrainGrad.addColorStop(0, terrainColors[0]);
+            terrainGrad.addColorStop(0.5, terrainColors[1]);
+            terrainGrad.addColorStop(1, terrainColors[2]);
+            ctx.fillStyle = terrainGrad;
+
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            terrain.forEach((point, i) => {
+                if (i === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.lineTo(w, h);
+            ctx.lineTo(0, h);
+            ctx.closePath();
+            ctx.fill();
+
+            // Rock layers
+            ctx.strokeStyle = 'rgba(0, 0, 0, 0.15)';
+            ctx.lineWidth = 1;
+            for (let layer = 1; layer < 6; layer++) {
+                ctx.beginPath();
+                terrain.forEach((point, i) => {
+                    const y = Math.min(point.y + layer * 15, h - 10);
+                    if (i === 0) ctx.moveTo(point.x, y);
+                    else ctx.lineTo(point.x, y);
+                });
+                ctx.stroke();
+            }
+
+            // Original terrain outline (dashed)
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            originalTerrain.forEach((point, i) => {
+                if (i === 0) ctx.moveTo(point.x, point.y);
+                else ctx.lineTo(point.x, point.y);
+            });
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Surface features
+            if (CONFIG.erosionType === 'hydric' || CONFIG.erosionType === 'glacial') {
+                // Vegetation/snow on peaks
+                const surfaceColor = CONFIG.erosionType === 'hydric' ? '#365314' : 'rgba(255, 255, 255, 0.8)';
+                ctx.fillStyle = surfaceColor;
+                terrain.forEach((point, i) => {
+                    if (i % 4 === 0 && point.y < h * 0.55) {
+                        ctx.beginPath();
+                        ctx.arc(point.x, point.y - 3, CONFIG.erosionType === 'hydric' ? 4 : 6, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                });
+            }
+
+            // Water for coastal
+            if (CONFIG.erosionType === 'coastal') {
+                const waterLevel = h * 0.72;
+                const waterGrad = ctx.createLinearGradient(0, waterLevel - 20, 0, h);
+                waterGrad.addColorStop(0, 'rgba(14, 165, 233, 0.7)');
+                waterGrad.addColorStop(0.5, 'rgba(3, 105, 161, 0.85)');
+                waterGrad.addColorStop(1, '#0c4a6e');
+                ctx.fillStyle = waterGrad;
+
+                ctx.beginPath();
+                ctx.moveTo(w * 0.45, waterLevel);
+                // Animated wave top
+                for (let x = w * 0.45; x <= w; x += 5) {
+                    const waveY = waterLevel + Math.sin(x * 0.02 + Date.now() * 0.003) * 5;
+                    ctx.lineTo(x, waveY);
+                }
+                ctx.lineTo(w, h);
+                ctx.lineTo(w * 0.45, h);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function drawParticles() {
+            const type = EROSION_TYPES[CONFIG.erosionType];
+
+            particles.forEach(p => {
+                ctx.globalAlpha = Math.min(1, p.life * 1.5);
+
+                if (p.type === 'hydric') {
+                    // Rain drops
+                    ctx.fillStyle = type.particleColor;
+                    ctx.beginPath();
+                    ctx.ellipse(p.x, p.y, p.size * 0.4, p.size * 1.5, Math.PI / 6, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Splash effect near ground
+                    if (p.y > canvas.height / dpr * 0.6) {
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y + p.size, 1, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                } else if (p.type === 'wind') {
+                    // Sand particles
+                    ctx.fillStyle = type.particleColor;
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Trail
+                    ctx.globalAlpha *= 0.3;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x - 10, p.y);
+                    ctx.strokeStyle = type.particleColor;
+                    ctx.lineWidth = p.size * 0.5;
+                    ctx.stroke();
+                } else if (p.type === 'glacial') {
+                    // Ice chunks
+                    ctx.fillStyle = type.particleColor;
+                    ctx.strokeStyle = '#94a3b8';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    // Irregular polygon
+                    const sides = 5 + Math.floor(Math.random() * 3);
+                    for (let i = 0; i < sides; i++) {
+                        const angle = (i / sides) * Math.PI * 2;
+                        const r = p.size * (0.7 + Math.random() * 0.3);
+                        const px = p.x + Math.cos(angle) * r;
+                        const py = p.y + Math.sin(angle) * r;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+                } else if (p.type === 'coastal') {
+                    // Wave particles
+                    ctx.fillStyle = type.particleColor;
+                    ctx.beginPath();
+                    // Wave shape
+                    ctx.ellipse(p.x, p.y, p.size * 1.5, p.size * 0.6, 0, 0, Math.PI * 2);
+                    ctx.fill();
+                    // Foam
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(p.x - p.size, p.y - p.size * 0.3, p.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function updateTerrainSVG() {
+            const linePath = document.getElementById('terrain-line-path');
+            const fillPath = document.getElementById('terrain-fill-path');
+            const originalPath = document.getElementById('original-terrain-path');
+
+            // Sample terrain for SVG
+            const samples = 50;
+            const step = Math.floor(TERRAIN_RESOLUTION / samples);
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            let lineD = '';
+            let fillD = '';
+            let origD = '';
+
+            for (let i = 0; i < samples; i++) {
+                const idx = i * step;
+                if (idx >= terrain.length) break;
+
+                const svgX = (i / samples) * 200;
+                const svgY = 40 - ((h * 0.75 - terrain[idx].y) / (h * 0.5)) * 35;
+                const origY = 40 - ((h * 0.75 - originalTerrain[idx].y) / (h * 0.5)) * 35;
+
+                if (i === 0) {
+                    lineD = `M ${svgX} ${Math.max(5, Math.min(38, svgY))}`;
+                    fillD = `M 0 40 L ${svgX} ${Math.max(5, Math.min(38, svgY))}`;
+                    origD = `M ${svgX} ${Math.max(5, Math.min(38, origY))}`;
+                } else {
+                    lineD += ` L ${svgX} ${Math.max(5, Math.min(38, svgY))}`;
+                    fillD += ` L ${svgX} ${Math.max(5, Math.min(38, svgY))}`;
+                    origD += ` L ${svgX} ${Math.max(5, Math.min(38, origY))}`;
+                }
+            }
+
+            fillD += ' L 200 40 L 0 40 Z';
+
+            linePath.setAttribute('d', lineD);
+            fillPath.setAttribute('d', fillD);
+            originalPath.setAttribute('d', origD);
+        }
+
+        function updateUI() {
+            // Time display
+            const years = Math.floor(CONFIG.simulatedYears);
+            let timeStr;
+            if (years < 1000) {
+                timeStr = years + ' años';
+            } else if (years < 1000000) {
+                timeStr = (years / 1000).toFixed(1) + ' ka';
+            } else {
+                timeStr = (years / 1000000).toFixed(2) + ' Ma';
+            }
+            displayTime.textContent = timeStr;
+
+            // Volume displays
+            displayEroded.textContent = Math.floor(stats.eroded).toLocaleString() + ' m³';
+            displayDeposited.textContent = Math.floor(stats.deposited).toLocaleString() + ' m³';
+
+            // Stats bars
+            const erodedPercent = Math.min(100, (stats.eroded / stats.maxErosion) * 100);
+            const depositedPercent = Math.min(100, (stats.deposited / (stats.maxErosion * 0.6)) * 100);
+
+            statEroded.textContent = erodedPercent.toFixed(1) + '%';
+            statErodedBar.style.width = erodedPercent + '%';
+            statDeposited.textContent = depositedPercent.toFixed(1) + '%';
+            statDepositedBar.style.width = depositedPercent + '%';
+            statBalance.textContent = Math.floor(stats.deposited - stats.eroded).toLocaleString() + ' m³';
+
+            // Update terrain SVG
+            updateTerrainSVG();
+        }
+
+        // ===== ANIMATION LOOP =====
+        let lastTime = 0;
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.05);
+            lastTime = time;
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            drawSky();
+            drawTerrain();
+
+            if (CONFIG.running) {
+                CONFIG.simulatedYears += dt * CONFIG.speed;
+                spawnParticles();
+                updateParticles(dt);
+            }
+
+            drawParticles();
+            updateUI();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        updateInfoPanel();
+        initTerrain();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

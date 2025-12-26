@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ondas Sismicas — Guia · Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #d97706;
+            --color-p: #60a5fa;
+            --color-s: #4ade80;
+            --color-surface: #f87171;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(217, 119, 6, 0.1); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(217, 119, 6, 0.05); }
+        .section { margin-top: 1.5rem; }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* Experiments */
+        .experiment { border-left: 3px solid var(--accent); }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--bg-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+        .experiment-title { font-weight: 600; color: var(--text-primary); }
+        .hypothesis { background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 0.375rem; padding: 0.75rem; margin: 0.75rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem; }
+
+        /* Connections */
+        .connection { display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); }
+        .connection:hover { border-color: var(--accent); }
+        .connection-icon { width: 36px; height: 36px; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .connection-content { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+        .connection-link { font-size: 0.7rem; color: var(--accent); margin-top: 0.25rem; display: inline-block; }
+
+        /* Reflections */
+        .reflection { background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), transparent); border: 1px solid rgba(217, 119, 6, 0.2); }
+        .reflection h2 { color: var(--accent); }
+        .reflection li { color: var(--text-secondary); }
+        .reflection li::marker { color: var(--accent); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); }
+        .guide-nav a:hover { border-color: var(--accent); color: var(--text-primary); text-decoration: none; }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Geology Visual Lab</a>
+                    <span> / </span>
+                    <span>Ondas Sismicas</span>
+                </nav>
+                <h1>Ondas Sismicas — Guia</h1>
+                <div class="subtitle">Propagacion de energia a traves de la Tierra</div>
+            </div>
+            <div class="header-actions">
+                <a href="../terremotos.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">El concepto</div>
+                <p class="lead">
+                    Cuando ocurre un terremoto, la energia liberada viaja a traves de la Tierra como
+                    <span class="em">ondas sismicas</span>. Diferentes tipos de ondas revelan la estructura
+                    interna de nuestro planeta — incluyendo que el nucleo externo es liquido.
+                </p>
+                <div class="chips">
+                    <span class="chip">Ondas P (primarias)</span>
+                    <span class="chip">Ondas S (secundarias)</span>
+                    <span class="chip">Ondas superficiales</span>
+                    <span class="chip">Sismograma</span>
+                    <span class="chip">Triangulacion</span>
+                </div>
+                <div class="two" style="margin-top: 1rem;">
+                    <div>
+                        <h2>La analogia</h2>
+                        <p>
+                            Imagina gritar en un estadio vacio. El eco te dice el tamaño y forma del espacio.
+                            Los terremotos son "gritos" que la Tierra hace, y los sismografos escuchan los ecos
+                            que revelan su estructura interna.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>La idea clave</h2>
+                        <p>
+                            Las ondas P (compresion) viajan por cualquier medio. Las ondas S (cizalla) solo
+                            por solidos. Cuando las ondas S desaparecen en ciertas zonas, sabemos que hay
+                            liquido — asi descubrimos el nucleo liquido de la Tierra.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Tipos de ondas</div>
+                <div class="legend" style="flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-p)"></span>
+                        <div><strong>Ondas P</strong> — Compresion longitudinal<br><span style="font-size: 0.7rem;">~6-8 km/s en corteza</span></div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-s)"></span>
+                        <div><strong>Ondas S</strong> — Cizalla transversal<br><span style="font-size: 0.7rem;">~3.5-4.5 km/s en corteza</span></div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-surface)"></span>
+                        <div><strong>Superficiales</strong> — Love y Rayleigh<br><span style="font-size: 0.7rem;">~2-4 km/s, las mas destructivas</span></div>
+                    </div>
+                </div>
+                <div class="callout" style="margin-top: 1rem;">
+                    <p style="margin: 0;"><strong>Dato historico:</strong></p>
+                    <p style="margin: 0.25rem 0 0;">En 1906, Richard Oldham uso la ausencia de ondas S en ciertas regiones para demostrar que la Tierra tiene un nucleo liquido.</p>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Wave Types Comparison -->
+        <section class="two section">
+            <div class="card">
+                <h2 style="color: var(--color-p);">Ondas P (Primarias)</h2>
+                <p>
+                    Son ondas de <strong>compresion longitudinal</strong>. Las particulas oscilan en la
+                    misma direccion que viaja la onda — como un muelle o slinky.
+                </p>
+                <ul>
+                    <li>Las mas rapidas — siempre llegan primero</li>
+                    <li>Viajan por solidos, liquidos y gases</li>
+                    <li>Atraviesan el nucleo liquido (refractandose)</li>
+                    <li>Causan sacudidas "adelante-atras"</li>
+                </ul>
+                <div class="callout">
+                    <p style="margin: 0;"><strong>Como el sonido:</strong> Las ondas P son esencialmente ondas sonoras viajando por roca. El sonido tambien es compresion longitudinal.</p>
+                </div>
+            </div>
+            <div class="card">
+                <h2 style="color: var(--color-s);">Ondas S (Secundarias)</h2>
+                <p>
+                    Son ondas de <strong>cizalla transversal</strong>. Las particulas oscilan perpendicular
+                    a la direccion de propagacion — como una cuerda vibrando.
+                </p>
+                <ul>
+                    <li>Mas lentas que las P (~60% de su velocidad)</li>
+                    <li><strong>Solo viajan por solidos</strong></li>
+                    <li>No atraviesan el nucleo liquido — crean "sombra sismica"</li>
+                    <li>Causan sacudidas "lado a lado"</li>
+                </ul>
+                <div class="callout">
+                    <p style="margin: 0;"><strong>Prueba del liquido:</strong> Los liquidos no resisten cizalla, por eso las ondas S no pueden propagarse en ellos.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">1</span>
+                        <span class="experiment-title">Triangulacion del epicentro</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Con tres estaciones sismicas, puedo localizar exactamente el epicentro de un terremoto"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Genera un terremoto en cualquier punto</li>
+                        <li>Observa los sismogramas de 3 estaciones</li>
+                        <li>Mide la diferencia tiempo S - tiempo P</li>
+                        <li>Calcula distancia: d ≈ Δt × 8 km/s</li>
+                        <li>Los 3 circulos se cruzan en el epicentro</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Verifica:</strong> ¿Que pasa si solo tienes 2 estaciones?
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">2</span>
+                        <span class="experiment-title">Zona de sombra sismica</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Existe una zona donde no llegan ondas S porque el nucleo liquido las bloquea"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Genera un terremoto fuerte</li>
+                        <li>Observa la propagacion de ondas P y S</li>
+                        <li>Nota donde las ondas S desaparecen</li>
+                        <li>Identifica la "zona de sombra" (103°-143°)</li>
+                        <li>Las P reaparecen pero S no</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Reflexiona:</strong> ¿Por que las P si atraviesan?
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">3</span>
+                        <span class="experiment-title">Profundidad y velocidad</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Las ondas viajan mas rapido en materiales mas densos y rigidos"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Configura terremotos a diferentes profundidades</li>
+                        <li>Observa como cambia la velocidad en cada capa</li>
+                        <li>Corteza: mas lenta. Manto: mas rapida</li>
+                        <li>Nota la refraccion en los limites de capa</li>
+                        <li>Las ondas se curvan hacia arriba</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Conecta:</strong> Como la luz en un espejismo.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Conexiones interdisciplinarias</div>
+            <div class="two">
+                <a href="../../../Physics/Physics Visual Lab/ondas.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">🌊</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Ondas Mecanicas</div>
+                        <div class="connection-desc">
+                            Las ondas P son longitudinales (como el sonido), las S son transversales (como una cuerda).
+                            Misma fisica, diferente medio.
+                        </div>
+                        <span class="connection-link">Physics Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Physics/Physics Sound Lab/ondas-sonido.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(168, 85, 247, 0.15); color: #a855f7;">🔊</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Ondas de Sonido</div>
+                        <div class="connection-desc">
+                            Las ondas P son literalmente sonido viajando por roca. Un terremoto de magnitud 9
+                            puede "oirse" como infrasonido.
+                        </div>
+                        <span class="connection-link">Physics Sound Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Physics/Physics Visual Lab/interferencia.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">〰️</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Interferencia de Ondas</div>
+                        <div class="connection-desc">
+                            Las ondas sismicas de diferentes fuentes pueden interferir constructiva o destructivamente,
+                            amplificando o cancelando el movimiento.
+                        </div>
+                        <span class="connection-link">Physics Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Chemistry/Chemistry Visual Lab/diagrama-fases.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">🧊</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Diagrama de Fases</div>
+                        <div class="connection-desc">
+                            La transicion solido-liquido determina donde pueden viajar las ondas S.
+                            El nucleo externo liquido crea la zona de sombra sismica.
+                        </div>
+                        <span class="connection-link">Chemistry Visual Lab →</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Key Insight -->
+        <section class="card callout-accent section">
+            <div class="kicker">Insight fundamental</div>
+            <h2 style="margin-top: 0.5rem;">La sismologia como tomografia planetaria</h2>
+            <p>
+                Nunca hemos perforado mas de 12 km en la Tierra (el pozo de Kola). El radio terrestre
+                es 6,371 km. Todo lo que sabemos del interior viene de las ondas sismicas — como un
+                medico usa ultrasonido para ver dentro del cuerpo sin abrirlo.
+            </p>
+            <p>
+                Cada terremoto es un experimento natural. La red global de sismografos recoge datos
+                continuamente. Asi descubrimos: la discontinuidad de Moho (corteza-manto), la discontinuidad
+                de Gutenberg (manto-nucleo), y el nucleo interno solido de Lehmann.
+            </p>
+        </section>
+
+        <!-- Limitations -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2 style="margin-top: 0.5rem;">Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <p><strong>En la simulacion:</strong></p>
+                    <ul>
+                        <li>La Tierra es un circulo 2D uniforme</li>
+                        <li>Velocidades constantes por capa</li>
+                        <li>Ondas representadas como circulos simples</li>
+                        <li>Atenuacion simplificada</li>
+                    </ul>
+                </div>
+                <div>
+                    <p><strong>En la realidad:</strong></p>
+                    <ul>
+                        <li>Tierra 3D con heterogeneidades</li>
+                        <li>Velocidad varia continuamente con profundidad</li>
+                        <li>Frentes de onda complejos con refraccion</li>
+                        <li>Dispersion, anelasticidad, anisotropia</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reflection Questions -->
+        <section class="card reflection section">
+            <h2>Preguntas para reflexionar</h2>
+            <ol style="margin-top: 0.75rem;">
+                <li>Si las ondas S no viajan por liquidos, ¿como sabemos que el nucleo interno es solido?</li>
+                <li>¿Por que los edificios altos son mas vulnerables a ciertas frecuencias sismicas? (Pista: resonancia)</li>
+                <li>¿Podriamos usar explosiones controladas como "terremotos artificiales" para estudiar la Tierra?</li>
+                <li>Si descubrieramos un planeta sin ondas S en toda su superficie, ¿que concluirias?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="estratigrafia.html">← Estratigrafia</a>
+            <a href="volcanes.html">Volcanes →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Geology Visual Lab — Ondas Sismicas
+    </footer>
+</body>
+</html>

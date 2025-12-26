@@ -1,0 +1,1153 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perceptron Playground - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --color-class0: #3b82f6;
+            --color-class1: #ef4444;
+            --color-boundary: #f8fafc;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+
+        .class-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .class-btn {
+            padding: 0.4rem 0.8rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.15s;
+        }
+
+        .class-btn.class0 {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--color-class0);
+        }
+
+        .class-btn.class1 {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--color-class1);
+        }
+
+        .class-btn.selected {
+            border-color: currentColor;
+            box-shadow: 0 0 10px currentColor;
+        }
+
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .equation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            color: #a855f7;
+            font-size: 0.9rem;
+        }
+
+        .equation-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .control-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--bg-panel);
+            border-radius: 3px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover { background: var(--border); }
+        .btn-full { grid-column: 1 / -1; }
+
+        .btn-primary {
+            background: #a855f7;
+            border-color: #a855f7;
+        }
+
+        .btn-primary:hover { background: #9333ea; }
+
+        .btn.active {
+            box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
+        }
+
+        /* Weights display */
+        .weights-box {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+        }
+
+        .weight-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .weight-row:last-child { border-bottom: none; }
+
+        .weight-label { color: var(--text-secondary); }
+        .weight-value { color: #a855f7; }
+
+        /* Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            background: var(--bg-panel);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            margin-top: 0.25rem;
+        }
+
+        .accuracy-good { color: #22c55e; }
+        .accuracy-bad { color: #ef4444; }
+
+        /* Dataset presets */
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .preset-btn {
+            padding: 0.5rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover { border-color: #a855f7; }
+
+        /* Decision boundary equation */
+        .boundary-eq {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .boundary-eq span {
+            color: var(--color-boundary);
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+        .guide-icon {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .explanation-content p { margin: 0; }
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a>
+                <span> / </span>
+                <a href="index.html">Computation Lab</a>
+                <span> / </span>
+                <span>Perceptron Playground</span>
+            </nav>
+            <h1>Perceptron Playground</h1>
+        </div>
+        <div class="header-right">
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--color-class0)"></div>
+                    <span>Clase 0</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-dot" style="background: var(--color-class1)"></div>
+                    <span>Clase 1</span>
+                </div>
+            </div>
+            <a href="guides/perceptron.html" class="guide-link" title="Abrir guia explicativa">
+                <span class="guide-icon">?</span>
+                <span>Guia</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="class-indicator">
+                <button class="class-btn class0 selected" id="class0Btn">Clase 0</button>
+                <button class="class-btn class1" id="class1Btn">Clase 1</button>
+            </div>
+        </div>
+
+        <aside class="controls">
+            <!-- Equation -->
+            <div class="equation-box">
+                <div class="equation">y = sign(w · x + b)</div>
+                <div class="equation-label">Perceptron - Clasificador lineal binario</div>
+            </div>
+
+            <!-- Quick explanation -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>El perceptron traza una linea que separa dos clases. Ajusta sus pesos cuando se equivoca hasta encontrar la frontera correcta.</p>
+                    <a href="guides/perceptron.html" class="guide-btn">
+                        <span class="guide-icon">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Learning Rate -->
+            <div>
+                <div class="section-title">Hiperparámetros</div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Learning Rate (α)</span>
+                        <span class="control-value" id="lrValue">0.1</span>
+                    </div>
+                    <input type="range" id="lrSlider" min="0.01" max="1" step="0.01" value="0.1">
+                </div>
+            </div>
+
+            <!-- Training controls -->
+            <div>
+                <div class="section-title">Entrenamiento</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="trainBtn">▶ Entrenar</button>
+                    <button class="btn" id="pauseBtn">⏸ Pausar</button>
+                    <button class="btn" id="stepBtn">→ Paso</button>
+                    <button class="btn" id="resetWeightsBtn">↺ Reset Pesos</button>
+                </div>
+            </div>
+
+            <!-- Dataset controls -->
+            <div>
+                <div class="section-title">Dataset</div>
+                <div class="btn-group">
+                    <button class="btn btn-full" id="clearPointsBtn">🗑️ Limpiar Puntos</button>
+                </div>
+                <div class="preset-grid" style="margin-top: 0.5rem;">
+                    <button class="preset-btn" data-preset="linear">Lineal</button>
+                    <button class="preset-btn" data-preset="diagonal">Diagonal</button>
+                    <button class="preset-btn" data-preset="vertical">Vertical</button>
+                    <button class="preset-btn" data-preset="xor">XOR (no lineal)</button>
+                </div>
+            </div>
+
+            <!-- Weights -->
+            <div>
+                <div class="section-title">Pesos del Perceptrón</div>
+                <div class="weights-box">
+                    <div class="weight-row">
+                        <span class="weight-label">w₁ (x₁)</span>
+                        <span class="weight-value" id="w1">0.000</span>
+                    </div>
+                    <div class="weight-row">
+                        <span class="weight-label">w₂ (x₂)</span>
+                        <span class="weight-value" id="w2">0.000</span>
+                    </div>
+                    <div class="weight-row">
+                        <span class="weight-label">b (bias)</span>
+                        <span class="weight-value" id="bias">0.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Decision boundary -->
+            <div>
+                <div class="section-title">Frontera de Decisión</div>
+                <div class="boundary-eq" id="boundaryEq">
+                    <span>0.00</span>·x₁ + <span>0.00</span>·x₂ + <span>0.00</span> = 0
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div>
+                <div class="section-title">Estadísticas</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Accuracy</div>
+                        <div class="stat-value" id="accuracy">--</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Epoch</div>
+                        <div class="stat-value" id="epoch">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Puntos</div>
+                        <div class="stat-value" id="pointCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Errores</div>
+                        <div class="stat-value" id="errors">0</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Algorithm -->
+            <div>
+                <div class="section-title">Perceptron Learning Rule</div>
+                <div class="equation-box" style="text-align: left; font-size: 0.75rem;">
+                    <div class="mono" style="color: var(--text-secondary);">
+                        for each (x, y) in dataset:<br>
+                        &nbsp;&nbsp;ŷ = sign(w·x + b)<br>
+                        &nbsp;&nbsp;if ŷ ≠ y:<br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #a855f7">w += α(y - ŷ)x</span><br>
+                        &nbsp;&nbsp;&nbsp;&nbsp;<span style="color: #a855f7">b += α(y - ŷ)</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ============================================
+        // PERCEPTRON PLAYGROUND - Computation Lab
+        // Implementación canónica del Perceptrón
+        // ============================================
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        let width, height;
+
+        // ============================================
+        // PERCEPTRON CLASS
+        // ============================================
+
+        class Perceptron {
+            constructor(inputSize = 2) {
+                this.weights = new Array(inputSize).fill(0).map(() =>
+                    (Math.random() - 0.5) * 0.2
+                );
+                this.bias = (Math.random() - 0.5) * 0.2;
+                this.learningRate = 0.1;
+            }
+
+            // Forward pass: y = sign(w · x + b)
+            predict(x) {
+                let sum = this.bias;
+                for (let i = 0; i < x.length; i++) {
+                    sum += this.weights[i] * x[i];
+                }
+                return sum >= 0 ? 1 : 0;
+            }
+
+            // Raw weighted sum (for visualization)
+            weightedSum(x) {
+                let sum = this.bias;
+                for (let i = 0; i < x.length; i++) {
+                    sum += this.weights[i] * x[i];
+                }
+                return sum;
+            }
+
+            // Perceptron Learning Rule
+            // w_new = w_old + α(target - prediction) * x
+            train(x, target) {
+                const prediction = this.predict(x);
+                const error = target - prediction;
+
+                if (error !== 0) {
+                    // Update weights
+                    for (let i = 0; i < this.weights.length; i++) {
+                        this.weights[i] += this.learningRate * error * x[i];
+                    }
+                    this.bias += this.learningRate * error;
+
+                    return { updated: true, error: Math.abs(error) };
+                }
+
+                return { updated: false, error: 0 };
+            }
+
+            // Decision boundary: w1*x1 + w2*x2 + b = 0
+            // x2 = -(w1*x1 + b) / w2
+            getDecisionBoundaryY(x1) {
+                if (Math.abs(this.weights[1]) < 0.0001) return null;
+                return -(this.weights[0] * x1 + this.bias) / this.weights[1];
+            }
+
+            reset() {
+                this.weights = this.weights.map(() => (Math.random() - 0.5) * 0.2);
+                this.bias = (Math.random() - 0.5) * 0.2;
+            }
+        }
+
+        // ============================================
+        // STATE
+        // ============================================
+
+        let perceptron = new Perceptron(2);
+        let points = [];
+        let selectedClass = 0;
+        let training = false;
+        let epoch = 0;
+        let currentPointIndex = 0;
+        let animationId = null;
+
+        // Coordinate system: canvas to normalized [-1, 1]
+        function canvasToNorm(cx, cy) {
+            return {
+                x: (cx / width) * 2 - 1,
+                y: -((cy / height) * 2 - 1) // Flip Y
+            };
+        }
+
+        function normToCanvas(nx, ny) {
+            return {
+                x: (nx + 1) / 2 * width,
+                y: (-ny + 1) / 2 * height
+            };
+        }
+
+        // ============================================
+        // DRAWING
+        // ============================================
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+            draw();
+        }
+
+        function draw() {
+            // Background with decision regions
+            drawDecisionRegions();
+
+            // Grid
+            drawGrid();
+
+            // Decision boundary
+            drawDecisionBoundary();
+
+            // Points
+            drawPoints();
+
+            // Current training point highlight
+            if (training && points.length > 0) {
+                const p = points[currentPointIndex % points.length];
+                const canvasPos = normToCanvas(p.x, p.y);
+                ctx.beginPath();
+                ctx.arc(canvasPos.x, canvasPos.y, 15, 0, Math.PI * 2);
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+            }
+        }
+
+        function drawDecisionRegions() {
+            // Draw gradient background showing decision regions
+            const imageData = ctx.createImageData(width, height);
+            const data = imageData.data;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const norm = canvasToNorm(x, y);
+                    const ws = perceptron.weightedSum([norm.x, norm.y]);
+
+                    // Sigmoid-like mapping for smooth gradient
+                    const intensity = 1 / (1 + Math.exp(-ws * 3));
+
+                    const idx = (y * width + x) * 4;
+
+                    // Blend between class colors
+                    // Class 0: blue, Class 1: red
+                    data[idx] = Math.round(59 + (239 - 59) * intensity);     // R
+                    data[idx + 1] = Math.round(130 + (68 - 130) * intensity); // G
+                    data[idx + 2] = Math.round(246 + (68 - 246) * intensity); // B
+                    data[idx + 3] = 40; // Alpha
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+
+            // Darken background
+            ctx.fillStyle = 'rgba(15, 23, 42, 0.85)';
+            ctx.fillRect(0, 0, width, height);
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+
+            // Vertical lines
+            for (let x = -1; x <= 1; x += 0.2) {
+                const canvasX = normToCanvas(x, 0).x;
+                ctx.beginPath();
+                ctx.moveTo(canvasX, 0);
+                ctx.lineTo(canvasX, height);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = -1; y <= 1; y += 0.2) {
+                const canvasY = normToCanvas(0, y).y;
+                ctx.beginPath();
+                ctx.moveTo(0, canvasY);
+                ctx.lineTo(width, canvasY);
+                ctx.stroke();
+            }
+
+            // Axes
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+
+            // X axis
+            const originY = normToCanvas(0, 0).y;
+            ctx.beginPath();
+            ctx.moveTo(0, originY);
+            ctx.lineTo(width, originY);
+            ctx.stroke();
+
+            // Y axis
+            const originX = normToCanvas(0, 0).x;
+            ctx.beginPath();
+            ctx.moveTo(originX, 0);
+            ctx.lineTo(originX, height);
+            ctx.stroke();
+
+            // Labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText('x₁', width - 20, originY - 10);
+            ctx.fillText('x₂', originX + 15, 20);
+        }
+
+        function drawDecisionBoundary() {
+            // Draw the line: w1*x1 + w2*x2 + b = 0
+            const y1 = perceptron.getDecisionBoundaryY(-1);
+            const y2 = perceptron.getDecisionBoundaryY(1);
+
+            if (y1 === null || y2 === null) {
+                // Vertical line case
+                if (Math.abs(perceptron.weights[0]) > 0.0001) {
+                    const x = -perceptron.bias / perceptron.weights[0];
+                    const canvasX = normToCanvas(x, 0).x;
+                    ctx.strokeStyle = '#f8fafc';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(canvasX, 0);
+                    ctx.lineTo(canvasX, height);
+                    ctx.stroke();
+                }
+                return;
+            }
+
+            const p1 = normToCanvas(-1, y1);
+            const p2 = normToCanvas(1, y2);
+
+            // Gradient along the line
+            const gradient = ctx.createLinearGradient(p1.x, p1.y, p2.x, p2.y);
+            gradient.addColorStop(0, 'rgba(248, 250, 252, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(248, 250, 252, 1)');
+            gradient.addColorStop(1, 'rgba(248, 250, 252, 0.3)');
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(p1.x, p1.y);
+            ctx.lineTo(p2.x, p2.y);
+            ctx.stroke();
+
+            // Normal vector (weight direction)
+            const centerX = (p1.x + p2.x) / 2;
+            const centerY = (p1.y + p2.y) / 2;
+            const normLen = 30;
+            const wMag = Math.sqrt(perceptron.weights[0]**2 + perceptron.weights[1]**2);
+            if (wMag > 0.01) {
+                const nx = perceptron.weights[0] / wMag * normLen;
+                const ny = -perceptron.weights[1] / wMag * normLen; // Flip Y
+
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(centerX + nx, centerY + ny);
+                ctx.stroke();
+
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(centerX + nx, centerY + ny);
+                ctx.lineTo(centerX + nx - 8, centerY + ny - 4);
+                ctx.moveTo(centerX + nx, centerY + ny);
+                ctx.lineTo(centerX + nx - 8, centerY + ny + 4);
+                ctx.stroke();
+            }
+        }
+
+        function drawPoints() {
+            points.forEach(p => {
+                const canvasPos = normToCanvas(p.x, p.y);
+                const prediction = perceptron.predict([p.x, p.y]);
+                const correct = prediction === p.label;
+
+                // Point
+                ctx.beginPath();
+                ctx.arc(canvasPos.x, canvasPos.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = p.label === 0 ? '#3b82f6' : '#ef4444';
+                ctx.fill();
+
+                // Border (thicker if misclassified)
+                ctx.strokeStyle = correct ? 'rgba(255,255,255,0.5)' : '#fbbf24';
+                ctx.lineWidth = correct ? 2 : 3;
+                ctx.stroke();
+            });
+        }
+
+        // ============================================
+        // TRAINING
+        // ============================================
+
+        function trainStep() {
+            if (points.length === 0) return false;
+
+            const point = points[currentPointIndex];
+            const result = perceptron.train([point.x, point.y], point.label);
+
+            currentPointIndex = (currentPointIndex + 1) % points.length;
+
+            // Completed an epoch?
+            if (currentPointIndex === 0) {
+                epoch++;
+            }
+
+            updateUI();
+            draw();
+
+            return result.updated;
+        }
+
+        function trainEpoch() {
+            let anyUpdates = false;
+            const startIdx = currentPointIndex;
+
+            do {
+                const updated = trainStep();
+                anyUpdates = anyUpdates || updated;
+            } while (currentPointIndex !== 0 && currentPointIndex !== startIdx);
+
+            return anyUpdates;
+        }
+
+        function startTraining() {
+            if (points.length === 0) return;
+            training = true;
+
+            function step() {
+                if (!training) return;
+
+                trainStep();
+
+                // Check for convergence
+                const acc = calculateAccuracy();
+                if (acc === 100 && epoch > 0) {
+                    training = false;
+                    updateUI();
+                    return;
+                }
+
+                animationId = setTimeout(step, 100);
+            }
+
+            step();
+        }
+
+        function pauseTraining() {
+            training = false;
+            clearTimeout(animationId);
+        }
+
+        function calculateAccuracy() {
+            if (points.length === 0) return 0;
+
+            let correct = 0;
+            points.forEach(p => {
+                if (perceptron.predict([p.x, p.y]) === p.label) {
+                    correct++;
+                }
+            });
+
+            return Math.round((correct / points.length) * 100);
+        }
+
+        function countErrors() {
+            return points.filter(p =>
+                perceptron.predict([p.x, p.y]) !== p.label
+            ).length;
+        }
+
+        // ============================================
+        // UI
+        // ============================================
+
+        function updateUI() {
+            // Weights
+            document.getElementById('w1').textContent = perceptron.weights[0].toFixed(3);
+            document.getElementById('w2').textContent = perceptron.weights[1].toFixed(3);
+            document.getElementById('bias').textContent = perceptron.bias.toFixed(3);
+
+            // Decision boundary equation
+            const w1 = perceptron.weights[0].toFixed(2);
+            const w2 = perceptron.weights[1].toFixed(2);
+            const b = perceptron.bias.toFixed(2);
+            document.getElementById('boundaryEq').innerHTML =
+                `<span>${w1}</span>·x₁ + <span>${w2}</span>·x₂ + <span>${b}</span> = 0`;
+
+            // Stats
+            const acc = calculateAccuracy();
+            const accEl = document.getElementById('accuracy');
+            accEl.textContent = points.length > 0 ? acc + '%' : '--';
+            accEl.className = 'stat-value ' + (acc >= 90 ? 'accuracy-good' : 'accuracy-bad');
+
+            document.getElementById('epoch').textContent = epoch;
+            document.getElementById('pointCount').textContent = points.length;
+            document.getElementById('errors').textContent = countErrors();
+
+            // Learning rate
+            document.getElementById('lrValue').textContent = perceptron.learningRate.toFixed(2);
+        }
+
+        // ============================================
+        // DATASET PRESETS
+        // ============================================
+
+        function generateDataset(type) {
+            points = [];
+            epoch = 0;
+            currentPointIndex = 0;
+
+            const n = 30;
+
+            switch (type) {
+                case 'linear':
+                    // Points separated by y = 0
+                    for (let i = 0; i < n; i++) {
+                        const x = (Math.random() - 0.5) * 1.6;
+                        const y = (Math.random() - 0.5) * 1.6;
+                        const label = y >= 0 ? 1 : 0;
+                        // Add some margin
+                        if (Math.abs(y) > 0.1) {
+                            points.push({ x, y, label });
+                        } else {
+                            i--; // Retry
+                        }
+                    }
+                    break;
+
+                case 'diagonal':
+                    // Points separated by y = x
+                    for (let i = 0; i < n; i++) {
+                        const x = (Math.random() - 0.5) * 1.6;
+                        const y = (Math.random() - 0.5) * 1.6;
+                        const label = y >= x ? 1 : 0;
+                        if (Math.abs(y - x) > 0.1) {
+                            points.push({ x, y, label });
+                        } else {
+                            i--;
+                        }
+                    }
+                    break;
+
+                case 'vertical':
+                    // Points separated by x = 0
+                    for (let i = 0; i < n; i++) {
+                        const x = (Math.random() - 0.5) * 1.6;
+                        const y = (Math.random() - 0.5) * 1.6;
+                        const label = x >= 0 ? 1 : 0;
+                        if (Math.abs(x) > 0.1) {
+                            points.push({ x, y, label });
+                        } else {
+                            i--;
+                        }
+                    }
+                    break;
+
+                case 'xor':
+                    // XOR pattern (not linearly separable!)
+                    const spread = 0.3;
+                    for (let i = 0; i < 8; i++) {
+                        // Quadrant 1 (++): class 0
+                        points.push({
+                            x: 0.5 + (Math.random() - 0.5) * spread,
+                            y: 0.5 + (Math.random() - 0.5) * spread,
+                            label: 0
+                        });
+                        // Quadrant 3 (--): class 0
+                        points.push({
+                            x: -0.5 + (Math.random() - 0.5) * spread,
+                            y: -0.5 + (Math.random() - 0.5) * spread,
+                            label: 0
+                        });
+                        // Quadrant 2 (-+): class 1
+                        points.push({
+                            x: -0.5 + (Math.random() - 0.5) * spread,
+                            y: 0.5 + (Math.random() - 0.5) * spread,
+                            label: 1
+                        });
+                        // Quadrant 4 (+-): class 1
+                        points.push({
+                            x: 0.5 + (Math.random() - 0.5) * spread,
+                            y: -0.5 + (Math.random() - 0.5) * spread,
+                            label: 1
+                        });
+                    }
+                    break;
+            }
+
+            updateUI();
+            draw();
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const cx = e.clientX - rect.left;
+            const cy = e.clientY - rect.top;
+            const norm = canvasToNorm(cx, cy);
+
+            points.push({
+                x: norm.x,
+                y: norm.y,
+                label: selectedClass
+            });
+
+            updateUI();
+            draw();
+        });
+
+        // Class selection
+        document.getElementById('class0Btn').addEventListener('click', () => {
+            selectedClass = 0;
+            document.getElementById('class0Btn').classList.add('selected');
+            document.getElementById('class1Btn').classList.remove('selected');
+        });
+
+        document.getElementById('class1Btn').addEventListener('click', () => {
+            selectedClass = 1;
+            document.getElementById('class1Btn').classList.add('selected');
+            document.getElementById('class0Btn').classList.remove('selected');
+        });
+
+        // Learning rate
+        document.getElementById('lrSlider').addEventListener('input', (e) => {
+            perceptron.learningRate = parseFloat(e.target.value);
+            updateUI();
+        });
+
+        // Training controls
+        document.getElementById('trainBtn').addEventListener('click', startTraining);
+        document.getElementById('pauseBtn').addEventListener('click', pauseTraining);
+        document.getElementById('stepBtn').addEventListener('click', () => {
+            pauseTraining();
+            trainStep();
+        });
+
+        document.getElementById('resetWeightsBtn').addEventListener('click', () => {
+            pauseTraining();
+            perceptron.reset();
+            epoch = 0;
+            currentPointIndex = 0;
+            updateUI();
+            draw();
+        });
+
+        document.getElementById('clearPointsBtn').addEventListener('click', () => {
+            pauseTraining();
+            points = [];
+            epoch = 0;
+            currentPointIndex = 0;
+            updateUI();
+            draw();
+        });
+
+        // Presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                pauseTraining();
+                perceptron.reset();
+                generateDataset(btn.dataset.preset);
+            });
+        });
+
+        // Keyboard
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (training) pauseTraining();
+                else startTraining();
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                pauseTraining();
+                trainStep();
+            } else if (e.code === 'Digit0') {
+                selectedClass = 0;
+                document.getElementById('class0Btn').classList.add('selected');
+                document.getElementById('class1Btn').classList.remove('selected');
+            } else if (e.code === 'Digit1') {
+                selectedClass = 1;
+                document.getElementById('class1Btn').classList.add('selected');
+                document.getElementById('class0Btn').classList.remove('selected');
+            }
+        });
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        generateDataset('linear');
+    </script>
+</body>
+</html>

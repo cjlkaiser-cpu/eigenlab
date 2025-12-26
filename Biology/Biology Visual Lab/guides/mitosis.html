@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitosis — Guía · Biology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border: 1px solid var(--accent); background: var(--accent-dim); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; position: relative; }
+        .experiment-number { position: absolute; top: -0.75rem; left: 1rem; background: var(--accent); color: var(--bg-primary); font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .steps { counter-reset: step; list-style: none; padding-left: 0; margin-top: 0.75rem; }
+        .steps li { counter-increment: step; padding-left: 2rem; position: relative; margin: 0.5rem 0; }
+        .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+
+        /* Connections */
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; display: block; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+        .connection-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem; }
+        .connection-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+
+        /* Limitations */
+        .limitations { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--accent); margin-bottom: 0.75rem; }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; flex-direction: column; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .guide-nav a:hover { border-color: var(--accent); text-decoration: none; }
+        .guide-nav .nav-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .guide-nav .nav-title { font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .guide-nav .next { text-align: right; margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Biology Visual Lab</a>
+                    <span> / </span>
+                    <span>Mitosis</span>
+                </nav>
+                <h1>Mitosis — Guía</h1>
+                <div class="subtitle">División celular para crecimiento y reparación</div>
+            </div>
+            <a href="../mitosis.html" class="pill">
+                <span>▶</span>
+                <span>Abrir simulación</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la mitosis?</div>
+                <p class="lead">
+                    La <span class="em">mitosis</span> es la división celular que produce dos células
+                    hijas genéticamente idénticas a la célula madre. Es fundamental para el crecimiento,
+                    la reparación de tejidos y la reproducción asexual.
+                </p>
+                <div class="chips">
+                    <span class="chip">Profase</span>
+                    <span class="chip">Metafase</span>
+                    <span class="chip">Anafase</span>
+                    <span class="chip">Telofase</span>
+                    <span class="chip">Citocinesis</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Resultado:</strong> 1 célula (2n) → 2 células (2n). Misma ploidía,
+                    misma información genética. Clones perfectos.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Ciclo celular completo</div>
+                <ul>
+                    <li><strong>G1:</strong> Crecimiento, síntesis de proteínas</li>
+                    <li><strong>S:</strong> Replicación del ADN (6-8 horas)</li>
+                    <li><strong>G2:</strong> Preparación, verificación del ADN</li>
+                    <li><strong>M:</strong> Mitosis (~1 hora) + citocinesis</li>
+                </ul>
+                <div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-panel); border-radius: 0.375rem; font-size: 0.8rem;">
+                    <strong>Duración típica:</strong> 12-24 horas (depende del tipo celular)
+                </div>
+            </aside>
+        </section>
+
+        <!-- Phases -->
+        <section class="two">
+            <div class="card">
+                <h2>Profase</h2>
+                <p>La cromatina se condensa en cromosomas visibles.</p>
+                <ul>
+                    <li><strong>Condensación:</strong> ADN se compacta 10,000×</li>
+                    <li><strong>Envuelta nuclear:</strong> Se desintegra</li>
+                    <li><strong>Centrosomas:</strong> Migran a polos opuestos</li>
+                    <li><strong>Huso mitótico:</strong> Comienza a formarse</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Metafase</h2>
+                <p>Cromosomas se alinean en el ecuador celular.</p>
+                <ul>
+                    <li><strong>Placa metafásica:</strong> Alineación perfecta</li>
+                    <li><strong>Cinetocoros:</strong> Unidos a microtúbulos</li>
+                    <li><strong>Checkpoint:</strong> Verifica todas las uniones</li>
+                    <li><strong>Tensión:</strong> Señal de correcta unión</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Anafase</h2>
+                <p>Cromátidas hermanas se separan hacia polos opuestos.</p>
+                <ul>
+                    <li><strong>Anafase A:</strong> Microtúbulos se acortan</li>
+                    <li><strong>Anafase B:</strong> Polos se alejan</li>
+                    <li><strong>Cohesinas:</strong> Degradadas por separasa</li>
+                    <li><strong>Velocidad:</strong> ~1 μm/minuto</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Telofase + Citocinesis</h2>
+                <p>Se forman dos núcleos y se divide el citoplasma.</p>
+                <ul>
+                    <li><strong>Envuelta nuclear:</strong> Se reforma</li>
+                    <li><strong>Cromosomas:</strong> Se descondensan</li>
+                    <li><strong>Anillo contráctil:</strong> Divide la célula</li>
+                    <li><strong>Resultado:</strong> Dos células hijas</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Checkpoints -->
+        <section class="card section">
+            <h2>Puntos de control (Checkpoints)</h2>
+            <div class="two" style="margin-top: 0;">
+                <div>
+                    <ul>
+                        <li><strong>G1/S:</strong> ¿ADN dañado? ¿Célula suficientemente grande?</li>
+                        <li><strong>G2/M:</strong> ¿Replicación completa? ¿Errores reparados?</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Huso:</strong> ¿Todos los cinetocoros unidos?</li>
+                        <li><strong>p53:</strong> "Guardián del genoma" — detiene ciclo si hay daño</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout-accent" style="margin-top: 1rem;">
+                <strong>Cáncer:</strong> Cuando los checkpoints fallan, las células se dividen sin control. Mutaciones en p53 aparecen en ~50% de cánceres humanos.
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 1</div>
+                <h3 style="margin-top: 0.5rem;">Identificar cada fase por su morfología</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Cada fase de la mitosis tiene características visuales distintivas que permiten identificarla sin ambigüedad.</p>
+                </div>
+                <ol class="steps">
+                    <li>Observa la célula en interfase — núcleo visible, cromatina difusa</li>
+                    <li>Profase — cromosomas visibles como "bastoncitos", núcleo desaparece</li>
+                    <li>Metafase — cromosomas alineados formando una "línea"</li>
+                    <li>Anafase — dos grupos de cromosomas moviéndose a polos (forma de "V")</li>
+                    <li>Telofase — dos núcleos formándose, célula estrechándose</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Los patólogos usan el índice mitótico (% de células en mitosis) para evaluar la agresividad de tumores.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 2</div>
+                <h3 style="margin-top: 0.5rem;">Tiempo relativo de cada fase</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">No todas las fases duran lo mismo. La metafase es breve; la profase es más larga.</p>
+                </div>
+                <ol class="steps">
+                    <li>Pausa la simulación en interfase y anota el tiempo</li>
+                    <li>Continúa y mide cuánto dura cada fase</li>
+                    <li>Calcula el porcentaje del ciclo que ocupa cada fase</li>
+                    <li>Compara: profase (~50% de M), metafase (~10%), anafase (~10%), telofase (~30%)</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Fármacos antimitóticos (como vincristina) detienen células en metafase, "congelando" el cáncer.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 3</div>
+                <h3 style="margin-top: 0.5rem;">Efecto del checkpoint del huso</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Si un cinetocoro no está unido correctamente, la célula no puede avanzar a anafase.</p>
+                </div>
+                <ol class="steps">
+                    <li>Simula una unión incorrecta de microtúbulos (si disponible)</li>
+                    <li>Observa que la célula permanece "atascada" en metafase</li>
+                    <li>Corrige la unión y observa que inmediatamente avanza a anafase</li>
+                    <li>Reflexiona: ¿qué pasa si este checkpoint falla?</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Fallos en este checkpoint causan aneuploidía (número incorrecto de cromosomas), común en síndrome de Down y cáncer.
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <h2>Conexiones interdisciplinarias</h2>
+            <div class="connections-grid">
+                <a href="meiosis.html" class="connection">
+                    <div class="connection-icon icon-biology">🧬</div>
+                    <div class="connection-title">Meiosis</div>
+                    <div class="connection-desc">División que produce gametos: similar pero con dos divisiones y recombinación.</div>
+                </a>
+                <a href="../../../Biochemistry/Biochem Visual Lab/adn-replicacion.html" class="connection">
+                    <div class="connection-icon icon-biochem">🔬</div>
+                    <div class="connection-title">Replicación ADN</div>
+                    <div class="connection-desc">Fase S: el ADN debe duplicarse antes de que la célula pueda dividirse.</div>
+                </a>
+                <a href="../../../Computation/Computation Lab/finite-automata.html" class="connection">
+                    <div class="connection-icon icon-computation">💻</div>
+                    <div class="connection-title">Autómatas Finitos</div>
+                    <div class="connection-desc">El ciclo celular es una máquina de estados con transiciones controladas por checkpoints.</div>
+                </a>
+                <a href="../../../Physics/Physics Visual Lab/microtubulos.html" class="connection">
+                    <div class="connection-icon icon-physics">⚡</div>
+                    <div class="connection-title">Polímeros Dinámicos</div>
+                    <div class="connection-desc">Los microtúbulos crecen y se acortan por inestabilidad dinámica.</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="section">
+            <div class="limitations">
+                <h3>⚠️ Limitaciones de la simulación</h3>
+                <ul>
+                    <li><strong>2D:</strong> La célula real es tridimensional; los cromosomas se mueven en 3D</li>
+                    <li><strong>Velocidad:</strong> La mitosis real toma ~1 hora; la simulación está acelerada</li>
+                    <li><strong>Complejidad molecular:</strong> No muestra las cientos de proteínas involucradas</li>
+                    <li><strong>Variabilidad:</strong> Diferentes tipos celulares tienen mitosis con duraciones muy distintas</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Reflection -->
+        <section class="section">
+            <div class="reflection">
+                <h3>🔬 Preguntas de reflexión</h3>
+                <ol>
+                    <li>¿Por qué es esencial que las cromátidas hermanas sean copias exactas antes de separarse?</li>
+                    <li>Si una célula tiene 46 cromosomas antes de la mitosis, ¿cuántos tiene cada célula hija?</li>
+                    <li>¿Por qué las neuronas adultas casi nunca se dividen, mientras que las células epiteliales lo hacen constantemente?</li>
+                    <li>Los fármacos que bloquean la formación del huso mitótico son quimioterapéuticos. ¿Por qué son más tóxicos para células cancerosas?</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="genetica-poblacional.html">
+                <span class="nav-label">← Anterior</span>
+                <span class="nav-title">Genética Poblacional</span>
+            </a>
+            <a href="meiosis.html" class="next">
+                <span class="nav-label">Siguiente →</span>
+                <span class="nav-title">Meiosis</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biology Visual Lab — Mitosis
+    </footer>
+</body>
+</html>

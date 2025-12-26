@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a { color: var(--accent); }
+
+        h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            text-decoration: none;
+        }
+
+        .pill-muted {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .pill-muted:hover {
+            border-color: var(--border);
+            background: var(--bg-panel);
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+
+        .kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .lead {
+            margin: 0.75rem 0 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+        }
+
+        h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: var(--accent);
+        }
+
+        p {
+            margin: 0.625rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        ul, ol {
+            margin: 0.625rem 0;
+            padding-left: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        li { margin: 0.375rem 0; }
+
+        strong { color: var(--text-primary); }
+
+        .em { color: var(--accent); font-weight: 600; }
+
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .three {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 860px) {
+            .hero, .two, .three, .grid { grid-template-columns: 1fr; }
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .chip {
+            font-size: 0.7rem;
+            padding: 0.375rem 0.625rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-secondary);
+        }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+
+        pre {
+            margin: 0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            overflow: auto;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        code {
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            margin-top: 0.75rem;
+        }
+
+        .callout p { margin: 0; }
+
+        .callout-accent {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .equations {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .eq {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            font-size: 0.8rem;
+        }
+
+        .eq span:first-child { color: var(--text-secondary); }
+        .eq code { color: var(--accent); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1.5rem; }
+
+        .experiment {
+            border-left: 3px solid var(--accent);
+            padding-left: 1rem;
+            margin: 1rem 0;
+        }
+
+        .experiment h3 {
+            margin-bottom: 0.75rem;
+        }
+
+        .connection {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            margin-top: 0.5rem;
+        }
+
+        .connection-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .connection-text {
+            flex: 1;
+        }
+
+        .connection-text strong {
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        .reflection {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .reflection ul {
+            margin: 0;
+        }
+
+        footer {
+            max-width: 980px;
+            margin: 2rem auto 0;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Bubble Sort</span>
+                </nav>
+                <h1>Bubble Sort — Guia</h1>
+                <div class="subtitle">El algoritmo mas simple de ordenamiento: reglas locales, orden global</div>
+            </div>
+            <div class="header-actions">
+                <a href="../bubble-sort-race.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    <span class="em">Bubble Sort</span> es el algoritmo de ordenamiento mas intuitivo:
+                    compara elementos vecinos y los intercambia si estan en orden incorrecto.
+                    Es ineficiente para listas grandes, pero revela algo profundo:
+                    <strong>el orden global puede emerger de decisiones puramente locales</strong>.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Comparacion local</span>
+                    <span class="chip">Intercambios adyacentes</span>
+                    <span class="chip">O(n²) tiempo</span>
+                    <span class="chip">Estable</span>
+                    <span class="chip">In-place</span>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem">
+                    <p>
+                        <strong>Idea central:</strong> El algoritmo no "ve" el array completo.
+                        Solo conoce dos elementos a la vez. Aun asi, el orden emerge.
+                        Este patron — reglas locales produciendo orden global — aparece en fisica, biologia y economia.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Pseudocodigo</div>
+                <pre>for i in 0..n-1:
+  swapped = false
+  for j in 0..n-i-2:
+    if A[j] > A[j+1]:
+      swap(A[j], A[j+1])
+      swapped = true
+  if not swapped:
+    break  # ya ordenado</pre>
+                <p class="mini" style="margin-top:0.75rem">
+                    La optimizacion <code>swapped</code> permite terminar temprano si una pasada no hace intercambios.
+                </p>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados visuales</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #64748b"></span>Sin procesar</div>
+                    <div class="legend-item"><span class="swatch" style="background: #fbbf24"></span>Comparando</div>
+                    <div class="legend-item"><span class="swatch" style="background: #ef4444"></span>Intercambiando</div>
+                    <div class="legend-item"><span class="swatch" style="background: #22c55e"></span>Ordenado</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- INTUICION -->
+        <section class="two">
+            <div class="card">
+                <h2>La intuicion: burbujas flotando</h2>
+                <p>
+                    Imagina burbujas de aire en agua. Las mas grandes suben mas rapido.
+                    En Bubble Sort, los elementos "grandes" flotan hacia el final del array, uno por pasada.
+                </p>
+                <ul>
+                    <li><strong>Pasada 1:</strong> El mayor llega al final</li>
+                    <li><strong>Pasada 2:</strong> El segundo mayor llega a su posicion</li>
+                    <li><strong>Pasada n-1:</strong> Todo ordenado</li>
+                </ul>
+                <p class="mini">
+                    La zona verde (ordenada) crece desde la derecha. Observa como el "frente de ordenamiento" avanza.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Complejidad: el precio del orden</h2>
+                <div class="equations">
+                    <div class="eq"><span>Peor caso (inverso)</span><code>O(n²)</code></div>
+                    <div class="eq"><span>Mejor caso (ordenado)</span><code>O(n)</code></div>
+                    <div class="eq"><span>Caso promedio</span><code>O(n²)</code></div>
+                    <div class="eq"><span>Espacio extra</span><code>O(1)</code></div>
+                </div>
+                <div class="callout">
+                    <p>
+                        <strong>En numeros:</strong><br>
+                        n = 10 → ~45 comparaciones<br>
+                        n = 100 → ~5,000 comparaciones<br>
+                        n = 1000 → ~500,000 comparaciones
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS -->
+        <section class="card section">
+            <div class="kicker">Experimentos guiados</div>
+            <h2 style="margin-top:0.5rem">Tres formas de entender Bubble Sort</h2>
+
+            <div class="experiment">
+                <h3>Experimento 1: Peor caso vs mejor caso</h3>
+                <div class="grid">
+                    <div>
+                        <ol>
+                            <li>Genera un array <strong>ordenado inversamente</strong> (peor caso)</li>
+                            <li>Ejecuta y anota: comparaciones, swaps, pasadas</li>
+                            <li>Resetea y genera un array <strong>ya ordenado</strong> (mejor caso)</li>
+                            <li>Ejecuta y compara los contadores</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <p class="mini"><strong>Hipotesis:</strong> El array ordenado deberia terminar en 1 pasada (con la optimizacion de early exit).</p>
+                        <p class="mini"><strong>Observa:</strong> En el peor caso, cada elemento debe "burbujear" toda la distancia hasta su posicion final.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="experiment">
+                <h3>Experimento 2: El efecto de duplicar n</h3>
+                <div class="grid">
+                    <div>
+                        <ol>
+                            <li>Usa n = 10, genera array aleatorio, ejecuta</li>
+                            <li>Anota las comparaciones totales</li>
+                            <li>Repite con n = 20</li>
+                            <li>Calcula la proporcion: comparaciones(20) / comparaciones(10)</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <p class="mini"><strong>Hipotesis:</strong> Si O(n²), duplicar n deberia cuadruplicar (~4x) las comparaciones.</p>
+                        <div class="badge b-bad" style="margin-top:0.5rem">
+                            <span class="swatch" style="background: var(--color-bad)"></span>
+                            El crecimiento cuadratico es brutal
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="experiment">
+                <h3>Experimento 3: El array "casi ordenado"</h3>
+                <div class="grid">
+                    <div>
+                        <ol>
+                            <li>Genera un array ordenado</li>
+                            <li>Intercambia manualmente 2-3 elementos adyacentes</li>
+                            <li>Ejecuta Bubble Sort</li>
+                            <li>Compara con el peor caso del mismo tamano</li>
+                        </ol>
+                    </div>
+                    <div>
+                        <p class="mini"><strong>Observa:</strong> Bubble Sort es sorprendentemente eficiente cuando el array esta "casi" ordenado. Pocas pasadas, pocos swaps.</p>
+                        <div class="badge b-good" style="margin-top:0.5rem">
+                            <span class="swatch" style="background: var(--color-good)"></span>
+                            Caso favorable real
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="margin-top:1rem; text-align:center;">
+                <a href="../bubble-sort-race.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Ir a la simulacion</span>
+                </a>
+            </div>
+        </section>
+
+        <!-- CONEXIONES -->
+        <section class="card section">
+            <div class="kicker">Conexiones interdisciplinarias</div>
+            <h2 style="margin-top:0.5rem">El mismo patron en otros sistemas</h2>
+            <p>
+                La idea de "reglas locales → orden global" aparece en muchos sistemas naturales y artificiales.
+                Bubble Sort es un ejemplo computacional de <strong>emergencia</strong>.
+            </p>
+
+            <div class="connection">
+                <span class="connection-icon">🧬</span>
+                <div class="connection-text">
+                    <strong><a href="../../../Biology/Biology Visual Lab/evolucion.html">Seleccion Natural</a></strong>
+                    <span class="mini">Cada organismo compite localmente. No hay "planificador" global. Aun asi, las especies se adaptan. El fitness "burbujea" hacia arriba generacion tras generacion.</span>
+                </div>
+            </div>
+
+            <div class="connection">
+                <span class="connection-icon">🎮</span>
+                <div class="connection-text">
+                    <strong><a href="../../../Mathematics/Math Visual Lab/game-of-life.html">Game of Life</a></strong>
+                    <span class="mini">Cada celda solo mira a sus 8 vecinas. Reglas triviales. Pero emergen naves espaciales, osciladores, incluso maquinas de Turing. Orden desde el caos local.</span>
+                </div>
+            </div>
+
+            <div class="connection">
+                <span class="connection-icon">⚗️</span>
+                <div class="connection-text">
+                    <strong><a href="../../../Chemistry/Chemistry Visual Lab/le-chatelier.html">Equilibrio Quimico</a></strong>
+                    <span class="mini">Las moleculas no "saben" hacia donde va la reaccion. Solo colisionan localmente. El equilibrio emerge de billones de interacciones aleatorias.</span>
+                </div>
+            </div>
+
+            <div class="connection">
+                <span class="connection-icon">🌡️</span>
+                <div class="connection-text">
+                    <strong><a href="../../../Physics/Physics Visual Lab/gas-ideal.html">Termodinamica</a></strong>
+                    <span class="mini">Las moleculas de un gas intercambian energia en colisiones locales. La distribucion de Maxwell-Boltzmann emerge — un "orden estadistico" sin coordinador central.</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- POR QUE IMPORTA -->
+        <section class="two">
+            <div class="card">
+                <h2>Por que estudiar un algoritmo "malo"?</h2>
+                <p>
+                    Bubble Sort casi nunca se usa en produccion. Entonces, por que aprenderlo?
+                </p>
+                <ul>
+                    <li><strong>Pedagogico:</strong> Es el algoritmo mas facil de entender y visualizar</li>
+                    <li><strong>Baseline:</strong> Sirve como referencia para comparar con algoritmos mejores</li>
+                    <li><strong>Conceptual:</strong> Ilustra la diferencia entre O(n) y O(n²) de forma visceral</li>
+                    <li><strong>Emergencia:</strong> Demuestra que el orden puede emerger de reglas locales</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Cuando SI usar Bubble Sort</h2>
+                <ul>
+                    <li><strong>Arrays muy pequenos</strong> (n < 10): El overhead de algoritmos complejos no vale la pena</li>
+                    <li><strong>Arrays casi ordenados:</strong> O(n) en el mejor caso</li>
+                    <li><strong>Memoria limitada:</strong> Es in-place, O(1) espacio extra</li>
+                    <li><strong>Estabilidad requerida:</strong> No cambia el orden de elementos iguales</li>
+                </ul>
+                <div class="callout">
+                    <p class="mini">
+                        En la practica, Insertion Sort es mejor para arrays pequenos/casi-ordenados.
+                        Para arrays grandes: Merge Sort, Quick Sort, o Timsort.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2 style="margin-top:0.5rem">Que NO muestra esta simulacion</h2>
+            <div class="grid">
+                <div>
+                    <ul>
+                        <li><strong>Cache performance:</strong> En CPUs reales, el acceso secuencial de Bubble Sort es cache-friendly, pero esto no compensa su O(n²)</li>
+                        <li><strong>Comparacion con otros:</strong> La simulacion muestra solo Bubble Sort; idealmente compararias con Quick Sort lado a lado</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Escalas reales:</strong> Con n = 20, no sientes la diferencia entre O(n) y O(n²). Con n = 10,000, la diferencia es brutal</li>
+                        <li><strong>Variantes:</strong> Existen optimizaciones (Cocktail Sort, Comb Sort) que no se muestran aqui</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ul>
+                <li>Por que el algoritmo se llama "Bubble" Sort? Que "flota" hacia donde?</li>
+                <li>Si el array tiene n elementos, cual es el maximo numero de pasadas necesarias? Por que?</li>
+                <li>Por que Bubble Sort es estable? Que condicion en el codigo garantiza esto?</li>
+                <li>Si tuvieras que ordenar 1 millon de numeros, cuanto tiempo tomaria Bubble Sort comparado con un algoritmo O(n log n)?</li>
+                <li>En que otros sistemas naturales ves "orden emergente de reglas locales"?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="card section">
+            <div class="kicker">En resumen</div>
+            <h2 style="margin-top:0.5rem">Bubble Sort como metafora</h2>
+            <p>
+                Bubble Sort es mas que un algoritmo ineficiente. Es una demostracion de que
+                <strong>el orden puede emerger sin un controlador central</strong>.
+                Cada comparacion es local, miope, sin vision del array completo.
+                Y aun asi, el sistema converge al orden total.
+            </p>
+            <p>
+                Este patron — emergencia, auto-organizacion, orden desde el caos — es uno de los temas
+                mas profundos de la ciencia. Lo veras en fisica estadistica, biologia evolutiva,
+                economia de mercados, y redes neuronales.
+            </p>
+            <p class="mini" style="margin-top: 1rem">
+                Bubble Sort es lento, pero es sabio.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Bubble Sort Guide
+    </footer>
+</body>
+</html>

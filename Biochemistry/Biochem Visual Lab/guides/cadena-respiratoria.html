@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadena Respiratoria — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Cadena Respiratoria</nav>
+                <h1>Cadena Respiratoria — Guía</h1>
+                <div class="subtitle">Fosforilación oxidativa: el motor molecular de la vida</div>
+            </div>
+            <a href="../cadena-respiratoria.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la cadena respiratoria?</div>
+                <p class="lead">La <span class="em">cadena de transporte de electrones</span> es una serie de complejos proteicos en la membrana mitocondrial interna que transfieren electrones desde NADH/FADH₂ hasta O₂. Este flujo bombea H⁺, creando el gradiente que impulsa la ATP sintasa.</p>
+                <div class="chips">
+                    <span class="chip">4 complejos</span>
+                    <span class="chip">Gradiente H⁺</span>
+                    <span class="chip">~34 ATP/glucosa</span>
+                    <span class="chip">O₂ → H₂O</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Peter Mitchell (1961):</strong> Premio Nobel 1978 por la teoría quimiosmótica: el gradiente de protones, no enlaces químicos intermedios, acopla la respiración a la síntesis de ATP.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Rendimiento energético</div>
+                <ul>
+                    <li><strong>NADH:</strong> ~2.5 ATP (entra en complejo I)</li>
+                    <li><strong>FADH₂:</strong> ~1.5 ATP (entra en complejo II)</li>
+                    <li><strong>H⁺ por ATP:</strong> ~3-4 protones</li>
+                    <li><strong>O₂:</strong> Aceptor final → H₂O</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Complejos I-IV</h2>
+                <ul>
+                    <li><strong>I (NADH DH):</strong> NADH → CoQ, bombea 4H⁺</li>
+                    <li><strong>II (Succinato DH):</strong> FADH₂ → CoQ (sin bombeo)</li>
+                    <li><strong>III (Citocromo bc₁):</strong> CoQ → Cit c, bombea 4H⁺</li>
+                    <li><strong>IV (Citocromo oxidasa):</strong> Cit c → O₂, bombea 2H⁺</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><strong>Total:</strong> 10H⁺ por NADH, 6H⁺ por FADH₂</p>
+            </div>
+            <div class="card">
+                <h2>ATP Sintasa (Complejo V)</h2>
+                <ul>
+                    <li><strong>F₀:</strong> Canal de protones en membrana</li>
+                    <li><strong>F₁:</strong> Cabeza catalítica (matriz)</li>
+                    <li><strong>Mecanismo:</strong> Motor rotatorio molecular</li>
+                    <li><strong>Eficiencia:</strong> ~3 H⁺ → 1 ATP</li>
+                </ul>
+                <p style="margin-top: 0.75rem;">Boyer demostró que la rotación física de F₁ cataliza la síntesis de ATP.</p>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Explora cómo los electrones fluyen, los protones se acumulan y el ATP se sintetiza.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>Flujo de electrones</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Los electrones fluyen desde NADH hasta O₂ siguiendo un gradiente de potencial redox creciente.</p>
+                </div>
+                <ol>
+                    <li>Observa NADH donando 2 electrones al Complejo I</li>
+                    <li>Sigue los e⁻ por CoQ → Complejo III → Citocromo c → Complejo IV</li>
+                    <li>Verifica que O₂ es el aceptor final, formando H₂O</li>
+                    <li>Compara el potencial redox de cada transportador</li>
+                    <li>Calcula el ΔG total de la transferencia NADH → O₂</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Los electrones "caen" por una cascada de potencial, liberando energía en cada paso.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>Gradiente quimiosmótico</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>El bombeo de protones crea un gradiente electroquímico (ΔpH + Δψ) que almacena energía.</p>
+                </div>
+                <ol>
+                    <li>Observa H⁺ siendo bombeados al espacio intermembrana</li>
+                    <li>Mide el pH de la matriz vs. espacio intermembrana</li>
+                    <li>Observa la carga eléctrica acumularse (interior negativo)</li>
+                    <li>Calcula la fuerza protón-motriz total</li>
+                    <li>Relaciona el gradiente con la capacidad de sintetizar ATP</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> La energía de los electrones se convierte en un gradiente de ~200 mV que puede impulsar la ATP sintasa.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>Inhibidores y desacoplantes</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Los inhibidores bloquean el flujo de electrones; los desacoplantes disipan el gradiente sin producir ATP.</p>
+                </div>
+                <ol>
+                    <li>Añade cianuro (inhibe Complejo IV) — observa acumulación de e⁻</li>
+                    <li>Añade rotenona (inhibe Complejo I) — observa que FADH₂ aún funciona</li>
+                    <li>Añade DNP (desacoplante) — observa respiración acelerada sin ATP</li>
+                    <li>Añade oligomicina (inhibe ATP sintasa) — observa gradiente máximo</li>
+                    <li>Compara producción de ATP y calor en cada caso</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> El desacoplamiento explica la termogénesis; los inhibidores causan anoxia química.</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔄</div>
+                    <div>
+                        <h4>Ciclo de Krebs</h4>
+                        <p>Proporciona NADH y FADH₂ que alimentan la cadena.</p>
+                        <a href="krebs.html">Ver Ciclo de Krebs →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biology">⚡</div>
+                    <div>
+                        <h4>Potencial de acción</h4>
+                        <p>Los gradientes iónicos en neuronas son análogos al gradiente de H⁺ mitocondrial.</p>
+                        <a href="../../../Biology/Biology Visual Lab/neurona.html">Ver Potencial de acción →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-physics">🔋</div>
+                    <div>
+                        <h4>Circuitos eléctricos</h4>
+                        <p>El flujo de electrones es análogo a corriente; el gradiente a diferencia de potencial.</p>
+                        <a href="../../../Physics/Physics Visual Lab/circuito-rc.html">Ver Circuitos →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-chemistry">⚗️</div>
+                    <div>
+                        <h4>Reacciones redox</h4>
+                        <p>Cada complejo realiza semirreacciones de oxidación-reducción acopladas.</p>
+                        <a href="../../../Chemistry/Chemistry Visual Lab/redox.html">Ver Redox →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Escala simplificada:</strong> No representa las ~1000 copias de cada complejo por mitocondria.</li>
+                <li><strong>Estructura 2D:</strong> Los complejos son enormes estructuras 3D con cientos de subunidades.</li>
+                <li><strong>Flujo discreto:</strong> En realidad, miles de electrones fluyen simultáneamente.</li>
+                <li><strong>Supercomplexos:</strong> Los complejos forman asociaciones (respirasomas) no representadas.</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué el cianuro es letal tan rápidamente si "solo" bloquea un complejo?</li>
+                <li>¿Por qué tiene sentido evolutivo que la grasa parda de bebés tenga proteínas desacoplantes?</li>
+                <li>¿Por qué la eficiencia de conversión (~40%) no es 100%?</li>
+                <li>Si el O₂ es el aceptor final, ¿qué pasa en organismos anaerobios estrictos?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="krebs.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Ciclo de Krebs</div>
+                </div>
+            </a>
+            <a href="fermentacion.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Fermentación</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Cadena Respiratoria
+    </footer>
+</body>
+</html>

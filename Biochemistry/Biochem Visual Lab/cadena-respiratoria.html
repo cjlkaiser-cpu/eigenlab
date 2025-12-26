@@ -1,0 +1,555 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadena Respiratoria | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            width: 260px;
+            z-index: 100;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            z-index: 100;
+        }
+        .back-btn:hover { border-color: #38bdf8; color: #38bdf8; }
+        .stat-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-label { color: #64748b; font-size: 11px; }
+        .stat-value { font-size: 16px; font-weight: bold; }
+        .slider-container { margin: 12px 0; }
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #38bdf8; background: #38bdf820; }
+        .gradient-bar {
+            height: 20px;
+            border-radius: 4px;
+            background: linear-gradient(to right, #0f172a, #ef4444, #fbbf24);
+            margin: 10px 0;
+            position: relative;
+        }
+        .gradient-label {
+            position: absolute;
+            font-size: 9px;
+            color: #f8fafc;
+            top: 3px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Volver</a>
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-panel">
+        <h2 class="text-white text-lg font-bold mb-2">⚡ Cadena Respiratoria</h2>
+        <p class="text-slate-500 text-xs mb-4">Transporte de electrones · Fosforilación oxidativa</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">cadena respiratoria</span> transporta e⁻ de NADH/FADH₂ hasta O₂, bombeando H⁺ para generar el gradiente que impulsa la ATP sintasa.
+            </p>
+            <a href="guides/cadena-respiratoria.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: complejos I-IV, quimiosmosis, rendimiento
+            </a>
+        </div>
+
+        <div class="stat-box">
+            <span class="stat-label">Electrones (e⁻)</span>
+            <span class="stat-value" style="color: #a3e635;" id="electrons">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">H⁺ Bombeados</span>
+            <span class="stat-value" style="color: #ef4444;" id="protons">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">ATP Sintetizado</span>
+            <span class="stat-value" style="color: #fbbf24;" id="atp">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">H₂O Formado</span>
+            <span class="stat-value" style="color: #38bdf8;" id="water">0</span>
+        </div>
+
+        <div class="mt-4">
+            <div class="text-slate-400 text-xs mb-1">Gradiente de H⁺</div>
+            <div class="gradient-bar">
+                <span class="gradient-label" style="left: 5px;">Bajo</span>
+                <span class="gradient-label" style="right: 5px;">Alto</span>
+            </div>
+            <div class="h-2 bg-slate-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-red-500 to-yellow-500 transition-all" id="gradient-fill" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <div class="slider-container">
+            <label>
+                <span>Velocidad</span>
+                <span id="speed-val" class="text-sky-400">1.0x</span>
+            </label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <button class="btn" id="add-nadh">+ NADH</button>
+        <button class="btn" id="add-fadh2">+ FADH₂</button>
+        <button class="btn" id="restart">↻ Reiniciar</button>
+
+        <div class="mt-4 pt-4 border-t border-slate-700 text-slate-500 text-xs">
+            <strong>Ubicación:</strong> Membrana interna mitocondrial<br><br>
+            <strong>Rendimiento:</strong><br>
+            • 1 NADH → ~2.5 ATP<br>
+            • 1 FADH₂ → ~1.5 ATP<br>
+            • 4 H⁺ → 1 ATP (ATP sintasa)
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Complexes
+        const complexes = [
+            { id: 'I', name: 'NADH-Q\nOxidorreductasa', x: 0.25, h_pump: 4, color: '#ef4444', accepts: 'nadh' },
+            { id: 'II', name: 'Succinato-Q\nOxidorreductasa', x: 0.35, h_pump: 0, color: '#f97316', accepts: 'fadh2' },
+            { id: 'III', name: 'Q-Citocromo c\nOxidorreductasa', x: 0.55, h_pump: 4, color: '#22c55e', accepts: null },
+            { id: 'IV', name: 'Citocromo c\nOxidasa', x: 0.75, h_pump: 2, color: '#38bdf8', accepts: null },
+            { id: 'V', name: 'ATP\nSintasa', x: 0.90, h_pump: -4, color: '#fbbf24', accepts: null }
+        ];
+
+        // State
+        let electrons = [];
+        let protons = [];
+        let electronCount = 0;
+        let protonCount = 0;
+        let atpCount = 0;
+        let waterCount = 0;
+        let protonGradient = 0;
+
+        // Layout
+        const membraneY = () => canvas.height * 0.55;
+        const membraneHeight = 80;
+        const matrixY = () => membraneY() + membraneHeight / 2 + 100;
+        const intermembraneY = () => membraneY() - membraneHeight / 2 - 80;
+
+        function createElectron(source) {
+            const startX = source === 'nadh' ? canvas.width * 0.25 : canvas.width * 0.35;
+            return {
+                x: startX,
+                y: matrixY(),
+                targetComplex: source === 'nadh' ? 0 : 1,
+                color: '#a3e635',
+                phase: 'entering',
+                progress: 0
+            };
+        }
+
+        function createProton(x, direction) {
+            return {
+                x: x + (Math.random() - 0.5) * 20,
+                y: direction === 'up' ? membraneY() : intermembraneY(),
+                vy: direction === 'up' ? -2 : 2,
+                targetY: direction === 'up' ? intermembraneY() : matrixY(),
+                color: '#ef4444',
+                alpha: 1,
+                direction
+            };
+        }
+
+        function init() {
+            electrons = [];
+            protons = [];
+            electronCount = 0;
+            protonCount = 0;
+            atpCount = 0;
+            waterCount = 0;
+            protonGradient = 0;
+            updateUI();
+        }
+
+        function addNADH() {
+            electrons.push(createElectron('nadh'));
+            electrons.push(createElectron('nadh')); // NADH donates 2 electrons
+            electronCount += 2;
+        }
+
+        function addFADH2() {
+            electrons.push(createElectron('fadh2'));
+            electrons.push(createElectron('fadh2'));
+            electronCount += 2;
+        }
+
+        function updateUI() {
+            document.getElementById('electrons').textContent = electronCount;
+            document.getElementById('protons').textContent = protonCount;
+            document.getElementById('atp').textContent = atpCount;
+            document.getElementById('water').textContent = waterCount;
+            document.getElementById('gradient-fill').style.width = Math.min(100, protonGradient * 2) + '%';
+        }
+
+        function drawMembrane() {
+            const y = membraneY();
+
+            // Outer membrane (simplified)
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(300, y - membraneHeight / 2 - 150, canvas.width - 320, 20);
+
+            // Inner membrane
+            ctx.fillStyle = '#334155';
+            ctx.fillRect(300, y - membraneHeight / 2, canvas.width - 320, membraneHeight);
+
+            // Membrane labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Espacio Intermembrana', 320, y - membraneHeight / 2 - 60);
+            ctx.fillText('Membrana Interna', 320, y);
+            ctx.fillText('Matriz Mitocondrial', 320, y + membraneHeight / 2 + 80);
+
+            // H+ concentration indicators
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 14px monospace';
+            ctx.fillText(`[H⁺] Alto`, 320, y - membraneHeight / 2 - 30);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText(`[H⁺] Bajo`, 320, y + membraneHeight / 2 + 50);
+        }
+
+        function drawComplexes() {
+            const y = membraneY();
+
+            complexes.forEach((complex, i) => {
+                const x = canvas.width * complex.x;
+                const width = 70;
+                const height = complex.id === 'V' ? 120 : 100;
+
+                // Complex body
+                ctx.fillStyle = complex.color + '40';
+                ctx.strokeStyle = complex.color;
+                ctx.lineWidth = 2;
+
+                if (complex.id === 'V') {
+                    // ATP Synthase - special shape
+                    // F0 (in membrane)
+                    ctx.beginPath();
+                    ctx.roundRect(x - 25, y - 40, 50, 80, 5);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // F1 (in matrix)
+                    ctx.beginPath();
+                    ctx.arc(x, y + 70, 30, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.stroke();
+
+                    // Stalk
+                    ctx.fillStyle = complex.color;
+                    ctx.fillRect(x - 5, y + 40, 10, 30);
+                } else {
+                    ctx.beginPath();
+                    ctx.roundRect(x - width / 2, y - height / 2, width, height, 8);
+                    ctx.fill();
+                    ctx.stroke();
+                }
+
+                // Complex label
+                ctx.fillStyle = '#f8fafc';
+                ctx.font = 'bold 16px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(complex.id, x, y - 5);
+
+                // Name
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '8px monospace';
+                const lines = complex.name.split('\n');
+                lines.forEach((line, j) => {
+                    ctx.fillText(line, x, y + 10 + j * 10);
+                });
+
+                // H+ pump indicator
+                if (complex.h_pump > 0) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.font = '10px monospace';
+                    ctx.fillText(`↑${complex.h_pump} H⁺`, x, y - height / 2 - 10);
+                } else if (complex.h_pump < 0) {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.font = '10px monospace';
+                    ctx.fillText(`↓${Math.abs(complex.h_pump)} H⁺`, x + 40, y + 90);
+                }
+
+                // Electron carriers between complexes
+                if (i < 4 && i !== 1) {
+                    const nextX = canvas.width * complexes[Math.min(i + 1, 4)].x;
+                    const midX = (x + nextX) / 2;
+
+                    // Ubiquinone (Q) or Cytochrome c
+                    ctx.beginPath();
+                    ctx.arc(midX, y, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = i < 2 ? '#a855f7' : '#f97316';
+                    ctx.fill();
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 10px monospace';
+                    ctx.fillText(i < 2 ? 'Q' : 'c', midX, y + 4);
+                }
+            });
+
+            // NADH entry
+            ctx.fillStyle = '#a855f7';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('NADH', canvas.width * 0.25, matrixY() + 40);
+            ctx.fillText('↓ 2e⁻', canvas.width * 0.25, matrixY() + 55);
+
+            // FADH2 entry
+            ctx.fillStyle = '#f97316';
+            ctx.fillText('FADH₂', canvas.width * 0.35, matrixY() + 40);
+            ctx.fillText('↓ 2e⁻', canvas.width * 0.35, matrixY() + 55);
+
+            // O2 and H2O at complex IV
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '12px monospace';
+            ctx.fillText('½O₂ + 2H⁺', canvas.width * 0.75, matrixY() + 50);
+            ctx.fillText('→ H₂O', canvas.width * 0.75, matrixY() + 65);
+
+            // ATP at complex V
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = 'bold 12px monospace';
+            ctx.fillText('ADP + Pᵢ → ATP', canvas.width * 0.90, matrixY() + 50);
+        }
+
+        function updateElectrons() {
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            electrons.forEach(e => {
+                const complex = complexes[e.targetComplex];
+                const targetX = canvas.width * complex.x;
+                const targetY = membraneY();
+
+                if (e.phase === 'entering') {
+                    // Move towards current complex
+                    e.y += (targetY - e.y) * 0.05 * speed;
+                    e.x += (targetX - e.x) * 0.05 * speed;
+
+                    if (Math.abs(e.x - targetX) < 10 && Math.abs(e.y - targetY) < 10) {
+                        e.phase = 'in_complex';
+                        e.progress = 0;
+
+                        // Pump protons
+                        if (complex.h_pump > 0) {
+                            for (let i = 0; i < complex.h_pump; i++) {
+                                setTimeout(() => {
+                                    protons.push(createProton(targetX, 'up'));
+                                    protonCount++;
+                                    protonGradient += 0.5;
+                                }, i * 100);
+                            }
+                        }
+                    }
+                } else if (e.phase === 'in_complex') {
+                    e.progress += 0.02 * speed;
+
+                    if (e.progress > 1) {
+                        if (e.targetComplex < 3) {
+                            // Move to next complex
+                            e.targetComplex = e.targetComplex === 1 ? 2 : e.targetComplex + 1;
+                            e.phase = 'moving';
+                        } else {
+                            // At complex IV - form water
+                            e.phase = 'done';
+                            waterCount += 0.5; // 2 electrons = 1 water
+                        }
+                    }
+                } else if (e.phase === 'moving') {
+                    const nextComplex = complexes[e.targetComplex];
+                    const nextX = canvas.width * nextComplex.x;
+
+                    e.x += (nextX - e.x) * 0.03 * speed;
+
+                    if (Math.abs(e.x - nextX) < 20) {
+                        e.phase = 'entering';
+                    }
+                }
+            });
+
+            electrons = electrons.filter(e => e.phase !== 'done');
+        }
+
+        function updateProtons() {
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            protons.forEach(p => {
+                if (p.direction === 'up') {
+                    p.y += p.vy * speed;
+                    if (p.y < p.targetY) {
+                        p.y = p.targetY;
+                        p.vy = 0;
+                        // Add to intermembrane pool
+                        p.vx = (Math.random() - 0.5) * 0.5;
+                    }
+                    p.x += (p.vx || 0);
+                } else {
+                    p.y += p.vy * speed;
+                    p.alpha -= 0.02;
+                }
+            });
+
+            // Protons in intermembrane space drift and can go through ATP synthase
+            protons.filter(p => p.direction === 'up' && p.vy === 0).forEach(p => {
+                p.x += (Math.random() - 0.5) * 2;
+
+                // Check if near ATP synthase
+                const atpX = canvas.width * 0.90;
+                if (Math.abs(p.x - atpX) < 30 && protonGradient > 4) {
+                    p.direction = 'down';
+                    p.vy = 2;
+                    p.targetY = matrixY();
+                    protonGradient -= 1;
+
+                    // Generate ATP (4 H+ = 1 ATP approximately)
+                    if (Math.random() < 0.25) {
+                        atpCount++;
+                    }
+                }
+            });
+
+            protons = protons.filter(p => p.alpha > 0);
+        }
+
+        function drawElectrons() {
+            electrons.forEach(e => {
+                ctx.beginPath();
+                ctx.arc(e.x, e.y, 8, 0, Math.PI * 2);
+                ctx.fillStyle = e.color;
+                ctx.shadowColor = e.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('e⁻', e.x, e.y + 3);
+            });
+        }
+
+        function drawProtons() {
+            protons.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(239, 68, 68, ${p.alpha})`;
+                ctx.fill();
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.font = 'bold 7px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('H⁺', p.x, p.y + 2);
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 20px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Cadena de Transporte de Electrones', 320, 40);
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px monospace';
+            ctx.fillText('Fosforilación Oxidativa · Membrana Interna Mitocondrial', 320, 60);
+
+            drawMembrane();
+            drawComplexes();
+
+            updateElectrons();
+            updateProtons();
+
+            drawElectrons();
+            drawProtons();
+
+            updateUI();
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('add-nadh').addEventListener('click', addNADH);
+        document.getElementById('add-fadh2').addEventListener('click', addFADH2);
+        document.getElementById('restart').addEventListener('click', init);
+
+        init();
+        // Start with some electrons
+        addNADH();
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,770 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Las Estaciones - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glow-text { text-shadow: 0 0 20px rgba(250, 204, 21, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fbbf24;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(251, 191, 36, 0.05));
+            border: 1px solid rgba(250, 204, 21, 0.3);
+        }
+        .season-spring { color: #4ade80; }
+        .season-summer { color: #fbbf24; }
+        .season-fall { color: #f97316; }
+        .season-winter { color: #60a5fa; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-yellow-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        Las <span class="text-yellow-400 font-medium">Estaciones</span>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Fecha: <span id="date-display" class="text-yellow-400">21 Mar</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Arrastra la Tierra · Rueda para velocidad
+            </div>
+            <!-- Earth View -->
+            <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-2 text-center">Iluminación Terrestre</div>
+                <canvas id="earth-view" width="150" height="150"></canvas>
+                <div class="text-center mt-2">
+                    <div id="season-name" class="text-yellow-400 font-medium">Equinoccio de Primavera</div>
+                    <div id="hemisphere" class="text-xs text-gray-500">(Hemisferio Norte)</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-yellow-400 glow-text">Órbita Terrestre</h2>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Las <span class="text-indigo-400">estaciones</span> existen por la inclinación del eje terrestre (23.5°). NO por la distancia al Sol. Solsticios y equinoccios marcan el ciclo.
+                </p>
+                <a href="guides/estaciones.html" class="mt-2 flex items-center gap-2 text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center">?</span>
+                    Guía: inclinación axial, solsticios, otros planetas
+                </a>
+            </div>
+
+            <!-- Day of Year -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Día del Año:
+                    <span id="day-value" class="text-yellow-400 mono">80</span> / 365
+                </label>
+                <input type="range" id="day" min="1" max="365" step="1" value="80" class="w-full">
+            </div>
+
+            <!-- Axial Tilt -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Inclinación Axial:
+                    <span id="tilt-value" class="text-cyan-400 mono">23.44</span>°
+                </label>
+                <input type="range" id="tilt" min="0" max="45" step="0.5" value="23.44" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">La inclinación actual de la Tierra es 23.44°</p>
+            </div>
+
+            <!-- Animation Speed -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad:
+                    <span id="speed-value" class="text-cyan-400 mono">30 días/s</span>
+                </label>
+                <input type="range" id="speed" min="0" max="100" step="5" value="30" class="w-full">
+            </div>
+
+            <!-- Latitude Selection -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Latitud de Observación:
+                    <span id="lat-value" class="text-violet-400 mono">40</span>°N
+                </label>
+                <input type="range" id="latitude" min="-90" max="90" step="5" value="40" class="w-full">
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- Season Quick Select -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-3">Ir a Fecha</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setDay(80)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                        <span class="season-spring">●</span> Equinoccio Primavera
+                        <div class="text-gray-600">21 Mar</div>
+                    </button>
+                    <button onclick="setDay(172)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                        <span class="season-summer">●</span> Solsticio Verano
+                        <div class="text-gray-600">21 Jun</div>
+                    </button>
+                    <button onclick="setDay(266)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                        <span class="season-fall">●</span> Equinoccio Otoño
+                        <div class="text-gray-600">23 Sep</div>
+                    </button>
+                    <button onclick="setDay(355)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                        <span class="season-winter">●</span> Solsticio Invierno
+                        <div class="text-gray-600">21 Dic</div>
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Options -->
+            <div class="mb-6 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-orbit" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Mostrar órbita</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-axis" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Eje de rotación</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-sunrays" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Rayos solares</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-terminator" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Línea día/noche</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="mb-6 space-y-2">
+                <button id="play-btn" class="w-full py-2 px-4 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <span id="play-text">▶ Animar</span>
+                </button>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-yellow-400 mb-3">Inclinación Axial</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        ε = 23.44° (oblicuidad)
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        δ = ε · sin(360° × (d-80)/365)
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La <span class="text-yellow-400">inclinación axial</span> de 23.44° es la causa de las estaciones, NO la distancia al Sol.
+                </p>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <p class="text-xs text-gray-500">
+                        En el perihelio (enero), la Tierra está más cerca del Sol, pero es invierno en el hemisferio norte.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Current Info -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Datos Actuales</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Declinación Solar</div>
+                        <div id="info-declination" class="text-yellow-400">0°</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Horas de Luz</div>
+                        <div id="info-daylight" class="text-cyan-400">12h</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Altura Solar (mediodía)</div>
+                        <div id="info-altitude" class="text-violet-400">50°</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Energía Relativa</div>
+                        <div id="info-energy" class="text-pink-400">100%</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Daylight Chart -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Horas de Luz Anual</h3>
+                <canvas id="daylight-chart" width="240" height="80"></canvas>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const earthViewCanvas = document.getElementById('earth-view');
+        const earthViewCtx = earthViewCanvas.getContext('2d');
+        const daylightChart = document.getElementById('daylight-chart');
+        const daylightCtx = daylightChart.getContext('2d');
+
+        // Constants
+        const YEAR_DAYS = 365;
+        const SPRING_EQUINOX = 80; // March 21
+        const SUMMER_SOLSTICE = 172; // June 21
+        const FALL_EQUINOX = 266; // Sep 23
+        const WINTER_SOLSTICE = 355; // Dec 21
+
+        // State
+        let dayOfYear = SPRING_EQUINOX;
+        let axialTilt = 23.44; // degrees
+        let speed = 30; // days per second
+        let latitude = 40; // observer latitude
+        let isPlaying = false;
+
+        // Options
+        let showOrbit = true;
+        let showAxis = true;
+        let showSunrays = true;
+        let showTerminator = true;
+
+        // View
+        let centerX, centerY;
+        let orbitRadiusX, orbitRadiusY;
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            centerX = canvas.offsetWidth / 2;
+            centerY = canvas.offsetHeight / 2;
+            orbitRadiusX = Math.min(centerX, centerY) * 0.7;
+            orbitRadiusY = orbitRadiusX * 0.3; // Ellipse for 3D effect
+        }
+
+        function getSolarDeclination() {
+            // Solar declination varies from -23.44° to +23.44°
+            const dayAngle = 2 * Math.PI * (dayOfYear - SPRING_EQUINOX) / YEAR_DAYS;
+            return axialTilt * Math.sin(dayAngle);
+        }
+
+        function getDaylightHours(lat) {
+            const declination = getSolarDeclination();
+            const latRad = lat * Math.PI / 180;
+            const decRad = declination * Math.PI / 180;
+
+            // Hour angle at sunrise/sunset
+            const cosH = -Math.tan(latRad) * Math.tan(decRad);
+
+            if (cosH <= -1) return 24; // Polar day
+            if (cosH >= 1) return 0;   // Polar night
+
+            const H = Math.acos(cosH);
+            return (2 * H / Math.PI) * 12; // Hours
+        }
+
+        function getSolarAltitude(lat) {
+            // Maximum solar altitude at noon
+            const declination = getSolarDeclination();
+            return 90 - Math.abs(lat - declination);
+        }
+
+        function getSeasonName() {
+            const decl = getSolarDeclination();
+            const isNorth = latitude >= 0;
+
+            if (Math.abs(dayOfYear - SPRING_EQUINOX) < 5 || Math.abs(dayOfYear - FALL_EQUINOX) < 5) {
+                if (Math.abs(dayOfYear - SPRING_EQUINOX) < 5) {
+                    return isNorth ? 'Equinoccio de Primavera' : 'Equinoccio de Otoño';
+                } else {
+                    return isNorth ? 'Equinoccio de Otoño' : 'Equinoccio de Primavera';
+                }
+            }
+
+            if (Math.abs(dayOfYear - SUMMER_SOLSTICE) < 5) {
+                return isNorth ? 'Solsticio de Verano' : 'Solsticio de Invierno';
+            }
+
+            if (Math.abs(dayOfYear - WINTER_SOLSTICE) < 5 || dayOfYear < 10) {
+                return isNorth ? 'Solsticio de Invierno' : 'Solsticio de Verano';
+            }
+
+            // General seasons
+            if (isNorth) {
+                if (dayOfYear >= SPRING_EQUINOX && dayOfYear < SUMMER_SOLSTICE) return 'Primavera';
+                if (dayOfYear >= SUMMER_SOLSTICE && dayOfYear < FALL_EQUINOX) return 'Verano';
+                if (dayOfYear >= FALL_EQUINOX && dayOfYear < WINTER_SOLSTICE) return 'Otoño';
+                return 'Invierno';
+            } else {
+                if (dayOfYear >= SPRING_EQUINOX && dayOfYear < SUMMER_SOLSTICE) return 'Otoño';
+                if (dayOfYear >= SUMMER_SOLSTICE && dayOfYear < FALL_EQUINOX) return 'Invierno';
+                if (dayOfYear >= FALL_EQUINOX && dayOfYear < WINTER_SOLSTICE) return 'Primavera';
+                return 'Verano';
+            }
+        }
+
+        function getDateString() {
+            const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+            const daysInMonth = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+
+            let remaining = dayOfYear;
+            let month = 0;
+
+            while (remaining > daysInMonth[month]) {
+                remaining -= daysInMonth[month];
+                month++;
+            }
+
+            return `${remaining} ${months[month]}`;
+        }
+
+        function getEarthPosition() {
+            // Earth position on elliptical orbit
+            const angle = 2 * Math.PI * (dayOfYear - SPRING_EQUINOX) / YEAR_DAYS - Math.PI / 2;
+            return {
+                x: centerX + Math.cos(angle) * orbitRadiusX,
+                y: centerY + Math.sin(angle) * orbitRadiusY,
+                angle: angle
+            };
+        }
+
+        function drawSun() {
+            // Sun at center
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 60);
+            gradient.addColorStop(0, 'rgba(251, 191, 36, 1)');
+            gradient.addColorStop(0.5, 'rgba(251, 191, 36, 0.5)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 60, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#fbbf24';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sol', centerX, centerY + 45);
+        }
+
+        function drawOrbit() {
+            if (!showOrbit) return;
+
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(centerX, centerY, orbitRadiusX, orbitRadiusY, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Season markers
+            const markers = [
+                { day: SPRING_EQUINOX, label: 'Mar 21', color: '#4ade80' },
+                { day: SUMMER_SOLSTICE, label: 'Jun 21', color: '#fbbf24' },
+                { day: FALL_EQUINOX, label: 'Sep 23', color: '#f97316' },
+                { day: WINTER_SOLSTICE, label: 'Dic 21', color: '#60a5fa' }
+            ];
+
+            markers.forEach(m => {
+                const angle = 2 * Math.PI * (m.day - SPRING_EQUINOX) / YEAR_DAYS - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * orbitRadiusX;
+                const y = centerY + Math.sin(angle) * orbitRadiusY;
+
+                ctx.fillStyle = m.color;
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = '10px Inter';
+                ctx.fillText(m.label, x, y - 10);
+            });
+        }
+
+        function drawEarth() {
+            const pos = getEarthPosition();
+            const earthRadius = 20;
+            const tiltRad = axialTilt * Math.PI / 180;
+
+            // Sun rays
+            if (showSunrays) {
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.2)';
+                ctx.lineWidth = 1;
+
+                for (let i = -3; i <= 3; i++) {
+                    const offset = i * 8;
+                    ctx.beginPath();
+                    ctx.moveTo(centerX + 30, centerY + offset);
+                    ctx.lineTo(pos.x - earthRadius - 10, pos.y + offset * 0.3);
+                    ctx.stroke();
+                }
+            }
+
+            ctx.save();
+            ctx.translate(pos.x, pos.y);
+
+            // Earth tilt relative to orbit
+            const orbitTilt = Math.cos(pos.angle + Math.PI / 2) * tiltRad;
+            ctx.rotate(orbitTilt);
+
+            // Day side (facing sun - left side when sun is at center)
+            const sunAngle = Math.atan2(centerY - pos.y, centerX - pos.x);
+
+            // Earth gradient
+            const gradient = ctx.createLinearGradient(-earthRadius, 0, earthRadius, 0);
+            gradient.addColorStop(0, '#1e40af'); // Day side
+            gradient.addColorStop(0.5, '#1e3a8a');
+            gradient.addColorStop(1, '#0f172a'); // Night side
+
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(0, 0, earthRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Terminator line
+            if (showTerminator) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(0, -earthRadius);
+                ctx.lineTo(0, earthRadius);
+                ctx.stroke();
+            }
+
+            // Axis of rotation
+            if (showAxis) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, -earthRadius - 15);
+                ctx.lineTo(0, earthRadius + 15);
+                ctx.stroke();
+
+                // North pole marker
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(0, -earthRadius - 15, 3, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.font = '10px Inter';
+                ctx.fillStyle = '#ef4444';
+                ctx.textAlign = 'center';
+                ctx.fillText('N', 0, -earthRadius - 25);
+            }
+
+            // Equator line
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.ellipse(0, 0, earthRadius, earthRadius * 0.2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Latitude marker
+            const latY = -earthRadius * Math.sin(latitude * Math.PI / 180);
+            const latR = earthRadius * Math.cos(latitude * Math.PI / 180);
+            ctx.strokeStyle = 'rgba(168, 85, 247, 0.5)';
+            ctx.beginPath();
+            ctx.ellipse(0, latY, latR, latR * 0.2, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            ctx.restore();
+
+            // Earth label
+            ctx.fillStyle = '#60a5fa';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Tierra', pos.x, pos.y + earthRadius + 25);
+        }
+
+        function drawEarthView() {
+            const w = earthViewCanvas.width;
+            const h = earthViewCanvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const r = 60;
+
+            earthViewCtx.fillStyle = '#030712';
+            earthViewCtx.fillRect(0, 0, w, h);
+
+            // Earth
+            const gradient = earthViewCtx.createRadialGradient(cx, cy, 0, cx, cy, r);
+            gradient.addColorStop(0, '#1e40af');
+            gradient.addColorStop(0.7, '#1e3a8a');
+            gradient.addColorStop(1, '#1e3a8a');
+            earthViewCtx.fillStyle = gradient;
+            earthViewCtx.beginPath();
+            earthViewCtx.arc(cx, cy, r, 0, Math.PI * 2);
+            earthViewCtx.fill();
+
+            // Terminator based on declination
+            const declination = getSolarDeclination();
+            const tiltRad = declination * Math.PI / 180;
+
+            // Day/night terminator
+            earthViewCtx.fillStyle = 'rgba(0, 0, 0, 0.6)';
+            earthViewCtx.beginPath();
+
+            // The terminator is an ellipse
+            const terminatorTilt = -tiltRad;
+            earthViewCtx.save();
+            earthViewCtx.translate(cx, cy);
+            earthViewCtx.rotate(terminatorTilt);
+
+            // Draw night side
+            earthViewCtx.beginPath();
+            earthViewCtx.arc(0, 0, r, Math.PI / 2, -Math.PI / 2);
+            earthViewCtx.fill();
+
+            earthViewCtx.restore();
+
+            // Latitude lines
+            earthViewCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            earthViewCtx.lineWidth = 1;
+
+            [-66.5, -23.5, 0, 23.5, 66.5].forEach(lat => {
+                const y = cy - r * Math.sin(lat * Math.PI / 180);
+                const latR = r * Math.cos(lat * Math.PI / 180);
+                earthViewCtx.beginPath();
+                earthViewCtx.ellipse(cx, y, latR, latR * 0.15, 0, 0, Math.PI * 2);
+                earthViewCtx.stroke();
+            });
+
+            // Observer latitude marker
+            const obsY = cy - r * Math.sin(latitude * Math.PI / 180);
+            const obsR = r * Math.cos(latitude * Math.PI / 180);
+            earthViewCtx.strokeStyle = '#a855f7';
+            earthViewCtx.lineWidth = 2;
+            earthViewCtx.beginPath();
+            earthViewCtx.ellipse(cx, obsY, obsR, obsR * 0.15, 0, 0, Math.PI * 2);
+            earthViewCtx.stroke();
+
+            // Tropic labels
+            earthViewCtx.fillStyle = '#666';
+            earthViewCtx.font = '8px Inter';
+            earthViewCtx.textAlign = 'left';
+            earthViewCtx.fillText('Trópico Cáncer', cx + r + 5, cy - r * Math.sin(23.5 * Math.PI / 180));
+            earthViewCtx.fillText('Ecuador', cx + r + 5, cy);
+            earthViewCtx.fillText('Trópico Capricornio', cx + r + 5, cy - r * Math.sin(-23.5 * Math.PI / 180));
+        }
+
+        function drawDaylightChart() {
+            const w = daylightChart.width;
+            const h = daylightChart.height;
+
+            daylightCtx.fillStyle = '#111';
+            daylightCtx.fillRect(0, 0, w, h);
+
+            // Draw daylight curve for current latitude
+            daylightCtx.strokeStyle = '#fbbf24';
+            daylightCtx.lineWidth = 2;
+            daylightCtx.beginPath();
+
+            for (let d = 1; d <= 365; d++) {
+                const x = (d / 365) * w;
+
+                // Calculate daylight for this day
+                const dayAngle = 2 * Math.PI * (d - SPRING_EQUINOX) / YEAR_DAYS;
+                const decl = axialTilt * Math.sin(dayAngle);
+                const latRad = latitude * Math.PI / 180;
+                const decRad = decl * Math.PI / 180;
+
+                let hours;
+                const cosH = -Math.tan(latRad) * Math.tan(decRad);
+                if (cosH <= -1) hours = 24;
+                else if (cosH >= 1) hours = 0;
+                else hours = (2 * Math.acos(cosH) / Math.PI) * 12;
+
+                const y = h - (hours / 24) * h;
+
+                if (d === 1) daylightCtx.moveTo(x, y);
+                else daylightCtx.lineTo(x, y);
+            }
+
+            daylightCtx.stroke();
+
+            // 12-hour reference line
+            daylightCtx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+            daylightCtx.setLineDash([3, 3]);
+            daylightCtx.beginPath();
+            daylightCtx.moveTo(0, h / 2);
+            daylightCtx.lineTo(w, h / 2);
+            daylightCtx.stroke();
+            daylightCtx.setLineDash([]);
+
+            // Current day marker
+            const currentX = (dayOfYear / 365) * w;
+            daylightCtx.strokeStyle = '#ef4444';
+            daylightCtx.lineWidth = 2;
+            daylightCtx.beginPath();
+            daylightCtx.moveTo(currentX, 0);
+            daylightCtx.lineTo(currentX, h);
+            daylightCtx.stroke();
+
+            // Labels
+            daylightCtx.fillStyle = '#666';
+            daylightCtx.font = '8px Inter';
+            daylightCtx.fillText('24h', 2, 10);
+            daylightCtx.fillText('0h', 2, h - 2);
+        }
+
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Background stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 150; i++) {
+                const x = (i * 137) % w;
+                const y = (i * 97) % h;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.random() * 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw components
+            drawOrbit();
+            drawSun();
+            drawEarth();
+
+            // Earth view
+            drawEarthView();
+            drawDaylightChart();
+
+            // Update info
+            const declination = getSolarDeclination();
+            const daylightHours = getDaylightHours(latitude);
+            const solarAltitude = getSolarAltitude(latitude);
+            const energyFactor = Math.sin(solarAltitude * Math.PI / 180);
+
+            document.getElementById('date-display').textContent = getDateString();
+            document.getElementById('day-value').textContent = dayOfYear;
+            document.getElementById('season-name').textContent = getSeasonName();
+            document.getElementById('hemisphere').textContent = `(Hemisferio ${latitude >= 0 ? 'Norte' : 'Sur'})`;
+
+            document.getElementById('info-declination').textContent = declination.toFixed(1) + '°';
+            document.getElementById('info-daylight').textContent = daylightHours.toFixed(1) + 'h';
+            document.getElementById('info-altitude').textContent = solarAltitude.toFixed(1) + '°';
+            document.getElementById('info-energy').textContent = (energyFactor * 100).toFixed(0) + '%';
+        }
+
+        function setDay(d) {
+            dayOfYear = d;
+            document.getElementById('day').value = d;
+            draw();
+        }
+
+        // Event listeners
+        document.getElementById('day').addEventListener('input', (e) => {
+            dayOfYear = parseInt(e.target.value);
+            draw();
+        });
+
+        document.getElementById('tilt').addEventListener('input', (e) => {
+            axialTilt = parseFloat(e.target.value);
+            document.getElementById('tilt-value').textContent = axialTilt.toFixed(2);
+            draw();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed + ' días/s';
+        });
+
+        document.getElementById('latitude').addEventListener('input', (e) => {
+            latitude = parseFloat(e.target.value);
+            const latStr = latitude >= 0 ? latitude + '°N' : Math.abs(latitude) + '°S';
+            document.getElementById('lat-value').textContent = latStr;
+            draw();
+        });
+
+        document.getElementById('show-orbit').addEventListener('change', (e) => {
+            showOrbit = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-axis').addEventListener('change', (e) => {
+            showAxis = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-sunrays').addEventListener('change', (e) => {
+            showSunrays = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-terminator').addEventListener('change', (e) => {
+            showTerminator = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('play-text').textContent = isPlaying ? '⏸ Pausar' : '▶ Animar';
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            draw();
+        });
+
+        // Animation loop
+        let lastTime = 0;
+
+        function animate(currentTime) {
+            const dt = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            if (isPlaying) {
+                dayOfYear = ((dayOfYear + speed * dt - 1) % YEAR_DAYS) + 1;
+                document.getElementById('day').value = Math.round(dayOfYear);
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        initCanvas();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

@@ -1,0 +1,898 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ecosistema - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #34d399;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .prey-color { color: #10b981; }
+        .predator-color { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Ecosistema</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-emerald-400 font-medium glow-text">Ecosistema</span>
+                            <span class="text-gray-600 text-sm ml-2">Lotka-Volterra</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                        <span class="text-gray-500">Presas:</span>
+                        <span id="prey-count" class="prey-color mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="text-gray-500">Depredadores:</span>
+                        <span id="predator-count" class="predator-color mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">t:</span>
+                        <span id="time-display" class="text-emerald-400 mono">0.0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main ecosystem visualization -->
+            <div class="flex-1 relative">
+                <canvas id="ecosystem-canvas" class="w-full h-full"></canvas>
+
+                <!-- Legend overlay -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Especies</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                            <span class="prey-color">Presas (x)</span>
+                            <span class="text-gray-500">conejos</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                            <span class="predator-color">Depredadores (y)</span>
+                            <span class="text-gray-500">zorros</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Stats overlay -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Estado</div>
+                    <div id="state-display" class="text-emerald-400 font-medium">Equilibrio</div>
+                    <div class="text-xs text-gray-600 mt-1" id="cycle-info">Periodo: --</div>
+                </div>
+            </div>
+
+            <!-- Population graph -->
+            <div class="h-48 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500">Poblaciones vs Tiempo</span>
+                    <div class="flex gap-4 text-xs">
+                        <span class="prey-color">— Presas (x)</span>
+                        <span class="predator-color">— Depredadores (y)</span>
+                    </div>
+                </div>
+                <canvas id="graph-canvas" class="w-full h-32 bg-gray-900/50 rounded-lg"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Las ecuaciones de <span class="text-emerald-400">Lotka-Volterra</span> describen ciclos depredador-presa: mas presas → mas depredadores → menos presas → el ciclo se repite.
+                </p>
+                <a href="guides/ecosistema.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: parametros, oscilaciones, equilibrio
+                </a>
+            </div>
+
+            <!-- Population Parameters -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Parámetros de Población
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-emerald-500/20 prey-color">α</span>
+                        Tasa reproducción presas: <span id="alpha-value" class="prey-color mono">1.0</span>
+                    </label>
+                    <input type="range" id="alpha" min="0.1" max="3" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-red-500/20 predator-color">β</span>
+                        Tasa depredación: <span id="beta-value" class="predator-color mono">0.5</span>
+                    </label>
+                    <input type="range" id="beta" min="0.1" max="2" step="0.1" value="0.5" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-red-500/20 predator-color">γ</span>
+                        Tasa muerte depredadores: <span id="gamma-value" class="predator-color mono">0.5</span>
+                    </label>
+                    <input type="range" id="gamma" min="0.1" max="2" step="0.1" value="0.5" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-emerald-500/20 prey-color">δ</span>
+                        Eficiencia conversión: <span id="delta-value" class="prey-color mono">0.25</span>
+                    </label>
+                    <input type="range" id="delta" min="0.05" max="1" step="0.05" value="0.25" class="w-full">
+                </div>
+            </div>
+
+            <!-- Initial Conditions -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Condiciones Iniciales
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Presas iniciales: <span id="x0-value" class="prey-color mono">40</span>
+                    </label>
+                    <input type="range" id="x0" min="5" max="100" step="5" value="40" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Depredadores iniciales: <span id="y0-value" class="predator-color mono">20</span>
+                    </label>
+                    <input type="range" id="y0" min="5" max="50" step="5" value="20" class="w-full">
+                </div>
+            </div>
+
+            <!-- Simulation -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-violet-400 mono">1.0</span>x
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        <span id="pause-text">Pausar</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Escenarios
+                </h3>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPreset('stable')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Estable
+                    </button>
+                    <button onclick="setPreset('boom')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Explosión
+                    </button>
+                    <button onclick="setPreset('extinction')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Extinción
+                    </button>
+                    <button onclick="setPreset('chaos')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Caótico
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-emerald-400 mb-3">Modelo Lotka-Volterra</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div><span class="prey-color">dx/dt = αx - βxy</span></div>
+                    <div class="text-gray-600 text-xs pl-2">Presas: crecen, mueren al ser cazadas</div>
+                    <div class="mt-2"><span class="predator-color">dy/dt = δxy - γy</span></div>
+                    <div class="text-gray-600 text-xs pl-2">Depredadores: crecen cazando, mueren naturalmente</div>
+                </div>
+            </div>
+
+            <!-- Phase Space -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Espacio de Fases</h3>
+                <canvas id="phase-canvas" class="w-full h-40 bg-gray-950 rounded-lg"></canvas>
+                <div class="flex justify-between text-xs text-gray-500 mt-2">
+                    <span>Presas (x) →</span>
+                    <span>↑ Depredadores (y)</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const ecoCanvas = document.getElementById('ecosystem-canvas');
+        const ecoCtx = ecoCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const phaseCanvas = document.getElementById('phase-canvas');
+        const phaseCtx = phaseCanvas.getContext('2d');
+
+        // Lotka-Volterra parameters
+        let alpha = 1.0;    // Prey reproduction rate
+        let beta = 0.5;     // Predation rate
+        let gamma = 0.5;    // Predator death rate
+        let delta = 0.25;   // Predator reproduction efficiency
+
+        // State variables
+        let x = 40;         // Prey population
+        let y = 20;         // Predator population
+        let x0 = 40;        // Initial prey
+        let y0 = 20;        // Initial predators
+
+        // Simulation state
+        let time = 0;
+        let paused = false;
+        let speed = 1;
+
+        // History for graphs
+        const maxHistory = 500;
+        let preyHistory = [];
+        let predatorHistory = [];
+        let phaseHistory = [];
+
+        // Agent-based visualization
+        let agents = [];
+
+        // Initialize
+        function init() {
+            resizeCanvases();
+            reset();
+        }
+
+        function resizeCanvases() {
+            ecoCanvas.width = ecoCanvas.offsetWidth * window.devicePixelRatio;
+            ecoCanvas.height = ecoCanvas.offsetHeight * window.devicePixelRatio;
+            ecoCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            graphCanvas.width = graphCanvas.offsetWidth * window.devicePixelRatio;
+            graphCanvas.height = graphCanvas.offsetHeight * window.devicePixelRatio;
+            graphCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            phaseCanvas.width = phaseCanvas.offsetWidth * window.devicePixelRatio;
+            phaseCanvas.height = phaseCanvas.offsetHeight * window.devicePixelRatio;
+            phaseCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function initAgents() {
+            agents = [];
+            const w = ecoCanvas.offsetWidth;
+            const h = ecoCanvas.offsetHeight;
+
+            // Create prey agents
+            for (let i = 0; i < Math.min(x, 100); i++) {
+                agents.push({
+                    type: 'prey',
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: 4 + Math.random() * 2
+                });
+            }
+
+            // Create predator agents
+            for (let i = 0; i < Math.min(y, 50); i++) {
+                agents.push({
+                    type: 'predator',
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3,
+                    size: 6 + Math.random() * 3
+                });
+            }
+        }
+
+        function reset() {
+            x = x0;
+            y = y0;
+            time = 0;
+            preyHistory = [];
+            predatorHistory = [];
+            phaseHistory = [];
+            initAgents();
+        }
+
+        // Lotka-Volterra simulation step
+        function simulate(dt) {
+            if (paused) return;
+
+            const dtScaled = dt * speed * 0.1;
+            time += dtScaled;
+
+            // Runge-Kutta 4th order for better accuracy
+            const k1x = alpha * x - beta * x * y;
+            const k1y = delta * x * y - gamma * y;
+
+            const x2 = x + k1x * dtScaled / 2;
+            const y2 = y + k1y * dtScaled / 2;
+            const k2x = alpha * x2 - beta * x2 * y2;
+            const k2y = delta * x2 * y2 - gamma * y2;
+
+            const x3 = x + k2x * dtScaled / 2;
+            const y3 = y + k2y * dtScaled / 2;
+            const k3x = alpha * x3 - beta * x3 * y3;
+            const k3y = delta * x3 * y3 - gamma * y3;
+
+            const x4 = x + k3x * dtScaled;
+            const y4 = y + k3y * dtScaled;
+            const k4x = alpha * x4 - beta * x4 * y4;
+            const k4y = delta * x4 * y4 - gamma * y4;
+
+            x += (k1x + 2*k2x + 2*k3x + k4x) * dtScaled / 6;
+            y += (k1y + 2*k2y + 2*k3y + k4y) * dtScaled / 6;
+
+            // Clamp to prevent negative populations
+            x = Math.max(0.1, x);
+            y = Math.max(0.1, y);
+
+            // Record history
+            preyHistory.push(x);
+            predatorHistory.push(y);
+            phaseHistory.push({ x, y });
+
+            if (preyHistory.length > maxHistory) {
+                preyHistory.shift();
+                predatorHistory.shift();
+                phaseHistory.shift();
+            }
+
+            // Update agents to match population
+            updateAgents();
+
+            // Update displays
+            document.getElementById('prey-count').textContent = Math.round(x);
+            document.getElementById('predator-count').textContent = Math.round(y);
+            document.getElementById('time-display').textContent = time.toFixed(1);
+
+            // Determine state
+            let state = 'Equilibrio';
+            const dx = alpha * x - beta * x * y;
+            const dy = delta * x * y - gamma * y;
+            if (Math.abs(dx) > 5 || Math.abs(dy) > 2) {
+                if (dx > 0 && dy > 0) state = 'Crecimiento mutuo';
+                else if (dx > 0 && dy < 0) state = 'Presas creciendo';
+                else if (dx < 0 && dy > 0) state = 'Depredadores creciendo';
+                else state = 'Decrecimiento';
+            }
+            if (x < 5 || y < 2) state = 'Riesgo extinción';
+            document.getElementById('state-display').textContent = state;
+        }
+
+        function updateAgents() {
+            const w = ecoCanvas.offsetWidth;
+            const h = ecoCanvas.offsetHeight;
+
+            // Count current agents
+            let preyCount = agents.filter(a => a.type === 'prey').length;
+            let predatorCount = agents.filter(a => a.type === 'predator').length;
+
+            const targetPrey = Math.min(Math.round(x), 100);
+            const targetPredator = Math.min(Math.round(y), 50);
+
+            // Add/remove prey
+            while (preyCount < targetPrey) {
+                agents.push({
+                    type: 'prey',
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    size: 4 + Math.random() * 2
+                });
+                preyCount++;
+            }
+            while (preyCount > targetPrey) {
+                const idx = agents.findIndex(a => a.type === 'prey');
+                if (idx >= 0) agents.splice(idx, 1);
+                preyCount--;
+            }
+
+            // Add/remove predators
+            while (predatorCount < targetPredator) {
+                agents.push({
+                    type: 'predator',
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 3,
+                    vy: (Math.random() - 0.5) * 3,
+                    size: 6 + Math.random() * 3
+                });
+                predatorCount++;
+            }
+            while (predatorCount > targetPredator) {
+                const idx = agents.findIndex(a => a.type === 'predator');
+                if (idx >= 0) agents.splice(idx, 1);
+                predatorCount--;
+            }
+
+            // Move agents
+            agents.forEach(agent => {
+                // Random wandering
+                agent.vx += (Math.random() - 0.5) * 0.5;
+                agent.vy += (Math.random() - 0.5) * 0.5;
+
+                // Speed limits
+                const maxSpeed = agent.type === 'predator' ? 3 : 2;
+                const speed = Math.sqrt(agent.vx * agent.vx + agent.vy * agent.vy);
+                if (speed > maxSpeed) {
+                    agent.vx = (agent.vx / speed) * maxSpeed;
+                    agent.vy = (agent.vy / speed) * maxSpeed;
+                }
+
+                // Predators chase nearest prey
+                if (agent.type === 'predator') {
+                    let nearestPrey = null;
+                    let nearestDist = Infinity;
+                    agents.forEach(other => {
+                        if (other.type === 'prey') {
+                            const dx = other.x - agent.x;
+                            const dy = other.y - agent.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < nearestDist && dist < 150) {
+                                nearestDist = dist;
+                                nearestPrey = other;
+                            }
+                        }
+                    });
+                    if (nearestPrey) {
+                        const dx = nearestPrey.x - agent.x;
+                        const dy = nearestPrey.y - agent.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        agent.vx += (dx / dist) * 0.3;
+                        agent.vy += (dy / dist) * 0.3;
+                    }
+                }
+
+                // Prey flee from predators
+                if (agent.type === 'prey') {
+                    agents.forEach(other => {
+                        if (other.type === 'predator') {
+                            const dx = agent.x - other.x;
+                            const dy = agent.y - other.y;
+                            const dist = Math.sqrt(dx * dx + dy * dy);
+                            if (dist < 80 && dist > 0) {
+                                agent.vx += (dx / dist) * 0.5;
+                                agent.vy += (dy / dist) * 0.5;
+                            }
+                        }
+                    });
+                }
+
+                agent.x += agent.vx;
+                agent.y += agent.vy;
+
+                // Wrap around edges
+                if (agent.x < 0) agent.x = w;
+                if (agent.x > w) agent.x = 0;
+                if (agent.y < 0) agent.y = h;
+                if (agent.y > h) agent.y = 0;
+            });
+        }
+
+        function setPreset(name) {
+            switch (name) {
+                case 'stable':
+                    alpha = 1.0; beta = 0.5; gamma = 0.5; delta = 0.25;
+                    x0 = 40; y0 = 20;
+                    break;
+                case 'boom':
+                    alpha = 2.0; beta = 0.3; gamma = 0.3; delta = 0.4;
+                    x0 = 50; y0 = 10;
+                    break;
+                case 'extinction':
+                    alpha = 0.5; beta = 1.0; gamma = 0.8; delta = 0.1;
+                    x0 = 20; y0 = 30;
+                    break;
+                case 'chaos':
+                    alpha = 1.5; beta = 0.8; gamma = 0.4; delta = 0.5;
+                    x0 = 30; y0 = 25;
+                    break;
+            }
+            updateSliders();
+            reset();
+        }
+
+        function updateSliders() {
+            document.getElementById('alpha').value = alpha;
+            document.getElementById('alpha-value').textContent = alpha.toFixed(1);
+            document.getElementById('beta').value = beta;
+            document.getElementById('beta-value').textContent = beta.toFixed(1);
+            document.getElementById('gamma').value = gamma;
+            document.getElementById('gamma-value').textContent = gamma.toFixed(1);
+            document.getElementById('delta').value = delta;
+            document.getElementById('delta-value').textContent = delta.toFixed(2);
+            document.getElementById('x0').value = x0;
+            document.getElementById('x0-value').textContent = x0;
+            document.getElementById('y0').value = y0;
+            document.getElementById('y0-value').textContent = y0;
+        }
+
+        // Drawing
+        function draw() {
+            drawEcosystem();
+            drawGraph();
+            drawPhaseSpace();
+        }
+
+        function drawEcosystem() {
+            const w = ecoCanvas.offsetWidth;
+            const h = ecoCanvas.offsetHeight;
+
+            // Background gradient (grass/ground)
+            const gradient = ecoCtx.createLinearGradient(0, 0, 0, h);
+            gradient.addColorStop(0, '#0a1a0f');
+            gradient.addColorStop(1, '#051205');
+            ecoCtx.fillStyle = gradient;
+            ecoCtx.fillRect(0, 0, w, h);
+
+            // Draw some grass texture
+            ecoCtx.strokeStyle = 'rgba(16, 185, 129, 0.1)';
+            ecoCtx.lineWidth = 1;
+            for (let i = 0; i < 100; i++) {
+                const gx = (i * 37) % w;
+                const gy = (i * 23) % h;
+                ecoCtx.beginPath();
+                ecoCtx.moveTo(gx, gy);
+                ecoCtx.lineTo(gx + 3, gy - 10);
+                ecoCtx.stroke();
+            }
+
+            // Draw agents
+            agents.forEach(agent => {
+                if (agent.type === 'prey') {
+                    // Prey (rabbits) - green circles
+                    ecoCtx.fillStyle = '#10b981';
+                    ecoCtx.beginPath();
+                    ecoCtx.arc(agent.x, agent.y, agent.size, 0, Math.PI * 2);
+                    ecoCtx.fill();
+
+                    // Ears
+                    ecoCtx.fillStyle = '#34d399';
+                    ecoCtx.beginPath();
+                    ecoCtx.ellipse(agent.x - 3, agent.y - agent.size - 3, 2, 4, -0.3, 0, Math.PI * 2);
+                    ecoCtx.fill();
+                    ecoCtx.beginPath();
+                    ecoCtx.ellipse(agent.x + 3, agent.y - agent.size - 3, 2, 4, 0.3, 0, Math.PI * 2);
+                    ecoCtx.fill();
+                } else {
+                    // Predators (foxes) - red triangles
+                    ecoCtx.fillStyle = '#ef4444';
+                    ecoCtx.beginPath();
+                    ecoCtx.moveTo(agent.x, agent.y - agent.size);
+                    ecoCtx.lineTo(agent.x - agent.size, agent.y + agent.size);
+                    ecoCtx.lineTo(agent.x + agent.size, agent.y + agent.size);
+                    ecoCtx.closePath();
+                    ecoCtx.fill();
+
+                    // Eyes
+                    ecoCtx.fillStyle = '#fbbf24';
+                    ecoCtx.beginPath();
+                    ecoCtx.arc(agent.x - 2, agent.y, 1.5, 0, Math.PI * 2);
+                    ecoCtx.arc(agent.x + 2, agent.y, 1.5, 0, Math.PI * 2);
+                    ecoCtx.fill();
+                }
+            });
+
+            // Population bars
+            const maxPop = 100;
+            const barWidth = 20;
+            const barHeight = 100;
+
+            // Prey bar
+            ecoCtx.fillStyle = '#1f2937';
+            ecoCtx.fillRect(w - 60, h - barHeight - 20, barWidth, barHeight);
+            ecoCtx.fillStyle = '#10b981';
+            const preyH = (x / maxPop) * barHeight;
+            ecoCtx.fillRect(w - 60, h - 20 - preyH, barWidth, preyH);
+
+            // Predator bar
+            ecoCtx.fillStyle = '#1f2937';
+            ecoCtx.fillRect(w - 35, h - barHeight - 20, barWidth, barHeight);
+            ecoCtx.fillStyle = '#ef4444';
+            const predH = (y / maxPop) * barHeight;
+            ecoCtx.fillRect(w - 35, h - 20 - predH, barWidth, predH);
+
+            // Labels
+            ecoCtx.fillStyle = '#9ca3af';
+            ecoCtx.font = '10px JetBrains Mono';
+            ecoCtx.fillText('x', w - 55, h - 5);
+            ecoCtx.fillText('y', w - 30, h - 5);
+        }
+
+        function drawGraph() {
+            const w = graphCanvas.offsetWidth;
+            const h = graphCanvas.offsetHeight;
+
+            graphCtx.fillStyle = '#0a0a0a';
+            graphCtx.fillRect(0, 0, w, h);
+
+            // Grid
+            graphCtx.strokeStyle = '#1f2937';
+            graphCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = i * h / 4;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, y);
+                graphCtx.lineTo(w, y);
+                graphCtx.stroke();
+            }
+
+            if (preyHistory.length < 2) return;
+
+            // Find max for scaling
+            const maxVal = Math.max(...preyHistory, ...predatorHistory, 50);
+
+            // Draw prey
+            graphCtx.strokeStyle = '#10b981';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            preyHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - (val / maxVal) * h * 0.9;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Draw predators
+            graphCtx.strokeStyle = '#ef4444';
+            graphCtx.beginPath();
+            predatorHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - (val / maxVal) * h * 0.9;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Y-axis labels
+            graphCtx.fillStyle = '#6b7280';
+            graphCtx.font = '10px JetBrains Mono';
+            graphCtx.fillText(Math.round(maxVal).toString(), 5, 15);
+            graphCtx.fillText('0', 5, h - 5);
+        }
+
+        function drawPhaseSpace() {
+            const w = phaseCanvas.offsetWidth;
+            const h = phaseCanvas.offsetHeight;
+
+            phaseCtx.fillStyle = '#030712';
+            phaseCtx.fillRect(0, 0, w, h);
+
+            // Axes
+            phaseCtx.strokeStyle = '#374151';
+            phaseCtx.lineWidth = 1;
+            phaseCtx.beginPath();
+            phaseCtx.moveTo(10, h - 10);
+            phaseCtx.lineTo(w - 10, h - 10);
+            phaseCtx.moveTo(10, h - 10);
+            phaseCtx.lineTo(10, 10);
+            phaseCtx.stroke();
+
+            if (phaseHistory.length < 2) return;
+
+            // Find max for scaling
+            const maxX = Math.max(...phaseHistory.map(p => p.x), 50);
+            const maxY = Math.max(...phaseHistory.map(p => p.y), 30);
+
+            // Draw nullclines
+            // dx/dt = 0: y = alpha/beta
+            const nullclineY = (alpha / beta);
+            if (nullclineY < maxY) {
+                const py = h - 10 - (nullclineY / maxY) * (h - 20);
+                phaseCtx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
+                phaseCtx.setLineDash([5, 5]);
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(10, py);
+                phaseCtx.lineTo(w - 10, py);
+                phaseCtx.stroke();
+            }
+
+            // dy/dt = 0: x = gamma/delta
+            const nullclineX = (gamma / delta);
+            if (nullclineX < maxX) {
+                const px = 10 + (nullclineX / maxX) * (w - 20);
+                phaseCtx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(px, 10);
+                phaseCtx.lineTo(px, h - 10);
+                phaseCtx.stroke();
+            }
+            phaseCtx.setLineDash([]);
+
+            // Draw trajectory
+            phaseCtx.strokeStyle = '#8b5cf6';
+            phaseCtx.lineWidth = 1.5;
+            phaseCtx.beginPath();
+            phaseHistory.forEach((point, i) => {
+                const px = 10 + (point.x / maxX) * (w - 20);
+                const py = h - 10 - (point.y / maxY) * (h - 20);
+                if (i === 0) phaseCtx.moveTo(px, py);
+                else phaseCtx.lineTo(px, py);
+            });
+            phaseCtx.stroke();
+
+            // Current point
+            const current = phaseHistory[phaseHistory.length - 1];
+            const cx = 10 + (current.x / maxX) * (w - 20);
+            const cy = h - 10 - (current.y / maxY) * (h - 20);
+            phaseCtx.fillStyle = '#fbbf24';
+            phaseCtx.beginPath();
+            phaseCtx.arc(cx, cy, 5, 0, Math.PI * 2);
+            phaseCtx.fill();
+
+            // Equilibrium point
+            const eqX = gamma / delta;
+            const eqY = alpha / beta;
+            if (eqX < maxX && eqY < maxY) {
+                const epx = 10 + (eqX / maxX) * (w - 20);
+                const epy = h - 10 - (eqY / maxY) * (h - 20);
+                phaseCtx.strokeStyle = '#fff';
+                phaseCtx.lineWidth = 1;
+                phaseCtx.beginPath();
+                phaseCtx.moveTo(epx - 5, epy);
+                phaseCtx.lineTo(epx + 5, epy);
+                phaseCtx.moveTo(epx, epy - 5);
+                phaseCtx.lineTo(epx, epy + 5);
+                phaseCtx.stroke();
+            }
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            simulate(dt);
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('alpha').addEventListener('input', (e) => {
+            alpha = parseFloat(e.target.value);
+            document.getElementById('alpha-value').textContent = alpha.toFixed(1);
+        });
+
+        document.getElementById('beta').addEventListener('input', (e) => {
+            beta = parseFloat(e.target.value);
+            document.getElementById('beta-value').textContent = beta.toFixed(1);
+        });
+
+        document.getElementById('gamma').addEventListener('input', (e) => {
+            gamma = parseFloat(e.target.value);
+            document.getElementById('gamma-value').textContent = gamma.toFixed(1);
+        });
+
+        document.getElementById('delta').addEventListener('input', (e) => {
+            delta = parseFloat(e.target.value);
+            document.getElementById('delta-value').textContent = delta.toFixed(2);
+        });
+
+        document.getElementById('x0').addEventListener('input', (e) => {
+            x0 = parseInt(e.target.value);
+            document.getElementById('x0-value').textContent = x0;
+        });
+
+        document.getElementById('y0').addEventListener('input', (e) => {
+            y0 = parseInt(e.target.value);
+            document.getElementById('y0-value').textContent = y0;
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            paused = !paused;
+            document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', reset);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                paused = !paused;
+                document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+            } else if (e.code === 'KeyR') {
+                reset();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // Start
+        init();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

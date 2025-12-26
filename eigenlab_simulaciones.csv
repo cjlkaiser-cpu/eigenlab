@@ -1,0 +1,112 @@
+file,title,discipline,lab,lab_type,has_guide,modified,path
+musica-esferas-moderna.html,Música de las Esferas,Astronomy,Astronomy Sound Lab,Sound,Sí,2025-12-18,Astronomy/Astronomy Sound Lab/musica-esferas-moderna.html
+ondas-gravitacionales.html,Ondas Gravitacionales,Astronomy,Astronomy Sound Lab,Sound,Sí,2025-12-18,Astronomy/Astronomy Sound Lab/ondas-gravitacionales.html
+pulsares.html,Púlsares,Astronomy,Astronomy Sound Lab,Sound,Sí,2025-12-18,Astronomy/Astronomy Sound Lab/pulsares.html
+agujero-negro.html,Agujero Negro,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-18,Astronomy/Astronomy Visual Lab/agujero-negro.html
+diagrama-hr.html,Diagrama H-R,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-18,Astronomy/Astronomy Visual Lab/diagrama-hr.html
+estaciones.html,Las Estaciones,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-18,Astronomy/Astronomy Visual Lab/estaciones.html
+expansion-universo.html,Expansión del Universo,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-20,Astronomy/Astronomy Visual Lab/expansion-universo.html
+fases-lunares.html,Fases Lunares,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-18,Astronomy/Astronomy Visual Lab/fases-lunares.html
+lentes-gravitacionales.html,Lentes Gravitacionales,Astronomy,Astronomy Visual Lab,Visual,Sí,2025-12-18,Astronomy/Astronomy Visual Lab/lentes-gravitacionales.html
+adn-replicacion.html,Replicación ADN,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/adn-replicacion.html
+cadena-respiratoria.html,Cadena Respiratoria,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/cadena-respiratoria.html
+desnaturalizacion.html,Desnaturalización,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/desnaturalizacion.html
+estructura-proteica.html,Estructura Proteica,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/estructura-proteica.html
+fermentacion.html,Fermentación,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/fermentacion.html
+glucolisis.html,Glucólisis,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/glucolisis.html
+krebs.html,Ciclo de Krebs,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/krebs.html
+membrana-fluida.html,Membrana Fluida,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/membrana-fluida.html
+michaelis-menten.html,Michaelis-Menten,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/michaelis-menten.html
+mutaciones.html,Mutaciones,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/mutaciones.html
+plegamiento.html,Plegamiento Proteico,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/plegamiento.html
+regulacion-genica.html,Regulación Génica,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/regulacion-genica.html
+sintesis-proteinas.html,Síntesis de Proteínas,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/sintesis-proteinas.html
+traduccion.html,Traducción,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/traduccion.html
+transcripcion.html,Transcripción,Biochemistry,Biochem Visual Lab,Visual,Sí,2025-12-18,Biochemistry/Biochem Visual Lab/transcripcion.html
+ecosistema.html,Ecosistema,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/ecosistema.html
+evolucion.html,Selección Natural,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/evolucion.html
+genetica-poblacional.html,Genética Poblacional,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/genetica-poblacional.html
+meiosis.html,Meiosis,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/meiosis.html
+mitosis.html,Mitosis,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/mitosis.html
+neurona.html,Potencial de Acción,Biology,Biology Visual Lab,Visual,Sí,2025-12-18,Biology/Biology Visual Lab/neurona.html
+ritmos-circadianos.html,Ritmos Circadianos,Biology,Biology Visual Lab,Visual,Sí,2025-12-20,Biology/Biology Visual Lab/ritmos-circadianos.html
+calorimetria.html,Calorimetría,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/calorimetria.html
+celda-galvanica.html,Celda Galvánica,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/celda-galvanica.html
+cinetica-colisiones.html,Cinética y Colisiones,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/cinetica-colisiones.html
+decaimiento.html,Decaimiento Radiactivo,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/decaimiento.html
+diagrama-fases.html,Diagrama de Fases,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/diagrama-fases.html
+enlaces.html,Enlaces Químicos,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/enlaces.html
+gases-reales.html,Gases Ideales vs Reales,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/gases-reales.html
+isomeria.html,Isomería Geométrica,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/isomeria.html
+le-chatelier.html,Principio de Le Chatelier,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/le-chatelier.html
+modelo-bohr.html,Modelo de Bohr,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/modelo-bohr.html
+nernst.html,Ecuación de Nernst,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/nernst.html
+orbitales.html,Orbitales Atómicos,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/orbitales.html
+reactivo-limitante.html,Reactivo Limitante,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/reactivo-limitante.html
+solubilidad.html,Solubilidad y Kps,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/solubilidad.html
+tabla-periodica.html,Tabla Periódica,Chemistry,Chemistry Visual Lab,Visual,No,2025-12-20,Chemistry/Chemistry Visual Lab/tabla-periodica.html
+tendencias.html,Tendencias Peri&oacute;dicas,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/tendencias.html
+titulacion.html,Curva de Titulaci&oacute;n,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/titulacion.html
+vsepr.html,Geometría Molecular VSEPR,Chemistry,Chemistry Visual Lab,Visual,Sí,2025-12-20,Chemistry/Chemistry Visual Lab/vsepr.html
+binary-search-tree.html,Binary Search Tree,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/binary-search-tree.html
+bubble-sort-race.html,Bubble Sort Race,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/bubble-sort-race.html
+finite-automata.html,Finite Automata,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/finite-automata.html
+logic-gates-sandbox.html,Logic Gates Sandbox,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/logic-gates-sandbox.html
+perceptron-playground.html,Perceptron Playground,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/perceptron-playground.html
+stack-heap-visualizer.html,Stack & Heap Visualizer,Computation,Computation Lab,Computation,Sí,2025-12-18,Computation/Computation Lab/stack-heap-visualizer.html
+ciclo-rocas.html,Ciclo de las Rocas,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/ciclo-rocas.html
+erosion.html,Erosión,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/erosion.html
+estratigrafia.html,Estratigrafía,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/estratigrafia.html
+tectonica-placas.html,Tectónica de Placas,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/tectonica-placas.html
+terremotos.html,Ondas Sísmicas,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/terremotos.html
+volcanes.html,Erupciones Volcánicas,Geology,Geology Visual Lab,Visual,Sí,2025-12-18,Geology/Geology Visual Lab/volcanes.html
+flow-fields.html,Flow Fields,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/flow-fields.html
+fractales-ifs.html,Fractales IFS,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/fractales-ifs.html
+l-systems.html,L-Systems,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/l-systems.html
+phyllotaxis.html,Phyllotaxis,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/phyllotaxis.html
+reaccion-difusion.html,Reacción-Difusión,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/reaccion-difusion.html
+strange-attractors.html,Strange Attractors,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/strange-attractors.html
+teselaciones-aperiodicas.html,Teselaciones Aperiódicas,Mathematics,Math Generative Art Lab,Generative,No,2025-12-16,Mathematics/Math Generative Art Lab/teselaciones-aperiodicas.html
+automatas-elementales.html,Autómatas Elementales,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/automatas-elementales.html
+collatz-tree.html,Árbol de Collatz,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/collatz-tree.html
+domain-coloring.html,Domain Coloring,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/domain-coloring.html
+double-pendulum.html,Péndulo Doble,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/double-pendulum.html
+fourier-epicycles.html,Dibujo con Fourier,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/fourier-epicycles.html
+galton-board.html,Tablero de Galton,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/galton-board.html
+game-of-life.html,Game of Life,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/game-of-life.html
+juego-caos.html,Juego del Caos,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/juego-caos.html
+lorenz-attractor.html,Atractor de Lorenz,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/lorenz-attractor.html
+mandelbrot.html,Conjunto de Mandelbrot,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/mandelbrot.html
+mathematical-knots.html,Nudos Matemáticos,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/mathematical-knots.html
+mobius-strip.html,Banda de Möbius,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/mobius-strip.html
+montecarlo-pi.html,Monte Carlo: π,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/montecarlo-pi.html
+poincare-disk.html,Disco de Poincaré,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/poincare-disk.html
+riemann.html,Sumas de Riemann,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/riemann.html
+symmetry-groups.html,Grupos de Simetría,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/symmetry-groups.html
+taylor.html,Series de Taylor,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/taylor.html
+three-body.html,Problema de los 3 Cuerpos,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/three-body.html
+transform-matrix.html,Transformaciones Matriciales,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/transform-matrix.html
+trigonometria.html,Trigonometría,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/trigonometria.html
+ulam-spiral.html,Espiral de Ulam,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/ulam-spiral.html
+vector-field.html,Campo Vectorial,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/vector-field.html
+voronoi.html,Diagrama de Voronoi,Mathematics,Math Visual Lab,Visual,Sí,2025-12-20,Mathematics/Math Visual Lab/voronoi.html
+atractor-multicuerpo.html,Atractor Multi-Cuerpo,Physics,Physics Visual Lab,Visual,No,2025-12-13,Physics/Physics Visual Lab/atractor-multicuerpo.html
+campo-electrico.html,Campo Eléctrico,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/campo-electrico.html
+colisiones.html,Colisiones 2D,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/colisiones.html
+difusion-calor.html,Difusión del Calor en Habitación Cerrada,Physics,Physics Visual Lab,Visual,No,2025-12-20,Physics/Physics Visual Lab/difusion-calor.html
+efecto-doppler.html,Efecto Doppler,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/efecto-doppler.html
+fourier.html,Transformada de Fourier,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/fourier.html
+gas-ideal.html,Gas Ideal,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/gas-ideal.html
+interferencia.html,Interferencia de Ondas,Physics,Physics Visual Lab,Visual,No,2025-12-20,Physics/Physics Visual Lab/interferencia.html
+mecanica-lagrangiana.html,Mecánica Lagrangiana,Physics,Physics Visual Lab,Visual,No,2025-12-10,Physics/Physics Visual Lab/mecanica-lagrangiana.html
+ondas.html,Ondas,Physics,Physics Visual Lab,Visual,Sí,2025-12-20,Physics/Physics Visual Lab/ondas.html
+optica.html,Óptica,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/optica.html
+orbifold-3d.html,Orbifold Walker 3D,Physics,Physics Visual Lab,Visual,No,2025-12-15,Physics/Physics Visual Lab/orbifold-3d.html
+orbitas-kepler.html,Movimiento Planetario,Physics,Physics Visual Lab,Visual,No,2025-12-10,Physics/Physics Visual Lab/orbitas-kepler.html
+oscilador-forzado.html,Oscilador Forzado,Physics,Physics Visual Lab,Visual,No,2025-12-12,Physics/Physics Visual Lab/oscilador-forzado.html
+pendulo-simple.html,Simulación Péndulo Simple,Physics,Physics Visual Lab,Visual,No,2025-12-10,Physics/Physics Visual Lab/pendulo-simple.html
+pendulos-desacoplados.html,Dos Péndulos Simples Desacoplados,Physics,Physics Visual Lab,Visual,No,2025-12-10,Physics/Physics Visual Lab/pendulos-desacoplados.html
+proyectil.html,Movimiento Proyectil,Physics,Physics Visual Lab,Visual,No,2025-12-15,Physics/Physics Visual Lab/proyectil.html
+relatividad.html,Relatividad Especial,Physics,Physics Visual Lab,Visual,No,2025-12-15,Physics/Physics Visual Lab/relatividad.html
+sistema-solar.html,Sistema Solar,Physics,Physics Visual Lab,Visual,No,2025-12-10,Physics/Physics Visual Lab/sistema-solar.html
+termodinamica.html,Termodinámica,Physics,Physics Visual Lab,Visual,Sí,2025-12-20,Physics/Physics Visual Lab/termodinamica.html

@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Síntesis de Proteínas | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #a855f7;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #a855f7; font-size: 12px; font-weight: bold; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #a855f7; color: #a855f7; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #a855f7; }
+        .codon-display {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .codon-text {
+            font-size: 20px;
+            font-weight: bold;
+            letter-spacing: 4px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🧬 Síntesis de Proteínas</h2>
+        <p class="text-slate-500 text-xs mb-4">Traducción · Ribosoma 70S</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                <span class="text-pink-400">Síntesis de proteínas</span>: DNA→RNA (transcripción), procesamiento, exportación, RNA→proteína (traducción).
+            </p>
+            <a href="guides/sintesis-proteinas.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: dogma central, procesamiento, destino
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Velocidad</span><span class="text-purple-400" id="speed-val">1.0x</span></label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="codon-display">
+            <div class="text-slate-500 text-xs mb-1">Codón actual</div>
+            <div class="codon-text text-purple-400" id="current-codon">AUG</div>
+            <div class="text-slate-400 text-xs mt-1" id="amino-name">Metionina (Met)</div>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Aminoácidos añadidos</span>
+            <span class="stat-value" id="amino-count">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Longitud cadena</span>
+            <span class="stat-value" id="chain-length">0 aa</span>
+        </div>
+
+        <button class="btn" id="reset">↻ Nueva secuencia</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Componentes</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Ribosoma (subunidades)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>mRNA</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>tRNA</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Aminoácidos</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Sitios del ribosoma</div>
+            <div class="legend-item"><span class="text-rose-400 font-bold">A</span> - Aminoacil (entrada)</div>
+            <div class="legend-item"><span class="text-emerald-400 font-bold">P</span> - Peptidil (síntesis)</div>
+            <div class="legend-item"><span class="text-sky-400 font-bold">E</span> - Exit (salida)</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Proceso:</strong> El ribosoma lee codones (3 nucleótidos) y añade aminoácidos a la cadena polipeptídica.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Genetic code
+        const codonTable = {
+            'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu',
+            'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser',
+            'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP',
+            'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp',
+            'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
+            'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+            'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
+            'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
+            'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 'AUG': 'Met',
+            'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+            'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys',
+            'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg',
+            'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
+            'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+            'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
+            'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+        };
+
+        const aminoColors = {
+            'Phe': '#ef4444', 'Leu': '#f97316', 'Ile': '#f59e0b', 'Met': '#eab308',
+            'Val': '#84cc16', 'Ser': '#22c55e', 'Pro': '#10b981', 'Thr': '#14b8a6',
+            'Ala': '#06b6d4', 'Tyr': '#0ea5e9', 'His': '#3b82f6', 'Gln': '#6366f1',
+            'Asn': '#8b5cf6', 'Lys': '#a855f7', 'Asp': '#d946ef', 'Glu': '#ec4899',
+            'Cys': '#f43f5e', 'Trp': '#64748b', 'Arg': '#78716c', 'Gly': '#a3a3a3'
+        };
+
+        const aminoFullNames = {
+            'Phe': 'Fenilalanina', 'Leu': 'Leucina', 'Ile': 'Isoleucina', 'Met': 'Metionina',
+            'Val': 'Valina', 'Ser': 'Serina', 'Pro': 'Prolina', 'Thr': 'Treonina',
+            'Ala': 'Alanina', 'Tyr': 'Tirosina', 'His': 'Histidina', 'Gln': 'Glutamina',
+            'Asn': 'Asparagina', 'Lys': 'Lisina', 'Asp': 'Aspartato', 'Glu': 'Glutamato',
+            'Cys': 'Cisteína', 'Trp': 'Triptófano', 'Arg': 'Arginina', 'Gly': 'Glicina',
+            'STOP': 'Codón de parada'
+        };
+
+        const baseColors = { 'A': '#ef4444', 'U': '#38bdf8', 'G': '#fbbf24', 'C': '#22c55e' };
+
+        // State
+        let mRNA = [];
+        let proteinChain = [];
+        let currentCodonIndex = 0;
+        let translationProgress = 0;
+        let tRNAs = [];
+        let isTranslating = true;
+
+        function generateMRNA() {
+            mRNA = ['A', 'U', 'G']; // Start codon
+            const bases = ['A', 'U', 'G', 'C'];
+
+            // Generate 15-25 codons (45-75 bases)
+            const codonCount = 15 + Math.floor(Math.random() * 10);
+            for (let i = 0; i < codonCount * 3; i++) {
+                mRNA.push(bases[Math.floor(Math.random() * 4)]);
+            }
+
+            // Add stop codon
+            const stopCodons = ['UAA', 'UAG', 'UGA'];
+            const stop = stopCodons[Math.floor(Math.random() * 3)];
+            mRNA.push(...stop.split(''));
+        }
+
+        function init() {
+            generateMRNA();
+            proteinChain = [];
+            currentCodonIndex = 0;
+            translationProgress = 0;
+            tRNAs = [];
+            isTranslating = true;
+        }
+
+        class tRNA {
+            constructor(codon, x, y) {
+                this.codon = codon;
+                this.anticodon = this.getAnticodon(codon);
+                this.amino = codonTable[codon];
+                this.x = x;
+                this.y = y;
+                this.targetX = x;
+                this.targetY = y;
+                this.state = 'entering'; // entering, bound, exiting
+                this.opacity = 0;
+            }
+
+            getAnticodon(codon) {
+                const complement = { 'A': 'U', 'U': 'A', 'G': 'C', 'C': 'G' };
+                return codon.split('').map(b => complement[b]).reverse().join('');
+            }
+
+            update() {
+                this.x += (this.targetX - this.x) * 0.1;
+                this.y += (this.targetY - this.y) * 0.1;
+
+                if (this.state === 'entering') {
+                    this.opacity = Math.min(1, this.opacity + 0.05);
+                } else if (this.state === 'exiting') {
+                    this.opacity = Math.max(0, this.opacity - 0.03);
+                }
+            }
+
+            draw() {
+                ctx.globalAlpha = this.opacity;
+
+                // tRNA body (cloverleaf simplified)
+                ctx.fillStyle = '#22c55e';
+                ctx.shadowColor = '#22c55e';
+                ctx.shadowBlur = 10;
+
+                // Main stem
+                ctx.beginPath();
+                ctx.moveTo(this.x - 15, this.y);
+                ctx.lineTo(this.x + 15, this.y);
+                ctx.lineTo(this.x + 10, this.y - 40);
+                ctx.lineTo(this.x - 10, this.y - 40);
+                ctx.closePath();
+                ctx.fill();
+
+                // Anticodon loop
+                ctx.beginPath();
+                ctx.arc(this.x, this.y + 20, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+
+                // Anticodon text
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.anticodon, this.x, this.y + 24);
+
+                // Amino acid on top
+                if (this.amino && this.amino !== 'STOP') {
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - 50, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = aminoColors[this.amino] || '#fbbf24';
+                    ctx.shadowColor = aminoColors[this.amino] || '#fbbf24';
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = 'bold 8px monospace';
+                    ctx.fillText(this.amino, this.x, this.y - 47);
+                }
+
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawRibosome(x, y) {
+            // Large subunit (50S)
+            ctx.fillStyle = '#7c3aed';
+            ctx.shadowColor = '#a855f7';
+            ctx.shadowBlur = 20;
+            ctx.beginPath();
+            ctx.ellipse(x, y - 30, 80, 50, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Small subunit (30S)
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 40, 70, 35, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Subunit labels
+            ctx.fillStyle = '#e9d5ff';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('50S', x, y - 25);
+            ctx.fillText('30S', x, y + 45);
+
+            // Site labels
+            ctx.font = 'bold 14px monospace';
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillText('A', x + 40, y + 10);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('P', x, y + 10);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('E', x - 40, y + 10);
+
+            // Channel for mRNA
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 8;
+            ctx.beginPath();
+            ctx.moveTo(x - 100, y + 40);
+            ctx.lineTo(x + 100, y + 40);
+            ctx.stroke();
+        }
+
+        function drawMRNA(ribosomeX, ribosomeY) {
+            const startX = ribosomeX - 200;
+            const y = ribosomeY + 40;
+            const baseWidth = 18;
+
+            // Draw mRNA strand
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#38bdf8';
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.moveTo(50, y);
+            ctx.lineTo(W - 50, y);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw bases
+            const visibleStart = Math.max(0, currentCodonIndex * 3 - 12);
+            const visibleEnd = Math.min(mRNA.length, currentCodonIndex * 3 + 18);
+
+            for (let i = visibleStart; i < visibleEnd; i++) {
+                const baseX = ribosomeX + (i - currentCodonIndex * 3 - 1) * baseWidth;
+                const base = mRNA[i];
+
+                // Highlight current codon
+                const codonStart = currentCodonIndex * 3;
+                const isCurrentCodon = i >= codonStart && i < codonStart + 3;
+
+                ctx.beginPath();
+                ctx.arc(baseX, y, isCurrentCodon ? 10 : 8, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[base];
+                if (isCurrentCodon) {
+                    ctx.shadowColor = baseColors[base];
+                    ctx.shadowBlur = 12;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = `bold ${isCurrentCodon ? 10 : 8}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(base, baseX, y + 3);
+            }
+
+            // Direction labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.fillText("5'", 60, y - 20);
+            ctx.fillText("3'", W - 60, y - 20);
+        }
+
+        function drawProteinChain(startX, startY) {
+            if (proteinChain.length === 0) return;
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Cadena polipeptídica:', startX, startY - 20);
+
+            const maxPerRow = 20;
+
+            proteinChain.forEach((amino, i) => {
+                const row = Math.floor(i / maxPerRow);
+                const col = i % maxPerRow;
+                const x = startX + col * 22;
+                const y = startY + row * 30;
+
+                // Peptide bond line
+                if (i > 0 && col > 0) {
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 12, y);
+                    ctx.lineTo(x - 22, y);
+                    ctx.stroke();
+                }
+
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = aminoColors[amino] || '#fbbf24';
+                ctx.shadowColor = aminoColors[amino] || '#fbbf24';
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 7px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(amino.substring(0, 3), x, y + 2);
+            });
+        }
+
+        function getCurrentCodon() {
+            const start = currentCodonIndex * 3;
+            if (start + 3 <= mRNA.length) {
+                return mRNA.slice(start, start + 3).join('');
+            }
+            return null;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const speed = parseFloat(document.getElementById('speed').value);
+            const ribosomeX = W / 2;
+            const ribosomeY = H / 2 - 50;
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Síntesis de Proteínas — Traducción del mRNA', W / 2, 40);
+
+            // Draw components
+            drawMRNA(ribosomeX, ribosomeY);
+            drawRibosome(ribosomeX, ribosomeY);
+
+            // Update and draw tRNAs
+            tRNAs.forEach(t => {
+                t.update();
+                t.draw();
+            });
+            tRNAs = tRNAs.filter(t => t.opacity > 0);
+
+            // Draw protein chain
+            drawProteinChain(320, H - 120);
+
+            // Translation logic
+            if (isTranslating) {
+                translationProgress += 0.008 * speed;
+
+                if (translationProgress >= 1) {
+                    translationProgress = 0;
+
+                    const codon = getCurrentCodon();
+                    if (codon) {
+                        const amino = codonTable[codon];
+
+                        if (amino === 'STOP') {
+                            isTranslating = false;
+                        } else {
+                            // Add amino acid to chain
+                            proteinChain.push(amino);
+
+                            // Create new tRNA entering
+                            const newTRNA = new tRNA(codon, ribosomeX + 100, ribosomeY - 100);
+                            newTRNA.targetX = ribosomeX + 40;
+                            newTRNA.targetY = ribosomeY - 30;
+                            tRNAs.push(newTRNA);
+
+                            // Move existing tRNAs
+                            tRNAs.forEach(t => {
+                                if (t !== newTRNA) {
+                                    t.targetX -= 40;
+                                    if (t.targetX < ribosomeX - 40) {
+                                        t.state = 'exiting';
+                                        t.targetY = ribosomeY - 100;
+                                    }
+                                }
+                            });
+
+                            currentCodonIndex++;
+                        }
+
+                        // Update UI
+                        document.getElementById('current-codon').textContent = codon;
+                        document.getElementById('amino-name').textContent =
+                            amino === 'STOP' ? 'Codón de parada' : `${aminoFullNames[amino]} (${amino})`;
+                    }
+                }
+            } else {
+                // Show completion message
+                ctx.fillStyle = '#22c55e';
+                ctx.font = 'bold 16px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('✓ Traducción completada', W / 2, H - 30);
+            }
+
+            // Update stats
+            document.getElementById('amino-count').textContent = proteinChain.length;
+            document.getElementById('chain-length').textContent = proteinChain.length + ' aa';
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', e => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('reset').addEventListener('click', init);
+
+        init();
+        draw();
+    </script>
+</body>
+</html>

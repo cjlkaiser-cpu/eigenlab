@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleosíntesis Estelar — Guía · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #030712; --bg-secondary: #0f172a; --bg-panel: #1e293b; --text-primary: #f8fafc; --text-secondary: #94a3b8; --border: #334155; --accent: #6366f1; --color-good: #22c55e; --color-warn: #fbbf24; --color-bad: #ef4444; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--accent); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--accent); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); }
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); font-size: 0.8rem; }
+        .eq span:first-child { color: var(--text-secondary); } .eq code { color: var(--accent); }
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); } .b-warn { border-color: rgba(251, 191, 36, 0.4); } .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+        .section { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--text-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; flex-shrink: 0; }
+        .hypothesis { background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); padding: 0.75rem; border-radius: 0 0.375rem 0.375rem 0; margin: 0.75rem 0; }
+        .hypothesis p { margin: 0; font-style: italic; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 0.75rem; }
+        .connection-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .connection-icon { width: 10px; height: 10px; border-radius: 50%; }
+        .connection-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .connection p { margin: 0; }
+        .reflection { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--text-primary); margin-bottom: 0.75rem; }
+        .reflection ul { margin: 0; }
+        .timeline { border-left: 2px solid var(--border); padding-left: 1.25rem; margin-top: 0.75rem; }
+        .timeline-item { position: relative; padding-bottom: 1rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.4rem; top: 0.25rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary); }
+        .timeline-year { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+        .timeline-text { font-size: 0.8rem; color: var(--text-secondary); }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+        .element-table { display: grid; grid-template-columns: repeat(6, 1fr); gap: 0.25rem; margin-top: 0.75rem; }
+        .element-cell { padding: 0.5rem; text-align: center; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; }
+        .onion { display: flex; flex-direction: column; gap: 0.25rem; margin-top: 0.75rem; }
+        .onion-layer { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem; border-radius: 0.25rem; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Astronomy Visual Lab</a>
+                    <span> / </span>
+                    <span>Nucleosíntesis</span>
+                </nav>
+                <h1>Nucleosíntesis Estelar — Guía</h1>
+                <div class="subtitle">Somos polvo de estrellas</div>
+            </div>
+            <div class="header-actions">
+                <a href="../nucleosintesis.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulación</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>H → He → C → Fe</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero -->
+        <div class="hero">
+            <div class="card">
+                <div class="kicker">Concepto central</div>
+                <p class="lead">
+                    <strong>Las estrellas son fábricas de elementos.</strong> Fusionan núcleos ligeros en pesados, liberando la energía que las hace brillar. Todo elemento más pesado que el hidrógeno primordial fue creado en el interior de una estrella o en su explosión final.
+                </p>
+                <div class="chips">
+                    <span class="chip">Fusión nuclear</span>
+                    <span class="chip">Cadena p-p</span>
+                    <span class="chip">Ciclo CNO</span>
+                    <span class="chip">Proceso s/r</span>
+                    <span class="chip">Supernovas</span>
+                </div>
+            </div>
+            <div class="card">
+                <h2>Por qué importa</h2>
+                <p>El carbono de tus células, el oxígeno que respiras, el hierro en tu sangre: todos fueron forjados en estrellas que explotaron hace miles de millones de años.</p>
+                <p class="mini" style="margin-top: 0.75rem;">Carl Sagan: "Somos polvo de estrellas que piensa sobre las estrellas."</p>
+            </div>
+        </div>
+
+        <!-- Origen de los elementos -->
+        <section class="section">
+            <div class="card">
+                <h2>Origen de los Elementos</h2>
+                <p>Cada elemento tiene una historia de formación diferente:</p>
+
+                <div class="element-table">
+                    <div class="element-cell" style="background: #fef9c3; color: #000;">H</div>
+                    <div class="element-cell" style="background: #fef08a; color: #000;">He</div>
+                    <div class="element-cell" style="background: #bbf7d0; color: #000;">Li</div>
+                    <div class="element-cell" style="background: #bbf7d0; color: #000;">Be</div>
+                    <div class="element-cell" style="background: #bbf7d0; color: #000;">B</div>
+                    <div class="element-cell" style="background: #f97316; color: #fff;">C</div>
+                    <div class="element-cell" style="background: #f97316; color: #fff;">N</div>
+                    <div class="element-cell" style="background: #f97316; color: #fff;">O</div>
+                    <div class="element-cell" style="background: #ef4444; color: #fff;">Ne</div>
+                    <div class="element-cell" style="background: #ef4444; color: #fff;">Mg</div>
+                    <div class="element-cell" style="background: #ef4444; color: #fff;">Si</div>
+                    <div class="element-cell" style="background: #dc2626; color: #fff;">Fe</div>
+                    <div class="element-cell" style="background: #8b5cf6; color: #fff;">Sr</div>
+                    <div class="element-cell" style="background: #8b5cf6; color: #fff;">Ba</div>
+                    <div class="element-cell" style="background: #22c55e; color: #fff;">Au</div>
+                    <div class="element-cell" style="background: #22c55e; color: #fff;">U</div>
+                </div>
+
+                <div class="legend" style="margin-top: 1rem;">
+                    <div class="legend-item"><div class="swatch" style="background: #fef9c3;"></div> Big Bang (H, He, Li)</div>
+                    <div class="legend-item"><div class="swatch" style="background: #bbf7d0;"></div> Rayos cósmicos</div>
+                    <div class="legend-item"><div class="swatch" style="background: #f97316;"></div> Fusión estelar</div>
+                    <div class="legend-item"><div class="swatch" style="background: #8b5cf6;"></div> Proceso s (AGB)</div>
+                    <div class="legend-item"><div class="swatch" style="background: #22c55e;"></div> Proceso r (SN, NS)</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reacciones nucleares -->
+        <section class="section">
+            <div class="card">
+                <h2>Reacciones de Fusión</h2>
+                <div class="equations">
+                    <div class="eq">
+                        <span>Cadena protón-protón</span>
+                        <code>4¹H → ⁴He + 2e⁺ + 2νₑ + 26.7 MeV</code>
+                    </div>
+                    <div class="eq">
+                        <span>Triple alfa</span>
+                        <code>3⁴He → ¹²C + 7.27 MeV</code>
+                    </div>
+                    <div class="eq">
+                        <span>Fusión de carbono</span>
+                        <code>¹²C + ¹²C → ²⁰Ne + ⁴He</code>
+                    </div>
+                    <div class="eq">
+                        <span>Fusión de silicio</span>
+                        <code>²⁸Si + ²⁸Si → ⁵⁶Ni → ⁵⁶Fe</code>
+                    </div>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem;">
+                    <p><strong>Barrera del hierro:</strong> La energía de enlace por nucleón alcanza su máximo en Fe-56. Por eso la fusión solo libera energía hasta el hierro; después requiere energía (solo ocurre en supernovas).</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Estructura de cebolla -->
+        <section class="section">
+            <div class="card">
+                <h2>Estructura de Cebolla (Pre-Supernova)</h2>
+                <p>Una estrella masiva antes de explotar tiene capas concéntricas de fusión:</p>
+
+                <div class="onion">
+                    <div class="onion-layer" style="background: #7f1d1d; color: #fff;">
+                        <span style="width: 60px;">Núcleo</span>
+                        <span>Si → Fe (T ~ 3000 MK, horas)</span>
+                    </div>
+                    <div class="onion-layer" style="background: #ef4444; color: #fff;">
+                        <span style="width: 60px;">Capa 1</span>
+                        <span>O → Si, S (T ~ 2000 MK, meses)</span>
+                    </div>
+                    <div class="onion-layer" style="background: #fb923c; color: #fff;">
+                        <span style="width: 60px;">Capa 2</span>
+                        <span>Ne → O, Mg (T ~ 1500 MK, años)</span>
+                    </div>
+                    <div class="onion-layer" style="background: #f97316; color: #fff;">
+                        <span style="width: 60px;">Capa 3</span>
+                        <span>C → Ne, Mg (T ~ 800 MK, siglos)</span>
+                    </div>
+                    <div class="onion-layer" style="background: #fde047; color: #000;">
+                        <span style="width: 60px;">Capa 4</span>
+                        <span>He → C, O (T ~ 200 MK, milenios)</span>
+                    </div>
+                    <div class="onion-layer" style="background: #fef08a; color: #000;">
+                        <span style="width: 60px;">Envoltura</span>
+                        <span>H → He (T ~ 50 MK, millones de años)</span>
+                    </div>
+                </div>
+
+                <p class="mini" style="margin-top: 0.75rem;">Nota: las escalas de tiempo se aceleran dramáticamente hacia el núcleo.</p>
+            </div>
+        </section>
+
+        <!-- Dos columnas -->
+        <div class="two">
+            <div class="card">
+                <h3>Cadena p-p vs Ciclo CNO</h3>
+                <p>Ambos convierten H en He, pero dominan en diferentes estrellas:</p>
+                <ul>
+                    <li><strong>Cadena p-p:</strong> Domina en estrellas &lt; 1.3 M☉ (como el Sol). Depende de T⁴.</li>
+                    <li><strong>Ciclo CNO:</strong> Domina en estrellas &gt; 1.3 M☉. Depende de T¹⁶. Usa C, N, O como catalizadores.</li>
+                </ul>
+                <p class="mini">El Sol obtiene ~99% de su energía de la cadena p-p.</p>
+            </div>
+            <div class="card">
+                <h3>Proceso s vs Proceso r</h3>
+                <p>Para elementos más pesados que el hierro:</p>
+                <ul>
+                    <li><strong>Proceso s (lento):</strong> Captura de neutrones en gigantes AGB. Un neutrón cada ~años. Crea hasta Bi-209.</li>
+                    <li><strong>Proceso r (rápido):</strong> Captura masiva en supernovas y fusiones de estrellas de neutrones. Crea oro, platino, uranio.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Experimentos -->
+        <section class="section">
+            <h2>Experimenta</h2>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <div class="experiment-number">1</div>
+                    <h3>Efecto de la masa estelar</h3>
+                </div>
+                <div class="hypothesis">
+                    <p>Hipótesis: Solo las estrellas masivas pueden crear elementos pesados.</p>
+                </div>
+                <ol>
+                    <li>Ajusta la masa a 0.5 M☉ y evoluciona. ¿Hasta qué etapa llega?</li>
+                    <li>Ahora pon 25 M☉ y evoluciona. Observa todas las capas de fusión.</li>
+                    <li>Compara los elementos sintetizados en cada caso.</li>
+                </ol>
+                <p class="mini" style="margin-top: 0.5rem;">Resultado esperado: Estrellas pequeñas solo llegan a gigante roja (He→C). Las masivas llegan a supernova y crean Fe.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <div class="experiment-number">2</div>
+                    <h3>Tiempo de vida de las capas</h3>
+                </div>
+                <div class="hypothesis">
+                    <p>Hipótesis: Las etapas finales son extremadamente rápidas.</p>
+                </div>
+                <ol>
+                    <li>Observa la estructura pre-supernova (cebolla).</li>
+                    <li>Nota las temperaturas: el núcleo está a 3000 MK, la envoltura a 50 MK.</li>
+                    <li>La fusión de Si→Fe dura solo horas; la de H→He dura millones de años.</li>
+                </ol>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <div class="experiment-number">3</div>
+                    <h3>Origen del oro</h3>
+                </div>
+                <ol>
+                    <li>Busca el Au (oro) en la tabla de elementos.</li>
+                    <li>Nota que está en gris hasta que llegas a "Supernova".</li>
+                    <li>El oro se crea por proceso r: solo en supernovas o fusiones de estrellas de neutrones.</li>
+                </ol>
+                <p class="mini" style="margin-top: 0.5rem;">En 2017, la fusión de dos estrellas de neutrones (GW170817) creó ~10 masas terrestres de oro.</p>
+            </div>
+        </section>
+
+        <!-- Conexiones -->
+        <section class="section">
+            <h2>Conexiones</h2>
+            <div class="grid">
+                <div class="connection">
+                    <div class="connection-header">
+                        <div class="connection-icon" style="background: #6366f1;"></div>
+                        <span class="connection-title">Diagrama H-R</span>
+                    </div>
+                    <p>La evolución estelar en el diagrama H-R corresponde a las etapas de fusión: secuencia principal (H→He), gigante roja (He→C), etc.</p>
+                    <a href="diagrama-hr.html" class="mini">Ver guía →</a>
+                </div>
+                <div class="connection">
+                    <div class="connection-header">
+                        <div class="connection-icon" style="background: #06b6d4;"></div>
+                        <span class="connection-title">Modelo de Bohr</span>
+                    </div>
+                    <p>La estructura atómica determina qué reacciones de fusión son posibles. La barrera coulombiana requiere altas temperaturas para superarla.</p>
+                    <a href="../../Chemistry/Chemistry Visual Lab/guides/modelo-bohr.html" class="mini">Ver guía →</a>
+                </div>
+                <div class="connection">
+                    <div class="connection-header">
+                        <div class="connection-icon" style="background: #ef4444;"></div>
+                        <span class="connection-title">Decaimiento Radiactivo</span>
+                    </div>
+                    <p>El Ni-56 producido en supernovas decae a Fe-56. Este decaimiento alimenta la curva de luz de las supernovas tipo Ia.</p>
+                    <a href="../../Chemistry/Chemistry Visual Lab/guides/decaimiento.html" class="mini">Ver guía →</a>
+                </div>
+                <div class="connection">
+                    <div class="connection-header">
+                        <div class="connection-icon" style="background: #22c55e;"></div>
+                        <span class="connection-title">Expansión del Universo</span>
+                    </div>
+                    <p>El Big Bang solo creó H, He y trazas de Li. Todo lo demás vino después, en estrellas.</p>
+                    <a href="expansion-universo.html" class="mini">Ver guía →</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- Timeline -->
+        <section class="section">
+            <div class="card">
+                <h2>Historia del Descubrimiento</h2>
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-year">1920</div>
+                        <div class="timeline-text">Eddington propone que las estrellas obtienen energía de fusión nuclear.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1938</div>
+                        <div class="timeline-text">Bethe describe el ciclo CNO y la cadena p-p. Nobel 1967.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">1957</div>
+                        <div class="timeline-text">B²FH: Burbidge, Burbidge, Fowler y Hoyle publican el paper fundacional de nucleosíntesis estelar.</div>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-year">2017</div>
+                        <div class="timeline-text">GW170817: Primera detección de fusión de estrellas de neutrones. Se confirma el proceso r.</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitaciones -->
+        <section class="section">
+            <div class="card">
+                <h2>Limitaciones del Modelo</h2>
+                <div class="chips">
+                    <span class="chip b-warn">Estructura simplificada (capas discretas vs continuas)</span>
+                    <span class="chip b-warn">No incluye convección ni mezcla de capas</span>
+                    <span class="chip b-warn">Tiempos de evolución no a escala real</span>
+                    <span class="chip b-warn">Proceso r simplificado (falta dinámica de SN)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reflexión -->
+        <div class="reflection">
+            <h3>Para reflexionar</h3>
+            <ul>
+                <li>¿Por qué el hierro es tan abundante en los planetas rocosos?</li>
+                <li>¿Qué elementos de tu cuerpo fueron creados en diferentes tipos de estrellas?</li>
+                <li>¿Por qué el oro es más raro que el hierro?</li>
+                <li>Si una estrella de 0.5 M☉ no puede crear carbono, ¿cómo puede existir vida alrededor de ella?</li>
+            </ul>
+        </div>
+    </main>
+
+    <footer>
+        <p>EigenLab · Astronomy Visual Lab · Nucleosíntesis Estelar</p>
+    </footer>
+</body>
+</html>

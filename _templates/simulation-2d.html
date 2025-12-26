@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[TÍTULO] - EigenLab</title>
+    <style>
+        /* ========================================
+           EigenLab - Plantilla Simulación 2D
+           ======================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            /* Colores base */
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+
+            /* Colores por categoría - personalizar según disciplina */
+            --accent: #22c55e;           /* Verde por defecto */
+            --accent-glow: rgba(34, 197, 94, 0.3);
+
+            /* Categorías disponibles:
+               Physics Visual:    #22c55e (verde)
+               Physics Sound:     #a855f7 (púrpura)
+               Chemistry:         #06b6d4 (cyan)
+               Biochemistry:      #ec4899 (rosa)
+               Mathematics:       #f97316 (naranja)
+            */
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        /* Main container */
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        /* Canvas container */
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Control panel */
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-group label span {
+            color: var(--accent);
+            font-family: 'SF Mono', 'Consolas', monospace;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        button:hover {
+            background: var(--border);
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+        }
+
+        button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Equation display */
+        .equation {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            font-size: 1.125rem;
+            text-align: center;
+            padding: 1rem;
+            background: var(--bg-panel);
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        /* Values display */
+        .values {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .value-item {
+            background: var(--bg-panel);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            font-size: 0.8125rem;
+        }
+
+        .value-item .label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .value-item .number {
+            font-family: 'SF Mono', 'Consolas', monospace;
+            color: var(--accent);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>[TÍTULO DE LA SIMULACIÓN]</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="../index.html">[Disciplina] Visual Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <aside class="controls">
+            <!-- Ecuación principal -->
+            <div class="control-section">
+                <div class="equation">
+                    <!-- Ejemplo: F = ma -->
+                    [ECUACIÓN]
+                </div>
+            </div>
+
+            <!-- Parámetros -->
+            <div class="control-section">
+                <h3>Parámetros</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Parámetro 1
+                        <span id="param1-value">50</span>
+                    </label>
+                    <input type="range" id="param1" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Parámetro 2
+                        <span id="param2-value">50</span>
+                    </label>
+                    <input type="range" id="param2" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <!-- Controles -->
+            <div class="control-section">
+                <h3>Controles</h3>
+                <div class="button-group">
+                    <button id="btn-play" class="primary">Play</button>
+                    <button id="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <!-- Valores calculados -->
+            <div class="control-section">
+                <h3>Valores</h3>
+                <div class="values">
+                    <div class="value-item">
+                        <div class="label">Valor 1</div>
+                        <div class="number" id="value1">0.00</div>
+                    </div>
+                    <div class="value-item">
+                        <div class="label">Valor 2</div>
+                        <div class="number" id="value2">0.00</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        /* ========================================
+           EigenLab - Plantilla Simulación 2D
+           ======================================== */
+
+        // === CONFIGURACIÓN ===
+        const CONFIG = {
+            // Parámetros físicos
+            param1: 50,
+            param2: 50,
+
+            // Estado de simulación
+            running: false,
+
+            // Constantes (si aplica)
+            // G: 9.81,
+        };
+
+        // === CANVAS SETUP ===
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // === CONTROLES ===
+        const sliderParam1 = document.getElementById('param1');
+        const sliderParam2 = document.getElementById('param2');
+        const btnPlay = document.getElementById('btn-play');
+        const btnReset = document.getElementById('btn-reset');
+
+        sliderParam1.addEventListener('input', (e) => {
+            CONFIG.param1 = parseFloat(e.target.value);
+            document.getElementById('param1-value').textContent = CONFIG.param1;
+        });
+
+        sliderParam2.addEventListener('input', (e) => {
+            CONFIG.param2 = parseFloat(e.target.value);
+            document.getElementById('param2-value').textContent = CONFIG.param2;
+        });
+
+        btnPlay.addEventListener('click', () => {
+            CONFIG.running = !CONFIG.running;
+            btnPlay.textContent = CONFIG.running ? 'Pause' : 'Play';
+        });
+
+        btnReset.addEventListener('click', () => {
+            CONFIG.running = false;
+            btnPlay.textContent = 'Play';
+            init();
+        });
+
+        // === ESTADO DE SIMULACIÓN ===
+        let state = {
+            // Definir variables de estado aquí
+            x: 0,
+            y: 0,
+            vx: 0,
+            vy: 0,
+        };
+
+        function init() {
+            // Inicializar estado
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            state.x = w / 2;
+            state.y = h / 2;
+            state.vx = 0;
+            state.vy = 0;
+
+            draw();
+        }
+
+        // === FÍSICA ===
+        function update(dt) {
+            if (!CONFIG.running) return;
+
+            // Implementar física aquí
+            // Ejemplo: Euler simple
+            // state.vy += G * dt;
+            // state.x += state.vx * dt;
+            // state.y += state.vy * dt;
+        }
+
+        // === RENDERIZADO ===
+        function draw() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            // Limpiar canvas
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Dibujar simulación
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(state.x, state.y, 10, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Actualizar valores mostrados
+            document.getElementById('value1').textContent = state.x.toFixed(2);
+            document.getElementById('value2').textContent = state.y.toFixed(2);
+        }
+
+        // === LOOP PRINCIPAL ===
+        let lastTime = 0;
+
+        function loop(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.1); // Max 100ms
+            lastTime = time;
+
+            update(dt);
+            draw();
+
+            requestAnimationFrame(loop);
+        }
+
+        // === INICIAR ===
+        init();
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>

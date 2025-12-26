@@ -1,0 +1,1015 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; }
+
+        .card {
+            background: #020617;
+            border: 1px solid #1e293b;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--accent);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        .card:hover {
+            border-color: var(--accent);
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px var(--accent-glow);
+        }
+        .card:hover::before {
+            transform: scaleX(1);
+        }
+
+        .card-core { --accent: #d946ef; --accent-glow: rgba(217, 70, 239, 0.2); }
+        .card-metabolism { --accent: #22c55e; --accent-glow: rgba(34, 197, 94, 0.2); }
+        .card-protein { --accent: #38bdf8; --accent-glow: rgba(56, 189, 248, 0.2); }
+        .card-genetic { --accent: #a3e635; --accent-glow: rgba(163, 230, 53, 0.2); }
+
+        .preview-canvas {
+            background: #020617;
+            border-radius: 4px;
+        }
+
+        .tag {
+            font-size: 9px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .section-line {
+            height: 1px;
+            background: linear-gradient(to right, transparent, var(--color), transparent);
+        }
+    </style>
+</head>
+<body class="min-h-screen p-6 md:p-10">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <nav class="text-xs text-slate-500 mb-4">
+                <a href="../../_portal/index.html" class="hover:text-fuchsia-400 transition">EigenLab</a>
+                <span class="mx-1">/</span>
+                <span class="text-slate-400">Biochem Visual Lab</span>
+            </nav>
+            <div class="inline-block mb-4">
+                <span class="text-6xl">🧬</span>
+            </div>
+            <h1 class="text-4xl md:text-5xl font-bold text-white mb-3">
+                Biochem Visual Lab
+            </h1>
+            <p class="text-slate-400 text-sm md:text-base max-w-xl mx-auto">
+                Simulaciones interactivas de bioquímica · Canvas 2D · Movimiento browniano
+            </p>
+            <div class="flex justify-center gap-6 mt-6 text-xs text-slate-500">
+                <span><strong class="text-fuchsia-400">16</strong> simulaciones</span>
+                <span><strong class="text-green-400">4</strong> módulos</span>
+                <span><strong class="text-sky-400">0</strong> dependencias</span>
+            </div>
+        </header>
+
+        <!-- CORE -->
+        <section class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-3 h-3 rounded-full bg-fuchsia-500"></div>
+                <h2 class="text-xl font-bold text-white">Core</h2>
+                <div class="flex-1 section-line" style="--color: #d946ef;"></div>
+                <span class="text-slate-500 text-xs">Fundamentos moleculares</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <a href="michaelis-menten.html" class="card card-core rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-32 mb-3" data-preview="michaelis"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-fuchsia-500/20 text-fuchsia-400">Core</span>
+                        <span class="text-white font-bold text-sm">Michaelis-Menten</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Cinética enzimática · E + S ⇌ ES → P</p>
+                </a>
+
+                <a href="adn-replicacion.html" class="card card-core rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-32 mb-3" data-preview="adn"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-fuchsia-500/20 text-fuchsia-400">Core</span>
+                        <span class="text-white font-bold text-sm">Replicación ADN</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Doble hélice · Helicasa · Polimerasa</p>
+                </a>
+
+                <a href="membrana-fluida.html" class="card card-core rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-32 mb-3" data-preview="membrana"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-fuchsia-500/20 text-fuchsia-400">Core</span>
+                        <span class="text-white font-bold text-sm">Membrana Fluida</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Bicapa lipídica · Mosaico fluido</p>
+                </a>
+
+                <a href="lipidos.html" class="card card-core rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-32 mb-3" data-preview="lipidos"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-fuchsia-500/20 text-fuchsia-400">Core</span>
+                        <span class="text-white font-bold text-sm">Lípidos</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Auto-ensamblaje · Micelas · Bicapas</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- METABOLISMO -->
+        <section class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                <h2 class="text-xl font-bold text-white">Metabolismo</h2>
+                <div class="flex-1 section-line" style="--color: #22c55e;"></div>
+                <span class="text-slate-500 text-xs">Rutas energéticas</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <a href="glucolisis.html" class="card card-metabolism rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="glucolisis"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-green-500/20 text-green-400">Meta</span>
+                        <span class="text-white font-bold text-sm">Glucólisis</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">10 pasos · ATP · NADH</p>
+                </a>
+
+                <a href="krebs.html" class="card card-metabolism rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="krebs"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-green-500/20 text-green-400">Meta</span>
+                        <span class="text-white font-bold text-sm">Ciclo de Krebs</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">8 intermediarios · CO₂</p>
+                </a>
+
+                <a href="cadena-respiratoria.html" class="card card-metabolism rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="cadena"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-green-500/20 text-green-400">Meta</span>
+                        <span class="text-white font-bold text-sm">Cadena Respiratoria</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Complejos I-IV · H⁺</p>
+                </a>
+
+                <a href="fermentacion.html" class="card card-metabolism rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="fermentacion"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-green-500/20 text-green-400">Meta</span>
+                        <span class="text-white font-bold text-sm">Fermentación</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Láctica vs Alcohólica</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- PROTEÍNAS -->
+        <section class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-3 h-3 rounded-full bg-sky-500"></div>
+                <h2 class="text-xl font-bold text-white">Proteínas</h2>
+                <div class="flex-1 section-line" style="--color: #38bdf8;"></div>
+                <span class="text-slate-500 text-xs">Estructura y función</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <a href="sintesis-proteinas.html" class="card card-protein rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="sintesis"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-sky-500/20 text-sky-400">Prot</span>
+                        <span class="text-white font-bold text-sm">Síntesis</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Ribosoma · Codones · tRNA</p>
+                </a>
+
+                <a href="plegamiento.html" class="card card-protein rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="plegamiento"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-sky-500/20 text-sky-400">Prot</span>
+                        <span class="text-white font-bold text-sm">Plegamiento</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Folding · Chaperonas · ΔG</p>
+                </a>
+
+                <a href="estructura-proteica.html" class="card card-protein rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="estructura"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-sky-500/20 text-sky-400">Prot</span>
+                        <span class="text-white font-bold text-sm">Estructura</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">1°, 2°, 3°, 4° · α-hélice · β-lámina</p>
+                </a>
+
+                <a href="desnaturalizacion.html" class="card card-protein rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="desnaturalizacion"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-sky-500/20 text-sky-400">Prot</span>
+                        <span class="text-white font-bold text-sm">Desnaturalización</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">pH · Temperatura · Agentes</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- GENÉTICA -->
+        <section class="mb-16">
+            <div class="flex items-center gap-4 mb-6">
+                <div class="w-3 h-3 rounded-full bg-lime-500"></div>
+                <h2 class="text-xl font-bold text-white">Genética</h2>
+                <div class="flex-1 section-line" style="--color: #a3e635;"></div>
+                <span class="text-slate-500 text-xs">Expresión génica</span>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <a href="transcripcion.html" class="card card-genetic rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="transcripcion"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-lime-500/20 text-lime-400">Gen</span>
+                        <span class="text-white font-bold text-sm">Transcripción</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">ADN → ARN · RNA Pol II</p>
+                </a>
+
+                <a href="traduccion.html" class="card card-genetic rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="traduccion"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-lime-500/20 text-lime-400">Gen</span>
+                        <span class="text-white font-bold text-sm">Traducción</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">ARN → Proteína · Ribosoma</p>
+                </a>
+
+                <a href="mutaciones.html" class="card card-genetic rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="mutaciones"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-lime-500/20 text-lime-400">Gen</span>
+                        <span class="text-white font-bold text-sm">Mutaciones</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Tipos · Efectos · Frameshift</p>
+                </a>
+
+                <a href="regulacion-genica.html" class="card card-genetic rounded-lg p-4">
+                    <canvas class="preview-canvas w-full h-28 mb-3" data-preview="regulacion"></canvas>
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-lime-500/20 text-lime-400">Gen</span>
+                        <span class="text-white font-bold text-sm">Regulación</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Operón lac · CAP · Represor</p>
+                </a>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center pt-8 border-t border-slate-800">
+            <p class="text-slate-600 text-xs">
+                Biochem Visual Lab · Parte de Science Visual Labs
+            </p>
+            <p class="text-slate-700 text-xs mt-1">
+                HTML5 Canvas · Tailwind CSS · Zero Build
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        // Animated previews
+        document.querySelectorAll('[data-preview]').forEach(canvas => {
+            const ctx = canvas.getContext('2d');
+            const type = canvas.dataset.preview;
+
+            // Set canvas size
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width * 2;
+            canvas.height = rect.height * 2;
+            ctx.scale(2, 2);
+
+            const w = rect.width;
+            const h = rect.height;
+
+            // Animation based on type
+            const animations = {
+                michaelis: () => animateMichaelis(ctx, w, h),
+                adn: () => animateADN(ctx, w, h),
+                membrana: () => animateMembrana(ctx, w, h),
+                lipidos: () => animateLipidos(ctx, w, h),
+                glucolisis: () => animateGlucolisis(ctx, w, h),
+                krebs: () => animateKrebs(ctx, w, h),
+                cadena: () => animateCadena(ctx, w, h),
+                fermentacion: () => animateFermentacion(ctx, w, h),
+                sintesis: () => animateSintesis(ctx, w, h),
+                plegamiento: () => animatePlegamiento(ctx, w, h),
+                estructura: () => animateEstructura(ctx, w, h),
+                desnaturalizacion: () => animateDesnaturalizacion(ctx, w, h),
+                transcripcion: () => animateTranscripcion(ctx, w, h),
+                traduccion: () => animateTraduccion(ctx, w, h),
+                mutaciones: () => animateMutaciones(ctx, w, h),
+                regulacion: () => animateRegulacion(ctx, w, h)
+            };
+
+            if (animations[type]) animations[type]();
+        });
+
+        // Michaelis-Menten: Pac-Man enzymes
+        function animateMichaelis(ctx, w, h) {
+            const enzymes = Array(3).fill().map(() => ({
+                x: Math.random() * w, y: Math.random() * h,
+                vx: (Math.random() - 0.5) * 1.5, vy: (Math.random() - 0.5) * 1.5
+            }));
+            const substrates = Array(12).fill().map(() => ({
+                x: Math.random() * w, y: Math.random() * h
+            }));
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                substrates.forEach(s => {
+                    s.x += (Math.random() - 0.5) * 2;
+                    s.y += (Math.random() - 0.5) * 2;
+                    ctx.beginPath();
+                    ctx.arc(s.x, s.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#a3e635';
+                    ctx.fill();
+                });
+
+                enzymes.forEach(e => {
+                    e.x += e.vx + (Math.random() - 0.5) * 0.5;
+                    e.y += e.vy + (Math.random() - 0.5) * 0.5;
+                    if (e.x < 15 || e.x > w - 15) e.vx *= -1;
+                    if (e.y < 15 || e.y > h - 15) e.vy *= -1;
+
+                    const mouth = Math.sin(Date.now() / 150) * 0.3 + 0.3;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, 12, mouth, Math.PI * 2 - mouth);
+                    ctx.lineTo(e.x, e.y);
+                    ctx.fillStyle = '#d946ef';
+                    ctx.fill();
+                });
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // ADN: Double helix
+        function animateADN(ctx, w, h) {
+            let phase = 0;
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+                phase += 0.05;
+
+                const colors = ['#ef4444', '#38bdf8', '#22c55e', '#fbbf24'];
+                for (let i = 0; i < 12; i++) {
+                    const t = i / 12 * Math.PI * 2 + phase;
+                    const y = h * 0.15 + i * (h * 0.7 / 12);
+                    const x1 = w / 2 + Math.sin(t) * 25;
+                    const x2 = w / 2 + Math.sin(t + Math.PI) * 25;
+
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.arc(x1, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = colors[i % 4];
+                    ctx.fill();
+                    ctx.beginPath();
+                    ctx.arc(x2, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = colors[(i + 2) % 4];
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Membrana: Phospholipid bilayer
+        function animateMembrana(ctx, w, h) {
+            const lipids = [];
+            for (let i = 0; i < 25; i++) {
+                lipids.push({ x: i * (w / 25) + 5, y: h * 0.35, dir: -1, phase: Math.random() * Math.PI * 2 });
+                lipids.push({ x: i * (w / 25) + 5, y: h * 0.65, dir: 1, phase: Math.random() * Math.PI * 2 });
+            }
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                const time = Date.now() / 1000;
+                lipids.forEach(l => {
+                    const wave = Math.sin(time * 2 + l.phase) * 2;
+                    const y = l.y + wave;
+
+                    ctx.beginPath();
+                    ctx.arc(l.x, y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fill();
+
+                    ctx.strokeStyle = '#64748b';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(l.x, y);
+                    ctx.lineTo(l.x, y + l.dir * 15);
+                    ctx.stroke();
+                });
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Lipidos: Micelle/bilayer self-assembly
+        function animateLipidos(ctx, w, h) {
+            const lipids = [];
+            const numLipids = 16;
+            const cx = w / 2;
+            const cy = h / 2;
+            const radius = Math.min(w, h) * 0.3;
+
+            for (let i = 0; i < numLipids; i++) {
+                const angle = (i / numLipids) * Math.PI * 2;
+                lipids.push({
+                    angle: angle,
+                    phase: Math.random() * Math.PI * 2,
+                    saturated: Math.random() > 0.5
+                });
+            }
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                const time = Date.now() / 1000;
+
+                // Draw micelle circle hint
+                ctx.strokeStyle = '#1e293b';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, radius * 0.6, 0, Math.PI * 2);
+                ctx.stroke();
+
+                lipids.forEach(l => {
+                    const wave = Math.sin(time * 2 + l.phase) * 3;
+                    const r = radius + wave;
+                    const x = cx + Math.cos(l.angle + time * 0.2) * r;
+                    const y = cy + Math.sin(l.angle + time * 0.2) * r;
+                    const tailAngle = l.angle + time * 0.2;
+
+                    // Head
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.shadowColor = '#fbbf24';
+                    ctx.shadowBlur = 6;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+
+                    // Tails pointing inward
+                    const tailLen = 12;
+                    const inX = cx + Math.cos(tailAngle) * (r - 5);
+                    const inY = cy + Math.sin(tailAngle) * (r - 5);
+                    const tailEndX = cx + Math.cos(tailAngle) * (r - 5 - tailLen);
+                    const tailEndY = cy + Math.sin(tailAngle) * (r - 5 - tailLen);
+
+                    ctx.strokeStyle = l.saturated ? '#94a3b8' : '#06b6d4';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(inX, inY);
+                    if (l.saturated) {
+                        ctx.lineTo(tailEndX, tailEndY);
+                    } else {
+                        // Kinked tail
+                        const midX = (inX + tailEndX) / 2 + Math.cos(tailAngle + Math.PI/2) * 4;
+                        const midY = (inY + tailEndY) / 2 + Math.sin(tailAngle + Math.PI/2) * 4;
+                        ctx.quadraticCurveTo(midX, midY, tailEndX, tailEndY);
+                    }
+                    ctx.stroke();
+                });
+
+                // Label
+                ctx.fillStyle = '#64748b';
+                ctx.font = '9px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('Micela', cx, h - 10);
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Glucolisis: Steps flow
+        function animateGlucolisis(ctx, w, h) {
+            let particles = [];
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                if (Math.random() < 0.05) {
+                    particles.push({ x: 10, y: h / 2, color: '#38bdf8' });
+                }
+
+                for (let i = 0; i < 5; i++) {
+                    const x = 20 + i * (w - 40) / 5;
+                    ctx.fillStyle = i < 2 ? '#ef444440' : '#22c55e40';
+                    ctx.fillRect(x, h * 0.3, 15, h * 0.4);
+                }
+
+                particles.forEach(p => {
+                    p.x += 1.5;
+                    p.y += (Math.random() - 0.5) * 2;
+                    if (p.x > w * 0.4) p.color = '#a3e635';
+                    if (p.x > w * 0.8) p.color = '#ef4444';
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color;
+                    ctx.fill();
+                });
+
+                particles = particles.filter(p => p.x < w);
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Krebs: Rotating cycle
+        function animateKrebs(ctx, w, h) {
+            let angle = 0;
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+                angle += 0.02;
+
+                const cx = w / 2;
+                const cy = h / 2;
+                const r = Math.min(w, h) * 0.35;
+
+                ctx.strokeStyle = '#22c55e30';
+                ctx.lineWidth = 8;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                for (let i = 0; i < 8; i++) {
+                    const a = i / 8 * Math.PI * 2 - Math.PI / 2;
+                    const x = cx + Math.cos(a) * r;
+                    const y = cy + Math.sin(a) * r;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fill();
+                }
+
+                const mx = cx + Math.cos(angle) * r;
+                const my = cy + Math.sin(angle) * r;
+                ctx.beginPath();
+                ctx.arc(mx, my, 8, 0, Math.PI * 2);
+                ctx.fillStyle = '#a3e635';
+                ctx.shadowColor = '#a3e635';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Cadena: Electron transport
+        function animateCadena(ctx, w, h) {
+            const electrons = [];
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, h * 0.4, w, h * 0.2);
+
+                const colors = ['#ef4444', '#f97316', '#22c55e', '#38bdf8'];
+                for (let i = 0; i < 4; i++) {
+                    const x = w * (0.15 + i * 0.22);
+                    ctx.fillStyle = colors[i];
+                    ctx.fillRect(x - 8, h * 0.35, 16, h * 0.3);
+                }
+
+                if (Math.random() < 0.03) {
+                    electrons.push({ x: w * 0.1, y: h * 0.5 });
+                }
+
+                electrons.forEach(e => {
+                    e.x += 2;
+                    ctx.beginPath();
+                    ctx.arc(e.x, e.y, 4, 0, Math.PI * 2);
+                    ctx.fillStyle = '#a3e635';
+                    ctx.shadowColor = '#a3e635';
+                    ctx.shadowBlur = 8;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                });
+
+                electrons.splice(0, electrons.filter(e => e.x > w).length);
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Fermentacion: Split pathways
+        function animateFermentacion(ctx, w, h) {
+            let particles = [];
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.strokeStyle = '#334155';
+                ctx.setLineDash([3, 3]);
+                ctx.beginPath();
+                ctx.moveTo(w / 2, 10);
+                ctx.lineTo(w / 2, h - 10);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#ef4444';
+                ctx.font = '8px monospace';
+                ctx.fillText('Láctica', 10, 15);
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('Alcohólica', w / 2 + 10, 15);
+
+                if (Math.random() < 0.04) {
+                    particles.push({ x: w * 0.25, y: 20, type: 'lactic' });
+                    particles.push({ x: w * 0.75, y: 20, type: 'alcoholic' });
+                }
+
+                particles.forEach(p => {
+                    p.y += 1.5;
+                    p.x += (Math.random() - 0.5) * 2;
+
+                    ctx.beginPath();
+                    ctx.arc(p.x, p.y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = p.type === 'lactic' ? '#ef4444' : '#fbbf24';
+                    ctx.fill();
+                });
+
+                particles = particles.filter(p => p.y < h);
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Síntesis: Ribosome with tRNAs
+        function animateSintesis(ctx, w, h) {
+            let tRNAPos = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                tRNAPos += 0.02;
+                if (tRNAPos > 1) tRNAPos = 0;
+
+                // mRNA
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(10, h * 0.6);
+                ctx.lineTo(w - 10, h * 0.6);
+                ctx.stroke();
+
+                // Ribosome
+                ctx.fillStyle = '#a855f7';
+                ctx.beginPath();
+                ctx.ellipse(w / 2, h * 0.5, 30, 20, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // tRNAs
+                const colors = ['#22c55e', '#38bdf8', '#fbbf24'];
+                for (let i = 0; i < 3; i++) {
+                    const x = w * 0.3 + i * 25 + tRNAPos * 25;
+                    ctx.fillStyle = colors[i];
+                    ctx.beginPath();
+                    ctx.moveTo(x, h * 0.4);
+                    ctx.lineTo(x - 8, h * 0.55);
+                    ctx.lineTo(x + 8, h * 0.55);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Plegamiento: Folding protein
+        function animatePlegamiento(ctx, w, h) {
+            let foldProgress = 0;
+            let direction = 1;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                foldProgress += 0.005 * direction;
+                if (foldProgress > 1) direction = -1;
+                if (foldProgress < 0) direction = 1;
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Draw amino acids forming into globule
+                for (let i = 0; i < 15; i++) {
+                    const unfoldedX = 20 + i * (w - 40) / 15;
+                    const unfoldedY = cy;
+
+                    const angle = (i / 15) * Math.PI * 2;
+                    const foldedX = cx + Math.cos(angle) * 25;
+                    const foldedY = cy + Math.sin(angle) * 20;
+
+                    const x = unfoldedX + (foldedX - unfoldedX) * foldProgress;
+                    const y = unfoldedY + (foldedY - unfoldedY) * foldProgress;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = i % 2 === 0 ? '#ef4444' : '#38bdf8';
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Estructura: Protein levels
+        function animateEstructura(ctx, w, h) {
+            let phase = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+                phase += 0.03;
+
+                // Alpha helix
+                ctx.strokeStyle = '#d946ef';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                for (let i = 0; i < 20; i++) {
+                    const x = w * 0.25 + Math.cos(i * 0.5 + phase) * 15;
+                    const y = 10 + i * (h - 20) / 20;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                // Beta sheet
+                for (let i = 0; i < 3; i++) {
+                    ctx.fillStyle = '#22c55e';
+                    ctx.fillRect(w * 0.55 + i * 15, 20, 10, h - 40);
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Desnaturalización: Unfolding
+        function animateDesnaturalizacion(ctx, w, h) {
+            const particles = [];
+            for (let i = 0; i < 20; i++) {
+                particles.push({
+                    x: w / 2, y: h / 2,
+                    tx: w / 2 + (Math.random() - 0.5) * 80,
+                    ty: h / 2 + (Math.random() - 0.5) * 60
+                });
+            }
+
+            let denat = 0;
+            let dir = 1;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                denat += 0.01 * dir;
+                if (denat > 1) dir = -1;
+                if (denat < 0) dir = 1;
+
+                particles.forEach(p => {
+                    const x = w / 2 + (p.tx - w / 2) * denat;
+                    const y = h / 2 + (p.ty - h / 2) * denat;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = denat > 0.5 ? '#ef4444' : '#22c55e';
+                    ctx.fill();
+                });
+
+                // Heat indicator
+                ctx.fillStyle = '#f97316';
+                ctx.fillRect(w - 20, h - h * denat * 0.8, 10, h * denat * 0.8);
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Transcripcion: RNA polymerase
+        function animateTranscripcion(ctx, w, h) {
+            let polPos = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                polPos += 0.01;
+                if (polPos > 1) polPos = 0;
+
+                // DNA
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 4;
+                ctx.beginPath();
+                ctx.moveTo(10, h * 0.4);
+                ctx.lineTo(w - 10, h * 0.4);
+                ctx.stroke();
+
+                ctx.strokeStyle = '#64748b';
+                ctx.beginPath();
+                ctx.moveTo(10, h * 0.6);
+                ctx.lineTo(w - 10, h * 0.6);
+                ctx.stroke();
+
+                // Polymerase
+                const polX = 20 + polPos * (w - 40);
+                ctx.fillStyle = '#d946ef';
+                ctx.beginPath();
+                ctx.arc(polX, h * 0.5, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // mRNA
+                if (polPos > 0.1) {
+                    ctx.strokeStyle = '#f97316';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(polX - 10, h * 0.5);
+                    for (let i = 0; i < polPos * 10; i++) {
+                        ctx.lineTo(polX - 10 - i * 8, h * 0.3 - Math.sin(i) * 5);
+                    }
+                    ctx.stroke();
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Traduccion: Ribosome translation
+        function animateTraduccion(ctx, w, h) {
+            let progress = 0;
+            const aminos = ['#ef4444', '#fbbf24', '#22c55e', '#38bdf8', '#a855f7'];
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                progress += 0.008;
+                if (progress > 1) progress = 0;
+
+                // mRNA
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(10, h * 0.7);
+                ctx.lineTo(w - 10, h * 0.7);
+                ctx.stroke();
+
+                // Ribosome
+                const ribX = 30 + progress * (w - 60);
+                ctx.fillStyle = '#a855f7';
+                ctx.beginPath();
+                ctx.ellipse(ribX, h * 0.6, 20, 15, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Protein chain
+                const chainLen = Math.floor(progress * 5);
+                for (let i = 0; i < chainLen; i++) {
+                    ctx.beginPath();
+                    ctx.arc(ribX - 15 - i * 12, h * 0.4, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = aminos[i % aminos.length];
+                    ctx.fill();
+                }
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Mutaciones: DNA with mutation
+        function animateMutaciones(ctx, w, h) {
+            let blink = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                blink += 0.05;
+                const colors = ['#22c55e', '#38bdf8', '#fbbf24', '#ef4444'];
+
+                // DNA sequence
+                for (let i = 0; i < 10; i++) {
+                    const x = 15 + i * (w - 30) / 10;
+
+                    ctx.beginPath();
+                    ctx.arc(x, h * 0.4, 8, 0, Math.PI * 2);
+
+                    // Mutation at position 5
+                    if (i === 5) {
+                        ctx.fillStyle = Math.sin(blink) > 0 ? '#f43f5e' : colors[i % 4];
+                        ctx.shadowColor = '#f43f5e';
+                        ctx.shadowBlur = 10;
+                    } else {
+                        ctx.fillStyle = colors[i % 4];
+                        ctx.shadowBlur = 0;
+                    }
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Mutation marker
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('⚠', 15 + 5 * (w - 30) / 10, h * 0.7);
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+
+        // Regulacion: Lac operon
+        function animateRegulacion(ctx, w, h) {
+            let state = 0;
+
+            function draw() {
+                ctx.fillStyle = '#020617';
+                ctx.fillRect(0, 0, w, h);
+
+                state += 0.02;
+                const active = Math.sin(state) > 0;
+
+                // DNA
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(10, h * 0.5 - 10, w - 20, 20);
+
+                // Promoter
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillRect(30, h * 0.5 - 10, 30, 20);
+
+                // Operator
+                ctx.fillStyle = '#8b5cf6';
+                ctx.fillRect(65, h * 0.5 - 10, 25, 20);
+
+                // Genes
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(95, h * 0.5 - 10, w - 115, 20);
+
+                // Repressor
+                if (!active) {
+                    ctx.fillStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.arc(77, h * 0.5 - 25, 12, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Status
+                ctx.fillStyle = active ? '#22c55e' : '#ef4444';
+                ctx.font = '9px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(active ? 'ON' : 'OFF', w / 2, h * 0.85);
+
+                requestAnimationFrame(draw);
+            }
+            draw();
+        }
+    </script>
+</body>
+</html>

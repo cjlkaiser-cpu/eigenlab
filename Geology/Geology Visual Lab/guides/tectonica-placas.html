@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tectonica de Placas — Guia · Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #d97706;
+            --color-divergent: #22c55e;
+            --color-convergent: #ef4444;
+            --color-transform: #3b82f6;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(217, 119, 6, 0.1); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        code { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--accent); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(217, 119, 6, 0.05); }
+        .section { margin-top: 1.5rem; }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        /* Experiments */
+        .experiment { border-left: 3px solid var(--accent); }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--bg-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+        .experiment-title { font-weight: 600; color: var(--text-primary); }
+        .hypothesis { background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 0.375rem; padding: 0.75rem; margin: 0.75rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem; }
+
+        /* Connections */
+        .connection { display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); }
+        .connection:hover { border-color: var(--accent); }
+        .connection-icon { width: 36px; height: 36px; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .connection-content { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+        .connection-link { font-size: 0.7rem; color: var(--accent); margin-top: 0.25rem; display: inline-block; }
+
+        /* Reflections */
+        .reflection { background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), transparent); border: 1px solid rgba(217, 119, 6, 0.2); }
+        .reflection h2 { color: var(--accent); }
+        .reflection li { color: var(--text-secondary); }
+        .reflection li::marker { color: var(--accent); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); }
+        .guide-nav a:hover { border-color: var(--accent); color: var(--text-primary); text-decoration: none; }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Geology Visual Lab</a>
+                    <span> / </span>
+                    <span>Tectonica de Placas</span>
+                </nav>
+                <h1>Tectonica de Placas — Guia</h1>
+                <div class="subtitle">La Tierra como un rompecabezas en movimiento perpetuo</div>
+            </div>
+            <div class="header-actions">
+                <a href="../tectonica-placas.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">El concepto</div>
+                <p class="lead">
+                    La superficie de la Tierra no es solida e inmovil. Esta dividida en
+                    <span class="em">placas tectonicas</span> que flotan sobre el manto viscoso
+                    y se mueven centimetros por año — la velocidad a la que crecen tus uñas.
+                </p>
+                <div class="chips">
+                    <span class="chip">Borde divergente</span>
+                    <span class="chip">Borde convergente</span>
+                    <span class="chip">Borde transformante</span>
+                    <span class="chip">Deriva continental</span>
+                    <span class="chip">Pangea</span>
+                </div>
+                <div class="two" style="margin-top: 1rem;">
+                    <div>
+                        <h2>El motor</h2>
+                        <p>
+                            El calor interno de la Tierra crea corrientes de conveccion en el manto.
+                            Material caliente sube, se enfria, y baja. Estas corrientes arrastran
+                            las placas como una cinta transportadora geologica.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>La evidencia</h2>
+                        <p>
+                            Fosiles identicos en continentes separados por oceanos. Rocas magneticas
+                            que registran inversiones del campo. GPS moderno que mide movimientos
+                            de milimetros/año. La teoria esta confirmada.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Tipos de bordes</div>
+                <div class="legend" style="flex-direction: column; gap: 0.75rem; margin-top: 0.5rem;">
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-divergent)"></span>
+                        <div><strong>Divergente</strong> — Placas se separan<br><span style="font-size: 0.7rem;">Dorsales oceanicas, rifts</span></div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-convergent)"></span>
+                        <div><strong>Convergente</strong> — Placas colisionan<br><span style="font-size: 0.7rem;">Subduccion, montañas</span></div>
+                    </div>
+                    <div class="legend-item">
+                        <span class="swatch" style="background: var(--color-transform)"></span>
+                        <div><strong>Transformante</strong> — Placas se deslizan<br><span style="font-size: 0.7rem;">Fallas, terremotos</span></div>
+                    </div>
+                </div>
+                <div class="callout" style="margin-top: 1rem;">
+                    <p style="margin: 0;"><strong>Wegener (1912):</strong> Propuso la deriva continental pero murio sin poder explicar el mecanismo. La tectonica de placas (1960s) le dio la razon.</p>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Boundary Types -->
+        <section class="three section">
+            <div class="card" style="border-top: 3px solid var(--color-divergent);">
+                <h2 style="color: var(--color-divergent);">Bordes Divergentes</h2>
+                <p>
+                    Las placas se alejan. Magma asciende del manto y se solidifica,
+                    creando nueva corteza oceanica. El Atlantico crece 2.5 cm/año.
+                </p>
+                <ul>
+                    <li>Dorsales medio-oceanicas (70,000 km de largo)</li>
+                    <li>Rifts continentales (Africa Oriental)</li>
+                    <li>Vulcanismo basaltico efusivo</li>
+                    <li>Terremotos someros y de baja magnitud</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-convergent);">
+                <h2 style="color: var(--color-convergent);">Bordes Convergentes</h2>
+                <p>
+                    Las placas chocan. La mas densa se hunde (subduce) bajo la otra.
+                    Genera los terremotos mas grandes y volcanes mas explosivos.
+                </p>
+                <ul>
+                    <li>Fosas oceanicas (hasta 11 km de profundidad)</li>
+                    <li>Arcos volcanicos (Andes, Japon)</li>
+                    <li>Montañas por colision (Himalaya)</li>
+                    <li>Terremotos megathrust (M9+)</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-transform);">
+                <h2 style="color: var(--color-transform);">Bordes Transformantes</h2>
+                <p>
+                    Las placas se deslizan lateralmente. No se crea ni destruye corteza,
+                    pero la friccion acumula tension que se libera en terremotos.
+                </p>
+                <ul>
+                    <li>Fallas de desgarre</li>
+                    <li>Terremotos superficiales, fuertes</li>
+                    <li>Sin vulcanismo asociado</li>
+                    <li>Ejemplo: San Andres, Anatolia</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">1</span>
+                        <span class="experiment-title">Reconstruir Pangea</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Hace 250 millones de años, todos los continentes formaban una sola masa"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Activa "Deriva Continental"</li>
+                        <li>Retrocede a 250 Ma (Permico)</li>
+                        <li>Observa Pangea: un supercontinente</li>
+                        <li>Avanza y ve la ruptura</li>
+                        <li>Nota: Americas se alejan de Eurasia</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Verifica:</strong> ¿Como encajan Africa y Sudamerica?
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">2</span>
+                        <span class="experiment-title">Velocidades de placas</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Las placas oceanicas se mueven mas rapido que las continentales"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Activa vectores de velocidad</li>
+                        <li>Compara: Pacifico vs Euroasiatica</li>
+                        <li>Pacifico: ~10 cm/año. Eurasia: ~2 cm/año</li>
+                        <li>Relaciona con densidad y espesor</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Conecta:</strong> Placas densas "tiran" al subducir.
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">3</span>
+                        <span class="experiment-title">Puntos calientes</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "Los puntos calientes son fijos y las placas pasan sobre ellos"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Localiza Hawaii en la placa del Pacifico</li>
+                        <li>Observa la cadena de islas al noroeste</li>
+                        <li>Islas mas viejas estan mas lejos</li>
+                        <li>El punto caliente es el "sello" bajo la placa</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Calcula:</strong> Distancia / edad = velocidad.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Conexiones interdisciplinarias</div>
+            <div class="two">
+                <a href="terremotos.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(217, 119, 6, 0.15); color: #d97706;">🌋</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Ondas Sismicas</div>
+                        <div class="connection-desc">
+                            El 90% de los terremotos ocurren en bordes de placa. Los bordes convergentes
+                            producen los megaterremotos (M9+). La tectonica explica la sismicidad global.
+                        </div>
+                        <span class="connection-link">Ver simulacion →</span>
+                    </div>
+                </a>
+
+                <a href="volcanes.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(217, 119, 6, 0.15); color: #d97706;">🔥</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Volcanes</div>
+                        <div class="connection-desc">
+                            Los volcanes marcan los bordes de placa. Subduccion → estratovolcanes explosivos.
+                            Dorsales → vulcanismo basaltico. Puntos calientes → escudos oceanicos.
+                        </div>
+                        <span class="connection-link">Ver simulacion →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Physics/Physics Visual Lab/conveccion.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">♨️</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Conveccion Termica</div>
+                        <div class="connection-desc">
+                            El manto terrestre convecta como agua hirviendo (pero mucho mas lento).
+                            Las celulas de conveccion arrastran las placas. Mismo principio, diferente escala.
+                        </div>
+                        <span class="connection-link">Physics Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Biology/Biology Visual Lab/evolucion.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(16, 185, 129, 0.15); color: #10b981;">🧬</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Evolucion y Especiacion</div>
+                        <div class="connection-desc">
+                            Cuando los continentes se separan, las poblaciones quedan aisladas.
+                            Esto explica por que hay marsupiales en Australia y no en Asia:
+                            la separacion ocurrio antes que los placentarios dominaran.
+                        </div>
+                        <span class="connection-link">Biology Visual Lab →</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Key Insight -->
+        <section class="card callout-accent section">
+            <div class="kicker">Insight fundamental</div>
+            <h2 style="margin-top: 0.5rem;">La Tierra recicla su superficie</h2>
+            <p>
+                En las dorsales se crea corteza nueva. En las zonas de subduccion se destruye.
+                El oceano Atlantico no existia hace 200 Ma; el Pacifico se esta cerrando.
+                Dentro de 250 Ma, habra otro supercontinente (Pangea Proxima).
+            </p>
+            <p>
+                La corteza oceanica mas antigua tiene solo 200 Ma. La continental puede tener
+                4,000 Ma. ¿Por que? La corteza oceanica es densa y subduce; la continental
+                flota y se acumula. Los continentes son los "sobrevivientes" geologicos.
+            </p>
+        </section>
+
+        <!-- Limitations -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2 style="margin-top: 0.5rem;">Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <p><strong>En la simulacion:</strong></p>
+                    <ul>
+                        <li>Placas rigidas con bordes definidos</li>
+                        <li>Movimiento uniforme por placa</li>
+                        <li>Reconstrucciones en pasos discretos</li>
+                        <li>Bordes como lineas simples</li>
+                    </ul>
+                </div>
+                <div>
+                    <p><strong>En la realidad:</strong></p>
+                    <ul>
+                        <li>Placas deformables con microplacas</li>
+                        <li>Rotacion alrededor de polos de Euler</li>
+                        <li>Movimiento continuo, no discreto</li>
+                        <li>Bordes difusos y complejos</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reflection Questions -->
+        <section class="card reflection section">
+            <h2>Preguntas para reflexionar</h2>
+            <ol style="margin-top: 0.75rem;">
+                <li>Si las placas se mueven cm/año, ¿por que los terremotos son repentinos y no graduales?</li>
+                <li>¿Por que no hay volcanes en los bordes transformantes como San Andres?</li>
+                <li>Si el Atlantico crece y el Pacifico se cierra, ¿que pasara con America en 100 Ma?</li>
+                <li>¿Como podriamos saber la posicion de los continentes hace 500 Ma si no habia humanos?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="volcanes.html">← Volcanes</a>
+            <a href="ciclo-rocas.html">Ciclo de Rocas →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Geology Visual Lab — Tectonica de Placas
+    </footer>
+</body>
+</html>

@@ -1,0 +1,927 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meiosis - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f43f5e;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(251, 113, 133, 0.05));
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+        }
+
+        .phase-btn {
+            transition: all 0.2s;
+        }
+        .phase-btn.active {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: rgba(244, 63, 94, 0.5);
+        }
+
+        .timeline-marker {
+            transition: all 0.3s;
+        }
+        .timeline-marker.active {
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+        }
+
+        .chromosome-maternal { color: #f472b6; }
+        .chromosome-paternal { color: #60a5fa; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Meiosis</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-rose-400 font-medium glow-text">Meiosis</span>
+                            <span class="text-gray-600 text-sm ml-2">División Gamética</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Fase:</span>
+                        <span id="phase-display" class="text-rose-400 mono font-medium">Profase I</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Cromosomas:</span>
+                        <span id="chromo-display" class="text-rose-400 mono">2n = 4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main cell visualization -->
+            <div class="flex-1 relative">
+                <canvas id="cell-canvas" class="w-full h-full"></canvas>
+
+                <!-- Division indicator -->
+                <div class="absolute top-4 left-1/2 transform -translate-x-1/2 bg-gray-950/90 border border-gray-800 rounded-full px-4 py-2">
+                    <div class="flex items-center gap-4 text-sm">
+                        <span id="division-1" class="text-rose-400 font-medium">Meiosis I</span>
+                        <span class="text-gray-600">→</span>
+                        <span id="division-2" class="text-gray-500">Meiosis II</span>
+                    </div>
+                </div>
+
+                <!-- Structure labels -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Cromosomas</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-pink-400"></span>
+                            <span class="chromosome-maternal">Materno</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-blue-400"></span>
+                            <span class="chromosome-paternal">Paterno</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-400"></span>
+                            <span class="text-amber-400">Quiasma</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Crossing over indicator -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Eventos</div>
+                    <div id="event-display" class="text-amber-400 font-medium text-sm">—</div>
+                </div>
+            </div>
+
+            <!-- Phase description -->
+            <div class="h-32 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex gap-6">
+                    <div class="flex-1">
+                        <h3 id="phase-title" class="text-lg font-medium text-rose-400 mb-2">Profase I</h3>
+                        <p id="phase-desc" class="text-sm text-gray-400">Los cromosomas homólogos se aparean formando bivalentes. Ocurre el crossing-over, intercambiando material genético entre cromátidas no hermanas.</p>
+                    </div>
+                    <div class="w-48 text-xs mono text-gray-500">
+                        <div class="mb-1">Eventos clave:</div>
+                        <ul id="phase-events" class="list-disc list-inside space-y-1">
+                            <li>Sinapsis de homólogos</li>
+                            <li>Crossing-over</li>
+                            <li>Formación de quiasmas</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La <span class="text-emerald-400">meiosis</span> produce 4 gametos haploides (2n → n). El <span class="text-emerald-400">crossing-over</span> en profase I genera variabilidad genetica.
+                </p>
+                <a href="guides/meiosis.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: meiosis I/II, recombinacion
+                </a>
+            </div>
+
+            <!-- Phase Selection - Meiosis I -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Meiosis I (Reducional)
+                </h3>
+
+                <div class="space-y-2">
+                    <button onclick="goToPhase(0)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="0">
+                        <span class="text-gray-400">1.</span> Profase I
+                    </button>
+                    <button onclick="goToPhase(1)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="1">
+                        <span class="text-gray-400">2.</span> Metafase I
+                    </button>
+                    <button onclick="goToPhase(2)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="2">
+                        <span class="text-gray-400">3.</span> Anafase I
+                    </button>
+                    <button onclick="goToPhase(3)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="3">
+                        <span class="text-gray-400">4.</span> Telofase I
+                    </button>
+                </div>
+            </div>
+
+            <!-- Meiosis II -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    Meiosis II (Ecuacional)
+                </h3>
+
+                <div class="space-y-2">
+                    <button onclick="goToPhase(4)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="4">
+                        <span class="text-gray-400">5.</span> Profase II
+                    </button>
+                    <button onclick="goToPhase(5)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="5">
+                        <span class="text-gray-400">6.</span> Metafase II
+                    </button>
+                    <button onclick="goToPhase(6)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="6">
+                        <span class="text-gray-400">7.</span> Anafase II
+                    </button>
+                    <button onclick="goToPhase(7)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="7">
+                        <span class="text-gray-400">8.</span> Telofase II
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-emerald-400 mono">1.0</span>x
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2 mb-3">
+                    <button id="play-btn" class="flex-1 py-2 px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-lg text-sm transition">
+                        <span id="play-text">▶ Play</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="prev-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        ← Anterior
+                    </button>
+                    <button id="next-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization Options -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-crossing" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Mostrar crossing-over</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-labels" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Etiquetas</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="track-chromosome"
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Seguir cromosoma</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-rose-400 mb-3">Meiosis vs Mitosis</h3>
+                <div class="text-xs space-y-2 text-gray-400">
+                    <div>Meiosis produce <span class="text-rose-400">4 células haploides</span> genéticamente distintas.</div>
+                    <div class="mt-2 mono">2n → n + n + n + n</div>
+                    <div class="text-gray-500 mt-2">Genera variabilidad por:</div>
+                    <ul class="list-disc list-inside text-gray-500 text-xs">
+                        <li>Crossing-over</li>
+                        <li>Segregación independiente</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Chromosome count -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Contenido Genético</h3>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div class="text-center p-3 bg-gray-950 rounded-lg">
+                        <div class="text-gray-500 mb-1">Cromosomas</div>
+                        <div id="n-display" class="text-xl font-medium text-rose-400">2n = 4</div>
+                    </div>
+                    <div class="text-center p-3 bg-gray-950 rounded-lg">
+                        <div class="text-gray-500 mb-1">ADN</div>
+                        <div id="dna-display" class="text-xl font-medium text-amber-400">4C</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('cell-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Colors
+        const colorMaternal = '#f472b6';
+        const colorPaternal = '#60a5fa';
+        const colorChiasma = '#fbbf24';
+
+        // Phase data
+        const phases = [
+            {
+                name: 'Profase I',
+                division: 1,
+                title: 'Profase I',
+                desc: 'Los cromosomas homólogos se aparean (sinapsis) formando bivalentes. Ocurre el crossing-over, intercambiando segmentos entre cromátidas no hermanas.',
+                events: ['Sinapsis de homólogos', 'Crossing-over', 'Formación de quiasmas'],
+                chromosomes: '2n = 4',
+                dna: '4C',
+                event: 'Crossing-over'
+            },
+            {
+                name: 'Metafase I',
+                division: 1,
+                title: 'Metafase I',
+                desc: 'Los bivalentes se alinean en la placa metafásica. La orientación de cada par es aleatoria (segregación independiente).',
+                events: ['Alineación de bivalentes', 'Orientación aleatoria', 'Tensión del huso'],
+                chromosomes: '2n = 4',
+                dna: '4C',
+                event: 'Segregación independiente'
+            },
+            {
+                name: 'Anafase I',
+                division: 1,
+                title: 'Anafase I',
+                desc: 'Los cromosomas homólogos se separan hacia polos opuestos. Las cromátidas hermanas permanecen unidas. Se reduce el número de cromosomas a la mitad.',
+                events: ['Separación de homólogos', 'Reducción cromosómica', 'Cromátidas unidas'],
+                chromosomes: '2n → n',
+                dna: '4C → 2C',
+                event: 'División reducional'
+            },
+            {
+                name: 'Telofase I',
+                division: 1,
+                title: 'Telofase I',
+                desc: 'Los cromosomas llegan a los polos. Se forman dos células haploides, cada una con cromosomas de dos cromátidas.',
+                events: ['Formación de núcleos', 'Citocinesis I', 'Células haploides'],
+                chromosomes: 'n + n',
+                dna: '2C + 2C',
+                event: '2 células haploides'
+            },
+            {
+                name: 'Profase II',
+                division: 2,
+                title: 'Profase II',
+                desc: 'Las células haploides se preparan para la segunda división. No hay replicación del ADN. Los cromosomas se condensan nuevamente.',
+                events: ['Sin replicación', 'Condensación', 'Formación del huso'],
+                chromosomes: 'n',
+                dna: '2C',
+                event: '—'
+            },
+            {
+                name: 'Metafase II',
+                division: 2,
+                title: 'Metafase II',
+                desc: 'Los cromosomas se alinean en la placa metafásica de cada célula. Cada cromosoma tiene dos cromátidas unidas por el centrómero.',
+                events: ['Alineación individual', 'Unión al huso', 'Similar a mitosis'],
+                chromosomes: 'n',
+                dna: '2C',
+                event: '—'
+            },
+            {
+                name: 'Anafase II',
+                division: 2,
+                title: 'Anafase II',
+                desc: 'Las cromátidas hermanas finalmente se separan hacia polos opuestos. Cada cromátida ahora es un cromosoma independiente.',
+                events: ['Separación de cromátidas', 'Movimiento a polos', 'Igual que mitosis'],
+                chromosomes: 'n → n',
+                dna: '2C → C',
+                event: 'División ecuacional'
+            },
+            {
+                name: 'Telofase II',
+                division: 2,
+                title: 'Telofase II',
+                desc: 'Se forman cuatro células haploides genéticamente distintas. Cada gameto tiene una combinación única de alelos debido al crossing-over y la segregación.',
+                events: ['4 células haploides', 'Variabilidad genética', 'Gametos formados'],
+                chromosomes: 'n + n + n + n',
+                dna: 'C + C + C + C',
+                event: '4 gametos'
+            }
+        ];
+
+        // State
+        let currentPhase = 0;
+        let phaseProgress = 0;
+        let playing = false;
+        let speed = 1;
+
+        // Visualization options
+        let showCrossing = true;
+        let showLabels = true;
+        let trackChromosome = false;
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            updatePhaseUI();
+            requestAnimationFrame(animate);
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function goToPhase(phase) {
+            currentPhase = phase;
+            phaseProgress = 0;
+            updatePhaseUI();
+        }
+
+        function nextPhase() {
+            if (currentPhase < phases.length - 1) {
+                currentPhase++;
+                phaseProgress = 0;
+                updatePhaseUI();
+            }
+        }
+
+        function prevPhase() {
+            if (currentPhase > 0) {
+                currentPhase--;
+                phaseProgress = 0;
+                updatePhaseUI();
+            }
+        }
+
+        function updatePhaseUI() {
+            const phase = phases[currentPhase];
+
+            document.getElementById('phase-display').textContent = phase.name;
+            document.getElementById('phase-title').textContent = phase.title;
+            document.getElementById('phase-desc').textContent = phase.desc;
+            document.getElementById('chromo-display').textContent = phase.chromosomes;
+            document.getElementById('n-display').textContent = phase.chromosomes;
+            document.getElementById('dna-display').textContent = phase.dna;
+            document.getElementById('event-display').textContent = phase.event;
+
+            const eventsList = document.getElementById('phase-events');
+            eventsList.innerHTML = phase.events.map(e => `<li>${e}</li>`).join('');
+
+            // Update division indicator
+            document.getElementById('division-1').className = phase.division === 1 ? 'text-rose-400 font-medium' : 'text-gray-500';
+            document.getElementById('division-2').className = phase.division === 2 ? 'text-violet-400 font-medium' : 'text-gray-500';
+
+            // Update buttons
+            document.querySelectorAll('.phase-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === currentPhase);
+            });
+        }
+
+        // Drawing
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            switch (currentPhase) {
+                case 0: drawProphaseI(cx, cy); break;
+                case 1: drawMetaphaseI(cx, cy); break;
+                case 2: drawAnaphaseI(cx, cy); break;
+                case 3: drawTelophaseI(cx, cy); break;
+                case 4: drawProphaseII(cx, cy); break;
+                case 5: drawMetaphaseII(cx, cy); break;
+                case 6: drawAnaphaseII(cx, cy); break;
+                case 7: drawTelophaseII(cx, cy); break;
+            }
+        }
+
+        function drawProphaseI(cx, cy) {
+            const cellRadius = 130;
+            drawCell(cx, cy, cellRadius);
+
+            // Draw two bivalents (pairs of homologous chromosomes)
+            const bivalentY = [-40, 40];
+
+            bivalentY.forEach((yOff, i) => {
+                const synapsis = Math.min(phaseProgress * 2, 1);
+                const gap = 20 * (1 - synapsis);
+
+                // Maternal homolog (left/top)
+                drawChromosomeWithChromatids(cx - gap, cy + yOff, colorMaternal, 0.3);
+
+                // Paternal homolog (right/bottom)
+                drawChromosomeWithChromatids(cx + gap, cy + yOff, colorPaternal, -0.3);
+
+                // Chiasma (crossing-over point)
+                if (showCrossing && synapsis > 0.5) {
+                    const chiasmaProg = (synapsis - 0.5) * 2;
+                    ctx.fillStyle = colorChiasma;
+                    ctx.globalAlpha = chiasmaProg;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy + yOff, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.globalAlpha = 1;
+
+                    // Show exchanged segments
+                    if (chiasmaProg > 0.5) {
+                        ctx.strokeStyle = colorMaternal;
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.moveTo(cx + 3, cy + yOff - 15);
+                        ctx.lineTo(cx + 3, cy + yOff + 15);
+                        ctx.stroke();
+
+                        ctx.strokeStyle = colorPaternal;
+                        ctx.beginPath();
+                        ctx.moveTo(cx - 3, cy + yOff - 15);
+                        ctx.lineTo(cx - 3, cy + yOff + 15);
+                        ctx.stroke();
+                    }
+                }
+            });
+
+            if (showLabels) {
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px Inter';
+                ctx.fillText('Bivalente', cx + 50, cy - 30);
+                if (phaseProgress > 0.5) {
+                    ctx.fillStyle = colorChiasma;
+                    ctx.fillText('Quiasma', cx + 50, cy);
+                }
+            }
+        }
+
+        function drawMetaphaseI(cx, cy) {
+            const cellRadius = 130;
+            drawCell(cx, cy, cellRadius);
+            drawSpindle(cx, cy);
+
+            // Bivalents aligned at metaphase plate
+            const bivalentY = [-35, 35];
+
+            bivalentY.forEach((yOff, i) => {
+                // Random orientation for each bivalent
+                const flipped = i % 2 === 0;
+
+                // Maternal
+                drawChromosomeWithChromatids(cx - 8, cy + yOff, flipped ? colorMaternal : colorPaternal, 0.2);
+                // Paternal
+                drawChromosomeWithChromatids(cx + 8, cy + yOff, flipped ? colorPaternal : colorMaternal, -0.2);
+
+                // Chiasma
+                if (showCrossing) {
+                    ctx.fillStyle = colorChiasma;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy + yOff, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            if (showLabels) {
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px Inter';
+                ctx.fillText('Placa metafásica', cx + 60, cy);
+            }
+        }
+
+        function drawAnaphaseI(cx, cy) {
+            const cellRadius = 130 + phaseProgress * 20;
+            const separation = phaseProgress * 70;
+
+            // Elongated cell
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, cellRadius, 100, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            drawSpindle(cx, cy, separation);
+
+            // Separating homologs
+            const yPositions = [-30, 30];
+
+            yPositions.forEach((yOff, i) => {
+                // Left pole (one homolog from each pair)
+                drawChromosomeWithChromatids(cx - separation, cy + yOff, i === 0 ? colorMaternal : colorPaternal, 0);
+
+                // Right pole (the other homolog)
+                drawChromosomeWithChromatids(cx + separation, cy + yOff, i === 0 ? colorPaternal : colorMaternal, 0);
+            });
+
+            if (showLabels && phaseProgress > 0.5) {
+                ctx.fillStyle = '#f472b6';
+                ctx.font = '10px Inter';
+                ctx.fillText('n', cx - separation, cy + 60);
+                ctx.fillStyle = '#60a5fa';
+                ctx.fillText('n', cx + separation, cy + 60);
+            }
+        }
+
+        function drawTelophaseI(cx, cy) {
+            const separation = 90;
+            const cellRadius = 70;
+
+            // Two cells forming
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx - separation, cy, cellRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(cx + separation, cy, cellRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Cytokinesis furrow
+            if (phaseProgress < 0.8) {
+                ctx.strokeStyle = `rgba(16, 185, 129, ${1 - phaseProgress})`;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - 80);
+                ctx.lineTo(cx, cy + 80);
+                ctx.stroke();
+            }
+
+            // Chromosomes in each cell (still with sister chromatids)
+            [-separation, separation].forEach((xOff, cellIdx) => {
+                const color1 = cellIdx === 0 ? colorMaternal : colorPaternal;
+                const color2 = cellIdx === 0 ? colorPaternal : colorMaternal;
+
+                drawChromosomeWithChromatids(cx + xOff, cy - 20, color1, 0, 0.7);
+                drawChromosomeWithChromatids(cx + xOff, cy + 20, color2, 0, 0.7);
+            });
+
+            if (showLabels) {
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('n = 2', cx - separation, cy + cellRadius + 20);
+                ctx.fillText('n = 2', cx + separation, cy + cellRadius + 20);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        function drawProphaseII(cx, cy) {
+            // Two cells side by side
+            const separation = 120;
+            const cellRadius = 70;
+
+            [-separation, separation].forEach((xOff, cellIdx) => {
+                drawCell(cx + xOff, cy, cellRadius);
+
+                // Chromosomes condensing
+                const color1 = cellIdx === 0 ? colorMaternal : colorPaternal;
+                const color2 = cellIdx === 0 ? colorPaternal : colorMaternal;
+
+                drawChromosomeWithChromatids(cx + xOff, cy - 20, color1, 0, 0.7);
+                drawChromosomeWithChromatids(cx + xOff, cy + 20, color2, 0, 0.7);
+            });
+        }
+
+        function drawMetaphaseII(cx, cy) {
+            const separation = 120;
+            const cellRadius = 70;
+
+            [-separation, separation].forEach((xOff, cellIdx) => {
+                drawCell(cx + xOff, cy, cellRadius);
+                drawSpindle(cx + xOff, cy, 0, 0.5);
+
+                // Chromosomes at metaphase plate
+                const color1 = cellIdx === 0 ? colorMaternal : colorPaternal;
+                const color2 = cellIdx === 0 ? colorPaternal : colorMaternal;
+
+                drawChromosomeWithChromatids(cx + xOff, cy - 15, color1, 0, 0.6);
+                drawChromosomeWithChromatids(cx + xOff, cy + 15, color2, 0, 0.6);
+            });
+        }
+
+        function drawAnaphaseII(cx, cy) {
+            const cellSep = 120;
+            const chromSep = phaseProgress * 35;
+            const cellRadius = 70;
+
+            [-cellSep, cellSep].forEach((xOff, cellIdx) => {
+                // Elongating cells
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff, cy, cellRadius + phaseProgress * 10, cellRadius - phaseProgress * 10, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                const color1 = cellIdx === 0 ? colorMaternal : colorPaternal;
+                const color2 = cellIdx === 0 ? colorPaternal : colorMaternal;
+
+                // Separating chromatids for chromosome 1
+                ctx.fillStyle = color1;
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff - chromSep, cy - 15, 5, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff + chromSep, cy - 15, 5, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Separating chromatids for chromosome 2
+                ctx.fillStyle = color2;
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff - chromSep, cy + 15, 5, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.ellipse(cx + xOff + chromSep, cy + 15, 5, 12, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawTelophaseII(cx, cy) {
+            // Four cells
+            const positions = [
+                { x: cx - 140, y: cy },
+                { x: cx - 50, y: cy },
+                { x: cx + 50, y: cy },
+                { x: cx + 140, y: cy }
+            ];
+
+            const cellRadius = 40 + (1 - phaseProgress) * 10;
+
+            // Colors for each gamete (showing recombination results)
+            const gameteColors = [
+                [colorMaternal, colorPaternal],
+                [colorMaternal, colorMaternal], // recombinant
+                [colorPaternal, colorPaternal], // recombinant
+                [colorPaternal, colorMaternal]
+            ];
+
+            positions.forEach((pos, i) => {
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, cellRadius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Single chromosomes (no sister chromatids)
+                ctx.fillStyle = gameteColors[i][0];
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y - 10, 4, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.fillStyle = gameteColors[i][1];
+                ctx.beginPath();
+                ctx.ellipse(pos.x, pos.y + 10, 4, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (showLabels) {
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.font = '10px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText('n=2', pos.x, pos.y + cellRadius + 15);
+                }
+            });
+
+            ctx.textAlign = 'left';
+
+            if (showLabels && phaseProgress > 0.5) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('4 gametos haploides únicos', cx, cy + 90);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        // Helper functions
+        function drawCell(cx, cy, radius) {
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.05)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.02)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function drawChromosomeWithChromatids(x, y, color, rotation = 0, scale = 1) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(rotation);
+            ctx.scale(scale, scale);
+
+            // Two sister chromatids in X shape
+            ctx.fillStyle = color;
+
+            // Left chromatid
+            ctx.beginPath();
+            ctx.ellipse(-5, 0, 5, 18, -0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Right chromatid
+            ctx.beginPath();
+            ctx.ellipse(5, 0, 5, 18, 0.2, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Centromere
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(0, 0, 4, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        function drawSpindle(cx, cy, separation = 0, scale = 1) {
+            const poleOffset = 90 * scale;
+
+            ctx.strokeStyle = 'rgba(34, 197, 94, 0.4)';
+            ctx.lineWidth = 1;
+
+            // Spindle fibers
+            for (let i = -3; i <= 3; i++) {
+                const yOff = i * 15;
+                ctx.beginPath();
+                ctx.moveTo(cx - poleOffset - separation, cy);
+                ctx.quadraticCurveTo(cx, cy + yOff, cx + poleOffset + separation, cy);
+                ctx.stroke();
+            }
+
+            // Poles
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(cx - poleOffset - separation, cy, 5, 0, Math.PI * 2);
+            ctx.arc(cx + poleOffset + separation, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            if (playing) {
+                phaseProgress += dt * speed * 0.3;
+                if (phaseProgress >= 1) {
+                    phaseProgress = 0;
+                    if (currentPhase < phases.length - 1) {
+                        currentPhase++;
+                        updatePhaseUI();
+                    } else {
+                        playing = false;
+                        document.getElementById('play-text').textContent = '▶ Play';
+                    }
+                }
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            playing = !playing;
+            document.getElementById('play-text').textContent = playing ? '⏸ Pausa' : '▶ Play';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            currentPhase = 0;
+            phaseProgress = 0;
+            playing = false;
+            document.getElementById('play-text').textContent = '▶ Play';
+            updatePhaseUI();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', nextPhase);
+        document.getElementById('prev-btn').addEventListener('click', prevPhase);
+
+        document.getElementById('show-crossing').addEventListener('change', (e) => {
+            showCrossing = e.target.checked;
+        });
+
+        document.getElementById('show-labels').addEventListener('change', (e) => {
+            showLabels = e.target.checked;
+        });
+
+        document.getElementById('track-chromosome').addEventListener('change', (e) => {
+            trackChromosome = e.target.checked;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playing = !playing;
+                document.getElementById('play-text').textContent = playing ? '⏸ Pausa' : '▶ Play';
+            } else if (e.code === 'ArrowRight') {
+                nextPhase();
+            } else if (e.code === 'ArrowLeft') {
+                prevPhase();
+            } else if (e.code === 'KeyR') {
+                currentPhase = 0;
+                phaseProgress = 0;
+                playing = false;
+                document.getElementById('play-text').textContent = '▶ Play';
+                updatePhaseUI();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

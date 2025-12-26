@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nucleosíntesis Estelar - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas { cursor: crosshair; }
+        .glow-text { text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #6366f1;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .element-btn {
+            transition: all 0.2s;
+        }
+        .element-btn:hover {
+            transform: scale(1.05);
+        }
+        .element-btn.active {
+            ring: 2px solid white;
+        }
+        .guide-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 8px;
+            color: #a5b4fc;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        .guide-link:hover {
+            background: rgba(99, 102, 241, 0.2);
+            border-color: #6366f1;
+        }
+        .guide-icon {
+            width: 18px;
+            height: 18px;
+            background: #6366f1;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-indigo-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-indigo-400 font-medium">Nucleosíntesis</span> Estelar
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Masa: <span id="mass-display" class="text-indigo-400">1 M☉</span></span>
+                    <span class="text-gray-500">Etapa: <span id="stage-display" class="text-amber-400">Secuencia Principal</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Click en una capa para ver las reacciones · Rueda para ajustar masa
+            </div>
+            <!-- Legend -->
+            <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs">
+                <div class="text-gray-400 mb-2 font-medium">Capas de Fusión</div>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #fef08a"></div>
+                        <span class="text-gray-500">H → He</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #fde047"></div>
+                        <span class="text-gray-500">He → C, O</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #f97316"></div>
+                        <span class="text-gray-500">C → Ne, Mg</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #ef4444"></div>
+                        <span class="text-gray-500">O → Si, S</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #7f1d1d"></div>
+                        <span class="text-gray-500">Si → Fe</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-indigo-400 glow-text">Forja de Elementos</h2>
+
+            <!-- Info Box -->
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Las <span class="text-indigo-400">estrellas</span> son las fábricas del universo: fusionan hidrógeno en elementos cada vez más pesados. Solo estrellas masivas llegan hasta el hierro.
+                </p>
+                <a href="guides/nucleosintesis.html" class="guide-link mt-3">
+                    <span class="guide-icon">?</span>
+                    Guía: cadenas de fusión, proceso s/r, supernovas
+                </a>
+            </div>
+
+            <!-- Stellar Mass -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Masa Estelar: <span id="mass-value" class="text-indigo-400 mono">1.0</span> M☉
+                </label>
+                <input type="range" id="mass" min="0.5" max="25" step="0.1" value="1" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>Enana Roja</span>
+                    <span>Sol</span>
+                    <span>Supergigante</span>
+                </div>
+            </div>
+
+            <!-- Evolution Stage -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Etapa Evolutiva</label>
+                <select id="stage" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-indigo-500 focus:outline-none">
+                    <option value="main">Secuencia Principal</option>
+                    <option value="giant">Gigante Roja</option>
+                    <option value="supergiant">Supergigante</option>
+                    <option value="presupernova">Pre-Supernova</option>
+                    <option value="supernova">Supernova</option>
+                </select>
+            </div>
+
+            <!-- Animation Controls -->
+            <div class="mb-6 flex gap-2">
+                <button id="play-btn" class="flex-1 py-2 px-4 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-lg text-sm transition">
+                    ▶ Evolucionar
+                </button>
+                <button id="reset-btn" class="py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-400 rounded-lg text-sm transition">
+                    ↺
+                </button>
+            </div>
+
+            <!-- Process Selection -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Proceso de Fusión</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="showProcess('pp')" id="btn-pp" class="px-3 py-2 bg-yellow-500/20 text-yellow-400 rounded-lg text-xs transition hover:bg-yellow-500/30 border border-yellow-500/30">
+                        Cadena p-p
+                    </button>
+                    <button onclick="showProcess('cno')" id="btn-cno" class="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs transition hover:bg-gray-700">
+                        Ciclo CNO
+                    </button>
+                    <button onclick="showProcess('triple-alpha')" id="btn-triple-alpha" class="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs transition hover:bg-gray-700">
+                        Triple-α
+                    </button>
+                    <button onclick="showProcess('s-process')" id="btn-s-process" class="px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs transition hover:bg-gray-700">
+                        Proceso s
+                    </button>
+                </div>
+            </div>
+
+            <!-- Periodic Table Mini -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Elementos Sintetizados</label>
+                <div id="elements-grid" class="grid grid-cols-9 gap-1 text-xs mono">
+                    <!-- Will be populated by JS -->
+                </div>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-indigo-400 mb-3">Reacciones Nucleares</h3>
+                <div id="reaction-display" class="mono text-xs space-y-2 mb-3">
+                    <div class="text-amber-300">
+                        4¹H → ⁴He + 2e⁺ + 2νₑ + γ
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        ΔE = 26.7 MeV
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La <span class="text-pink-400">energía de enlace</span> por nucleón alcanza su máximo en el Fe-56. Por eso la fusión solo libera energía hasta el hierro.
+                </p>
+            </div>
+
+            <!-- Current Layer Info -->
+            <div id="layer-info" class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Núcleo Estelar</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Temperatura</div>
+                        <div id="info-temp" class="text-amber-400">15 MK</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Densidad</div>
+                        <div id="info-density" class="text-cyan-400">150 g/cm³</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Combustible</div>
+                        <div id="info-fuel" class="text-yellow-400">H → He</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Energía</div>
+                        <div id="info-energy" class="text-pink-400">26.7 MeV</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let stellarMass = 1.0;
+        let evolutionStage = 'main';
+        let selectedProcess = 'pp';
+        let isEvolving = false;
+        let evolutionTime = 0;
+        let selectedLayer = 0;
+        let particles = [];
+
+        // Elements data
+        const elements = [
+            { symbol: 'H', Z: 1, color: '#fef9c3', origin: 'bb' },
+            { symbol: 'He', Z: 2, color: '#fef08a', origin: 'bb' },
+            { symbol: 'Li', Z: 3, color: '#fde68a', origin: 'cosmic' },
+            { symbol: 'Be', Z: 4, color: '#fcd34d', origin: 'cosmic' },
+            { symbol: 'B', Z: 5, color: '#fbbf24', origin: 'cosmic' },
+            { symbol: 'C', Z: 6, color: '#f59e0b', origin: 'star' },
+            { symbol: 'N', Z: 7, color: '#d97706', origin: 'star' },
+            { symbol: 'O', Z: 8, color: '#b45309', origin: 'star' },
+            { symbol: 'Ne', Z: 10, color: '#92400e', origin: 'star' },
+            { symbol: 'Mg', Z: 12, color: '#78350f', origin: 'star' },
+            { symbol: 'Si', Z: 14, color: '#f87171', origin: 'star' },
+            { symbol: 'S', Z: 16, color: '#ef4444', origin: 'star' },
+            { symbol: 'Ca', Z: 20, color: '#dc2626', origin: 'star' },
+            { symbol: 'Fe', Z: 26, color: '#b91c1c', origin: 'star' },
+            { symbol: 'Ni', Z: 28, color: '#991b1b', origin: 'star' },
+            { symbol: 'Sr', Z: 38, color: '#7c3aed', origin: 's' },
+            { symbol: 'Ba', Z: 56, color: '#8b5cf6', origin: 's' },
+            { symbol: 'Au', Z: 79, color: '#fbbf24', origin: 'r' },
+            { symbol: 'U', Z: 92, color: '#22c55e', origin: 'r' }
+        ];
+
+        // Fusion layers configuration
+        const fusionLayers = {
+            main: [
+                { fuel: 'H', product: 'He', temp: 15, color: '#fef08a', radius: 0.25 }
+            ],
+            giant: [
+                { fuel: 'He', product: 'C', temp: 100, color: '#fde047', radius: 0.15 },
+                { fuel: 'H', product: 'He', temp: 20, color: '#fef08a', radius: 0.35 }
+            ],
+            supergiant: [
+                { fuel: 'C', product: 'Ne,Mg', temp: 600, color: '#f97316', radius: 0.08 },
+                { fuel: 'He', product: 'C,O', temp: 200, color: '#fde047', radius: 0.15 },
+                { fuel: 'H', product: 'He', temp: 50, color: '#fef08a', radius: 0.30 }
+            ],
+            presupernova: [
+                { fuel: 'Si', product: 'Fe', temp: 3000, color: '#7f1d1d', radius: 0.03 },
+                { fuel: 'O', product: 'Si,S', temp: 2000, color: '#ef4444', radius: 0.06 },
+                { fuel: 'Ne', product: 'O,Mg', temp: 1500, color: '#fb923c', radius: 0.09 },
+                { fuel: 'C', product: 'Ne,Mg', temp: 800, color: '#f97316', radius: 0.12 },
+                { fuel: 'He', product: 'C,O', temp: 300, color: '#fde047', radius: 0.18 },
+                { fuel: 'H', product: 'He', temp: 80, color: '#fef08a', radius: 0.30 }
+            ],
+            supernova: [
+                { fuel: 'Fe core', product: 'collapse!', temp: 10000, color: '#ffffff', radius: 0.5 }
+            ]
+        };
+
+        // Reactions display
+        const reactions = {
+            pp: {
+                equation: '4¹H → ⁴He + 2e⁺ + 2νₑ + γ',
+                energy: '26.7 MeV',
+                description: 'Cadena protón-protón: dominante en estrellas < 1.3 M☉'
+            },
+            cno: {
+                equation: '4¹H → ⁴He + 2e⁺ + 2νₑ + 3γ',
+                energy: '26.7 MeV (catalizador: C,N,O)',
+                description: 'Ciclo CNO: dominante en estrellas > 1.3 M☉'
+            },
+            'triple-alpha': {
+                equation: '3⁴He → ¹²C + γ',
+                energy: '7.27 MeV',
+                description: 'Triple alfa: crea carbono a partir de helio'
+            },
+            's-process': {
+                equation: '(A,Z) + n → (A+1,Z) → β⁻ → (A+1,Z+1)',
+                energy: 'Lenta captura de neutrones',
+                description: 'Proceso s: crea elementos hasta Bi-209 en gigantes AGB'
+            }
+        };
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function createElements() {
+            const grid = document.getElementById('elements-grid');
+            grid.innerHTML = '';
+
+            elements.forEach((el, i) => {
+                const div = document.createElement('div');
+                div.className = 'element-btn p-1 rounded text-center cursor-pointer';
+                div.style.background = el.color + '33';
+                div.style.color = el.color;
+                div.textContent = el.symbol;
+                div.onclick = () => highlightElement(i);
+
+                // Check if element is synthesized at current stage
+                const canSynthesize = canMakeElement(el, stellarMass, evolutionStage);
+                if (!canSynthesize) {
+                    div.style.opacity = '0.3';
+                }
+
+                grid.appendChild(div);
+            });
+        }
+
+        function canMakeElement(element, mass, stage) {
+            if (element.origin === 'bb') return true; // Big Bang elements always present
+            if (element.origin === 'cosmic') return true; // Cosmic ray spallation
+
+            if (element.origin === 'star') {
+                if (element.Z <= 2) return true;
+                if (element.Z <= 8 && mass >= 0.5 && ['giant', 'supergiant', 'presupernova', 'supernova'].includes(stage)) return true;
+                if (element.Z <= 14 && mass >= 8 && ['supergiant', 'presupernova', 'supernova'].includes(stage)) return true;
+                if (element.Z <= 28 && mass >= 10 && ['presupernova', 'supernova'].includes(stage)) return true;
+            }
+
+            if (element.origin === 's' && mass >= 3 && ['giant', 'supergiant'].includes(stage)) return true;
+            if (element.origin === 'r' && stage === 'supernova') return true;
+
+            return false;
+        }
+
+        function highlightElement(index) {
+            const el = elements[index];
+            const origins = {
+                'bb': 'Big Bang (primeros 3 min)',
+                'cosmic': 'Rayos cósmicos (espalación)',
+                'star': 'Fusión estelar',
+                's': 'Proceso s (gigantes AGB)',
+                'r': 'Proceso r (supernovas, fusión NS)'
+            };
+
+            document.getElementById('layer-info').innerHTML = `
+                <h3 class="text-sm font-medium text-gray-300 mb-2">${el.symbol} (Z = ${el.Z})</h3>
+                <div class="text-xs text-gray-400">
+                    <div class="mb-1"><span class="text-gray-500">Origen:</span> ${origins[el.origin]}</div>
+                </div>
+            `;
+        }
+
+        function createParticles() {
+            particles = [];
+            const layers = fusionLayers[evolutionStage];
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const maxRadius = Math.min(centerX, centerY) * 0.7;
+
+            layers.forEach((layer, layerIndex) => {
+                const innerR = layerIndex === 0 ? 0 : layers[layerIndex - 1].radius * maxRadius;
+                const outerR = layer.radius * maxRadius;
+
+                for (let i = 0; i < 30; i++) {
+                    const r = innerR + Math.random() * (outerR - innerR);
+                    const angle = Math.random() * Math.PI * 2;
+                    particles.push({
+                        x: centerX + Math.cos(angle) * r,
+                        y: centerY + Math.sin(angle) * r,
+                        vx: (Math.random() - 0.5) * 2,
+                        vy: (Math.random() - 0.5) * 2,
+                        layer: layerIndex,
+                        size: 2 + Math.random() * 3,
+                        alpha: 0.5 + Math.random() * 0.5
+                    });
+                }
+            });
+        }
+
+        function updateParticles() {
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const maxRadius = Math.min(centerX, centerY) * 0.7;
+            const layers = fusionLayers[evolutionStage];
+
+            particles.forEach(p => {
+                // Move
+                p.x += p.vx;
+                p.y += p.vy;
+
+                // Contain within layer
+                const dx = p.x - centerX;
+                const dy = p.y - centerY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                const innerR = p.layer === 0 ? 0 : layers[p.layer - 1].radius * maxRadius;
+                const outerR = layers[p.layer].radius * maxRadius;
+
+                if (dist > outerR || dist < innerR) {
+                    // Bounce back
+                    const angle = Math.atan2(dy, dx);
+                    p.vx = -p.vx + (Math.random() - 0.5);
+                    p.vy = -p.vy + (Math.random() - 0.5);
+                }
+
+                // Random motion
+                p.vx += (Math.random() - 0.5) * 0.3;
+                p.vy += (Math.random() - 0.5) * 0.3;
+
+                // Damping
+                p.vx *= 0.98;
+                p.vy *= 0.98;
+            });
+        }
+
+        function drawStar() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const maxRadius = Math.min(centerX, centerY) * 0.7;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Background glow
+            const bgGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius * 1.5);
+            bgGradient.addColorStop(0, 'rgba(99, 102, 241, 0.1)');
+            bgGradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, w, h);
+
+            const layers = fusionLayers[evolutionStage];
+
+            // Draw layers from outside in
+            for (let i = layers.length - 1; i >= 0; i--) {
+                const layer = layers[i];
+                const radius = layer.radius * maxRadius;
+                const prevRadius = i > 0 ? layers[i - 1].radius * maxRadius : 0;
+
+                // Layer gradient
+                const gradient = ctx.createRadialGradient(centerX, centerY, prevRadius, centerX, centerY, radius);
+                gradient.addColorStop(0, layer.color);
+                gradient.addColorStop(1, layer.color + '88');
+
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Outer glow for active layer
+                if (i === selectedLayer) {
+                    ctx.strokeStyle = '#ffffff44';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                }
+            }
+
+            // Draw core
+            const coreGradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, maxRadius * 0.05);
+            coreGradient.addColorStop(0, '#ffffff');
+            coreGradient.addColorStop(1, layers[0].color);
+            ctx.fillStyle = coreGradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, maxRadius * 0.05, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw particles
+            particles.forEach(p => {
+                const layer = layers[p.layer];
+                ctx.fillStyle = layer.color;
+                ctx.globalAlpha = p.alpha * 0.7;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+            ctx.globalAlpha = 1;
+
+            // Draw fusion reactions (flashes)
+            if (Math.random() < 0.1) {
+                const randomLayer = Math.floor(Math.random() * layers.length);
+                const layer = layers[randomLayer];
+                const r = layer.radius * maxRadius * (0.5 + Math.random() * 0.5);
+                const angle = Math.random() * Math.PI * 2;
+                const fx = centerX + Math.cos(angle) * r;
+                const fy = centerY + Math.sin(angle) * r;
+
+                const flashGradient = ctx.createRadialGradient(fx, fy, 0, fx, fy, 15);
+                flashGradient.addColorStop(0, '#ffffff');
+                flashGradient.addColorStop(0.5, layer.color);
+                flashGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = flashGradient;
+                ctx.beginPath();
+                ctx.arc(fx, fy, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Supernova effect
+            if (evolutionStage === 'supernova') {
+                const t = (Date.now() % 2000) / 2000;
+                const shockRadius = t * maxRadius * 2;
+
+                ctx.strokeStyle = `rgba(255, 255, 255, ${1 - t})`;
+                ctx.lineWidth = 5 + t * 10;
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, shockRadius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Ejecta
+                for (let i = 0; i < 20; i++) {
+                    const angle = (i / 20) * Math.PI * 2;
+                    const ejR = shockRadius * (0.8 + Math.random() * 0.4);
+                    const ejX = centerX + Math.cos(angle) * ejR;
+                    const ejY = centerY + Math.sin(angle) * ejR;
+
+                    const colors = ['#ef4444', '#f97316', '#fbbf24', '#22c55e', '#6366f1'];
+                    ctx.fillStyle = colors[Math.floor(Math.random() * colors.length)];
+                    ctx.beginPath();
+                    ctx.arc(ejX, ejY, 3 + Math.random() * 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Draw layer labels
+            ctx.font = '11px JetBrains Mono';
+            ctx.textAlign = 'center';
+            layers.forEach((layer, i) => {
+                const r = layer.radius * maxRadius;
+                const labelY = centerY - r - 10;
+
+                ctx.fillStyle = '#ffffff88';
+                ctx.fillText(`${layer.fuel} → ${layer.product}`, centerX, labelY);
+            });
+        }
+
+        function showProcess(process) {
+            selectedProcess = process;
+
+            // Update buttons
+            document.querySelectorAll('[id^="btn-"]').forEach(btn => {
+                btn.className = 'px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs transition hover:bg-gray-700';
+            });
+
+            const activeBtn = document.getElementById(`btn-${process}`);
+            if (activeBtn) {
+                const colors = {
+                    'pp': 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30',
+                    'cno': 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+                    'triple-alpha': 'bg-amber-500/20 text-amber-400 border border-amber-500/30',
+                    's-process': 'bg-violet-500/20 text-violet-400 border border-violet-500/30'
+                };
+                activeBtn.className = `px-3 py-2 ${colors[process]} rounded-lg text-xs transition`;
+            }
+
+            // Update reaction display
+            const reaction = reactions[process];
+            document.getElementById('reaction-display').innerHTML = `
+                <div class="text-amber-300">${reaction.equation}</div>
+                <div class="text-gray-400 mt-2">ΔE = ${reaction.energy}</div>
+                <div class="text-gray-500 mt-2 text-[10px]">${reaction.description}</div>
+            `;
+        }
+
+        function updateInfo() {
+            const layers = fusionLayers[evolutionStage];
+            const layer = layers[Math.min(selectedLayer, layers.length - 1)];
+
+            document.getElementById('info-temp').textContent = layer.temp + ' MK';
+            document.getElementById('info-density').textContent = (layer.temp * 10).toFixed(0) + ' g/cm³';
+            document.getElementById('info-fuel').textContent = layer.fuel + ' → ' + layer.product;
+
+            const energies = { 'H': 26.7, 'He': 7.27, 'C': 4.62, 'Ne': 4.59, 'O': 5.0, 'Si': 1.9 };
+            document.getElementById('info-energy').textContent = (energies[layer.fuel] || 0) + ' MeV';
+        }
+
+        function evolve() {
+            if (!isEvolving) return;
+
+            evolutionTime += 0.01;
+
+            // Progress through stages based on mass
+            const stages = ['main', 'giant', 'supergiant', 'presupernova', 'supernova'];
+            let maxStageIndex = 0;
+
+            if (stellarMass < 0.5) maxStageIndex = 0;
+            else if (stellarMass < 3) maxStageIndex = 1;
+            else if (stellarMass < 8) maxStageIndex = 2;
+            else maxStageIndex = 4;
+
+            const progress = Math.min(evolutionTime, 1);
+            const targetStage = stages[Math.floor(progress * maxStageIndex)];
+
+            if (targetStage !== evolutionStage) {
+                evolutionStage = targetStage;
+                document.getElementById('stage').value = evolutionStage;
+                createParticles();
+                createElements();
+                updateStageDisplay();
+            }
+
+            if (evolutionTime >= 1) {
+                isEvolving = false;
+                document.getElementById('play-btn').textContent = '▶ Evolucionar';
+            }
+        }
+
+        function updateStageDisplay() {
+            const stageNames = {
+                'main': 'Secuencia Principal',
+                'giant': 'Gigante Roja',
+                'supergiant': 'Supergigante',
+                'presupernova': 'Pre-Supernova',
+                'supernova': 'Supernova'
+            };
+            document.getElementById('stage-display').textContent = stageNames[evolutionStage];
+        }
+
+        // Event listeners
+        document.getElementById('mass').addEventListener('input', (e) => {
+            stellarMass = parseFloat(e.target.value);
+            document.getElementById('mass-value').textContent = stellarMass.toFixed(1);
+            document.getElementById('mass-display').textContent = stellarMass.toFixed(1) + ' M☉';
+            createElements();
+        });
+
+        document.getElementById('stage').addEventListener('change', (e) => {
+            evolutionStage = e.target.value;
+            createParticles();
+            createElements();
+            updateInfo();
+            updateStageDisplay();
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            isEvolving = !isEvolving;
+            if (isEvolving) {
+                evolutionTime = 0;
+                evolutionStage = 'main';
+                document.getElementById('stage').value = 'main';
+                document.getElementById('play-btn').textContent = '⏸ Pausar';
+                createParticles();
+                updateStageDisplay();
+            } else {
+                document.getElementById('play-btn').textContent = '▶ Evolucionar';
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            isEvolving = false;
+            evolutionTime = 0;
+            evolutionStage = 'main';
+            document.getElementById('stage').value = 'main';
+            document.getElementById('play-btn').textContent = '▶ Evolucionar';
+            createParticles();
+            createElements();
+            updateInfo();
+            updateStageDisplay();
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            const centerX = canvas.offsetWidth / 2;
+            const centerY = canvas.offsetHeight / 2;
+            const maxRadius = Math.min(centerX, centerY) * 0.7;
+
+            const dist = Math.sqrt(Math.pow(mx - centerX, 2) + Math.pow(my - centerY, 2));
+            const layers = fusionLayers[evolutionStage];
+
+            // Find which layer was clicked
+            for (let i = 0; i < layers.length; i++) {
+                if (dist < layers[i].radius * maxRadius) {
+                    selectedLayer = i;
+                    updateInfo();
+                    break;
+                }
+            }
+        });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const delta = e.deltaY > 0 ? -0.5 : 0.5;
+            stellarMass = Math.max(0.5, Math.min(25, stellarMass + delta));
+            document.getElementById('mass').value = stellarMass;
+            document.getElementById('mass-value').textContent = stellarMass.toFixed(1);
+            document.getElementById('mass-display').textContent = stellarMass.toFixed(1) + ' M☉';
+            createElements();
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            createParticles();
+        });
+
+        // Animation loop
+        function animate() {
+            updateParticles();
+            evolve();
+            drawStar();
+            updateInfo();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        initCanvas();
+        createParticles();
+        createElements();
+        showProcess('pp');
+        updateInfo();
+        animate();
+    </script>
+</body>
+</html>

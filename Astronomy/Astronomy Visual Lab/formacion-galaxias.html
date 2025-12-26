@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formacion de Galaxias - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #a78bfa;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .preset-btn {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .preset-btn:hover {
+            border-color: rgba(139, 92, 246, 0.5);
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .preset-btn.active {
+            border-color: #8b5cf6;
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        #canvas {
+            cursor: crosshair;
+            background: radial-gradient(ellipse at center, #0a0a1a 0%, #000 100%);
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.95);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .star-type {
+            transition: all 0.2s;
+        }
+        .star-type:hover {
+            background: rgba(139, 92, 246, 0.1);
+        }
+        .star-type.active {
+            background: rgba(139, 92, 246, 0.2);
+            border-color: #8b5cf6;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Loading overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="text-center">
+            <div class="w-12 h-12 border-2 border-violet-500/30 border-t-violet-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-violet-400 mono">Cargando motor N-body...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-violet-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-violet-400 transition">Astronomy Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Formacion de Galaxias</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-violet-400 font-medium glow-text">Formacion de Galaxias</span>
+                            <span class="text-gray-600 text-sm ml-2">N-body Barnes-Hut</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Estrellas:</span>
+                        <span id="star-count" class="text-violet-400 mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">FPS:</span>
+                        <span id="fps-display" class="text-violet-400 mono">60</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">t:</span>
+                        <span id="time-display" class="text-violet-400 mono">0.0</span>
+                        <span class="text-gray-600 text-xs">Myr</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+
+            <!-- Stats overlay -->
+            <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs mono">
+                <div class="flex gap-6">
+                    <div>
+                        <span class="text-gray-500">Energia:</span>
+                        <span id="energy" class="text-violet-400 ml-1">0.0</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Momento angular:</span>
+                        <span id="angular" class="text-violet-400 ml-1">0.0</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Nodos arbol:</span>
+                        <span id="nodes" class="text-violet-400 ml-1">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs">
+                <p class="text-gray-400"><span class="text-violet-400">Click+Drag</span>: Agregar agujero negro</p>
+                <p class="text-gray-400"><span class="text-violet-400">Rueda</span>: Zoom</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950/50 overflow-y-auto p-4 flex flex-col gap-4">
+            <!-- Algorithm info -->
+            <div class="math-box rounded-lg p-4">
+                <h3 class="text-sm font-medium text-violet-400 mb-2">Ley de Gravitacion Universal</h3>
+                <div class="mono text-xs text-gray-400 space-y-1">
+                    <p>F = G * m1 * m2 / r²</p>
+                    <p class="text-gray-600 text-[10px]">Barnes-Hut: O(n log n) vs O(n²)</p>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Escenarios</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="preset-btn active rounded px-3 py-2 text-xs bg-gray-900" data-preset="disk">
+                        Galaxia Espiral
+                    </button>
+                    <button class="preset-btn rounded px-3 py-2 text-xs bg-gray-900" data-preset="elliptical">
+                        Galaxia Eliptica
+                    </button>
+                    <button class="preset-btn rounded px-3 py-2 text-xs bg-gray-900" data-preset="collision">
+                        Colision
+                    </button>
+                    <button class="preset-btn rounded px-3 py-2 text-xs bg-gray-900" data-preset="cluster">
+                        Cumulo Estelar
+                    </button>
+                </div>
+            </div>
+
+            <!-- Population -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Poblacion</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Cantidad de estrellas</label>
+                            <span id="count-value" class="mono text-violet-400">5000</span>
+                        </div>
+                        <input type="range" id="count-slider" min="1000" max="20000" step="500" value="5000" class="w-full">
+                    </div>
+                    <button id="reset-btn" class="w-full py-2 px-4 bg-violet-500/20 border border-violet-500/50 rounded text-violet-400 text-sm hover:bg-violet-500/30 transition">
+                        Reiniciar Simulacion
+                    </button>
+                </div>
+            </div>
+
+            <!-- Physics -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Fisica</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Constante G</label>
+                            <span id="g-value" class="mono text-violet-400">1.00</span>
+                        </div>
+                        <input type="range" id="g-slider" min="0.1" max="3" step="0.1" value="1.0" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Suavizado (softening)</label>
+                            <span id="soft-value" class="mono text-violet-400">5.0</span>
+                        </div>
+                        <input type="range" id="soft-slider" min="1" max="20" step="1" value="5" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Velocidad temporal</label>
+                            <span id="time-value" class="mono text-violet-400">1.0</span>
+                        </div>
+                        <input type="range" id="time-slider" min="0.1" max="3" step="0.1" value="1.0" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Barnes-Hut -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Barnes-Hut</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Theta (precision)</label>
+                            <span id="theta-value" class="mono text-violet-400">0.50</span>
+                        </div>
+                        <input type="range" id="theta-slider" min="0.3" max="1.0" step="0.05" value="0.5" class="w-full">
+                        <p class="text-[10px] text-gray-600 mt-1">Menor = mas preciso pero mas lento</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Black hole -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Agujero Negro Central</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Masa (M_sol)</label>
+                            <span id="bh-value" class="mono text-violet-400">2000</span>
+                        </div>
+                        <input type="range" id="bh-slider" min="0" max="5000" step="100" value="2000" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Visualizacion</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="show-trails" class="accent-violet-500">
+                        <span>Mostrar estelas</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="color-temp" class="accent-violet-500" checked>
+                        <span>Color por temperatura</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="color-vel" class="accent-violet-500">
+                        <span>Color por velocidad</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Playback -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Control</h3>
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 rounded text-gray-300 text-sm hover:bg-gray-700 transition">
+                        Pausar
+                    </button>
+                    <button id="step-btn" class="py-2 px-4 bg-gray-800 rounded text-gray-300 text-sm hover:bg-gray-700 transition">
+                        Paso
+                    </button>
+                </div>
+            </div>
+
+            <!-- Guide link -->
+            <a href="guides/formacion-galaxias.md" class="block mt-auto py-2 px-4 bg-gray-900 rounded text-center text-violet-400 text-sm hover:bg-gray-800 transition">
+                Ver Guia Educativa
+            </a>
+        </aside>
+    </main>
+
+    <!-- WASM Module -->
+    <script src="../../_wasm/eigenlab-core.js"></script>
+    <script>
+        // ====================================================================
+        // Configuration
+        // ====================================================================
+        const CONFIG = {
+            starCount: 5000,
+            showTrails: false,
+            colorByTemp: true,
+            colorByVel: false,
+            paused: false,
+            zoom: 1.0,
+            offset: { x: 0, y: 0 }
+        };
+
+        // ====================================================================
+        // State
+        // ====================================================================
+        let Module = null;
+        let galaxySimulator = null;
+        let canvas, ctx;
+        let width, height;
+        let lastTime = 0;
+        let frameCount = 0;
+        let fps = 60;
+        let currentPreset = 'disk';
+
+        // Trail buffer
+        let trailBuffer = null;
+        let trailIndex = 0;
+        const TRAIL_LENGTH = 5;
+
+        // Mouse interaction
+        let mouseDown = false;
+        let mouseStart = { x: 0, y: 0 };
+        let mousePos = { x: 0, y: 0 };
+
+        // ====================================================================
+        // Initialization
+        // ====================================================================
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                width = rect.width;
+                height = rect.height;
+                canvas.width = width;
+                canvas.height = height;
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Load WASM
+            try {
+                Module = await EigenLabCore();
+                console.log('EigenLab WASM loaded');
+                document.getElementById('loading').classList.add('hidden');
+
+                initGalaxy('disk');
+                setupControls();
+                setupMouseInteraction();
+
+                requestAnimationFrame(animate);
+            } catch (error) {
+                console.error('Failed to load WASM:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center">
+                        <p class="text-red-400">Error cargando WASM</p>
+                        <p class="text-gray-500 text-sm mt-2">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function initGalaxy(preset) {
+            currentPreset = preset;
+            let config;
+
+            switch (preset) {
+                case 'disk':
+                    config = Module.galaxyPresetMilkyWay();
+                    break;
+                case 'elliptical':
+                    config = Module.galaxyPresetAndromeda();
+                    break;
+                case 'collision':
+                    config = Module.galaxyPresetCollision();
+                    break;
+                case 'cluster':
+                    config = Module.galaxyPresetCluster();
+                    break;
+                default:
+                    config = Module.galaxyPresetMilkyWay();
+            }
+
+            // Adjust size to canvas
+            const simSize = Math.min(width, height) * 2;
+            config.size = simSize;
+            config.maxParticles = 30000;
+
+            galaxySimulator = new Module.GalaxySimulator(config);
+
+            const center = { x: simSize / 2, y: simSize / 2 };
+            const radius = simSize * 0.3;
+
+            switch (preset) {
+                case 'disk':
+                    galaxySimulator.initializeDiskGalaxy(CONFIG.starCount, center, radius, 1.0);
+                    break;
+                case 'elliptical':
+                    galaxySimulator.initializeEllipticalGalaxy(CONFIG.starCount, center, radius);
+                    break;
+                case 'collision':
+                    galaxySimulator.initializeCollision(CONFIG.starCount / 2, radius * 1.5, radius * 0.3);
+                    break;
+                case 'cluster':
+                    galaxySimulator.initializeRandom(CONFIG.starCount);
+                    break;
+            }
+
+            // Reset view
+            CONFIG.zoom = 1.0;
+            CONFIG.offset = { x: 0, y: 0 };
+
+            // Reset trails
+            trailBuffer = null;
+        }
+
+        // ====================================================================
+        // Controls
+        // ====================================================================
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    initGalaxy(btn.dataset.preset);
+                });
+            });
+
+            // Population
+            const countSlider = document.getElementById('count-slider');
+            countSlider.addEventListener('input', e => {
+                CONFIG.starCount = parseInt(e.target.value);
+                document.getElementById('count-value').textContent = CONFIG.starCount;
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                initGalaxy(currentPreset);
+            });
+
+            // Physics sliders
+            setupSlider('g', val => galaxySimulator.setGravitationalConstant(val));
+            setupSlider('soft', val => galaxySimulator.setSofteningLength(val));
+            setupSlider('time', val => galaxySimulator.setTimeScale(val));
+            setupSlider('theta', val => galaxySimulator.setTheta(val));
+
+            // Black hole mass requires reinit
+            const bhSlider = document.getElementById('bh-slider');
+            bhSlider.addEventListener('input', e => {
+                document.getElementById('bh-value').textContent = e.target.value;
+            });
+
+            // Visualization
+            document.getElementById('show-trails').addEventListener('change', e => {
+                CONFIG.showTrails = e.target.checked;
+                if (!CONFIG.showTrails) trailBuffer = null;
+            });
+
+            document.getElementById('color-temp').addEventListener('change', e => {
+                CONFIG.colorByTemp = e.target.checked;
+                if (e.target.checked) {
+                    document.getElementById('color-vel').checked = false;
+                    CONFIG.colorByVel = false;
+                }
+            });
+
+            document.getElementById('color-vel').addEventListener('change', e => {
+                CONFIG.colorByVel = e.target.checked;
+                if (e.target.checked) {
+                    document.getElementById('color-temp').checked = false;
+                    CONFIG.colorByTemp = false;
+                }
+            });
+
+            // Playback
+            document.getElementById('pause-btn').addEventListener('click', () => {
+                CONFIG.paused = !CONFIG.paused;
+                document.getElementById('pause-btn').textContent = CONFIG.paused ? 'Reanudar' : 'Pausar';
+            });
+
+            document.getElementById('step-btn').addEventListener('click', () => {
+                if (CONFIG.paused) {
+                    galaxySimulator.step(0.016);
+                }
+            });
+        }
+
+        function setupSlider(name, callback) {
+            const slider = document.getElementById(`${name}-slider`);
+            const valueEl = document.getElementById(`${name}-value`);
+
+            slider.addEventListener('input', e => {
+                const val = parseFloat(e.target.value);
+                valueEl.textContent = val.toFixed(2);
+                callback(val);
+            });
+        }
+
+        // ====================================================================
+        // Mouse Interaction
+        // ====================================================================
+        function setupMouseInteraction() {
+            canvas.addEventListener('mousedown', e => {
+                mouseDown = true;
+                const rect = canvas.getBoundingClientRect();
+                mouseStart = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+                mousePos = { ...mouseStart };
+            });
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mousePos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+            });
+
+            canvas.addEventListener('mouseup', e => {
+                if (mouseDown) {
+                    const dx = mousePos.x - mouseStart.x;
+                    const dy = mousePos.y - mouseStart.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    if (dist > 20) {
+                        // Convert to simulation coordinates
+                        const simX = (mouseStart.x - width / 2) / CONFIG.zoom + galaxySimulator.stats().centerOfMass.x;
+                        const simY = (mouseStart.y - height / 2) / CONFIG.zoom + galaxySimulator.stats().centerOfMass.y;
+                        const velX = dx * 0.02;
+                        const velY = dy * 0.02;
+
+                        galaxySimulator.addBlackHole({ x: simX, y: simY }, { x: velX, y: velY }, 500);
+                    }
+                }
+                mouseDown = false;
+            });
+
+            // Zoom
+            canvas.addEventListener('wheel', e => {
+                e.preventDefault();
+                const factor = e.deltaY > 0 ? 0.9 : 1.1;
+                CONFIG.zoom *= factor;
+                CONFIG.zoom = Math.max(0.1, Math.min(5, CONFIG.zoom));
+            });
+        }
+
+        // ====================================================================
+        // Animation Loop
+        // ====================================================================
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.1);
+            lastTime = time;
+
+            // FPS counter
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1 / dt);
+                document.getElementById('fps-display').textContent = fps;
+            }
+
+            // Step simulation
+            if (!CONFIG.paused) {
+                galaxySimulator.step(0.016);
+            }
+
+            // Compute stats periodically
+            if (frameCount % 10 === 0) {
+                galaxySimulator.computeStatistics();
+                updateStats();
+            }
+
+            // Draw
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        function updateStats() {
+            const stats = galaxySimulator.stats();
+            document.getElementById('star-count').textContent = stats.activeParticles;
+            document.getElementById('time-display').textContent = (stats.simulationTime * 10).toFixed(1);
+            document.getElementById('energy').textContent = stats.kineticEnergy.toExponential(2);
+            document.getElementById('angular').textContent = stats.angularMomentum.toExponential(2);
+            document.getElementById('nodes').textContent = stats.treeNodes;
+        }
+
+        // ====================================================================
+        // Drawing
+        // ====================================================================
+        function draw() {
+            // Clear with fade for trails
+            if (CONFIG.showTrails) {
+                ctx.fillStyle = 'rgba(0, 0, 10, 0.1)';
+            } else {
+                ctx.fillStyle = '#000';
+            }
+            ctx.fillRect(0, 0, width, height);
+
+            // Get data
+            const data = Module.getGalaxyData(galaxySimulator);
+            const stats = galaxySimulator.stats();
+
+            // Center on center of mass
+            const centerX = width / 2;
+            const centerY = height / 2;
+            const comX = stats.centerOfMass.x;
+            const comY = stats.centerOfMass.y;
+
+            // Draw particles
+            for (let i = 0; i < data.length; i += 7) {
+                const x = data[i];
+                const y = data[i + 1];
+                const vx = data[i + 2];
+                const vy = data[i + 3];
+                const mass = data[i + 4];
+                const type = data[i + 5];
+                const temp = data[i + 6];
+
+                // Transform to screen coordinates
+                const screenX = (x - comX) * CONFIG.zoom + centerX;
+                const screenY = (y - comY) * CONFIG.zoom + centerY;
+
+                // Skip if off screen
+                if (screenX < -10 || screenX > width + 10 || screenY < -10 || screenY > height + 10) {
+                    continue;
+                }
+
+                // Color
+                let color;
+                if (type === 3) {
+                    // Black hole
+                    color = '#000';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, 8 * CONFIG.zoom, 0, Math.PI * 2);
+                    ctx.fillStyle = color;
+                    ctx.fill();
+                    // Accretion disk glow
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, 15 * CONFIG.zoom, 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(255, 100, 50, 0.5)';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                    continue;
+                }
+
+                if (CONFIG.colorByTemp) {
+                    color = temperatureToColor(temp);
+                } else if (CONFIG.colorByVel) {
+                    const speed = Math.sqrt(vx * vx + vy * vy);
+                    color = velocityToColor(speed, stats.maxVelocity);
+                } else {
+                    color = '#fff';
+                }
+
+                // Size based on mass
+                const size = Math.max(1, Math.sqrt(mass) * 0.5 * CONFIG.zoom);
+
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.fill();
+            }
+
+            // Draw black hole being placed
+            if (mouseDown) {
+                ctx.beginPath();
+                ctx.moveTo(mouseStart.x, mouseStart.y);
+                ctx.lineTo(mousePos.x, mousePos.y);
+                ctx.strokeStyle = 'rgba(255, 100, 50, 0.8)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(mouseStart.x, mouseStart.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255, 100, 50, 0.8)';
+                ctx.stroke();
+            }
+        }
+
+        // Temperature to color (blackbody approximation)
+        function temperatureToColor(temp) {
+            // Simplified blackbody: 3000K = red, 6000K = white, 10000K = blue
+            const t = (temp - 3000) / 7000; // Normalize to 0-1
+
+            let r, g, b;
+            if (t < 0.5) {
+                // Red to white
+                r = 255;
+                g = Math.round(t * 2 * 255);
+                b = Math.round(t * 2 * 200);
+            } else {
+                // White to blue
+                r = Math.round((1 - (t - 0.5) * 2) * 255);
+                g = Math.round((1 - (t - 0.5) * 2) * 255);
+                b = 255;
+            }
+
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        // Velocity to color
+        function velocityToColor(speed, maxSpeed) {
+            const t = Math.min(speed / maxSpeed, 1);
+            const hue = 240 - t * 240; // Blue to red
+            return `hsl(${hue}, 80%, 60%)`;
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

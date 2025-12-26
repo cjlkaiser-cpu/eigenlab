@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game of Life - EigenLab Wallpaper</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #030712;
+            overflow: hidden;
+            cursor: none;
+        }
+
+        canvas {
+            display: block;
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="canvas"></canvas>
+
+    <script>
+        // === CONFIGURACIÓN ===
+        const CONFIG = {
+            cellSize: 8,              // Tamaño de celda en píxeles
+            fps: 12,                  // Frames por segundo
+            density: 0.15,            // Densidad inicial (0-1)
+
+            // Colores
+            bgColor: '#030712',
+            cellColor: '#22c55e',     // Verde EigenLab
+            cellGlow: true,           // Efecto glow
+
+            // Auto-reset
+            stableThreshold: 50,      // Generaciones estables antes de reset
+            minAlive: 100,            // Mínimo de células vivas
+
+            // Variación de color por edad
+            ageColors: true,
+            youngColor: [34, 197, 94],    // Verde brillante
+            oldColor: [6, 78, 59],        // Verde oscuro
+            maxAge: 100
+        };
+
+        // === CANVAS SETUP ===
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let width, height, cols, rows;
+        let grid, nextGrid, ageGrid;
+        let generation = 0;
+        let lastPopulation = 0;
+        let stableCount = 0;
+
+        function resize() {
+            const dpr = window.devicePixelRatio || 1;
+            width = window.innerWidth;
+            height = window.innerHeight;
+
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+
+            cols = Math.ceil(width / CONFIG.cellSize);
+            rows = Math.ceil(height / CONFIG.cellSize);
+
+            initGrid();
+        }
+
+        // === GRID ===
+        function initGrid() {
+            grid = new Uint8Array(cols * rows);
+            nextGrid = new Uint8Array(cols * rows);
+            ageGrid = new Uint16Array(cols * rows);
+
+            // Patrón inicial aleatorio con algunos patrones interesantes
+            randomize();
+            addPatterns();
+
+            generation = 0;
+            stableCount = 0;
+        }
+
+        function randomize() {
+            for (let i = 0; i < grid.length; i++) {
+                grid[i] = Math.random() < CONFIG.density ? 1 : 0;
+                ageGrid[i] = 0;
+            }
+        }
+
+        function addPatterns() {
+            // Añadir algunos gliders en posiciones aleatorias
+            const glider = [
+                [0, 1, 0],
+                [0, 0, 1],
+                [1, 1, 1]
+            ];
+
+            for (let i = 0; i < 5; i++) {
+                const x = Math.floor(Math.random() * (cols - 10)) + 5;
+                const y = Math.floor(Math.random() * (rows - 10)) + 5;
+                addPattern(glider, x, y);
+            }
+
+            // Añadir un pulsar si hay espacio
+            if (cols > 30 && rows > 30) {
+                const pulsar = [
+                    [0,0,1,1,1,0,0,0,1,1,1,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [0,0,1,1,1,0,0,0,1,1,1,0,0],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,1,1,1,0,0,0,1,1,1,0,0],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [1,0,0,0,0,1,0,1,0,0,0,0,1],
+                    [0,0,0,0,0,0,0,0,0,0,0,0,0],
+                    [0,0,1,1,1,0,0,0,1,1,1,0,0]
+                ];
+                const px = Math.floor(cols / 2) - 6;
+                const py = Math.floor(rows / 2) - 6;
+                addPattern(pulsar, px, py);
+            }
+        }
+
+        function addPattern(pattern, startX, startY) {
+            for (let y = 0; y < pattern.length; y++) {
+                for (let x = 0; x < pattern[y].length; x++) {
+                    const idx = (startY + y) * cols + (startX + x);
+                    if (idx >= 0 && idx < grid.length) {
+                        grid[idx] = pattern[y][x];
+                    }
+                }
+            }
+        }
+
+        function idx(x, y) {
+            // Toroidal (wrap around)
+            x = (x + cols) % cols;
+            y = (y + rows) % rows;
+            return y * cols + x;
+        }
+
+        function countNeighbors(x, y) {
+            let count = 0;
+            for (let dy = -1; dy <= 1; dy++) {
+                for (let dx = -1; dx <= 1; dx++) {
+                    if (dx === 0 && dy === 0) continue;
+                    count += grid[idx(x + dx, y + dy)];
+                }
+            }
+            return count;
+        }
+
+        // === SIMULACIÓN ===
+        function update() {
+            let alive = 0;
+
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const i = y * cols + x;
+                    const neighbors = countNeighbors(x, y);
+                    const cell = grid[i];
+
+                    if (cell === 1) {
+                        // Célula viva
+                        if (neighbors === 2 || neighbors === 3) {
+                            nextGrid[i] = 1;
+                            ageGrid[i] = Math.min(ageGrid[i] + 1, CONFIG.maxAge);
+                            alive++;
+                        } else {
+                            nextGrid[i] = 0;
+                            ageGrid[i] = 0;
+                        }
+                    } else {
+                        // Célula muerta
+                        if (neighbors === 3) {
+                            nextGrid[i] = 1;
+                            ageGrid[i] = 0;
+                            alive++;
+                        } else {
+                            nextGrid[i] = 0;
+                        }
+                    }
+                }
+            }
+
+            // Swap grids
+            [grid, nextGrid] = [nextGrid, grid];
+            generation++;
+
+            // Detectar estabilidad
+            if (alive === lastPopulation) {
+                stableCount++;
+            } else {
+                stableCount = 0;
+            }
+            lastPopulation = alive;
+
+            // Auto-reset si está estable o casi muerto
+            if (stableCount > CONFIG.stableThreshold || alive < CONFIG.minAlive) {
+                initGrid();
+            }
+        }
+
+        // === RENDERIZADO ===
+        function draw() {
+            // Clear
+            ctx.fillStyle = CONFIG.bgColor;
+            ctx.fillRect(0, 0, width, height);
+
+            // Preparar glow si está activo
+            if (CONFIG.cellGlow) {
+                ctx.shadowColor = CONFIG.cellColor;
+                ctx.shadowBlur = 4;
+            }
+
+            // Dibujar células
+            for (let y = 0; y < rows; y++) {
+                for (let x = 0; x < cols; x++) {
+                    const i = y * cols + x;
+                    if (grid[i] === 1) {
+                        if (CONFIG.ageColors) {
+                            const age = ageGrid[i];
+                            const t = Math.min(age / CONFIG.maxAge, 1);
+                            const r = Math.round(CONFIG.youngColor[0] + (CONFIG.oldColor[0] - CONFIG.youngColor[0]) * t);
+                            const g = Math.round(CONFIG.youngColor[1] + (CONFIG.oldColor[1] - CONFIG.youngColor[1]) * t);
+                            const b = Math.round(CONFIG.youngColor[2] + (CONFIG.oldColor[2] - CONFIG.youngColor[2]) * t);
+                            ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                        } else {
+                            ctx.fillStyle = CONFIG.cellColor;
+                        }
+
+                        ctx.fillRect(
+                            x * CONFIG.cellSize + 1,
+                            y * CONFIG.cellSize + 1,
+                            CONFIG.cellSize - 2,
+                            CONFIG.cellSize - 2
+                        );
+                    }
+                }
+            }
+
+            ctx.shadowBlur = 0;
+        }
+
+        // === LOOP PRINCIPAL ===
+        let lastFrame = 0;
+        const frameInterval = 1000 / CONFIG.fps;
+
+        function loop(timestamp) {
+            if (timestamp - lastFrame >= frameInterval) {
+                update();
+                draw();
+                lastFrame = timestamp;
+            }
+            requestAnimationFrame(loop);
+        }
+
+        // === INICIAR ===
+        window.addEventListener('resize', resize);
+        resize();
+        requestAnimationFrame(loop);
+    </script>
+</body>
+</html>

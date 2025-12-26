@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Diagrama H-R — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #030712; --bg-secondary: #0f172a; --bg-panel: #1e293b; --text-primary: #f8fafc; --text-secondary: #94a3b8; --border: #334155; --accent: #6366f1; --color-good: #22c55e; --color-warn: #fbbf24; --color-bad: #ef4444; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--accent); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--accent); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); }
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); font-size: 0.8rem; }
+        .eq span:first-child { color: var(--text-secondary); } .eq code { color: var(--accent); }
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); } .b-warn { border-color: rgba(251, 191, 36, 0.4); } .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+        .section { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--text-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; flex-shrink: 0; }
+        .hypothesis { background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); padding: 0.75rem; border-radius: 0 0.375rem 0.375rem 0; margin: 0.75rem 0; }
+        .hypothesis p { margin: 0; font-style: italic; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 0.75rem; }
+        .connection-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .connection-icon { width: 10px; height: 10px; border-radius: 50%; }
+        .connection-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .connection p { margin: 0; }
+        .reflection { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--text-primary); margin-bottom: 0.75rem; }
+        .reflection ul { margin: 0; }
+        .timeline { border-left: 2px solid var(--border); padding-left: 1.25rem; margin-top: 0.75rem; }
+        .timeline-item { position: relative; padding-bottom: 1rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.4rem; top: 0.25rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary); }
+        .timeline-year { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+        .timeline-text { font-size: 0.8rem; color: var(--text-secondary); }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+        .spectral { display: flex; gap: 0.25rem; margin-top: 0.5rem; }
+        .spectral span { padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-size: 0.7rem; font-weight: 600; }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Astronomy Visual Lab</a>
+                    <span> / </span>
+                    <span>Diagrama H-R</span>
+                </nav>
+                <h1>Diagrama H-R — Guia</h1>
+                <div class="subtitle">El mapa de la vida estelar</div>
+            </div>
+            <div class="header-actions">
+                <a href="../diagrama-hr.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>O B A F G K M</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    El <span class="em">diagrama Hertzsprung-Russell</span> es el "mapa" de las estrellas.
+                    Grafica luminosidad vs temperatura y revela <strong>patrones de evolucion</strong>:
+                    nacimiento, vida adulta y muerte estelar aparecen como regiones distintas.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Secuencia Principal</span>
+                    <span class="chip">Gigantes Rojas</span>
+                    <span class="chip">Enanas Blancas</span>
+                    <span class="chip">Supergigantes</span>
+                    <span class="chip">OBAFGKM</span>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem">
+                    <p>
+                        <strong>Idea central:</strong> El 90% de las estrellas estan en la secuencia principal,
+                        quemando hidrogeno. Cuando lo agotan, abandonan la secuencia y evolucionan
+                        hacia otras regiones del diagrama.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Ecuaciones fundamentales</div>
+                <pre>Ley de Stefan-Boltzmann:
+  L = 4πR²σT⁴
+
+Relacion masa-luminosidad:
+  L ∝ M^3.5  (secuencia principal)
+
+Magnitud absoluta:
+  M = M☉ - 2.5 log(L/L☉)</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Clases espectrales</div>
+                <div class="spectral">
+                    <span style="background:#9bb0ff;color:#000">O</span>
+                    <span style="background:#aabfff;color:#000">B</span>
+                    <span style="background:#cad7ff;color:#000">A</span>
+                    <span style="background:#f8f7ff;color:#000">F</span>
+                    <span style="background:#fff4ea;color:#000">G</span>
+                    <span style="background:#ffd2a1;color:#000">K</span>
+                    <span style="background:#ffcc6f;color:#000">M</span>
+                </div>
+                <p class="mini" style="margin-top:0.5rem">
+                    "Oh Be A Fine Girl/Guy Kiss Me" — mnemotecnico clasico
+                </p>
+            </aside>
+        </section>
+
+        <!-- REGIONES -->
+        <section class="two">
+            <div class="card">
+                <h2>Regiones del diagrama</h2>
+                <div class="equations">
+                    <div class="eq"><span>Secuencia Principal</span><code>~90% de estrellas</code></div>
+                    <div class="eq"><span>Rama de Gigantes</span><code>H agotado, He quemando</code></div>
+                    <div class="eq"><span>Supergigantes</span><code>Masivas, corta vida</code></div>
+                    <div class="eq"><span>Enanas Blancas</span><code>Remanentes, enfriandose</code></div>
+                </div>
+                <p class="mini" style="margin-top: 0.75rem">
+                    La posicion en el diagrama revela el estado evolutivo de la estrella.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Tipos espectrales y temperatura</h2>
+                <ul>
+                    <li><strong style="color:#9bb0ff">O:</strong> >30,000 K — azul violeta, raras</li>
+                    <li><strong style="color:#aabfff">B:</strong> 10,000-30,000 K — azul</li>
+                    <li><strong style="color:#cad7ff">A:</strong> 7,500-10,000 K — blanco azulado</li>
+                    <li><strong style="color:#fff4ea">F:</strong> 6,000-7,500 K — amarillo blanco</li>
+                    <li><strong style="color:#fbbf24">G:</strong> 5,000-6,000 K — amarillo (Sol)</li>
+                    <li><strong style="color:#ffd2a1">K:</strong> 3,500-5,000 K — naranja</li>
+                    <li><strong style="color:#ffcc6f">M:</strong> <3,500 K — rojo, las mas comunes</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- EVOLUCION -->
+        <section class="two">
+            <div class="card">
+                <h2>Evolucion estelar en el diagrama</h2>
+                <p>
+                    Una estrella como el Sol sigue esta trayectoria:
+                </p>
+                <ol>
+                    <li><strong>Nube molecular:</strong> Colapso, no en el diagrama aun</li>
+                    <li><strong>Secuencia principal:</strong> ~10 Gyr quemando H</li>
+                    <li><strong>Rama de gigantes:</strong> Expansion, enfriamiento</li>
+                    <li><strong>Flash de helio:</strong> Ignicion del He en el nucleo</li>
+                    <li><strong>Rama asintótica:</strong> Capas de He y H quemando</li>
+                    <li><strong>Nebulosa planetaria:</strong> Eyeccion de capas</li>
+                    <li><strong>Enana blanca:</strong> Nucleo enfriandose eternamente</li>
+                </ol>
+            </div>
+
+            <div class="card">
+                <h2>Masa: el factor determinante</h2>
+                <p>
+                    La masa al nacer determina todo: posicion, vida, destino.
+                </p>
+                <ul>
+                    <li><strong>< 0.5 M☉:</strong> Enana roja, vida >100 Gyr</li>
+                    <li><strong>0.5-8 M☉:</strong> Secuencia → gigante → enana blanca</li>
+                    <li><strong>8-25 M☉:</strong> Supergigante → supernova → estrella de neutrones</li>
+                    <li><strong>> 25 M☉:</strong> Supergigante → supernova → agujero negro</li>
+                </ul>
+                <div class="badge b-warn" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-warn)"></span>
+                    Mas masa = vida mas corta (paradoja)
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto del diagrama H-R.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">La secuencia principal: donde vive el Sol</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Las estrellas de la secuencia principal forman una banda
+                diagonal porque existe una relacion directa entre masa, temperatura y luminosidad.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Activa solo <strong>"Secuencia Principal"</strong></li>
+                        <li>Observa la banda diagonal de arriba-izquierda a abajo-derecha</li>
+                        <li>Click en <strong>"Sol"</strong> — localizalo en la banda</li>
+                        <li>Click en <strong>"Sirio"</strong> — esta mas arriba y a la izquierda</li>
+                        <li>Click en <strong>"Proxima"</strong> — abajo a la derecha</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Observa:</strong> Arriba-izquierda = calientes y luminosas.
+                    Abajo-derecha = frias y tenues. Es la relacion L ∝ M^3.5 en accion.</p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        El Sol: tipo G2V, mitad de su vida
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Gigantes y supergigantes: estrellas en transicion</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Las gigantes estan "fuera de lugar" — luminosas pero frias.
+                Esto indica que son enormes (L = 4πR²σT⁴: si T baja y L sube, R debe ser muy grande).</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Activa <strong>"Gigantes Rojas"</strong> y <strong>"Supergigantes"</strong></li>
+                        <li>Observa que estan arriba a la derecha — frias pero luminosas</li>
+                        <li>Click en <strong>"Betelgeuse"</strong> — supergigante roja</li>
+                        <li>Compara su radio (887 R☉) con el del Sol</li>
+                        <li>Activa <strong>"Mostrar zonas"</strong> para ver las regiones marcadas</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Betelgeuse:</strong> Si estuviera donde esta el Sol,
+                    se tragaria a Mercurio, Venus, Tierra y Marte. Llegaria casi hasta Jupiter.</p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        Candidata a supernova pronto (~100,000 anos)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Evolucion solar: viaje por el diagrama</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> El Sol no siempre estara donde esta ahora.
+                En 5 Gyr se convertira en gigante roja, y terminara como enana blanca.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Click en <strong>"Simular Evolucion Solar"</strong></li>
+                        <li>Observa el punto moviéndose por el diagrama</li>
+                        <li>Ve como sube hacia las gigantes (expansion)</li>
+                        <li>Ve el salto hacia la zona de enanas blancas</li>
+                        <li>Activa <strong>"Trayectorias evolutivas"</strong> para ver la linea completa</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Destino solar:</strong> En ~5 Gyr, el Sol engullira a Mercurio
+                    y Venus. La Tierra sera inhabitable. En ~7 Gyr, sera una enana blanca del tamano de la Tierra.</p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        12 Gyr de evolucion en segundos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../diagrama-hr.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">El diagrama H-R en contexto</h2>
+            <p>La clasificacion estelar conecta con multiples areas de la astrofisica.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #8b5cf6"></span>
+                <span class="connection-title">Agujeros negros: el destino de las masivas</span>
+            </div>
+            <p>
+                Las estrellas mas masivas del diagrama (supergigantes azules, arriba izquierda)
+                terminan como agujeros negros. La estrella original de 25+ M☉ colapsa tras la supernova,
+                y el nucleo supera el limite de masa para estrellas de neutrones.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../agujero-negro.html">Agujero Negro</a> —
+                el destino final de las mas masivas.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #6366f1"></span>
+                <span class="connection-title">Expansion del universo: velas estandar</span>
+            </div>
+            <p>
+                Las Cefeidas (estrellas pulsantes) tienen una relacion periodo-luminosidad conocida.
+                Medir su periodo nos da su luminosidad absoluta; compararla con la aparente da la distancia.
+                Henrietta Leavitt descubrio esto en 1912, permitiendo medir distancias cosmicas.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../expansion-universo.html">Expansion del Universo</a> —
+                midiendo distancias con estrellas.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">Elementos quimicos: nucleosintesis estelar</span>
+            </div>
+            <p>
+                Las estrellas son fabricas de elementos. En la secuencia principal, fusionan H en He.
+                Las gigantes fusionan He en C y O. Las supergigantes llegan hasta el Fe.
+                Elementos mas pesados se crean en supernovas y fusiones de estrellas de neutrones.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../../Chemistry/Chemistry Visual Lab/tabla-periodica.html">Tabla Periodica</a> —
+                origen estelar de los elementos.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Que NO muestra esta simulacion</h2>
+            <div class="grid">
+                <div>
+                    <ul>
+                        <li><strong>Metalicidad:</strong> El contenido de elementos pesados afecta
+                        la posicion. Estrellas pobres en metales estan desplazadas.</li>
+                        <li><strong>Binarias:</strong> Muchas estrellas son dobles o multiples.
+                        La interaccion cambia su evolucion.</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Estrellas variables:</strong> Cefeidas, RR Lyrae, Mira...
+                        Pulsan y cambian de posicion periodicamente.</li>
+                        <li><strong>Incertidumbre:</strong> Las distancias estelares tienen error,
+                        afectando la luminosidad calculada.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Historia</div>
+            <h2 style="margin-top:0.5rem">Del espectro al diagrama</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-year">1901</div>
+                    <div class="timeline-text">Annie Jump Cannon desarrolla la clasificacion OBAFGKM en Harvard.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1905-1913</div>
+                    <div class="timeline-text">Hertzsprung y Russell, independientemente, crean el diagrama.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1920s</div>
+                    <div class="timeline-text">Eddington propone la fusion nuclear como fuente de energia estelar.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1939</div>
+                    <div class="timeline-text">Bethe describe el ciclo CNO y la cadena pp. Nobel 1967.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1952</div>
+                    <div class="timeline-text">Hoyle, Fowler et al. explican la nucleosintesis estelar.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ul>
+                <li>Por que las estrellas mas masivas viven menos? (Pista: queman combustible mucho mas rapido)</li>
+                <li>El Sol esta "a mitad de su vida". Como sabemos su edad?</li>
+                <li>Las enanas blancas son muy calientes pero poco luminosas. Que nos dice esto sobre su tamano?</li>
+                <li>Si descubrieras una estrella muy luminosa y muy fria, que tipo de estrella seria?</li>
+                <li>Por que no hay estrellas en la esquina inferior izquierda del diagrama (calientes y poco luminosas)?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="card section">
+            <div class="kicker">En resumen</div>
+            <h2 style="margin-top:0.5rem">El diagrama H-R como mapa de la vida estelar</h2>
+            <p>
+                El diagrama Hertzsprung-Russell es una de las herramientas mas poderosas de la astrofisica.
+                Un simple grafico de dos variables revela toda la historia de las estrellas:
+                nacen, viven en la secuencia principal, mueren y dejan remanentes.
+            </p>
+            <p>
+                Cada punto en el diagrama es una estrella contando su historia.
+                Esta simulacion te permite explorar esas historias y ver como la <strong>masa inicial</strong>
+                determina todo: donde nace, cuanto vive, y como muere.
+            </p>
+            <p class="mini" style="margin-top: 1rem">
+                Somos polvo de estrellas — literalmente. Cada atomo pesado de tu cuerpo fue forjado en una estrella.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Diagrama H-R
+    </footer>
+</body>
+</html>

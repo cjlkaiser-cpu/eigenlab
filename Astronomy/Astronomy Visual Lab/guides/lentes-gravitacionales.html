@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lentes Gravitacionales — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root { --bg-primary: #030712; --bg-secondary: #0f172a; --bg-panel: #1e293b; --text-primary: #f8fafc; --text-secondary: #94a3b8; --border: #334155; --accent: #6366f1; --color-good: #22c55e; --color-warn: #fbbf24; --color-bad: #ef4444; }
+        body { font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--accent); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--accent); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: rgba(99, 102, 241, 0.4); background: rgba(99, 102, 241, 0.05); }
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq { display: flex; justify-content: space-between; align-items: center; gap: 0.75rem; padding: 0.625rem 0.875rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); font-size: 0.8rem; }
+        .eq span:first-child { color: var(--text-secondary); } .eq code { color: var(--accent); }
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); } .b-warn { border-color: rgba(251, 191, 36, 0.4); } .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+        .section { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--text-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 600; flex-shrink: 0; }
+        .hypothesis { background: rgba(99, 102, 241, 0.1); border-left: 3px solid var(--accent); padding: 0.75rem; border-radius: 0 0.375rem 0.375rem 0; margin: 0.75rem 0; }
+        .hypothesis p { margin: 0; font-style: italic; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 0.75rem; }
+        .connection-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem; }
+        .connection-icon { width: 10px; height: 10px; border-radius: 50%; }
+        .connection-title { font-size: 0.85rem; font-weight: 600; color: var(--text-primary); }
+        .connection p { margin: 0; }
+        .reflection { background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1)); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--text-primary); margin-bottom: 0.75rem; }
+        .reflection ul { margin: 0; }
+        .timeline { border-left: 2px solid var(--border); padding-left: 1.25rem; margin-top: 0.75rem; }
+        .timeline-item { position: relative; padding-bottom: 1rem; }
+        .timeline-item::before { content: ''; position: absolute; left: -1.4rem; top: 0.25rem; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); border: 2px solid var(--bg-primary); }
+        .timeline-year { font-size: 0.75rem; color: var(--accent); font-weight: 600; }
+        .timeline-text { font-size: 0.8rem; color: var(--text-secondary); }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Astronomy Visual Lab</a>
+                    <span> / </span>
+                    <span>Lentes Gravitacionales</span>
+                </nav>
+                <h1>Lentes Gravitacionales — Guia</h1>
+                <div class="subtitle">Cuando la gravedad curva la luz y revela lo invisible</div>
+            </div>
+            <div class="header-actions">
+                <a href="../lentes-gravitacionales.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>La gravedad como lupa cosmica</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    Una <span class="em">lente gravitacional</span> ocurre cuando la masa curva el
+                    espacio-tiempo, desviando la luz de objetos lejanos. No es una lente de vidrio —
+                    es la <strong>geometria del universo</strong> actuando como telescopio natural.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Relatividad General</span>
+                    <span class="chip">Anillo de Einstein</span>
+                    <span class="chip">Materia oscura</span>
+                    <span class="chip">Magnificacion</span>
+                    <span class="chip">Imagenes multiples</span>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem">
+                    <p>
+                        <strong>Idea central:</strong> Las lentes gravitacionales son "lupas cosmicas"
+                        que nos permiten ver galaxias que de otra forma serian invisibles.
+                        Tambien revelan materia oscura — que no emite luz pero SI curva el espacio.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">La ecuacion fundamental</div>
+                <pre>Ecuacion de la lente:
+
+  β = θ - α(θ)
+
+Radio de Einstein:
+  θE = √(4GM DLS / c² DL DS)
+
+Para lente puntual:
+  α = θE² / θ
+
+Magnificacion:
+  μ = θ⁴ / (θ⁴ - θE⁴)</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados visuales</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #fbbf24"></span>Fuente (galaxia)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #8b5cf6"></span>Lente (masa)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #22d3ee"></span>Imagenes</div>
+                    <div class="legend-item"><span class="swatch" style="background: rgba(139, 92, 246, 0.4)"></span>Radio de Einstein</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- TIPOS DE LENSING -->
+        <section class="two">
+            <div class="card">
+                <h2>Tipos de lensing gravitacional</h2>
+                <div class="equations">
+                    <div class="eq"><span>Lensing fuerte</span><code>Arcos, anillos, imagenes multiples</code></div>
+                    <div class="eq"><span>Lensing debil</span><code>Distorsiones sutiles, estadisticas</code></div>
+                    <div class="eq"><span>Microlensing</span><code>Amplificacion de brillo</code></div>
+                </div>
+                <p class="mini" style="margin-top: 0.75rem">
+                    El tipo de lensing depende de la masa de la lente y la alineacion:
+                    galaxias → fuerte, cumulos → arcos, estrellas → microlensing.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>El anillo de Einstein</h2>
+                <p>
+                    Cuando fuente, lente y observador estan perfectamente alineados,
+                    la imagen se convierte en un <strong>anillo perfecto</strong>:
+                </p>
+                <ul>
+                    <li>Radio del anillo = θE (Radio de Einstein)</li>
+                    <li>Depende de la masa de la lente</li>
+                    <li>Depende de las distancias (DL, DS, DLS)</li>
+                    <li>Es raro verlo completo — la alineacion perfecta es improbable</li>
+                </ul>
+                <div class="badge b-good" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-good)"></span>
+                    Usa preset "Anillo Einstein" en la simulacion
+                </div>
+            </div>
+        </section>
+
+        <!-- FISICA PROFUNDA -->
+        <section class="two">
+            <div class="card">
+                <h2>Magnificacion: telescopio natural</h2>
+                <p>
+                    Las lentes gravitacionales no solo distorsionan — <strong>amplifican</strong>.
+                    La magnificacion puede ser enorme cerca del radio de Einstein:
+                </p>
+                <ul>
+                    <li><strong>μ = 2-5x:</strong> Tipico para galaxias con lensing</li>
+                    <li><strong>μ = 10-50x:</strong> Arcos en cumulos masivos</li>
+                    <li><strong>μ > 1000x:</strong> Posible en puntos criticos (causticas)</li>
+                </ul>
+                <div class="callout">
+                    <p class="mini">
+                        El James Webb usa lentes gravitacionales para ver las galaxias
+                        mas antiguas del universo, amplificadas por cumulos masivos.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Revelando materia oscura</h2>
+                <p>
+                    La materia oscura no emite luz, pero <strong>si curva el espacio</strong>.
+                    El lensing es nuestra mejor herramienta para mapearla:
+                </p>
+                <ul>
+                    <li>Lensing debil: mapeo estadistico de grandes areas</li>
+                    <li>Lensing fuerte: masa total de cumulos de galaxias</li>
+                    <li>Cumulo Bala: prueba de separacion materia-luz</li>
+                </ul>
+                <div class="badge b-warn" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-warn)"></span>
+                    ~85% de la masa del universo es oscura
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto diferente de las lentes gravitacionales.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">El anillo de Einstein perfecto</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Cuando la fuente esta exactamente detras de la lente,
+                la imagen se convierte en un anillo perfecto cuyo radio es θE.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Usa el preset <strong>"Anillo Einstein"</strong></li>
+                        <li>Observa el anillo formandose alrededor de la lente</li>
+                        <li>Aumenta la <strong>masa de la lente</strong> — el anillo crece</li>
+                        <li>Mueve la fuente ligeramente — el anillo se rompe en arcos</li>
+                        <li>Nota como el radio de Einstein (θE) aparece en la barra superior</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Observa:</strong> El anillo perfecto es raro en la naturaleza.
+                    Mas comun es ver arcos parciales o imagenes dobles.</p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        θE depende de √M (raiz cuadrada de masa)
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Imagenes multiples y paridad</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Cuando la fuente esta desplazada, aparecen dos imagenes:
+                una del mismo lado (primaria) y otra del lado opuesto (secundaria, invertida).</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Usa el preset <strong>"Imagen Doble"</strong></li>
+                        <li>Observa las dos imagenes: una mas brillante que la otra</li>
+                        <li>Nota la <strong>linea punteada</strong> en la imagen secundaria — indica paridad invertida</li>
+                        <li>Activa <strong>"Mostrar rayos de luz"</strong></li>
+                        <li>Arrastra la fuente en circulo — las imagenes "bailan"</li>
+                        <li>Activa <strong>"Animar Fuente"</strong> para ver la danza automatica</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Paridad:</strong> La imagen secundaria esta "invertida"
+                    como un reflejo. Esto es una prediccion de la relatividad general.</p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        Imagen primaria siempre mas brillante
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Distorsion del fondo estelar</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Una lente gravitacional no solo afecta a la fuente principal —
+                distorsiona TODO el fondo, como mirando a traves de una copa de vino.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Activa <strong>"Distorsionar fondo"</strong></li>
+                        <li>Observa las estrellas de fondo cerca de la lente — estan desplazadas</li>
+                        <li>Aumenta la masa al maximo</li>
+                        <li>Arrastra la lente por la pantalla — el fondo "fluye"</li>
+                        <li>Compara con la posicion original (desactiva la opcion)</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Lensing debil:</strong> Esta distorsion sutil del fondo
+                    es la base del "lensing debil" — se mide estadisticamente sobre miles de galaxias.</p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        Mapeo de materia oscura a gran escala
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../lentes-gravitacionales.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">Las lentes en contexto</h2>
+            <p>El lensing gravitacional conecta optica, relatividad y cosmologia.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #8b5cf6"></span>
+                <span class="connection-title">Agujeros negros: lensing extremo</span>
+            </div>
+            <p>
+                Un agujero negro es el caso extremo de lensing gravitacional.
+                La fotosfera (r = 1.5 rs) es donde los fotones pueden orbitar.
+                La "sombra" fotografiada por el EHT es esencialmente un fenomeno de lensing.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../agujero-negro.html">Agujero Negro</a> —
+                orbitas relativistas y horizonte de eventos.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #6366f1"></span>
+                <span class="connection-title">Expansion del universo: midiendo H₀</span>
+            </div>
+            <p>
+                Las imagenes multiples de quasares llegan en tiempos diferentes
+                (dias a semanas de diferencia). Este "time delay" depende de H₀.
+                Midiendo delays, calculamos la constante de Hubble de forma independiente.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../expansion-universo.html">Expansion del Universo</a> —
+                la tension de Hubble y como medirla.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">Optica clasica: refraccion vs gravedad</span>
+            </div>
+            <p>
+                Una lente de vidrio curva la luz por refraccion (cambio de velocidad).
+                Una lente gravitacional curva la luz por geometria del espacio-tiempo.
+                El resultado visual es similar: imagenes distorsionadas, amplificacion, multiples imagenes.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../../Physics/Physics Visual Lab/optica.html">Óptica</a> —
+                refraccion y propagacion de luz.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Que NO muestra esta simulacion</h2>
+            <div class="grid">
+                <div>
+                    <ul>
+                        <li><strong>Lentes extendidas:</strong> La simulacion usa masa puntual.
+                        Galaxias reales tienen distribucion de masa → causticas complejas.</li>
+                        <li><strong>Time delays:</strong> Las imagenes multiples llegan en momentos
+                        diferentes. No se simula el desfase temporal.</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Lensing debil:</strong> La distorsion estadistica de miles
+                        de galaxias no se puede apreciar con pocas estrellas de fondo.</li>
+                        <li><strong>Microlensing:</strong> El paso de estrellas individuales
+                        causando variacion de brillo no esta implementado.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Historia</div>
+            <h2 style="margin-top:0.5rem">De la teoria a la observacion</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-year">1915</div>
+                    <div class="timeline-text">Einstein publica la Relatividad General. Predice que la luz se curva por gravedad.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1919</div>
+                    <div class="timeline-text">Eddington confirma la deflexion durante un eclipse solar. Einstein se vuelve celebridad mundial.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1979</div>
+                    <div class="timeline-text">Primera lente gravitacional extragalactica: quasar doble QSO 0957+561.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1987</div>
+                    <div class="timeline-text">Primer anillo de Einstein completo observado.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2006</div>
+                    <div class="timeline-text">Cumulo Bala: lensing muestra separacion de materia oscura y gas.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2022</div>
+                    <div class="timeline-text">James Webb usa lensing para ver galaxias primitivas amplificadas.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ul>
+                <li>Si la luz no tiene masa, por que la gravedad la afecta? (Pista: no es la luz la que se curva...)</li>
+                <li>Un cumulo de galaxias puede magnificar 50x. Que telescopio necesitarias para lograr lo mismo sin lensing?</li>
+                <li>Si detectamos dos imagenes de un quasar, como sabemos que son el mismo objeto y no dos quasares diferentes?</li>
+                <li>La materia oscura no emite luz, pero si causa lensing. Que nos dice esto sobre la naturaleza de la gravedad?</li>
+                <li>Eddington viajo a Africa para medir la deflexion de estrellas cerca del Sol. Por que necesitaba un eclipse?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="card section">
+            <div class="kicker">En resumen</div>
+            <h2 style="margin-top:0.5rem">El universo como laboratorio optico</h2>
+            <p>
+                Las lentes gravitacionales son una de las predicciones mas elegantes de la relatividad general —
+                y una de las herramientas mas poderosas de la astronomia moderna.
+                Nos permiten ver lo invisible (materia oscura), amplificar lo lejano (galaxias primitivas),
+                y medir lo dificil (H₀, masas de cumulos).
+            </p>
+            <p>
+                Esta simulacion te permite experimentar la <strong>geometria del espacio-tiempo en accion</strong>:
+                la luz no viaja en linea recta cuando hay masa cerca. El universo es una lente.
+            </p>
+            <p class="mini" style="margin-top: 1rem">
+                La gravedad no atrae la luz. La gravedad curva el espacio por donde viaja la luz.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Lentes Gravitacionales
+    </footer>
+</body>
+</html>

@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 60px rgba(99, 102, 241, 0.2);
+        }
+        .preview-canvas {
+            border-radius: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col">
+    <!-- Header -->
+    <header class="border-b border-gray-800 bg-gray-900/50 backdrop-blur-sm">
+        <div class="max-w-5xl mx-auto px-6 py-6">
+            <div class="text-center">
+                <nav class="text-xs text-gray-500 mb-2">
+                    <a href="../../_portal/index.html" class="hover:text-indigo-400 transition">EigenLab</a>
+                    <span class="mx-1">/</span>
+                    <a href="../Astronomy Visual Lab/index.html" class="hover:text-indigo-400 transition">Astronomy</a>
+                    <span class="mx-1">/</span>
+                    <span class="text-gray-400">Sound Lab</span>
+                </nav>
+                <h1 class="text-3xl font-light mb-2">
+                    <span class="text-indigo-400 font-medium">Astronomy</span> Sound Lab
+                </h1>
+                <p class="text-gray-400">Donde el cosmos se convierte en sonido</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex-1 flex items-center justify-center px-6 py-12">
+        <div class="grid md:grid-cols-3 gap-6 max-w-5xl w-full">
+            <!-- Pulsares -->
+            <a href="pulsares.html" class="card-link">
+                <div class="card bg-gray-900 border border-gray-800 rounded-2xl p-5 h-full">
+                    <canvas id="preview-pulsares" class="preview-canvas w-full h-28 bg-gray-950 mb-4"></canvas>
+                    <h2 class="text-xl font-medium text-indigo-400 mb-2">Pulsares</h2>
+                    <p class="text-gray-400 text-sm mb-3">
+                        Estrellas de neutrones que emiten pulsos de radio como faros cósmicos.
+                        Convierte sus períodos de rotación en ritmos audibles.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">Crab Pulsar</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">PSR B1919+21</span>
+                    </div>
+                    <div class="text-indigo-400 text-sm font-medium flex items-center gap-2">
+                        Explorar <span>→</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ondas Gravitacionales -->
+            <a href="ondas-gravitacionales.html" class="card-link">
+                <div class="card bg-gray-900 border border-gray-800 rounded-2xl p-5 h-full">
+                    <canvas id="preview-gw" class="preview-canvas w-full h-28 bg-gray-950 mb-4"></canvas>
+                    <h2 class="text-xl font-medium text-indigo-400 mb-2">Ondas Gravitacionales</h2>
+                    <p class="text-gray-400 text-sm mb-3">
+                        El famoso "chirp" de agujeros negros fusionándose.
+                        Escucha cómo suena el espacio-tiempo vibrando.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">GW150914</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">LIGO</span>
+                    </div>
+                    <div class="text-indigo-400 text-sm font-medium flex items-center gap-2">
+                        Explorar <span>→</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Música de las Esferas -->
+            <a href="musica-esferas-moderna.html" class="card-link">
+                <div class="card bg-gray-900 border border-gray-800 rounded-2xl p-5 h-full">
+                    <canvas id="preview-esferas" class="preview-canvas w-full h-28 bg-gray-950 mb-4"></canvas>
+                    <h2 class="text-xl font-medium text-indigo-400 mb-2">Música de las Esferas</h2>
+                    <p class="text-gray-400 text-sm mb-3">
+                        La idea de Kepler actualizada con exoplanetas reales.
+                        TRAPPIST-1 y otros sistemas planetarios cantando.
+                    </p>
+                    <div class="flex flex-wrap gap-2 mb-3">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">TRAPPIST-1</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-xs text-gray-400">Kepler-90</span>
+                    </div>
+                    <div class="text-indigo-400 text-sm font-medium flex items-center gap-2">
+                        Explorar <span>→</span>
+                    </div>
+                </div>
+            </a>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 py-6">
+        <div class="max-w-5xl mx-auto px-6 flex justify-between items-center text-gray-500 text-sm">
+            <span>Astronomy Sound Lab · 3 simulaciones</span>
+            <a href="https://github.com/cjlkaiser-cpu" target="_blank" class="hover:text-white transition">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            </a>
+        </div>
+    </footer>
+
+    <script>
+        const previews = {};
+        let time = 0;
+
+        function initPreviews() {
+            // Pulsares - Rotating beam
+            const pulsares = document.getElementById('preview-pulsares');
+            if (pulsares) {
+                previews.pulsares = {
+                    ctx: pulsares.getContext('2d'),
+                    w: pulsares.width = pulsares.offsetWidth * 2,
+                    h: pulsares.height = pulsares.offsetHeight * 2
+                };
+            }
+
+            // Gravitational Waves - Spiraling objects
+            const gw = document.getElementById('preview-gw');
+            if (gw) {
+                previews.gw = {
+                    ctx: gw.getContext('2d'),
+                    w: gw.width = gw.offsetWidth * 2,
+                    h: gw.height = gw.offsetHeight * 2
+                };
+            }
+
+            // Music of Spheres - Orbiting planets
+            const esferas = document.getElementById('preview-esferas');
+            if (esferas) {
+                previews.esferas = {
+                    ctx: esferas.getContext('2d'),
+                    w: esferas.width = esferas.offsetWidth * 2,
+                    h: esferas.height = esferas.offsetHeight * 2
+                };
+            }
+        }
+
+        function animate() {
+            time += 0.016;
+
+            // Pulsares animation
+            if (previews.pulsares) {
+                const p = previews.pulsares;
+                p.ctx.fillStyle = '#030712';
+                p.ctx.fillRect(0, 0, p.w, p.h);
+
+                const cx = p.w / 2;
+                const cy = p.h / 2;
+
+                // Beam
+                const angle = time * 3;
+                const beamLength = 80;
+
+                p.ctx.save();
+                p.ctx.translate(cx, cy);
+                p.ctx.rotate(angle);
+
+                const gradient = p.ctx.createLinearGradient(0, 0, 0, -beamLength);
+                gradient.addColorStop(0, 'rgba(99, 102, 241, 0.8)');
+                gradient.addColorStop(1, 'transparent');
+
+                p.ctx.fillStyle = gradient;
+                p.ctx.beginPath();
+                p.ctx.moveTo(-10, 0);
+                p.ctx.lineTo(-5, -beamLength);
+                p.ctx.lineTo(5, -beamLength);
+                p.ctx.lineTo(10, 0);
+                p.ctx.fill();
+
+                // Opposite beam
+                p.ctx.rotate(Math.PI);
+                p.ctx.fillStyle = gradient;
+                p.ctx.beginPath();
+                p.ctx.moveTo(-10, 0);
+                p.ctx.lineTo(-5, -beamLength);
+                p.ctx.lineTo(5, -beamLength);
+                p.ctx.lineTo(10, 0);
+                p.ctx.fill();
+
+                p.ctx.restore();
+
+                // Neutron star
+                p.ctx.fillStyle = '#6366f1';
+                p.ctx.beginPath();
+                p.ctx.arc(cx, cy, 15, 0, Math.PI * 2);
+                p.ctx.fill();
+
+                // Pulse indicator
+                const pulsePhase = (angle / (Math.PI * 2)) % 1;
+                if (pulsePhase < 0.1) {
+                    p.ctx.fillStyle = 'rgba(99, 102, 241, ' + (1 - pulsePhase * 10) * 0.5 + ')';
+                    p.ctx.beginPath();
+                    p.ctx.arc(cx, cy, 30 + pulsePhase * 200, 0, Math.PI * 2);
+                    p.ctx.fill();
+                }
+            }
+
+            // Gravitational Waves animation
+            if (previews.gw) {
+                const g = previews.gw;
+                g.ctx.fillStyle = '#030712';
+                g.ctx.fillRect(0, 0, g.w, g.h);
+
+                const cx = g.w / 2;
+                const cy = g.h / 2;
+
+                // Spiral inward
+                const separation = 30 + Math.sin(time * 0.5) * 20;
+                const orbitSpeed = 3 + (30 - separation) * 0.1;
+
+                const x1 = cx + Math.cos(time * orbitSpeed) * separation;
+                const y1 = cy + Math.sin(time * orbitSpeed) * separation;
+                const x2 = cx - Math.cos(time * orbitSpeed) * separation;
+                const y2 = cy - Math.sin(time * orbitSpeed) * separation;
+
+                // Wave rings
+                for (let i = 0; i < 4; i++) {
+                    const phase = (time * 0.5 + i * 0.25) % 1;
+                    const radius = phase * 100;
+                    g.ctx.strokeStyle = `rgba(99, 102, 241, ${(1 - phase) * 0.3})`;
+                    g.ctx.lineWidth = 2;
+                    g.ctx.beginPath();
+                    g.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    g.ctx.stroke();
+                }
+
+                // Objects
+                g.ctx.fillStyle = '#6366f1';
+                g.ctx.beginPath();
+                g.ctx.arc(x1, y1, 8, 0, Math.PI * 2);
+                g.ctx.fill();
+
+                g.ctx.fillStyle = '#818cf8';
+                g.ctx.beginPath();
+                g.ctx.arc(x2, y2, 8, 0, Math.PI * 2);
+                g.ctx.fill();
+            }
+
+            // Music of Spheres animation
+            if (previews.esferas) {
+                const e = previews.esferas;
+                e.ctx.fillStyle = '#030712';
+                e.ctx.fillRect(0, 0, e.w, e.h);
+
+                const cx = e.w / 2;
+                const cy = e.h / 2;
+
+                // Star
+                e.ctx.fillStyle = '#fbbf24';
+                e.ctx.beginPath();
+                e.ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+                e.ctx.fill();
+
+                // Planets
+                const colors = ['#a78bfa', '#818cf8', '#6366f1', '#4f46e5', '#4338ca'];
+                const periods = [1.5, 2.4, 4.0, 6.1, 9.2];
+
+                colors.forEach((color, i) => {
+                    const radius = 25 + i * 12;
+                    const angle = time * (5 / periods[i]);
+
+                    // Orbit
+                    e.ctx.strokeStyle = 'rgba(99, 102, 241, 0.2)';
+                    e.ctx.lineWidth = 1;
+                    e.ctx.beginPath();
+                    e.ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    e.ctx.stroke();
+
+                    // Planet
+                    const px = cx + Math.cos(angle) * radius;
+                    const py = cy + Math.sin(angle) * radius;
+
+                    // Glow when at top (note trigger)
+                    const atTop = Math.abs(angle % (Math.PI * 2) - Math.PI * 1.5) < 0.3;
+                    if (atTop) {
+                        e.ctx.fillStyle = color + '40';
+                        e.ctx.beginPath();
+                        e.ctx.arc(px, py, 10, 0, Math.PI * 2);
+                        e.ctx.fill();
+                    }
+
+                    e.ctx.fillStyle = color;
+                    e.ctx.beginPath();
+                    e.ctx.arc(px, py, 4, 0, Math.PI * 2);
+                    e.ctx.fill();
+                });
+            }
+
+            requestAnimationFrame(animate);
+        }
+
+        window.addEventListener('load', () => {
+            initPreviews();
+            animate();
+        });
+
+        window.addEventListener('resize', initPreviews);
+    </script>
+</body>
+</html>

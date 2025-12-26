@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Membrana Fluida | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 260px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #fbbf24; font-size: 12px; font-weight: bold; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .legend-line { width: 15px; height: 3px; border-radius: 2px; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #fbbf24; color: #fbbf24; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🔬 Membrana Fluida</h2>
+        <p class="text-slate-500 text-xs mb-4">Modelo de mosaico fluido · Singer-Nicolson</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                El <span class="text-pink-400">mosaico fluido</span> describe la membrana: bicapa lipídica con proteínas flotantes. Colesterol regula fluidez.
+            </p>
+            <a href="guides/membrana-fluida.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: fosfolípidos, colesterol, fluidez
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Temperatura</span><span class="text-amber-400" id="temp-val">37°C</span></label>
+            <input type="range" id="temp" min="0" max="60" value="37">
+        </div>
+
+        <div class="slider">
+            <label><span>Colesterol (%)</span><span class="text-amber-400" id="chol-val">20%</span></label>
+            <input type="range" id="cholesterol" min="0" max="50" value="20">
+        </div>
+
+        <div class="slider">
+            <label><span>Fluidez</span><span class="text-amber-400" id="fluid-val">1.0</span></label>
+            <input type="range" id="fluidity" min="0.2" max="2" step="0.1" value="1">
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Fosfolípidos</span>
+            <span class="stat-value" id="lipid-count">200</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Proteínas</span>
+            <span class="stat-value" id="protein-count">0</span>
+        </div>
+
+        <button class="btn" id="add-protein">+ Añadir Proteína</button>
+        <button class="btn" id="add-channel">+ Añadir Canal Iónico</button>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Cabeza hidrofílica</div>
+            <div class="legend-item"><div class="legend-line" style="background:#64748b"></div>Colas hidrofóbicas</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Colesterol</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>Proteína integral</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Canal iónico</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Interacción:</strong> Mueve el mouse sobre la membrana para perturbarla.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+            initLipids();
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Lipids
+        let lipids = [];
+        let proteins = [];
+        let cholesterols = [];
+        let mouseX = 0, mouseY = 0;
+
+        const LIPID_COUNT = 100;
+        const membraneY = () => H / 2;
+        const membraneThickness = 60;
+
+        class Lipid {
+            constructor(x, layer) {
+                this.x = x;
+                this.baseY = membraneY() + (layer === 'top' ? -membraneThickness / 2 : membraneThickness / 2);
+                this.y = this.baseY;
+                this.layer = layer;
+                this.phase = Math.random() * Math.PI * 2;
+                this.vx = 0;
+            }
+
+            update(fluidity, temp) {
+                const time = Date.now() / 1000;
+                const tempFactor = temp / 37;
+
+                // Wave motion
+                const wave = Math.sin(time * 2 * fluidity + this.x * 0.02 + this.phase) * 5 * fluidity;
+                this.y = this.baseY + wave;
+
+                // Lateral diffusion (Brownian)
+                this.vx += (Math.random() - 0.5) * 0.3 * fluidity * tempFactor;
+                this.vx *= 0.95;
+                this.x += this.vx;
+
+                // Wrap around
+                if (this.x < 50) this.x = W - 50;
+                if (this.x > W - 50) this.x = 50;
+
+                // Mouse repulsion
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 80 && dist > 0) {
+                    this.vx += (dx / dist) * 2;
+                }
+            }
+
+            draw() {
+                const tailDir = this.layer === 'top' ? 1 : -1;
+                const tailLength = 25;
+
+                // Head
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = '#fbbf24';
+                ctx.shadowColor = '#fbbf24';
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Tails
+                ctx.strokeStyle = '#64748b';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+
+                // Tail 1
+                ctx.beginPath();
+                ctx.moveTo(this.x - 2, this.y);
+                ctx.lineTo(this.x - 2, this.y + tailDir * tailLength);
+                ctx.stroke();
+
+                // Tail 2 (kinked for unsaturated)
+                ctx.beginPath();
+                ctx.moveTo(this.x + 2, this.y);
+                ctx.quadraticCurveTo(this.x + 6, this.y + tailDir * tailLength * 0.5, this.x + 2, this.y + tailDir * tailLength * 0.9);
+                ctx.stroke();
+            }
+        }
+
+        class Protein {
+            constructor(x, type = 'integral') {
+                this.x = x;
+                this.y = membraneY();
+                this.type = type;
+                this.vx = 0;
+                this.width = type === 'channel' ? 30 : 40;
+                this.height = membraneThickness + 20;
+            }
+
+            update(fluidity) {
+                this.vx += (Math.random() - 0.5) * 0.1 * fluidity;
+                this.vx *= 0.98;
+                this.x += this.vx;
+
+                if (this.x < 100) this.x = 100;
+                if (this.x > W - 100) this.x = W - 100;
+
+                // Mouse repulsion
+                const dx = this.x - mouseX;
+                const dy = this.y - mouseY;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < 100 && dist > 0) {
+                    this.vx += (dx / dist) * 0.5;
+                }
+            }
+
+            draw() {
+                const color = this.type === 'channel' ? '#22c55e' : '#d946ef';
+
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+
+                if (this.type === 'channel') {
+                    // Channel shape (hourglass)
+                    ctx.beginPath();
+                    ctx.moveTo(this.x - 15, this.y - this.height / 2);
+                    ctx.lineTo(this.x + 15, this.y - this.height / 2);
+                    ctx.lineTo(this.x + 8, this.y);
+                    ctx.lineTo(this.x + 15, this.y + this.height / 2);
+                    ctx.lineTo(this.x - 15, this.y + this.height / 2);
+                    ctx.lineTo(this.x - 8, this.y);
+                    ctx.closePath();
+                    ctx.fill();
+
+                    // Channel pore
+                    ctx.fillStyle = '#0f172a';
+                    ctx.fillRect(this.x - 4, this.y - this.height / 2 + 10, 8, this.height - 20);
+                } else {
+                    // Integral protein (blob)
+                    ctx.beginPath();
+                    ctx.ellipse(this.x, this.y, this.width / 2, this.height / 2, 0, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Surface portion
+                    ctx.beginPath();
+                    ctx.arc(this.x, this.y - this.height / 2 - 10, 15, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        class Cholesterol {
+            constructor(x, layer) {
+                this.x = x;
+                this.layer = layer;
+                this.baseY = membraneY() + (layer === 'top' ? -15 : 15);
+                this.y = this.baseY;
+                this.vx = 0;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update(fluidity) {
+                const time = Date.now() / 1000;
+                const wave = Math.sin(time * 2 * fluidity + this.phase) * 3;
+                this.y = this.baseY + wave;
+
+                this.vx += (Math.random() - 0.5) * 0.2 * fluidity;
+                this.vx *= 0.96;
+                this.x += this.vx;
+
+                if (this.x < 50) this.x = W - 50;
+                if (this.x > W - 50) this.x = 50;
+            }
+
+            draw() {
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = '#ef4444';
+                ctx.shadowColor = '#ef4444';
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initLipids() {
+            lipids = [];
+            cholesterols = [];
+
+            const spacing = (W - 100) / LIPID_COUNT;
+
+            for (let i = 0; i < LIPID_COUNT; i++) {
+                lipids.push(new Lipid(50 + i * spacing + (Math.random() - 0.5) * 10, 'top'));
+                lipids.push(new Lipid(50 + i * spacing + (Math.random() - 0.5) * 10, 'bottom'));
+            }
+
+            updateCholesterol();
+        }
+
+        function updateCholesterol() {
+            const percent = parseInt(document.getElementById('cholesterol').value);
+            const targetCount = Math.floor(LIPID_COUNT * percent / 100);
+
+            while (cholesterols.length < targetCount) {
+                const x = 50 + Math.random() * (W - 100);
+                const layer = Math.random() > 0.5 ? 'top' : 'bottom';
+                cholesterols.push(new Cholesterol(x, layer));
+            }
+
+            while (cholesterols.length > targetCount) {
+                cholesterols.pop();
+            }
+        }
+
+        function drawMembrane() {
+            // Hydrophobic core
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, membraneY() - membraneThickness / 2, W, membraneThickness);
+
+            // Region labels
+            ctx.fillStyle = '#475569';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'right';
+            ctx.fillText('Extracelular', W - 30, membraneY() - membraneThickness / 2 - 40);
+            ctx.fillText('Citoplasma', W - 30, membraneY() + membraneThickness / 2 + 50);
+
+            ctx.textAlign = 'left';
+            ctx.fillStyle = '#334155';
+            ctx.fillText('Hidrofílico', 30, membraneY() - membraneThickness / 2 - 10);
+            ctx.fillText('Hidrofóbico', 30, membraneY());
+            ctx.fillText('Hidrofílico', 30, membraneY() + membraneThickness / 2 + 20);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const fluidity = parseFloat(document.getElementById('fluidity').value);
+            const temp = parseInt(document.getElementById('temp').value);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Membrana Plasmática — Modelo de Mosaico Fluido', W / 2, 40);
+
+            drawMembrane();
+
+            // Update and draw lipids
+            lipids.forEach(l => {
+                l.update(fluidity, temp);
+                l.draw();
+            });
+
+            // Update and draw cholesterol
+            cholesterols.forEach(c => {
+                c.update(fluidity);
+                c.draw();
+            });
+
+            // Update and draw proteins
+            proteins.forEach(p => {
+                p.update(fluidity);
+                p.draw();
+            });
+
+            // Update counts
+            document.getElementById('lipid-count').textContent = lipids.length;
+            document.getElementById('protein-count').textContent = proteins.length;
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('temp').addEventListener('input', e => {
+            document.getElementById('temp-val').textContent = e.target.value + '°C';
+        });
+
+        document.getElementById('cholesterol').addEventListener('input', e => {
+            document.getElementById('chol-val').textContent = e.target.value + '%';
+            updateCholesterol();
+        });
+
+        document.getElementById('fluidity').addEventListener('input', e => {
+            document.getElementById('fluid-val').textContent = e.target.value;
+        });
+
+        document.getElementById('add-protein').addEventListener('click', () => {
+            proteins.push(new Protein(W / 2 + (Math.random() - 0.5) * 200, 'integral'));
+        });
+
+        document.getElementById('add-channel').addEventListener('click', () => {
+            proteins.push(new Protein(W / 2 + (Math.random() - 0.5) * 200, 'channel'));
+        });
+
+        canvas.addEventListener('mousemove', e => {
+            mouseX = e.clientX;
+            mouseY = e.clientY;
+        });
+
+        initLipids();
+        draw();
+    </script>
+</body>
+</html>

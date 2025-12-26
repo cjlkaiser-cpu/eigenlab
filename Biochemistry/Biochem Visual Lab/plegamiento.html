@@ -1,0 +1,564 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plegamiento Proteico | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #22c55e;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #22c55e; font-size: 12px; font-weight: bold; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #22c55e; color: #22c55e; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #22c55e; }
+        .btn.active { border-color: #22c55e; background: rgba(34, 197, 94, 0.2); }
+        .energy-bar {
+            height: 8px;
+            background: #1e293b;
+            border-radius: 4px;
+            margin-top: 5px;
+            overflow: hidden;
+        }
+        .energy-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #22c55e, #fbbf24);
+            transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🔄 Plegamiento Proteico</h2>
+        <p class="text-slate-500 text-xs mb-4">Folding · Chaperonas · Energía libre</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                El <span class="text-pink-400">plegamiento</span> convierte la cadena lineal en estructura 3D funcional. Chaperonas asisten; misfolding causa enfermedades.
+            </p>
+            <a href="guides/plegamiento.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: energía libre, chaperonas, priones
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Temperatura</span><span class="text-green-400" id="temp-val">37°C</span></label>
+            <input type="range" id="temp" min="20" max="80" value="37">
+        </div>
+
+        <div class="slider">
+            <label><span>Chaperonas</span><span class="text-green-400" id="chap-val">ON</span></label>
+            <input type="range" id="chaperone" min="0" max="1" step="1" value="1">
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Estado</span>
+            <span class="stat-value" id="fold-state">Desplegada</span>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Energía libre (ΔG)</span>
+            <span class="stat-value" id="energy">0 kJ/mol</span>
+        </div>
+
+        <div class="text-slate-500 text-xs mt-2">Estabilidad</div>
+        <div class="energy-bar">
+            <div class="energy-fill" id="stability-bar" style="width: 0%"></div>
+        </div>
+
+        <button class="btn" id="fold">▶ Plegar proteína</button>
+        <button class="btn" id="unfold">◀ Desplegar</button>
+        <button class="btn" id="reset">↻ Nueva proteína</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Aminoácidos</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Hidrofóbicos (interior)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Hidrofílicos (exterior)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Cisteínas (puentes S-S)</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Interacciones</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Puentes de hidrógeno</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Interacciones hidrofóbicas</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#f97316"></div>Puentes disulfuro</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Nota:</strong> Las chaperonas (HSP) ayudan al plegamiento correcto evitando agregación.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Amino acid types
+        const HYDROPHOBIC = 'hydrophobic';
+        const HYDROPHILIC = 'hydrophilic';
+        const CYSTEINE = 'cysteine';
+
+        class AminoAcid {
+            constructor(index, type) {
+                this.index = index;
+                this.type = type;
+                this.x = 0;
+                this.y = 0;
+                this.targetX = 0;
+                this.targetY = 0;
+                this.vx = 0;
+                this.vy = 0;
+            }
+
+            update(temp) {
+                // Move toward target
+                const dx = this.targetX - this.x;
+                const dy = this.targetY - this.y;
+
+                this.vx += dx * 0.05;
+                this.vy += dy * 0.05;
+
+                // Temperature adds noise
+                const tempFactor = temp / 37;
+                this.vx += (Math.random() - 0.5) * tempFactor * 0.5;
+                this.vy += (Math.random() - 0.5) * tempFactor * 0.5;
+
+                // Damping
+                this.vx *= 0.9;
+                this.vy *= 0.9;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw() {
+                const colors = {
+                    [HYDROPHOBIC]: '#ef4444',
+                    [HYDROPHILIC]: '#38bdf8',
+                    [CYSTEINE]: '#fbbf24'
+                };
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 12, 0, Math.PI * 2);
+                ctx.fillStyle = colors[this.type];
+                ctx.shadowColor = colors[this.type];
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Label
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(this.index + 1, this.x, this.y + 3);
+            }
+        }
+
+        class Chaperone {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.radius = 60;
+                this.angle = Math.random() * Math.PI * 2;
+                this.active = false;
+            }
+
+            update() {
+                this.angle += 0.02;
+            }
+
+            draw() {
+                // Barrel shape (GroEL-like)
+                ctx.strokeStyle = this.active ? '#22c55e' : '#475569';
+                ctx.lineWidth = 4;
+                ctx.shadowColor = '#22c55e';
+                ctx.shadowBlur = this.active ? 15 : 0;
+
+                // Outer ring
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Inner ring
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius * 0.6, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Subunits
+                for (let i = 0; i < 7; i++) {
+                    const angle = this.angle + (i * Math.PI * 2 / 7);
+                    const x = this.x + Math.cos(angle) * this.radius * 0.8;
+                    const y = this.y + Math.sin(angle) * this.radius * 0.8;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 10, 0, Math.PI * 2);
+                    ctx.fillStyle = this.active ? '#22c55e' : '#334155';
+                    ctx.fill();
+                }
+
+                ctx.shadowBlur = 0;
+
+                // Label
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('HSP60', this.x, this.y + this.radius + 20);
+            }
+        }
+
+        // State
+        let aminoAcids = [];
+        let chaperone;
+        let foldingProgress = 0;
+        let targetFoldingProgress = 0;
+        let isFolding = false;
+
+        function generateProtein() {
+            aminoAcids = [];
+            const length = 20 + Math.floor(Math.random() * 10);
+
+            for (let i = 0; i < length; i++) {
+                const rand = Math.random();
+                let type;
+                if (rand < 0.4) type = HYDROPHOBIC;
+                else if (rand < 0.85) type = HYDROPHILIC;
+                else type = CYSTEINE;
+
+                aminoAcids.push(new AminoAcid(i, type));
+            }
+
+            // Position in extended chain
+            setUnfoldedPositions();
+
+            chaperone = new Chaperone(W / 2, H / 2);
+            foldingProgress = 0;
+            targetFoldingProgress = 0;
+        }
+
+        function setUnfoldedPositions() {
+            const startX = W * 0.2;
+            const y = H / 2;
+
+            aminoAcids.forEach((aa, i) => {
+                const x = startX + i * 28;
+                const wobble = Math.sin(i * 0.5) * 20;
+                aa.x = x;
+                aa.y = y + wobble;
+                aa.targetX = x;
+                aa.targetY = y + wobble;
+            });
+        }
+
+        function setFoldedPositions() {
+            const centerX = W / 2;
+            const centerY = H / 2;
+
+            // Arrange in a compact globular shape
+            // Hydrophobic core, hydrophilic shell
+
+            const hydrophobics = aminoAcids.filter(aa => aa.type === HYDROPHOBIC);
+            const hydrophilics = aminoAcids.filter(aa => aa.type === HYDROPHILIC || aa.type === CYSTEINE);
+
+            // Core - hydrophobic
+            hydrophobics.forEach((aa, i) => {
+                const angle = (i / hydrophobics.length) * Math.PI * 2;
+                const radius = 30 + (i % 3) * 15;
+                aa.targetX = centerX + Math.cos(angle) * radius;
+                aa.targetY = centerY + Math.sin(angle) * radius;
+            });
+
+            // Shell - hydrophilic
+            hydrophilics.forEach((aa, i) => {
+                const angle = (i / hydrophilics.length) * Math.PI * 2 + 0.3;
+                const radius = 70 + (i % 2) * 20;
+                aa.targetX = centerX + Math.cos(angle) * radius;
+                aa.targetY = centerY + Math.sin(angle) * radius;
+            });
+        }
+
+        function interpolatePositions(progress) {
+            aminoAcids.forEach(aa => {
+                // Store initial positions if not stored
+                if (aa.unfoldedX === undefined) {
+                    aa.unfoldedX = aa.x;
+                    aa.unfoldedY = aa.y;
+                }
+            });
+        }
+
+        function drawBonds() {
+            // Backbone
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i < aminoAcids.length; i++) {
+                const aa = aminoAcids[i];
+                if (i === 0) ctx.moveTo(aa.x, aa.y);
+                else ctx.lineTo(aa.x, aa.y);
+            }
+            ctx.stroke();
+
+            // Draw interactions when folded
+            if (foldingProgress > 0.5) {
+                const alpha = (foldingProgress - 0.5) * 2;
+
+                // Disulfide bonds (between cysteines)
+                const cysteines = aminoAcids.filter(aa => aa.type === CYSTEINE);
+                ctx.strokeStyle = `rgba(249, 115, 22, ${alpha})`;
+                ctx.lineWidth = 3;
+                for (let i = 0; i < cysteines.length - 1; i += 2) {
+                    if (cysteines[i + 1]) {
+                        ctx.beginPath();
+                        ctx.moveTo(cysteines[i].x, cysteines[i].y);
+                        ctx.lineTo(cysteines[i + 1].x, cysteines[i + 1].y);
+                        ctx.stroke();
+                    }
+                }
+
+                // Hydrogen bonds (between some hydrophilics)
+                ctx.strokeStyle = `rgba(34, 197, 94, ${alpha * 0.5})`;
+                ctx.lineWidth = 1;
+                ctx.setLineDash([4, 4]);
+                const hydrophilics = aminoAcids.filter(aa => aa.type === HYDROPHILIC);
+                for (let i = 0; i < hydrophilics.length; i += 3) {
+                    if (hydrophilics[i + 2]) {
+                        ctx.beginPath();
+                        ctx.moveTo(hydrophilics[i].x, hydrophilics[i].y);
+                        ctx.lineTo(hydrophilics[i + 2].x, hydrophilics[i + 2].y);
+                        ctx.stroke();
+                    }
+                }
+                ctx.setLineDash([]);
+
+                // Hydrophobic interactions (shaded core)
+                if (foldingProgress > 0.8) {
+                    const hydrophobics = aminoAcids.filter(aa => aa.type === HYDROPHOBIC);
+                    if (hydrophobics.length > 2) {
+                        ctx.fillStyle = `rgba(168, 85, 247, ${(foldingProgress - 0.8) * 0.3})`;
+                        ctx.beginPath();
+                        ctx.moveTo(hydrophobics[0].x, hydrophobics[0].y);
+                        hydrophobics.forEach(aa => ctx.lineTo(aa.x, aa.y));
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                }
+            }
+        }
+
+        function calculateEnergy() {
+            // Simplified energy calculation
+            // More negative = more stable (folded state)
+            const baseEnergy = -50 * foldingProgress;
+            const temp = parseInt(document.getElementById('temp').value);
+            const tempPenalty = Math.max(0, (temp - 50) * 2);
+
+            return Math.round(baseEnergy + tempPenalty);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const temp = parseInt(document.getElementById('temp').value);
+            const hasChaperone = document.getElementById('chaperone').value === '1';
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Plegamiento de Proteínas — Termodinámica del Folding', W / 2, 40);
+
+            // Update folding progress
+            if (isFolding) {
+                const rate = hasChaperone ? 0.008 : 0.004;
+                // High temp can denature
+                if (temp > 60) {
+                    targetFoldingProgress = Math.max(0, targetFoldingProgress - 0.005);
+                }
+                foldingProgress += (targetFoldingProgress - foldingProgress) * rate;
+            }
+
+            // Draw chaperone if active
+            if (hasChaperone) {
+                chaperone.active = isFolding && foldingProgress < 0.9;
+                chaperone.update();
+                chaperone.draw();
+            }
+
+            // Draw bonds and amino acids
+            drawBonds();
+            aminoAcids.forEach(aa => {
+                aa.update(temp);
+                aa.draw();
+            });
+
+            // Update UI
+            const energy = calculateEnergy();
+            document.getElementById('energy').textContent = energy + ' kJ/mol';
+
+            let state = 'Desplegada';
+            if (foldingProgress > 0.9) state = 'Nativa (plegada)';
+            else if (foldingProgress > 0.5) state = 'Intermedio';
+            else if (foldingProgress > 0.1) state = 'Plegando...';
+
+            if (temp > 60 && foldingProgress < 0.3) state = 'Desnaturalizada';
+
+            document.getElementById('fold-state').textContent = state;
+            document.getElementById('stability-bar').style.width = (foldingProgress * 100) + '%';
+
+            // Energy diagram
+            drawEnergyDiagram();
+
+            requestAnimationFrame(draw);
+        }
+
+        function drawEnergyDiagram() {
+            const x = W - 250;
+            const y = 80;
+            const w = 200;
+            const h = 150;
+
+            // Background
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
+            ctx.fillRect(x, y, w, h);
+
+            // Axes
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(x + 30, y + 10);
+            ctx.lineTo(x + 30, y + h - 20);
+            ctx.lineTo(x + w - 10, y + h - 20);
+            ctx.stroke();
+
+            // Energy curve (funnel)
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x + 40, y + 30);
+            ctx.quadraticCurveTo(x + w/2, y + 50, x + w - 40, y + 30);
+            ctx.quadraticCurveTo(x + w/2, y + h - 40, x + w/2, y + h - 30);
+            ctx.stroke();
+
+            // Current position marker
+            const markerX = x + 40 + (w - 80) * (1 - foldingProgress) * 0.5 + (w - 80) * 0.25;
+            const markerY = y + 30 + (h - 60) * foldingProgress;
+
+            ctx.beginPath();
+            ctx.arc(markerX, markerY, 6, 0, Math.PI * 2);
+            ctx.fillStyle = '#fbbf24';
+            ctx.shadowColor = '#fbbf24';
+            ctx.shadowBlur = 10;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+
+            // Labels
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Energía libre', x + 30, y + 5);
+            ctx.fillText('Progreso plegamiento', x + w/2, y + h - 5);
+            ctx.fillText('Estado nativo', x + w/2, y + h - 25);
+        }
+
+        // Events
+        document.getElementById('temp').addEventListener('input', e => {
+            document.getElementById('temp-val').textContent = e.target.value + '°C';
+        });
+
+        document.getElementById('chaperone').addEventListener('input', e => {
+            document.getElementById('chap-val').textContent = e.target.value === '1' ? 'ON' : 'OFF';
+        });
+
+        document.getElementById('fold').addEventListener('click', () => {
+            setFoldedPositions();
+            targetFoldingProgress = 1;
+            isFolding = true;
+        });
+
+        document.getElementById('unfold').addEventListener('click', () => {
+            setUnfoldedPositions();
+            targetFoldingProgress = 0;
+            isFolding = true;
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            generateProtein();
+            isFolding = false;
+        });
+
+        generateProtein();
+        draw();
+    </script>
+</body>
+</html>

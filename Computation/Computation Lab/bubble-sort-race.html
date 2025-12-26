@@ -1,0 +1,1094 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bubble Sort Race - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+
+            /* State colors */
+            --color-default: #64748b;
+            --color-comparing: #fbbf24;
+            --color-swapping: #ef4444;
+            --color-sorted: #22c55e;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Header */
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main layout */
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Controls panel */
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        /* Equation box */
+        .equation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .equation-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Control groups */
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .control-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+        }
+
+        .control-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        /* Sliders */
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 6px;
+            background: var(--bg-panel);
+            border-radius: 3px;
+            outline: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.1s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover {
+            background: var(--border);
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-success {
+            background: var(--color-sorted);
+            border-color: var(--color-sorted);
+        }
+
+        .btn-warning {
+            background: var(--color-comparing);
+            border-color: var(--color-comparing);
+            color: #000;
+        }
+
+        .btn.active {
+            box-shadow: 0 0 0 2px var(--accent-glow);
+        }
+
+        .btn-full {
+            grid-column: 1 / -1;
+        }
+
+        /* Stats panel */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+        }
+
+        .stat-item {
+            background: var(--bg-panel);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--text-primary);
+            margin-top: 0.25rem;
+        }
+
+        .stat-max {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        /* Progress bar */
+        .progress-container {
+            background: var(--bg-panel);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+        }
+
+        .progress-bar {
+            height: 8px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-sorted);
+            transition: width 0.1s;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+
+        /* Status indicator */
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .status-badge.running {
+            background: rgba(59, 130, 246, 0.2);
+            color: var(--accent);
+        }
+
+        .status-badge.paused {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--color-comparing);
+        }
+
+        .status-badge.completed {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--color-sorted);
+        }
+
+        .status-badge.ready {
+            background: rgba(100, 116, 139, 0.2);
+            color: var(--text-secondary);
+        }
+
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        /* Guide link */
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+
+        .guide-icon {
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: var(--accent);
+            color: white;
+            font-size: 0.7rem;
+            font-weight: 700;
+        }
+
+        /* Complexity info */
+        .complexity-box {
+            background: var(--bg-panel);
+            border-radius: 0.375rem;
+            padding: 0.75rem;
+            font-size: 0.8rem;
+        }
+
+        .complexity-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.25rem 0;
+        }
+
+        .complexity-label {
+            color: var(--text-secondary);
+        }
+
+        .complexity-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+        }
+
+        /* Explanation boxes */
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+
+        .explanation-box summary {
+            margin-bottom: 0;
+        }
+
+        .explanation-box[open] summary {
+            margin-bottom: 0.75rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .explanation-content p {
+            margin: 0;
+        }
+
+        .explanation-content strong {
+            color: var(--text-primary);
+        }
+
+        .explanation-content ul {
+            margin: 0.5rem 0;
+            padding-left: 1.25rem;
+        }
+
+        .explanation-content li {
+            margin: 0.25rem 0;
+        }
+
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+
+        /* Algorithm comparison mode */
+        .comparison-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.85rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: var(--bg-panel);
+            border-radius: 11px;
+            transition: 0.2s;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background: var(--text-secondary);
+            border-radius: 50%;
+            transition: 0.2s;
+        }
+
+        .toggle-switch input:checked + .toggle-slider {
+            background: var(--accent);
+        }
+
+        .toggle-switch input:checked + .toggle-slider:before {
+            transform: translateX(18px);
+            background: white;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a>
+                <span> / </span>
+                <a href="index.html">Computation Lab</a>
+                <span> / </span>
+                <span>Bubble Sort Race</span>
+            </nav>
+            <h1>Bubble Sort Race</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <a href="guides/bubble-sort.html" class="guide-link" title="Abrir guia explicativa">
+                <span class="guide-icon">?</span>
+                <span>Guia</span>
+            </a>
+            <div class="status-badge ready" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">Listo</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <aside class="controls">
+            <!-- Equation -->
+            <div class="equation-box">
+                <div class="equation">if arr[j] > arr[j+1]: swap(arr[j], arr[j+1])</div>
+                <div class="equation-label">Bubble Sort - Comparación e intercambio adyacente</div>
+            </div>
+
+            <!-- Quick explanation + guide link -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>Compara pares adyacentes e intercambia si estan desordenados. Los elementos grandes "flotan" hacia el final como burbujas.</p>
+                    <a href="guides/bubble-sort.html" class="guide-btn">
+                        <span class="guide-icon" style="width:16px; height:16px; font-size:0.65rem;">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Parameters -->
+            <div>
+                <div class="section-title">Parámetros</div>
+                <div class="control-group">
+                    <div class="control-label">
+                        <span>Elementos</span>
+                        <span class="control-value" id="elementsValue">30</span>
+                    </div>
+                    <input type="range" id="elementsSlider" min="10" max="100" value="30">
+                </div>
+                <div class="control-group" style="margin-top: 0.75rem;">
+                    <div class="control-label">
+                        <span>Velocidad (ms/paso)</span>
+                        <span class="control-value" id="speedValue">50</span>
+                    </div>
+                    <input type="range" id="speedSlider" min="1" max="200" value="50">
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div>
+                <div class="section-title">Controles</div>
+                <div class="btn-group">
+                    <button class="btn btn-primary" id="playBtn">▶ Play</button>
+                    <button class="btn" id="pauseBtn">⏸ Pausa</button>
+                    <button class="btn" id="stepBtn">→ Paso</button>
+                    <button class="btn" id="resetBtn">↺ Reset</button>
+                </div>
+            </div>
+
+            <!-- Array generation -->
+            <div>
+                <div class="section-title">Generar Array</div>
+                <div class="btn-group">
+                    <button class="btn btn-full" id="shuffleBtn">🔀 Aleatorio</button>
+                    <button class="btn" id="worstBtn">📉 Peor Caso</button>
+                    <button class="btn" id="bestBtn">📈 Mejor Caso</button>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div>
+                <div class="section-title">Estadísticas</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Comparaciones</div>
+                        <div class="stat-value" id="comparisons">0</div>
+                        <div class="stat-max">máx: <span id="maxComparisons">435</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Intercambios</div>
+                        <div class="stat-value" id="swaps">0</div>
+                        <div class="stat-max">máx: <span id="maxSwaps">435</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Pasadas</div>
+                        <div class="stat-value"><span id="passes">0</span> / <span id="maxPasses">29</span></div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Tiempo</div>
+                        <div class="stat-value" id="time">0.00s</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-container">
+                <div class="control-label">
+                    <span>Progreso</span>
+                    <span class="control-value" id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Complexity -->
+            <div>
+                <div class="section-title">Complejidad</div>
+                <div class="complexity-box">
+                    <div class="complexity-row">
+                        <span class="complexity-label">Tiempo (peor)</span>
+                        <span class="complexity-value">O(n²)</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Tiempo (mejor)</span>
+                        <span class="complexity-value">O(n)</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Espacio</span>
+                        <span class="complexity-value">O(1)</span>
+                    </div>
+                    <div class="complexity-row">
+                        <span class="complexity-label">Estable</span>
+                        <span class="complexity-value">Sí</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div>
+                <div class="section-title">Leyenda</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--color-default)"></div>
+                        <span>Sin procesar</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--color-comparing)"></div>
+                        <span>Comparando</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--color-swapping)"></div>
+                        <span>Intercambiando</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--color-sorted)"></div>
+                        <span>Ordenado</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ============================================
+        // BUBBLE SORT RACE - Computation Lab
+        // Implementación canónica con visualización
+        // ============================================
+
+        // Canvas setup
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        let width, height;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+            draw();
+        }
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // State
+        let arr = [];
+        let n = 30;
+        let speed = 50;
+        let running = false;
+        let paused = false;
+        let animationId = null;
+        let timeoutId = null;
+
+        // Sorting state
+        let i = 0;           // Outer loop index (pass number)
+        let j = 0;           // Inner loop index (comparison position)
+        let comparing = [-1, -1];
+        let swapping = [-1, -1];
+        let sorted = new Set();
+
+        // Statistics
+        let comparisons = 0;
+        let swaps = 0;
+        let startTime = null;
+        let elapsedTime = 0;
+
+        // Colors
+        const COLORS = {
+            default: '#64748b',
+            comparing: '#fbbf24',
+            swapping: '#ef4444',
+            sorted: '#22c55e',
+            background: '#0f172a',
+            text: '#94a3b8'
+        };
+
+        // ============================================
+        // BUBBLE SORT ALGORITHM (Optimized)
+        // ============================================
+
+        function bubbleSortStep() {
+            // Algorithm: O(n²) time, O(1) space
+            // Compares adjacent elements and swaps if out of order
+            // Optimization: Early exit if no swaps in a pass
+
+            if (i >= n - 1) {
+                // Sorting complete
+                sorted = new Set(arr.map((_, idx) => idx));
+                comparing = [-1, -1];
+                swapping = [-1, -1];
+                finishSorting();
+                return false;
+            }
+
+            if (j >= n - i - 1) {
+                // End of pass
+                sorted.add(n - i - 1);
+                j = 0;
+                i++;
+                return true;
+            }
+
+            // Compare arr[j] and arr[j+1]
+            comparing = [j, j + 1];
+            swapping = [-1, -1];
+            comparisons++;
+
+            if (arr[j] > arr[j + 1]) {
+                // Swap needed
+                swapping = [j, j + 1];
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+                swaps++;
+            }
+
+            j++;
+            return true;
+        }
+
+        // ============================================
+        // ANIMATION LOOP
+        // ============================================
+
+        function runAnimation() {
+            if (!running || paused) return;
+
+            const continueSort = bubbleSortStep();
+            updateStats();
+            draw();
+
+            if (continueSort) {
+                timeoutId = setTimeout(runAnimation, speed);
+            }
+        }
+
+        function startSorting() {
+            if (running && !paused) return;
+
+            if (!running) {
+                // Fresh start
+                resetSortState();
+                startTime = performance.now();
+            }
+
+            running = true;
+            paused = false;
+            updateStatus('running', 'Ordenando...');
+            runAnimation();
+        }
+
+        function pauseSorting() {
+            if (!running) return;
+            paused = true;
+            clearTimeout(timeoutId);
+            updateStatus('paused', 'Pausado');
+        }
+
+        function stepSorting() {
+            if (!running) {
+                resetSortState();
+                startTime = performance.now();
+                running = true;
+            }
+            paused = true;
+            updateStatus('paused', 'Paso a paso');
+
+            const continueSort = bubbleSortStep();
+            updateStats();
+            draw();
+
+            if (!continueSort) {
+                finishSorting();
+            }
+        }
+
+        function finishSorting() {
+            running = false;
+            paused = false;
+            clearTimeout(timeoutId);
+            elapsedTime = (performance.now() - startTime) / 1000;
+            updateStatus('completed', '¡Completado!');
+            updateStats();
+            draw();
+        }
+
+        function resetSortState() {
+            i = 0;
+            j = 0;
+            comparisons = 0;
+            swaps = 0;
+            comparing = [-1, -1];
+            swapping = [-1, -1];
+            sorted = new Set();
+            elapsedTime = 0;
+            startTime = null;
+        }
+
+        function resetAll() {
+            running = false;
+            paused = false;
+            clearTimeout(timeoutId);
+            resetSortState();
+            generateArray('random');
+            updateStatus('ready', 'Listo');
+            updateStats();
+            draw();
+        }
+
+        // ============================================
+        // ARRAY GENERATION
+        // ============================================
+
+        function generateArray(type) {
+            running = false;
+            paused = false;
+            clearTimeout(timeoutId);
+            resetSortState();
+
+            arr = [];
+            for (let k = 0; k < n; k++) {
+                arr.push((k + 1) / n);
+            }
+
+            switch (type) {
+                case 'random':
+                    // Fisher-Yates shuffle
+                    for (let k = arr.length - 1; k > 0; k--) {
+                        const rand = Math.floor(Math.random() * (k + 1));
+                        [arr[k], arr[rand]] = [arr[rand], arr[k]];
+                    }
+                    break;
+                case 'worst':
+                    // Reverse sorted (worst case)
+                    arr.reverse();
+                    break;
+                case 'best':
+                    // Already sorted (best case)
+                    // arr is already sorted ascending
+                    break;
+            }
+
+            updateMaxStats();
+            updateStatus('ready', 'Listo');
+            updateStats();
+            draw();
+        }
+
+        // ============================================
+        // DRAWING
+        // ============================================
+
+        function draw() {
+            // Clear
+            ctx.fillStyle = COLORS.background;
+            ctx.fillRect(0, 0, width, height);
+
+            if (arr.length === 0) return;
+
+            const padding = 40;
+            const barWidth = (width - padding * 2) / arr.length - 2;
+            const maxBarHeight = height - padding * 2;
+
+            arr.forEach((val, idx) => {
+                const x = padding + idx * (barWidth + 2);
+                const barHeight = val * maxBarHeight;
+                const y = height - padding - barHeight;
+
+                // Determine color
+                let color = COLORS.default;
+
+                if (sorted.has(idx)) {
+                    color = COLORS.sorted;
+                } else if (swapping.includes(idx)) {
+                    color = COLORS.swapping;
+                } else if (comparing.includes(idx)) {
+                    color = COLORS.comparing;
+                }
+
+                // Draw bar
+                ctx.fillStyle = color;
+                ctx.fillRect(x, y, barWidth, barHeight);
+
+                // Highlight effect for comparing/swapping
+                if (comparing.includes(idx) || swapping.includes(idx)) {
+                    ctx.strokeStyle = color;
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x - 1, y - 1, barWidth + 2, barHeight + 2);
+                }
+            });
+
+            // Draw indices markers for comparing elements
+            if (comparing[0] >= 0 && comparing[1] >= 0) {
+                ctx.fillStyle = COLORS.text;
+                ctx.font = '11px JetBrains Mono';
+                ctx.textAlign = 'center';
+
+                const x1 = padding + comparing[0] * (barWidth + 2) + barWidth / 2;
+                const x2 = padding + comparing[1] * (barWidth + 2) + barWidth / 2;
+
+                ctx.fillText(`j=${comparing[0]}`, x1, height - 15);
+                ctx.fillText(`j+1=${comparing[1]}`, x2, height - 15);
+
+                // Draw comparison arrow
+                ctx.strokeStyle = COLORS.comparing;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x1, height - 25);
+                ctx.lineTo(x2, height - 25);
+                ctx.stroke();
+
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(x2 - 5, height - 30);
+                ctx.lineTo(x2, height - 25);
+                ctx.lineTo(x2 - 5, height - 20);
+                ctx.stroke();
+            }
+
+            // Pass indicator
+            ctx.fillStyle = COLORS.text;
+            ctx.font = '12px JetBrains Mono';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Pasada: ${i + 1}/${n - 1}`, padding, 25);
+
+            // Current operation
+            if (running || paused) {
+                ctx.textAlign = 'right';
+                if (swapping[0] >= 0) {
+                    ctx.fillStyle = COLORS.swapping;
+                    ctx.fillText('SWAP', width - padding, 25);
+                } else if (comparing[0] >= 0) {
+                    ctx.fillStyle = COLORS.comparing;
+                    ctx.fillText('COMPARE', width - padding, 25);
+                }
+            }
+        }
+
+        // ============================================
+        // UI UPDATES
+        // ============================================
+
+        function updateStats() {
+            document.getElementById('comparisons').textContent = comparisons;
+            document.getElementById('swaps').textContent = swaps;
+            document.getElementById('passes').textContent = i;
+
+            // Time
+            if (running && startTime) {
+                elapsedTime = (performance.now() - startTime) / 1000;
+            }
+            document.getElementById('time').textContent = elapsedTime.toFixed(2) + 's';
+
+            // Progress
+            const maxComparisons = (n * (n - 1)) / 2;
+            const progress = Math.min(100, (comparisons / maxComparisons) * 100);
+            document.getElementById('progressPercent').textContent = Math.round(progress) + '%';
+            document.getElementById('progressFill').style.width = progress + '%';
+        }
+
+        function updateMaxStats() {
+            const maxOps = (n * (n - 1)) / 2;
+            document.getElementById('maxComparisons').textContent = maxOps;
+            document.getElementById('maxSwaps').textContent = maxOps;
+            document.getElementById('maxPasses').textContent = n - 1;
+        }
+
+        function updateStatus(type, text) {
+            const badge = document.getElementById('statusBadge');
+            const statusText = document.getElementById('statusText');
+
+            badge.className = 'status-badge ' + type;
+            statusText.textContent = text;
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        // Sliders
+        document.getElementById('elementsSlider').addEventListener('input', (e) => {
+            n = parseInt(e.target.value);
+            document.getElementById('elementsValue').textContent = n;
+            if (!running) {
+                generateArray('random');
+            }
+        });
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            document.getElementById('speedValue').textContent = speed;
+        });
+
+        // Buttons
+        document.getElementById('playBtn').addEventListener('click', startSorting);
+        document.getElementById('pauseBtn').addEventListener('click', pauseSorting);
+        document.getElementById('stepBtn').addEventListener('click', stepSorting);
+        document.getElementById('resetBtn').addEventListener('click', resetAll);
+
+        document.getElementById('shuffleBtn').addEventListener('click', () => generateArray('random'));
+        document.getElementById('worstBtn').addEventListener('click', () => generateArray('worst'));
+        document.getElementById('bestBtn').addEventListener('click', () => generateArray('best'));
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (running && !paused) {
+                    pauseSorting();
+                } else {
+                    startSorting();
+                }
+            } else if (e.code === 'ArrowRight') {
+                e.preventDefault();
+                stepSorting();
+            } else if (e.code === 'KeyR') {
+                e.preventDefault();
+                resetAll();
+            }
+        });
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+
+        resizeCanvas();
+        generateArray('random');
+    </script>
+</body>
+</html>

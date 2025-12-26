@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructura Proteica — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Estructura Proteica</nav>
+                <h1>Estructura Proteica — Guía</h1>
+                <div class="subtitle">Los cuatro niveles jerárquicos de organización</div>
+            </div>
+            <a href="../estructura-proteica.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Niveles de estructura</div>
+                <p class="lead">Las proteínas se organizan en <span class="em">cuatro niveles jerárquicos</span>: la secuencia (1°), las estructuras locales repetitivas (2°), el plegamiento tridimensional completo (3°), y el ensamblaje de múltiples cadenas (4°).</p>
+                <div class="chips">
+                    <span class="chip">Primaria</span>
+                    <span class="chip">Secundaria</span>
+                    <span class="chip">Terciaria</span>
+                    <span class="chip">Cuaternaria</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Dogma de Anfinsen:</strong> La secuencia de aminoácidos (estructura primaria) determina completamente la estructura tridimensional de la proteína.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Jerarquía causal</div>
+                <ul>
+                    <li><strong>1° → 2°:</strong> Propiedades locales de la secuencia</li>
+                    <li><strong>2° → 3°:</strong> Interacciones de largo alcance</li>
+                    <li><strong>3° → 4°:</strong> Superficies de interacción</li>
+                </ul>
+                <p style="margin-top: 0.75rem;">Cada nivel emerge del anterior mediante interacciones físico-químicas específicas.</p>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Estructura Secundaria</h2>
+                <ul>
+                    <li><strong>α-hélice:</strong> Espiral derecha, 3.6 aa/vuelta, puentes H i→i+4</li>
+                    <li><strong>β-lámina:</strong> Hebras extendidas, paralelas o antiparalelas</li>
+                    <li><strong>Giros β:</strong> Conexiones de 4 residuos, Pro y Gly frecuentes</li>
+                    <li><strong>Loops:</strong> Regiones irregulares conectoras</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><strong>Predicción:</strong> ~70% precisión desde la secuencia sola.</p>
+            </div>
+            <div class="card">
+                <h2>Estructura Terciaria</h2>
+                <ul>
+                    <li><strong>Plegamiento 3D:</strong> Disposición espacial completa</li>
+                    <li><strong>Dominios:</strong> Unidades de plegamiento independiente</li>
+                    <li><strong>Núcleo hidrofóbico:</strong> Residuos apolares enterrados</li>
+                    <li><strong>Motivos:</strong> Combinaciones recurrentes de 2°</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><strong>Ejemplos:</strong> Barril TIM, hélice-giro-hélice.</p>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Explora cada nivel de organización estructural y comprende cómo emergen de la secuencia.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>Anatomía de una α-hélice</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>La α-hélice está estabilizada por puentes de hidrógeno entre el C=O del residuo i y el N-H del residuo i+4.</p>
+                </div>
+                <ol>
+                    <li>Selecciona una región α-helicoidal de la proteína</li>
+                    <li>Identifica los puentes de H del esqueleto (backbone)</li>
+                    <li>Cuenta los residuos por vuelta (~3.6)</li>
+                    <li>Observa la orientación de las cadenas laterales (hacia afuera)</li>
+                    <li>Nota los residuos que favorecen α-hélice (Ala, Leu, Glu)</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Patrón regular de puentes H cada 4 residuos, estructura helicoidal compacta.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>β-láminas paralelas vs antiparalelas</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Las β-láminas antiparalelas tienen puentes de H más lineales y regulares que las paralelas.</p>
+                </div>
+                <ol>
+                    <li>Localiza regiones de β-lámina en la estructura</li>
+                    <li>Identifica la dirección N→C de cada hebra</li>
+                    <li>Clasifica como paralela o antiparalela</li>
+                    <li>Observa el patrón de puentes H en cada caso</li>
+                    <li>Compara la regularidad geométrica de ambos tipos</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Antiparalelas tienen H bonds más lineales; paralelas requieren hebras más distanciadas.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>Identificación de dominios</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Los dominios son regiones compactas que podrían plegarse independientemente, conectadas por linkers flexibles.</p>
+                </div>
+                <ol>
+                    <li>Observa la estructura terciaria completa</li>
+                    <li>Identifica regiones globulares compactas</li>
+                    <li>Localiza las conexiones (linkers) entre ellas</li>
+                    <li>Asocia cada dominio con una función (ej: unión a ATP, catálisis)</li>
+                    <li>Investiga si el dominio aparece en otras proteínas</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Los dominios son unidades modulares reutilizables a lo largo de la evolución.</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔧</div>
+                    <div>
+                        <h4>Plegamiento</h4>
+                        <p>El proceso por el cual la cadena lineal adquiere su estructura 3D.</p>
+                        <a href="plegamiento.html">Ver Plegamiento →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🌡️</div>
+                    <div>
+                        <h4>Desnaturalización</h4>
+                        <p>La pérdida de estructura 2°, 3° y 4° conservando la 1°.</p>
+                        <a href="desnaturalizacion.html">Ver Desnaturalización →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-chemistry">⚗️</div>
+                    <div>
+                        <h4>Enlaces químicos</h4>
+                        <p>Puentes H, iónicos, hidrofóbicos y covalentes determinan la estructura.</p>
+                        <a href="../../../Chemistry/Chemistry Visual Lab/enlaces.html">Ver Enlaces →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-math">📐</div>
+                    <div>
+                        <h4>Geometría 3D</h4>
+                        <p>Ángulos diedros φ, ψ y el diagrama de Ramachandran definen conformaciones permitidas.</p>
+                        <a href="../../../Mathematics/Math Visual Lab/geometria-3d.html">Ver Geometría 3D →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Representación estática:</strong> No muestra la dinámica conformacional (las proteínas "respiran").</li>
+                <li><strong>Estructura única:</strong> Algunas proteínas tienen regiones intrínsecamente desordenadas.</li>
+                <li><strong>Resolución:</strong> No representa átomos individuales de hidrógeno ni moléculas de agua estructural.</li>
+                <li><strong>Cuaternaria simplificada:</strong> No muestra todas las interacciones en complejos grandes.</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué la glicina (sin cadena lateral) y la prolina (cíclica) son frecuentes en giros?</li>
+                <li>¿Qué ventaja tiene la organización modular en dominios para la evolución proteica?</li>
+                <li>¿Por qué algunas proteínas necesitan estructura cuaternaria para ser funcionales?</li>
+                <li>¿Cómo ayuda la cristalografía de rayos X a determinar la estructura 3D?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="plegamiento.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Plegamiento</div>
+                </div>
+            </a>
+            <a href="membrana-fluida.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Membrana Fluida</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Estructura Proteica
+    </footer>
+</body>
+</html>

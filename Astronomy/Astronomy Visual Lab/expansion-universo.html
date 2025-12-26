@@ -1,0 +1,1106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expansión del Universo - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas { cursor: crosshair; }
+        .glow-text { text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #6366f1;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .param-highlight {
+            display: inline-block;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-indigo-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-indigo-400 font-medium">Expansión</span> del Universo
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">t = <span id="time-display" class="text-indigo-400">0.00</span> Gyr</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Click en una galaxia para centrar la vista · Rueda para zoom
+            </div>
+            <!-- Hubble Diagram Mini -->
+            <div class="absolute bottom-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                <div class="flex justify-between items-center mb-2">
+                    <div class="text-xs text-gray-500">Diagrama de Hubble</div>
+                    <label class="flex items-center gap-1 cursor-pointer">
+                        <input type="checkbox" id="hubble-log" class="w-3 h-3 rounded bg-gray-900 border-gray-700 text-indigo-500">
+                        <span class="text-[10px] text-gray-600">Log</span>
+                    </label>
+                </div>
+                <canvas id="hubble-diagram" width="180" height="120"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-indigo-400 glow-text">Parámetros</h2>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    La <span class="text-indigo-400">expansión del universo</span> fue descubierta por Hubble en 1929. Las galaxias se alejan con velocidad proporcional a su distancia: v = H₀ × d.
+                </p>
+                <a href="guides/expansion-universo.html" class="mt-2 flex items-center gap-2 text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center">?</span>
+                    Guía: Ley de Hubble, redshift, Big Bang
+                </a>
+            </div>
+
+            <!-- Hubble Constant -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    <span class="param-highlight bg-indigo-500/20 text-indigo-400">H₀</span> Constante de Hubble:
+                    <span id="hubble-value" class="text-indigo-400 mono">70</span> km/s/Mpc
+                </label>
+                <input type="range" id="hubble" min="20" max="100" step="1" value="70" class="w-full">
+                <div class="flex gap-2 mt-2">
+                    <button id="hubble-planck" class="flex-1 py-1 px-2 text-xs bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded transition" title="Valor de Planck/CMB">
+                        67 (CMB)
+                    </button>
+                    <button id="hubble-local" class="flex-1 py-1 px-2 text-xs bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded transition" title="Valor de supernovas locales">
+                        73 (Local)
+                    </button>
+                </div>
+                <p class="text-xs text-gray-600 mt-2">⚡ Tensión de Hubble: desacuerdo entre métodos de medición</p>
+            </div>
+
+            <!-- Number of Galaxies -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Galaxias:
+                    <span id="galaxies-value" class="text-cyan-400 mono">50</span>
+                </label>
+                <input type="range" id="galaxies" min="10" max="200" step="10" value="50" class="w-full">
+            </div>
+
+            <!-- Simulation Speed -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad:
+                    <span id="speed-value" class="text-cyan-400 mono">1.0x</span>
+                </label>
+                <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1" class="w-full">
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- View Options -->
+            <div class="mb-6 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-vectors" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-indigo-500 focus:ring-indigo-500">
+                    <span class="text-sm text-gray-400">Mostrar vectores velocidad</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-redshift" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-indigo-500 focus:ring-indigo-500">
+                    <span class="text-sm text-gray-400">Color por redshift</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-grid" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-indigo-500 focus:ring-indigo-500">
+                    <span class="text-sm text-gray-400">Mostrar grilla comoving</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="comoving-coords" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-indigo-500 focus:ring-indigo-500">
+                    <span class="text-sm text-gray-400">Coordenadas comóviles</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-horizon" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-red-500 focus:ring-red-500">
+                    <span class="text-sm text-gray-400">Horizonte de Hubble (v=c)</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-lookback" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Mostrar lookback time</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="mb-6 space-y-2">
+                <button id="reset-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Reiniciar
+                </button>
+                <button id="pause-btn" class="w-full py-2 px-4 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="pause-icon" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span id="pause-text">Pausar</span>
+                </button>
+                <button id="center-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                    Centrar en origen
+                </button>
+                <button id="rewind-btn" class="w-full py-2 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0019 16V8a1 1 0 00-1.6-.8l-5.333 4zM4.066 11.2a1 1 0 000 1.6l5.334 4A1 1 0 0011 16V8a1 1 0 00-1.6-.8l-5.334 4z"/>
+                    </svg>
+                    <span id="rewind-text">Retroceder → Big Bang</span>
+                </button>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-indigo-400 mb-3">Ley de Hubble-Lemaître</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">v =</span>
+                        <span class="text-indigo-400">H₀</span>
+                        <span class="text-gray-400">· d</span>
+                    </div>
+                    <div class="flex items-center gap-2 mt-2">
+                        <span class="text-gray-500">z =</span>
+                        <span class="text-gray-400">v / c</span>
+                        <span class="text-gray-600">(aproximación)</span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Edwin Hubble (1929) descubrió que las galaxias se alejan de nosotros con velocidad proporcional a su distancia. Esto no significa que estemos en el centro: <span class="text-indigo-400">el espacio mismo se expande</span>.
+                </p>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <p class="text-xs text-gray-500">
+                        Haz click en cualquier galaxia para verlo desde su perspectiva: todas las demás parecerán alejarse de ella también.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Selected Galaxy Info -->
+            <div id="galaxy-info" class="mt-6 p-4 bg-gray-900 rounded-lg hidden">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Galaxia Seleccionada</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Distancia</div>
+                        <div id="info-distance" class="text-indigo-400">0 Mpc</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Velocidad</div>
+                        <div id="info-velocity" class="text-cyan-400">0 km/s</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Redshift z</div>
+                        <div id="info-redshift" class="text-violet-400">0</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Luz viaja</div>
+                        <div id="info-lighttime" class="text-yellow-400">0 Myr</div>
+                    </div>
+                </div>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <div class="text-gray-500 mb-1 text-xs">Lookback time</div>
+                    <div id="info-lookback" class="text-orange-400 text-sm">La vemos como era hace 0 Gyr</div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Universo Observable</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono text-center">
+                    <div>
+                        <div class="text-gray-500 mb-1">Escala a(t)</div>
+                        <div id="scale-factor" class="text-indigo-400">1.00</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Edad</div>
+                        <div id="universe-age" class="text-cyan-400">13.8 Gyr</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const hubbleDiagram = document.getElementById('hubble-diagram');
+        const hubbleCtx = hubbleDiagram.getContext('2d');
+
+        // Constants
+        const c = 299792; // km/s (speed of light)
+        const MpcToMly = 3.262; // Megaparsec to Million light years
+
+        // Gaussian random (Box-Muller)
+        function randomGaussian() {
+            let u = 0, v = 0;
+            while (u === 0) u = Math.random();
+            while (v === 0) v = Math.random();
+            return Math.sqrt(-2.0 * Math.log(u)) * Math.cos(2.0 * Math.PI * v);
+        }
+
+        // Parameters
+        let H0 = 70; // km/s/Mpc
+        let numGalaxies = 50;
+        let speed = 1;
+
+        // State
+        let galaxies = [];
+        let time = 0; // Gyr (billion years)
+        let scaleFactor = 1;
+        let isPaused = false;
+        let isRewinding = false;
+        let observerGalaxy = null; // null = origin, or galaxy index
+
+        // View
+        let zoom = 1;
+        let panX = 0, panY = 0;
+        let showVectors = true;
+        let showRedshift = true;
+        let showGrid = false;
+        let comovingCoords = false;
+        let showHorizon = true;
+        let hubbleLogScale = false;
+        let showLookback = false;
+
+        // Interaction
+        let isDragging = false;
+        let lastMouse = { x: 0, y: 0 };
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function createGalaxies() {
+            galaxies = [];
+            const maxDist = 400; // Mpc (visual units)
+
+            for (let i = 0; i < numGalaxies; i++) {
+                // Random position in comoving coordinates
+                const angle = Math.random() * Math.PI * 2;
+                const r = Math.sqrt(Math.random()) * maxDist; // sqrt for uniform area distribution
+
+                const galaxy = {
+                    // Comoving coordinates (fixed)
+                    comovingX: Math.cos(angle) * r,
+                    comovingY: Math.sin(angle) * r,
+                    // Physical coordinates (expand with scale factor)
+                    x: 0,
+                    y: 0,
+                    // Properties
+                    size: 2 + Math.random() * 4,
+                    type: Math.random() < 0.7 ? 'spiral' : 'elliptical',
+                    hue: Math.random() < 0.5 ? 200 + Math.random() * 40 : 30 + Math.random() * 30,
+                    // Visual properties (fixed per galaxy)
+                    rotation: Math.random() * Math.PI * 2,
+                    rotationSpeed: (Math.random() - 0.5) * 0.002,
+                    armCount: 2 + Math.floor(Math.random() * 2), // 2-3 brazos
+                    tilt: 0.3 + Math.random() * 0.5,
+                    stars: [] // Array de estrellas
+                };
+
+                // Generar estrellas para esta galaxia
+                const starCount = 40 + Math.floor(Math.random() * 60); // 40-100 estrellas
+                for (let s = 0; s < starCount; s++) {
+                    let sx, sy, brightness;
+
+                    if (galaxy.type === 'spiral') {
+                        // Distribución espiral
+                        if (Math.random() < 0.3) {
+                            // Estrellas del núcleo (distribución gaussiana)
+                            const nr = Math.abs(randomGaussian()) * galaxy.size * 0.4;
+                            const ntheta = Math.random() * Math.PI * 2;
+                            sx = Math.cos(ntheta) * nr;
+                            sy = Math.sin(ntheta) * nr;
+                            brightness = 0.7 + Math.random() * 0.3;
+                        } else {
+                            // Estrellas en brazos espirales
+                            const arm = Math.floor(Math.random() * galaxy.armCount);
+                            const armOffset = (arm / galaxy.armCount) * Math.PI * 2;
+                            const t = 0.3 + Math.random() * 2.2;
+                            const spread = (Math.random() - 0.5) * galaxy.size * 0.4;
+                            const theta = armOffset + t * 1.2;
+                            const armR = galaxy.size * t * 0.8;
+                            sx = Math.cos(theta) * armR + Math.cos(theta + Math.PI/2) * spread;
+                            sy = Math.sin(theta) * armR + Math.sin(theta + Math.PI/2) * spread;
+                            brightness = 0.3 + Math.random() * 0.5;
+                        }
+                    } else {
+                        // Distribución elíptica (gaussiana)
+                        const er = Math.abs(randomGaussian()) * galaxy.size * 1.2;
+                        const etheta = Math.random() * Math.PI * 2;
+                        sx = Math.cos(etheta) * er;
+                        sy = Math.sin(etheta) * er * (galaxy.tilt + 0.3);
+                        brightness = 0.4 + Math.random() * 0.4;
+                    }
+
+                    galaxy.stars.push({
+                        x: sx,
+                        y: sy,
+                        size: 0.3 + Math.random() * 1.2,
+                        brightness: brightness,
+                        twinkle: Math.random() * Math.PI * 2 // Fase de parpadeo
+                    });
+                }
+
+                galaxies.push(galaxy);
+            }
+
+            updatePhysicalPositions();
+        }
+
+        function updatePhysicalPositions() {
+            galaxies.forEach(g => {
+                g.x = g.comovingX * scaleFactor;
+                g.y = g.comovingY * scaleFactor;
+            });
+        }
+
+        function getObserverPosition() {
+            if (observerGalaxy === null) {
+                return { x: 0, y: 0 };
+            }
+            return { x: galaxies[observerGalaxy].x, y: galaxies[observerGalaxy].y };
+        }
+
+        function worldToScreen(wx, wy) {
+            const obs = getObserverPosition();
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2 + panX;
+            const cy = h / 2 + panY;
+
+            const relX = wx - obs.x;
+            const relY = wy - obs.y;
+
+            return {
+                x: cx + relX * zoom,
+                y: cy - relY * zoom // flip Y
+            };
+        }
+
+        function screenToWorld(sx, sy) {
+            const obs = getObserverPosition();
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2 + panX;
+            const cy = h / 2 + panY;
+
+            return {
+                x: (sx - cx) / zoom + obs.x,
+                y: -(sy - cy) / zoom + obs.y
+            };
+        }
+
+        function getVelocity(galaxy) {
+            const obs = getObserverPosition();
+            const dx = galaxy.x - obs.x;
+            const dy = galaxy.y - obs.y;
+            const distance = Math.sqrt(dx * dx + dy * dy); // Mpc
+
+            const velocity = H0 * distance; // km/s
+
+            // Direction (radial from observer)
+            const angle = Math.atan2(dy, dx);
+
+            return {
+                magnitude: velocity,
+                distance: distance,
+                vx: Math.cos(angle) * velocity,
+                vy: Math.sin(angle) * velocity,
+                angle: angle
+            };
+        }
+
+        function getRedshift(velocity) {
+            // Simple approximation for v << c
+            return velocity / c;
+        }
+
+        function redshiftToColor(z) {
+            // Map redshift to color: blue -> white -> yellow -> red
+            if (z < 0.01) {
+                return `hsl(220, 70%, 70%)`; // Blue (nearby)
+            } else if (z < 0.1) {
+                const t = z / 0.1;
+                return `hsl(${220 - t * 180}, ${70 - t * 30}%, ${70 + t * 20}%)`;
+            } else {
+                const t = Math.min(z / 0.5, 1);
+                return `hsl(${40 - t * 40}, ${40 + t * 60}%, ${90 - t * 30}%)`;
+            }
+        }
+
+        function drawGrid() {
+            if (!showGrid) return;
+
+            const gridSize = comovingCoords ? 100 : 100 * scaleFactor;
+            const obs = getObserverPosition();
+
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.1)';
+            ctx.lineWidth = 1;
+
+            // Calculate visible range
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const topLeft = screenToWorld(0, 0);
+            const bottomRight = screenToWorld(w, h);
+
+            const startX = Math.floor(topLeft.x / gridSize) * gridSize;
+            const startY = Math.floor(bottomRight.y / gridSize) * gridSize;
+            const endX = Math.ceil(bottomRight.x / gridSize) * gridSize;
+            const endY = Math.ceil(topLeft.y / gridSize) * gridSize;
+
+            // Vertical lines
+            for (let x = startX; x <= endX; x += gridSize) {
+                const p1 = worldToScreen(x, startY);
+                const p2 = worldToScreen(x, endY);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+
+            // Horizontal lines
+            for (let y = startY; y <= endY; y += gridSize) {
+                const p1 = worldToScreen(startX, y);
+                const p2 = worldToScreen(endX, y);
+                ctx.beginPath();
+                ctx.moveTo(p1.x, p1.y);
+                ctx.lineTo(p2.x, p2.y);
+                ctx.stroke();
+            }
+        }
+
+        function drawHubbleHorizon() {
+            if (!showHorizon) return;
+
+            const obs = getObserverPosition();
+            const hubbleRadius = c / H0; // Mpc donde v = c (~4300 Mpc para H0=70)
+            const pos = worldToScreen(obs.x, obs.y);
+            const screenRadius = hubbleRadius * zoom;
+
+            // Círculo del horizonte
+            ctx.strokeStyle = 'rgba(239, 68, 68, 0.4)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, screenRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Zona exterior (superlumínica) con gradiente
+            const gradient = ctx.createRadialGradient(pos.x, pos.y, screenRadius * 0.9, pos.x, pos.y, screenRadius * 1.5);
+            gradient.addColorStop(0, 'rgba(239, 68, 68, 0)');
+            gradient.addColorStop(1, 'rgba(239, 68, 68, 0.1)');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(pos.x, pos.y, screenRadius * 1.5, 0, Math.PI * 2);
+            ctx.arc(pos.x, pos.y, screenRadius, 0, Math.PI * 2, true);
+            ctx.fill();
+
+            // Etiqueta
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.7)';
+            ctx.font = '11px Inter';
+            const labelX = pos.x + screenRadius * 0.7;
+            const labelY = pos.y - screenRadius * 0.7;
+            ctx.fillText('v = c', labelX, labelY);
+            ctx.font = '9px Inter';
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.5)';
+            ctx.fillText(`(${Math.round(hubbleRadius)} Mpc)`, labelX, labelY + 12);
+        }
+
+        function drawGalaxy(g, index) {
+            const vel = getVelocity(g);
+            const z = getRedshift(vel.magnitude);
+            const pos = worldToScreen(g.x, g.y);
+
+            // Skip if off screen
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            if (pos.x < -50 || pos.x > w + 50 || pos.y < -50 || pos.y > h + 50) return;
+
+            // Actualizar rotación suave
+            g.rotation += g.rotationSpeed;
+
+            // Velocity vector
+            if (showVectors && vel.magnitude > 100) {
+                const vecScale = 0.05 * zoom;
+                const endX = pos.x + vel.vx * vecScale;
+                const endY = pos.y - vel.vy * vecScale; // flip Y
+
+                ctx.strokeStyle = `rgba(99, 102, 241, ${Math.min(0.8, vel.magnitude / 5000)})`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(pos.x, pos.y);
+                ctx.lineTo(endX, endY);
+                ctx.stroke();
+
+                // Arrow head
+                const arrowAngle = Math.atan2(endY - pos.y, endX - pos.x);
+                ctx.beginPath();
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(endX - 6 * Math.cos(arrowAngle - 0.4), endY - 6 * Math.sin(arrowAngle - 0.4));
+                ctx.moveTo(endX, endY);
+                ctx.lineTo(endX - 6 * Math.cos(arrowAngle + 0.4), endY - 6 * Math.sin(arrowAngle + 0.4));
+                ctx.stroke();
+            }
+
+            // Galaxy color based on redshift or intrinsic
+            let baseHue, baseSat, baseLight;
+            if (showRedshift) {
+                // Redshift coloring
+                if (z < 0.01) {
+                    baseHue = 220; baseSat = 70; baseLight = 70;
+                } else if (z < 0.1) {
+                    const t = z / 0.1;
+                    baseHue = 220 - t * 180; baseSat = 70 - t * 30; baseLight = 70 + t * 20;
+                } else {
+                    const t = Math.min(z / 0.5, 1);
+                    baseHue = 40 - t * 40; baseSat = 40 + t * 60; baseLight = 90 - t * 30;
+                }
+            } else {
+                baseHue = g.hue; baseSat = 60; baseLight = 70;
+            }
+
+            const size = g.size * zoom;
+            const apparentSize = size * 2; // Tamaño aparente en píxeles
+
+            // === LOD (Level of Detail) ===
+            // LOD 0: < 3px  → punto simple
+            // LOD 1: 3-8px  → gradiente simple
+            // LOD 2: 8-20px → pocas estrellas
+            // LOD 3: > 20px → todas las estrellas
+            const lod = apparentSize < 3 ? 0 : apparentSize < 8 ? 1 : apparentSize < 20 ? 2 : 3;
+
+            if (lod === 0) {
+                // === LOD 0: Punto simple ===
+                ctx.fillStyle = `hsla(${baseHue}, ${baseSat}%, ${baseLight}%, 0.8)`;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, Math.max(1, size * 0.5), 0, Math.PI * 2);
+                ctx.fill();
+
+            } else if (lod === 1) {
+                // === LOD 1: Gradiente simple (sin estrellas) ===
+                const grad = ctx.createRadialGradient(pos.x, pos.y, 0, pos.x, pos.y, size * 1.5);
+                grad.addColorStop(0, `hsla(${baseHue - 20}, 30%, 90%, 0.9)`);
+                grad.addColorStop(0.4, `hsla(${baseHue}, ${baseSat}%, ${baseLight}%, 0.5)`);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, size * 1.5, 0, Math.PI * 2);
+                ctx.fill();
+
+            } else {
+                // === LOD 2-3: Estrellas ===
+                ctx.save();
+                ctx.translate(pos.x, pos.y);
+                ctx.rotate(g.rotation);
+                ctx.scale(1, g.tilt);
+
+                // Halo difuso de fondo
+                const haloSize = size * 2.5;
+                const haloGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, haloSize);
+                haloGrad.addColorStop(0, `hsla(${baseHue}, ${baseSat}%, ${baseLight}%, 0.08)`);
+                haloGrad.addColorStop(0.5, `hsla(${baseHue}, ${baseSat}%, ${baseLight}%, 0.03)`);
+                haloGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = haloGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, haloSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dibujar estrellas (LOD 2: cada 3, LOD 3: todas)
+                const starStep = lod === 2 ? 3 : 1;
+                const currentTime = performance.now() * 0.001;
+
+                for (let i = 0; i < g.stars.length; i += starStep) {
+                    const star = g.stars[i];
+                    const starX = star.x * zoom;
+                    const starY = star.y * zoom;
+
+                    // Parpadeo sutil
+                    const twinkle = 0.7 + 0.3 * Math.sin(currentTime * 2 + star.twinkle);
+                    const alpha = star.brightness * twinkle;
+
+                    // Color de estrella
+                    const starHue = baseHue + (i % 10 === 0 ? -20 + (i % 40) : 0);
+                    const starLight = baseLight + (star.brightness - 0.5) * 30;
+
+                    // Tamaño escalado
+                    const starSize = star.size * zoom * 0.5;
+
+                    if (starSize > 0.8 && lod === 3) {
+                        // Estrellas grandes con glow (solo LOD 3)
+                        const starGrad = ctx.createRadialGradient(starX, starY, 0, starX, starY, starSize * 2);
+                        starGrad.addColorStop(0, `hsla(${starHue}, ${baseSat - 20}%, ${Math.min(starLight + 20, 100)}%, ${alpha})`);
+                        starGrad.addColorStop(0.4, `hsla(${starHue}, ${baseSat}%, ${starLight}%, ${alpha * 0.5})`);
+                        starGrad.addColorStop(1, 'transparent');
+                        ctx.fillStyle = starGrad;
+                        ctx.beginPath();
+                        ctx.arc(starX, starY, starSize * 2, 0, Math.PI * 2);
+                        ctx.fill();
+                    } else {
+                        // Punto simple
+                        ctx.fillStyle = `hsla(${starHue}, ${baseSat}%, ${starLight}%, ${alpha})`;
+                        ctx.beginPath();
+                        ctx.arc(starX, starY, Math.max(0.5, starSize), 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Núcleo brillante
+                const coreSize = size * 0.4 * zoom;
+                const coreGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, coreSize);
+                coreGrad.addColorStop(0, `hsla(${baseHue - 20}, 20%, 95%, 0.9)`);
+                coreGrad.addColorStop(0.3, `hsla(${baseHue}, ${baseSat - 20}%, ${baseLight + 10}%, 0.4)`);
+                coreGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = coreGrad;
+                ctx.beginPath();
+                ctx.arc(0, 0, coreSize, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            }
+
+            // Highlight selected/observer galaxy
+            if (index === observerGalaxy) {
+                ctx.strokeStyle = '#6366f1';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, size + 8, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = '#6366f1';
+                ctx.font = '10px Inter';
+                ctx.fillText('Observador', pos.x - 25, pos.y - size - 12);
+            }
+
+            // Lookback time indicator
+            if (showLookback && vel.distance > 10) {
+                const lightTime = vel.distance * MpcToMly; // Million light years
+                const lookbackGyr = lightTime / 1000; // Gyr
+
+                // Solo mostrar si es significativo
+                if (lookbackGyr > 0.1) {
+                    // Anillo de tiempo
+                    const ringRadius = size + 4;
+                    const ageRatio = Math.min(lookbackGyr / 10, 1); // Normalizar a 10 Gyr max
+                    const ringColor = `hsla(${30 - ageRatio * 30}, 80%, ${60 - ageRatio * 20}%, ${0.3 + ageRatio * 0.4})`;
+
+                    ctx.strokeStyle = ringColor;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, ringRadius, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Etiqueta de tiempo si hay espacio
+                    if (zoom > 0.5) {
+                        ctx.fillStyle = 'rgba(251, 146, 60, 0.8)';
+                        ctx.font = '8px JetBrains Mono';
+                        ctx.fillText(`-${lookbackGyr.toFixed(1)}Gyr`, pos.x - 15, pos.y + size + 14);
+                    }
+                }
+            }
+        }
+
+        function drawOrigin() {
+            const pos = worldToScreen(0, 0);
+
+            if (observerGalaxy === null) {
+                // Draw crosshair at origin
+                ctx.strokeStyle = 'rgba(99, 102, 241, 0.5)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                ctx.moveTo(pos.x - 20, pos.y);
+                ctx.lineTo(pos.x + 20, pos.y);
+                ctx.moveTo(pos.x, pos.y - 20);
+                ctx.lineTo(pos.x, pos.y + 20);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                ctx.fillStyle = '#6366f1';
+                ctx.font = '10px Inter';
+                ctx.fillText('Observador', pos.x - 25, pos.y - 25);
+            }
+        }
+
+        function drawHubbleDiagram() {
+            const w = hubbleDiagram.width;
+            const h = hubbleDiagram.height;
+
+            hubbleCtx.fillStyle = '#030712';
+            hubbleCtx.fillRect(0, 0, w, h);
+
+            // Axes
+            hubbleCtx.strokeStyle = '#333';
+            hubbleCtx.lineWidth = 1;
+            hubbleCtx.beginPath();
+            hubbleCtx.moveTo(25, h - 15);
+            hubbleCtx.lineTo(w - 5, h - 15);
+            hubbleCtx.moveTo(25, h - 15);
+            hubbleCtx.lineTo(25, 5);
+            hubbleCtx.stroke();
+
+            // Labels
+            hubbleCtx.fillStyle = '#666';
+            hubbleCtx.font = '8px Inter';
+            hubbleCtx.fillText(hubbleLogScale ? 'log d' : 'd (Mpc)', w - 35, h - 3);
+            hubbleCtx.fillText(hubbleLogScale ? 'log v' : 'v', 5, 12);
+
+            // Funciones de escala
+            const scaleX = hubbleLogScale
+                ? (d) => 25 + (Math.log10(Math.max(d, 1)) / Math.log10(500)) * (w - 30)
+                : (d) => 25 + (d / 500) * (w - 30);
+
+            const scaleY = hubbleLogScale
+                ? (v) => (h - 15) - (Math.log10(Math.max(v, 1)) / Math.log10(H0 * 500)) * (h - 25)
+                : (v) => (h - 15) - (v / (H0 * 500)) * (h - 25);
+
+            // Hubble line (theoretical)
+            hubbleCtx.strokeStyle = 'rgba(99, 102, 241, 0.5)';
+            hubbleCtx.setLineDash([3, 3]);
+            hubbleCtx.beginPath();
+            if (hubbleLogScale) {
+                // En log-log, v = H*d es una línea recta con pendiente 1
+                for (let d = 1; d <= 500; d += 10) {
+                    const x = scaleX(d);
+                    const y = scaleY(H0 * d);
+                    if (d === 1) hubbleCtx.moveTo(x, y);
+                    else hubbleCtx.lineTo(x, y);
+                }
+            } else {
+                hubbleCtx.moveTo(25, h - 15);
+                hubbleCtx.lineTo(w - 5, 10);
+            }
+            hubbleCtx.stroke();
+            hubbleCtx.setLineDash([]);
+
+            // Plot galaxies
+            galaxies.forEach((g, i) => {
+                if (i === observerGalaxy) return;
+
+                const vel = getVelocity(g);
+                if (vel.distance < 1 || vel.magnitude < 1) return; // Skip para log
+
+                const x = scaleX(vel.distance);
+                const y = scaleY(vel.magnitude);
+
+                // Skip si está fuera del rango
+                if (x < 25 || x > w - 5 || y < 5 || y > h - 15) return;
+
+                const z = getRedshift(vel.magnitude);
+                hubbleCtx.fillStyle = showRedshift ? redshiftToColor(z) : '#6366f1';
+                hubbleCtx.beginPath();
+                hubbleCtx.arc(x, y, 2, 0, Math.PI * 2);
+                hubbleCtx.fill();
+            });
+        }
+
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw background stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137 + time * 0.1) % w;
+                const y = (i * 97) % h;
+                ctx.beginPath();
+                ctx.arc(x, y, 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Grid
+            drawGrid();
+
+            // Hubble horizon
+            drawHubbleHorizon();
+
+            // Origin marker
+            drawOrigin();
+
+            // Galaxies
+            galaxies.forEach((g, i) => drawGalaxy(g, i));
+
+            // Hubble diagram
+            drawHubbleDiagram();
+
+            // Update displays
+            document.getElementById('time-display').textContent = time.toFixed(2);
+            document.getElementById('scale-factor').textContent = scaleFactor.toFixed(3);
+
+            const age = 13.8 + time; // Current age ~13.8 Gyr
+            document.getElementById('universe-age').textContent = age.toFixed(1) + ' Gyr';
+        }
+
+        function update(dt) {
+            if (isPaused) return;
+
+            const direction = isRewinding ? -1 : 1;
+
+            // Time evolution
+            time += direction * dt * speed * 0.1; // Gyr
+
+            // Scale factor evolution (simplified)
+            // In reality: a(t) follows Friedmann equations
+            // Here: simple exponential for visualization
+            const H = H0 / 1000; // Convert to per Gyr (very rough)
+            scaleFactor *= (1 + direction * H * dt * speed * 0.001);
+
+            // Límite inferior del factor de escala (evitar colapso total)
+            if (scaleFactor < 0.01) {
+                scaleFactor = 0.01;
+                isPaused = true;
+                document.getElementById('pause-text').textContent = 'Reanudar';
+            }
+
+            updatePhysicalPositions();
+        }
+
+        function findGalaxyAt(sx, sy) {
+            const world = screenToWorld(sx, sy);
+
+            for (let i = 0; i < galaxies.length; i++) {
+                const g = galaxies[i];
+                const dx = world.x - g.x;
+                const dy = world.y - g.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                if (dist < g.size * 3 / zoom) {
+                    return i;
+                }
+            }
+            return null;
+        }
+
+        function selectGalaxy(index) {
+            observerGalaxy = index;
+
+            const infoPanel = document.getElementById('galaxy-info');
+
+            if (index !== null) {
+                const g = galaxies[index];
+                const vel = getVelocity(g);
+                const z = getRedshift(vel.magnitude);
+                const lightTime = vel.distance * MpcToMly; // Million light years
+                const lookbackGyr = lightTime / 1000; // Convertir Mly a Gyr (aproximación: 1 Gly ≈ 1 Gyr)
+
+                infoPanel.classList.remove('hidden');
+                document.getElementById('info-distance').textContent = vel.distance.toFixed(1) + ' Mpc';
+                document.getElementById('info-velocity').textContent = Math.round(vel.magnitude) + ' km/s';
+                document.getElementById('info-redshift').textContent = z.toFixed(4);
+                document.getElementById('info-lighttime').textContent = lightTime.toFixed(1) + ' Mly';
+                document.getElementById('info-lookback').textContent = `La vemos como era hace ${lookbackGyr.toFixed(2)} Gyr`;
+            } else {
+                infoPanel.classList.add('hidden');
+            }
+        }
+
+        // Event listeners
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const galaxyIndex = findGalaxyAt(x, y);
+
+            if (galaxyIndex !== null) {
+                selectGalaxy(galaxyIndex);
+            } else {
+                isDragging = true;
+                lastMouse = { x: e.clientX, y: e.clientY };
+            }
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+
+            const dx = e.clientX - lastMouse.x;
+            const dy = e.clientY - lastMouse.y;
+
+            panX += dx;
+            panY += dy;
+
+            lastMouse = { x: e.clientX, y: e.clientY };
+        });
+
+        canvas.addEventListener('mouseup', () => { isDragging = false; });
+        canvas.addEventListener('mouseleave', () => { isDragging = false; });
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            const factor = e.deltaY < 0 ? 1.1 : 0.9;
+            zoom = Math.max(0.1, Math.min(10, zoom * factor));
+        });
+
+        // Controls
+        document.getElementById('hubble').addEventListener('input', (e) => {
+            H0 = parseFloat(e.target.value);
+            document.getElementById('hubble-value').textContent = H0;
+        });
+
+        document.getElementById('hubble-planck').addEventListener('click', () => {
+            H0 = 67;
+            document.getElementById('hubble').value = H0;
+            document.getElementById('hubble-value').textContent = H0;
+        });
+
+        document.getElementById('hubble-local').addEventListener('click', () => {
+            H0 = 73;
+            document.getElementById('hubble').value = H0;
+            document.getElementById('hubble-value').textContent = H0;
+        });
+
+        document.getElementById('galaxies').addEventListener('input', (e) => {
+            numGalaxies = parseInt(e.target.value);
+            document.getElementById('galaxies-value').textContent = numGalaxies;
+            createGalaxies();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1) + 'x';
+        });
+
+        document.getElementById('show-vectors').addEventListener('change', (e) => {
+            showVectors = e.target.checked;
+        });
+
+        document.getElementById('show-redshift').addEventListener('change', (e) => {
+            showRedshift = e.target.checked;
+        });
+
+        document.getElementById('show-grid').addEventListener('change', (e) => {
+            showGrid = e.target.checked;
+        });
+
+        document.getElementById('comoving-coords').addEventListener('change', (e) => {
+            comovingCoords = e.target.checked;
+        });
+
+        document.getElementById('show-horizon').addEventListener('change', (e) => {
+            showHorizon = e.target.checked;
+        });
+
+        document.getElementById('hubble-log').addEventListener('change', (e) => {
+            hubbleLogScale = e.target.checked;
+        });
+
+        document.getElementById('show-lookback').addEventListener('change', (e) => {
+            showLookback = e.target.checked;
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            time = 0;
+            scaleFactor = 1;
+            observerGalaxy = null;
+            panX = 0;
+            panY = 0;
+            zoom = 1;
+            isRewinding = false;
+            isPaused = false;
+            createGalaxies();
+            selectGalaxy(null);
+            document.getElementById('pause-text').textContent = 'Pausar';
+            const btn = document.getElementById('rewind-btn');
+            btn.classList.remove('bg-green-500/20', 'hover:bg-green-500/30', 'text-green-400');
+            btn.classList.add('bg-orange-500/20', 'hover:bg-orange-500/30', 'text-orange-400');
+            document.getElementById('rewind-text').textContent = 'Retroceder → Big Bang';
+        });
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            isPaused = !isPaused;
+            document.getElementById('pause-text').textContent = isPaused ? 'Reanudar' : 'Pausar';
+        });
+
+        document.getElementById('center-btn').addEventListener('click', () => {
+            observerGalaxy = null;
+            panX = 0;
+            panY = 0;
+            selectGalaxy(null);
+        });
+
+        document.getElementById('rewind-btn').addEventListener('click', () => {
+            isRewinding = !isRewinding;
+            const btn = document.getElementById('rewind-btn');
+            const text = document.getElementById('rewind-text');
+
+            if (isRewinding) {
+                btn.classList.remove('bg-orange-500/20', 'hover:bg-orange-500/30', 'text-orange-400');
+                btn.classList.add('bg-green-500/20', 'hover:bg-green-500/30', 'text-green-400');
+                text.textContent = 'Avanzar → Futuro';
+            } else {
+                btn.classList.remove('bg-green-500/20', 'hover:bg-green-500/30', 'text-green-400');
+                btn.classList.add('bg-orange-500/20', 'hover:bg-orange-500/30', 'text-orange-400');
+                text.textContent = 'Retroceder → Big Bang';
+            }
+
+            // Despausar si estaba pausado
+            if (isPaused) {
+                isPaused = false;
+                document.getElementById('pause-text').textContent = 'Pausar';
+            }
+        });
+
+        window.addEventListener('resize', initCanvas);
+
+        // Animation loop
+        let lastTime = 0;
+
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            update(dt);
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        initCanvas();
+        createGalaxies();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

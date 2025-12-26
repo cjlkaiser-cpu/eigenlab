@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lípidos | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.95);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .slider { margin: 12px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #ec4899;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #ec4899; font-size: 12px; font-weight: bold; }
+        .legend { margin-top: 12px; padding-top: 12px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .legend-line { width: 15px; height: 3px; border-radius: 2px; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #ec4899; color: #ec4899; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 6px;
+            transition: all 0.2s;
+        }
+        .btn:hover { border-color: #ec4899; }
+        .btn.active { border-color: #ec4899; background: rgba(236, 72, 153, 0.2); }
+        .mode-group { display: flex; gap: 6px; margin-top: 10px; }
+        .mode-btn {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            text-align: center;
+        }
+        .mode-btn.active { border-color: #ec4899; background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+        .mode-btn:hover { border-color: #ec4899; }
+        .section-title { font-size: 10px; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 15px; margin-bottom: 8px; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🧪 Estructura de Lípidos</h2>
+        <p class="text-slate-500 text-xs mb-4">Auto-ensamblaje · Anfipáticos · Bicapas</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                Los <span class="text-pink-400">lípidos anfipáticos</span> tienen cabeza hidrofílica y colas hidrofóbicas.
+                En agua, se auto-ensamblan en estructuras que minimizan el contacto colas-agua.
+            </p>
+            <a href="guides/lipidos.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: fosfolípidos, micelas, bicapas
+            </a>
+        </div>
+
+        <div class="section-title">Modo de visualización</div>
+        <div class="mode-group">
+            <button class="mode-btn active" data-mode="free">Libre</button>
+            <button class="mode-btn" data-mode="micelle">Micela</button>
+            <button class="mode-btn" data-mode="bilayer">Bicapa</button>
+            <button class="mode-btn" data-mode="liposome">Liposoma</button>
+        </div>
+
+        <div class="section-title">Composición</div>
+        <div class="slider">
+            <label><span>Fosfolípidos</span><span class="text-pink-400" id="phospho-val">40</span></label>
+            <input type="range" id="phospholipids" min="10" max="80" value="40">
+        </div>
+
+        <div class="slider">
+            <label><span>Saturación (%)</span><span class="text-pink-400" id="sat-val">50%</span></label>
+            <input type="range" id="saturation" min="0" max="100" value="50">
+        </div>
+
+        <div class="slider">
+            <label><span>Colesterol (%)</span><span class="text-pink-400" id="chol-val">15%</span></label>
+            <input type="range" id="cholesterol" min="0" max="40" value="15">
+        </div>
+
+        <div class="slider">
+            <label><span>Temperatura</span><span class="text-pink-400" id="temp-val">37°C</span></label>
+            <input type="range" id="temperature" min="0" max="60" value="37">
+        </div>
+
+        <div class="section-title">Estado del sistema</div>
+        <div class="stat">
+            <span class="stat-label">Fluidez</span>
+            <span class="stat-value" id="fluidity">Media</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Energía libre</span>
+            <span class="stat-value" id="energy">--</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Tm (transición)</span>
+            <span class="stat-value" id="tm">~25°C</span>
+        </div>
+
+        <button class="btn" id="shake">Agitar sistema</button>
+        <button class="btn" id="reset">Reiniciar</button>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Cabeza polar (fosfato)</div>
+            <div class="legend-item"><div class="legend-line" style="background:#94a3b8"></div>Cola saturada (recta)</div>
+            <div class="legend-item"><div class="legend-line" style="background:#06b6d4; transform: rotate(15deg)"></div>Cola insaturada (kink)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Colesterol</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6; width:14px; height:8px; border-radius:3px;"></div>Agua (entorno)</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Física:</strong> Los lípidos se auto-organizan para minimizar la exposición hidrofóbica al agua.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // State
+        let mode = 'free';
+        let lipids = [];
+        let cholesterols = [];
+        let waterMolecules = [];
+
+        // Parameters
+        const getPhospholipidCount = () => parseInt(document.getElementById('phospholipids').value);
+        const getSaturation = () => parseInt(document.getElementById('saturation').value) / 100;
+        const getCholesterolPercent = () => parseInt(document.getElementById('cholesterol').value) / 100;
+        const getTemperature = () => parseInt(document.getElementById('temperature').value);
+
+        // Lipid class
+        class Lipid {
+            constructor(x, y, saturated = true, targetAngle = null) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.angle = targetAngle !== null ? targetAngle : Math.random() * Math.PI * 2;
+                this.targetAngle = targetAngle;
+                this.saturated = saturated;
+                this.headRadius = 7;
+                this.tailLength = 22;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update(dt, temp) {
+                const fluidity = (temp / 37) * (this.saturated ? 0.7 : 1.3);
+
+                if (mode === 'free') {
+                    // Brownian motion
+                    this.vx += (Math.random() - 0.5) * 0.5 * fluidity;
+                    this.vy += (Math.random() - 0.5) * 0.5 * fluidity;
+                    this.vx *= 0.95;
+                    this.vy *= 0.95;
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Bounds
+                    if (this.x < 50) { this.x = 50; this.vx *= -0.5; }
+                    if (this.x > W - 50) { this.x = W - 50; this.vx *= -0.5; }
+                    if (this.y < 50) { this.y = 50; this.vy *= -0.5; }
+                    if (this.y > H - 50) { this.y = H - 50; this.vy *= -0.5; }
+
+                    // Random rotation
+                    this.angle += (Math.random() - 0.5) * 0.1 * fluidity;
+                } else {
+                    // Move toward target with wave motion
+                    if (this.targetX !== undefined) {
+                        const dx = this.targetX - this.x;
+                        const dy = this.targetY - this.y;
+                        this.x += dx * 0.05;
+                        this.y += dy * 0.05;
+
+                        // Add wave motion based on fluidity
+                        const time = Date.now() / 1000;
+                        const wave = Math.sin(time * 2 + this.phase) * 3 * fluidity;
+                        this.x += Math.cos(this.angle + Math.PI/2) * wave * 0.1;
+                        this.y += Math.sin(this.angle + Math.PI/2) * wave * 0.1;
+                    }
+
+                    // Smoothly rotate to target angle
+                    if (this.targetAngle !== null) {
+                        let angleDiff = this.targetAngle - this.angle;
+                        while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                        while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                        this.angle += angleDiff * 0.1;
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Head (phosphate group)
+                ctx.beginPath();
+                ctx.arc(0, 0, this.headRadius, 0, Math.PI * 2);
+                ctx.fillStyle = '#fbbf24';
+                ctx.shadowColor = '#fbbf24';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Tails
+                ctx.lineWidth = 2.5;
+                ctx.lineCap = 'round';
+
+                // Tail 1 (always straight for saturated, one tail always straight)
+                ctx.strokeStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.moveTo(-3, this.headRadius);
+                ctx.lineTo(-3, this.headRadius + this.tailLength);
+                ctx.stroke();
+
+                // Tail 2 (kinked if unsaturated)
+                if (this.saturated) {
+                    ctx.beginPath();
+                    ctx.moveTo(3, this.headRadius);
+                    ctx.lineTo(3, this.headRadius + this.tailLength);
+                    ctx.stroke();
+                } else {
+                    // Kinked tail (cis double bond)
+                    ctx.strokeStyle = '#06b6d4';
+                    ctx.beginPath();
+                    ctx.moveTo(3, this.headRadius);
+                    ctx.lineTo(3, this.headRadius + this.tailLength * 0.4);
+                    ctx.lineTo(10, this.headRadius + this.tailLength * 0.55);
+                    ctx.lineTo(3, this.headRadius + this.tailLength * 0.7);
+                    ctx.lineTo(3, this.headRadius + this.tailLength);
+                    ctx.stroke();
+                }
+
+                ctx.restore();
+            }
+        }
+
+        // Cholesterol class
+        class Cholesterol {
+            constructor(x, y, angle = 0) {
+                this.x = x;
+                this.y = y;
+                this.vx = 0;
+                this.vy = 0;
+                this.angle = angle;
+                this.targetAngle = angle;
+                this.phase = Math.random() * Math.PI * 2;
+            }
+
+            update(dt, temp) {
+                const fluidity = temp / 37;
+
+                if (mode === 'free') {
+                    this.vx += (Math.random() - 0.5) * 0.3 * fluidity;
+                    this.vy += (Math.random() - 0.5) * 0.3 * fluidity;
+                    this.vx *= 0.96;
+                    this.vy *= 0.96;
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    if (this.x < 50) { this.x = 50; this.vx *= -0.5; }
+                    if (this.x > W - 50) { this.x = W - 50; this.vx *= -0.5; }
+                    if (this.y < 50) { this.y = 50; this.vy *= -0.5; }
+                    if (this.y > H - 50) { this.y = H - 50; this.vy *= -0.5; }
+
+                    this.angle += (Math.random() - 0.5) * 0.05;
+                } else if (this.targetX !== undefined) {
+                    const dx = this.targetX - this.x;
+                    const dy = this.targetY - this.y;
+                    this.x += dx * 0.05;
+                    this.y += dy * 0.05;
+
+                    let angleDiff = this.targetAngle - this.angle;
+                    while (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                    while (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+                    this.angle += angleDiff * 0.1;
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                // Cholesterol - steroid ring structure (simplified)
+                ctx.fillStyle = '#ef4444';
+                ctx.shadowColor = '#ef4444';
+                ctx.shadowBlur = 8;
+
+                // Ring structure
+                ctx.beginPath();
+                ctx.ellipse(0, 0, 6, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Tail
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(0, 4);
+                ctx.lineTo(0, 18);
+                ctx.stroke();
+
+                // Hydroxyl group
+                ctx.beginPath();
+                ctx.arc(0, -4, 3, 0, Math.PI * 2);
+                ctx.fillStyle = '#fca5a5';
+                ctx.fill();
+
+                ctx.shadowBlur = 0;
+                ctx.restore();
+            }
+        }
+
+        // Initialize water background
+        function initWater() {
+            waterMolecules = [];
+            for (let i = 0; i < 100; i++) {
+                waterMolecules.push({
+                    x: Math.random() * W,
+                    y: Math.random() * H,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        // Initialize lipids based on mode
+        function initLipids() {
+            const count = getPhospholipidCount();
+            const saturation = getSaturation();
+            const cholPercent = getCholesterolPercent();
+
+            lipids = [];
+            cholesterols = [];
+
+            if (mode === 'free') {
+                // Random distribution
+                for (let i = 0; i < count; i++) {
+                    const x = 100 + Math.random() * (W - 200);
+                    const y = 100 + Math.random() * (H - 200);
+                    const sat = Math.random() < saturation;
+                    lipids.push(new Lipid(x, y, sat));
+                }
+
+                const cholCount = Math.floor(count * cholPercent);
+                for (let i = 0; i < cholCount; i++) {
+                    const x = 100 + Math.random() * (W - 200);
+                    const y = 100 + Math.random() * (H - 200);
+                    cholesterols.push(new Cholesterol(x, y, Math.random() * Math.PI * 2));
+                }
+            } else if (mode === 'micelle') {
+                // Spherical micelle
+                const cx = W / 2;
+                const cy = H / 2;
+                const radius = Math.min(W, H) * 0.2;
+
+                for (let i = 0; i < count; i++) {
+                    const angle = (i / count) * Math.PI * 2;
+                    const x = cx + Math.cos(angle) * radius;
+                    const y = cy + Math.sin(angle) * radius;
+                    const sat = Math.random() < saturation;
+                    const lipid = new Lipid(cx, cy, sat, angle + Math.PI / 2);
+                    lipid.targetX = x;
+                    lipid.targetY = y;
+                    lipids.push(lipid);
+                }
+            } else if (mode === 'bilayer') {
+                // Flat bilayer
+                const y1 = H / 2 - 25;
+                const y2 = H / 2 + 25;
+                const spacing = (W - 200) / (count / 2);
+
+                for (let i = 0; i < count / 2; i++) {
+                    const x = 100 + i * spacing + (Math.random() - 0.5) * 10;
+                    const sat = Math.random() < saturation;
+
+                    // Top layer (heads up)
+                    const lipid1 = new Lipid(x, y1, sat, -Math.PI / 2);
+                    lipid1.targetX = x;
+                    lipid1.targetY = y1;
+                    lipids.push(lipid1);
+
+                    // Bottom layer (heads down)
+                    const lipid2 = new Lipid(x, y2, Math.random() < saturation, Math.PI / 2);
+                    lipid2.targetX = x;
+                    lipid2.targetY = y2;
+                    lipids.push(lipid2);
+                }
+
+                // Add cholesterol between layers
+                const cholCount = Math.floor(count * cholPercent);
+                for (let i = 0; i < cholCount; i++) {
+                    const x = 100 + Math.random() * (W - 200);
+                    const layer = Math.random() > 0.5 ? -1 : 1;
+                    const y = H / 2 + layer * 10;
+                    const chol = new Cholesterol(x, y, layer * Math.PI / 2);
+                    chol.targetX = x;
+                    chol.targetY = y;
+                    chol.targetAngle = layer * Math.PI / 2;
+                    cholesterols.push(chol);
+                }
+            } else if (mode === 'liposome') {
+                // Spherical bilayer (vesicle)
+                const cx = W / 2;
+                const cy = H / 2;
+                const outerRadius = Math.min(W, H) * 0.25;
+                const innerRadius = outerRadius - 35;
+
+                const outerCount = Math.floor(count * 0.6);
+                const innerCount = count - outerCount;
+
+                // Outer layer
+                for (let i = 0; i < outerCount; i++) {
+                    const angle = (i / outerCount) * Math.PI * 2;
+                    const x = cx + Math.cos(angle) * outerRadius;
+                    const y = cy + Math.sin(angle) * outerRadius;
+                    const sat = Math.random() < saturation;
+                    const lipid = new Lipid(cx, cy, sat, angle + Math.PI / 2);
+                    lipid.targetX = x;
+                    lipid.targetY = y;
+                    lipids.push(lipid);
+                }
+
+                // Inner layer
+                for (let i = 0; i < innerCount; i++) {
+                    const angle = (i / innerCount) * Math.PI * 2;
+                    const x = cx + Math.cos(angle) * innerRadius;
+                    const y = cy + Math.sin(angle) * innerRadius;
+                    const sat = Math.random() < saturation;
+                    const lipid = new Lipid(cx, cy, sat, angle - Math.PI / 2);
+                    lipid.targetX = x;
+                    lipid.targetY = y;
+                    lipids.push(lipid);
+                }
+
+                // Cholesterol in membrane
+                const cholCount = Math.floor(count * cholPercent);
+                for (let i = 0; i < cholCount; i++) {
+                    const angle = (i / cholCount) * Math.PI * 2;
+                    const r = (outerRadius + innerRadius) / 2;
+                    const x = cx + Math.cos(angle) * r;
+                    const y = cy + Math.sin(angle) * r;
+                    const chol = new Cholesterol(cx, cy, angle + Math.PI / 2);
+                    chol.targetX = x;
+                    chol.targetY = y;
+                    chol.targetAngle = angle + Math.PI / 2;
+                    cholesterols.push(chol);
+                }
+            }
+        }
+
+        // Draw water background
+        function drawWater() {
+            const time = Date.now() / 1000;
+
+            waterMolecules.forEach(w => {
+                const wave = Math.sin(time * 2 + w.phase) * 2;
+                ctx.beginPath();
+                ctx.arc(w.x + wave, w.y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+                ctx.fill();
+            });
+        }
+
+        // Calculate system metrics
+        function updateMetrics() {
+            const temp = getTemperature();
+            const sat = getSaturation();
+            const chol = getCholesterolPercent();
+
+            // Transition temperature (Tm) depends on saturation
+            const tm = 25 + sat * 30 - (1 - sat) * 15 + chol * 10;
+
+            // Fluidity depends on temp relative to Tm
+            let fluidityText;
+            if (temp < tm - 10) fluidityText = 'Gel (rígido)';
+            else if (temp < tm) fluidityText = 'Transición';
+            else if (temp < tm + 15) fluidityText = 'Fluido';
+            else fluidityText = 'Muy fluido';
+
+            // Energy (arbitrary units, lower when assembled)
+            let energy;
+            if (mode === 'free') energy = lipids.length * 10;
+            else if (mode === 'micelle') energy = lipids.length * 3;
+            else energy = lipids.length * 1;
+
+            document.getElementById('fluidity').textContent = fluidityText;
+            document.getElementById('energy').textContent = energy.toFixed(0) + ' u.a.';
+            document.getElementById('tm').textContent = '~' + tm.toFixed(0) + '°C';
+        }
+
+        // Main draw loop
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const temp = getTemperature();
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Estructura y Auto-ensamblaje de Lípidos', W / 2, 40);
+
+            // Mode label
+            const modeLabels = {
+                free: 'Modo: Lípidos libres en agua',
+                micelle: 'Modo: Micela (mono-capa)',
+                bilayer: 'Modo: Bicapa lipídica',
+                liposome: 'Modo: Liposoma (vesícula)'
+            };
+            ctx.font = '12px monospace';
+            ctx.fillStyle = '#ec4899';
+            ctx.fillText(modeLabels[mode], W / 2, 60);
+
+            // Draw water background
+            drawWater();
+
+            // Draw hydrophobic region indicator for bilayer/liposome
+            if (mode === 'bilayer') {
+                ctx.fillStyle = 'rgba(30, 41, 59, 0.5)';
+                ctx.fillRect(80, H / 2 - 20, W - 160, 40);
+                ctx.fillStyle = '#475569';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'left';
+                ctx.fillText('Región hidrofóbica', 90, H / 2 + 5);
+            } else if (mode === 'liposome') {
+                const cx = W / 2;
+                const cy = H / 2;
+                const outerRadius = Math.min(W, H) * 0.25;
+                const innerRadius = outerRadius - 35;
+
+                ctx.beginPath();
+                ctx.arc(cx, cy, (outerRadius + innerRadius) / 2, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(236, 72, 153, 0.2)';
+                ctx.lineWidth = 35;
+                ctx.stroke();
+
+                // Labels
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('Exterior (agua)', cx, cy - outerRadius - 20);
+                ctx.fillText('Interior (agua)', cx, cy);
+            }
+
+            // Update and draw cholesterol
+            cholesterols.forEach(c => {
+                c.update(1/60, temp);
+                c.draw();
+            });
+
+            // Update and draw lipids
+            lipids.forEach(l => {
+                l.update(1/60, temp);
+                l.draw();
+            });
+
+            // Update metrics
+            updateMetrics();
+
+            requestAnimationFrame(draw);
+        }
+
+        // Event handlers
+        document.querySelectorAll('.mode-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                mode = btn.dataset.mode;
+                initLipids();
+            });
+        });
+
+        document.getElementById('phospholipids').addEventListener('input', e => {
+            document.getElementById('phospho-val').textContent = e.target.value;
+            initLipids();
+        });
+
+        document.getElementById('saturation').addEventListener('input', e => {
+            document.getElementById('sat-val').textContent = e.target.value + '%';
+            initLipids();
+        });
+
+        document.getElementById('cholesterol').addEventListener('input', e => {
+            document.getElementById('chol-val').textContent = e.target.value + '%';
+            initLipids();
+        });
+
+        document.getElementById('temperature').addEventListener('input', e => {
+            document.getElementById('temp-val').textContent = e.target.value + '°C';
+        });
+
+        document.getElementById('shake').addEventListener('click', () => {
+            lipids.forEach(l => {
+                l.vx += (Math.random() - 0.5) * 20;
+                l.vy += (Math.random() - 0.5) * 20;
+            });
+            cholesterols.forEach(c => {
+                c.vx += (Math.random() - 0.5) * 15;
+                c.vy += (Math.random() - 0.5) * 15;
+            });
+        });
+
+        document.getElementById('reset').addEventListener('click', () => {
+            initLipids();
+        });
+
+        // Initialize
+        initWater();
+        initLipids();
+        draw();
+    </script>
+</body>
+</html>

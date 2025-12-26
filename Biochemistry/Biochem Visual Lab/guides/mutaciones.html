@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mutaciones — Guia · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(236, 72, 153, 0.1); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; } .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { background: var(--accent); color: white; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        .experiment-title { font-weight: 600; font-size: 0.95rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .connection { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); text-decoration: none; transition: all 0.2s; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .connection-icon { width: 2rem; height: 2rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; flex-shrink: 0; }
+        .connection-icon.icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .connection-icon.icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection-icon.icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .connection-icon.icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .connection-text { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); }
+        .connection-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Limitations */
+        .limitations { background: var(--bg-panel); border: 1px dashed var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { margin-top: 0; font-size: 0.85rem; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1)); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { margin-top: 0; }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+        .guide-nav a:hover { color: var(--accent); background: var(--accent-dim); }
+        .guide-nav .next { margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Mutaciones</nav>
+                <h1>Mutaciones — Guia</h1>
+                <div class="subtitle">Cambios en la secuencia del DNA</div>
+            </div>
+            <a href="../mutaciones.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que son las mutaciones?</div>
+                <p class="lead">Las <span class="em">mutaciones</span> son cambios permanentes en la secuencia del DNA. Pueden ser puntuales (un nucleotido) o extensas (cromosomicas). Son la fuente primaria de variacion genetica y el motor de la evolucion.</p>
+                <div class="chips"><span class="chip">Sustitucion</span><span class="chip">Insercion</span><span class="chip">Delecion</span><span class="chip">Frameshift</span></div>
+                <div class="callout"><p><strong>Tasa de mutacion humana:</strong> ~1-2 x 10⁻⁸ mutaciones por nucleotido por generacion. Con 3 mil millones de pares de bases, cada persona tiene ~100-200 mutaciones nuevas.</p></div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Efectos en proteina</div>
+                <ul>
+                    <li><strong>Silenciosa:</strong> Mismo aminoacido (degeneracion del codigo)</li>
+                    <li><strong>Missense:</strong> Diferente aminoacido</li>
+                    <li><strong>Nonsense:</strong> Codon STOP prematuro</li>
+                    <li><strong>Frameshift:</strong> Cambia marco de lectura completo</li>
+                </ul>
+                <p style="margin-top: 0.75rem; font-size: 0.8rem;"><strong>Clave:</strong> El impacto depende de la posicion y la conservacion evolutiva del residuo afectado.</p>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Causas de mutaciones</h2>
+                <ul>
+                    <li><strong>Espontaneas:</strong> Errores de replicacion (~10⁻¹⁰ con proofreading)</li>
+                    <li><strong>UV:</strong> Dimeros de timina (T=T)</li>
+                    <li><strong>Quimicos:</strong> Agentes alquilantes, analogos de bases</li>
+                    <li><strong>Radicales libres:</strong> Dano oxidativo (8-oxoguanina)</li>
+                    <li><strong>Transposones:</strong> "Genes saltarines"</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Mecanismos de reparacion</h2>
+                <ul>
+                    <li><strong>Proofreading:</strong> DNA Pol III (3'→5' exonucleasa)</li>
+                    <li><strong>Mismatch repair:</strong> MutS/MutL reconocen desapareamientos</li>
+                    <li><strong>NER:</strong> Remocion de nucleotidos (dimeros UV)</li>
+                    <li><strong>BER:</strong> Escision de base danada</li>
+                    <li><strong>NHEJ/HR:</strong> Reparacion de roturas de doble cadena</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="experiments">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">1</span>
+                    <span class="experiment-title">Degeneracion del codigo genetico</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>Las mutaciones en la tercera posicion del codon (posicion wobble) tienen mayor probabilidad de ser silenciosas que en la primera o segunda posicion.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Selecciona un codon que codifica un aminoacido con alta degeneracion (Leucina, Serina)</li>
+                    <li>Introduce sustituciones sistematicas en posicion 1, 2 y 3</li>
+                    <li>Registra cuantas producen el mismo aminoacido vs. diferente</li>
+                    <li>Compara con codones de baja degeneracion (Met, Trp)</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Calcula la probabilidad de mutacion silenciosa por posicion. Relaciona con la hipotesis del "wobble" de Crick y la conservacion evolutiva de las posiciones 1 y 2.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">2</span>
+                    <span class="experiment-title">Cascada del frameshift</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>Una insercion o delecion de nucleotidos no multiplo de 3 altera todos los aminoacidos downstream hasta encontrar un codon STOP, siendo mas severa que multiples mutaciones puntuales aisladas.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Toma una secuencia de 10 codones y traduce la proteina wild-type</li>
+                    <li>Inserta 1 nucleotido al inicio y observa el cambio completo</li>
+                    <li>Ahora inserta 2 nucleotidos — observa frameshift diferente</li>
+                    <li>Inserta 3 nucleotidos — ve que se restaura el marco (con 1 aa extra)</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Compara el numero de aminoacidos cambiados en cada caso. Reflexiona por que las inserciones/deleciones de 3n son menos daninas evolutivamente.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">3</span>
+                    <span class="experiment-title">Mutaciones compensatorias</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>Una segunda mutacion puede restaurar parcialmente la funcion perdida por una mutacion inicial, si compensa estructural o funcionalmente el defecto original.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Genera una mutacion nonsense que trunca la proteina tempranamente</li>
+                    <li>Busca si alguna mutacion upstream podria crear un sitio de inicio alternativo</li>
+                    <li>Alternativamente, genera una delecion que cause frameshift</li>
+                    <li>Anade una segunda insercion/delecion que restaure el marco</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Evalua que porcentaje de la proteina original se recupera. Investiga ejemplos reales como mutaciones supresoras intrasgenicas en genetica de fagos.</p>
+            </div>
+        </section>
+
+        <section class="card section">
+            <div class="kicker">Conexiones interdisciplinarias</div>
+            <h2 style="margin-top: 0.5rem;">Este concepto aparece en otras simulaciones</h2>
+            <div class="connections">
+                <a href="regulacion-genica.html" class="connection">
+                    <span class="connection-icon icon-biochem">🧬</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Regulacion Genica</div>
+                        <div class="connection-desc">Mutaciones en promotores y enhancers alteran expresion sin cambiar proteina</div>
+                    </div>
+                </a>
+                <a href="../../../Biology/Biology Visual Lab/evolucion.html" class="connection">
+                    <span class="connection-icon icon-biology">🧬</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Algoritmo Genetico</div>
+                        <div class="connection-desc">Mutaciones como operador de diversidad en optimizacion evolutiva</div>
+                    </div>
+                </a>
+                <a href="../../../Biology/Biology Visual Lab/genetica-poblacional.html" class="connection">
+                    <span class="connection-icon icon-biology">📊</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Hardy-Weinberg</div>
+                        <div class="connection-desc">Frecuencias alelicas y deriva genetica desde variantes mutantes</div>
+                    </div>
+                </a>
+                <a href="../../../Computation/Computation Lab/finite-automata.html" class="connection">
+                    <span class="connection-icon icon-computation">⚙️</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Automatas Finitos</div>
+                        <div class="connection-desc">Frameshift como transicion de estado con propagacion de error</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="limitations">
+            <h3>Limitaciones del modelo</h3>
+            <ul>
+                <li><strong>Contexto genomico:</strong> No simula efectos de cromatina, metilacion o posicion cromosomica en tasas de mutacion</li>
+                <li><strong>Reparacion:</strong> Omite los mecanismos de reparacion que ocurren antes de que la mutacion se fije</li>
+                <li><strong>Efectos epistaticos:</strong> Ignora interacciones entre multiples mutaciones en diferentes genes</li>
+                <li><strong>Splicing:</strong> No modela mutaciones en sitios de empalme que afectan procesamiento del RNA</li>
+            </ul>
+        </div>
+
+        <div class="reflection">
+            <h3>Preguntas de reflexion</h3>
+            <ul>
+                <li>Por que crees que el codigo genetico evoluciono con degeneracion principalmente en la tercera posicion?</li>
+                <li>Si las mutaciones son la fuente de variacion para la evolucion, por que los organismos invierten tanta energia en repararlas?</li>
+                <li>Como podria una misma mutacion ser beneficiosa en un ambiente y danina en otro? Piensa en el ejemplo de la anemia falciforme y la malaria.</li>
+                <li>Que diferencia hay entre una mutacion germinal y una somatica en terminos de consecuencias evolutivas?</li>
+            </ul>
+        </div>
+
+        <nav class="guide-nav">
+            <a href="traduccion.html" class="prev">← Traduccion</a>
+            <a href="regulacion-genica.html" class="next">Regulacion Genica →</a>
+        </nav>
+    </main>
+    <footer><a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Mutaciones</footer>
+</body>
+</html>

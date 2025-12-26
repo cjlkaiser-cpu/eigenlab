@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genética Poblacional — Guía · Biology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border: 1px solid var(--accent); background: var(--accent-dim); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; position: relative; }
+        .experiment-number { position: absolute; top: -0.75rem; left: 1rem; background: var(--accent); color: var(--bg-primary); font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .steps { counter-reset: step; list-style: none; padding-left: 0; margin-top: 0.75rem; }
+        .steps li { counter-increment: step; padding-left: 2rem; position: relative; margin: 0.5rem 0; }
+        .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+
+        /* Connections */
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; display: block; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+        .connection-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem; }
+        .connection-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+
+        /* Limitations */
+        .limitations { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--accent); margin-bottom: 0.75rem; }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; flex-direction: column; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .guide-nav a:hover { border-color: var(--accent); text-decoration: none; }
+        .guide-nav .nav-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .guide-nav .nav-title { font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .guide-nav .next { text-align: right; margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Biology Visual Lab</a>
+                    <span> / </span>
+                    <span>Genética Poblacional</span>
+                </nav>
+                <h1>Genética Poblacional — Guía</h1>
+                <div class="subtitle">Hardy-Weinberg y deriva genética</div>
+            </div>
+            <a href="../genetica-poblacional.html" class="pill">
+                <span>▶</span>
+                <span>Abrir simulación</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es Hardy-Weinberg?</div>
+                <p class="lead">
+                    El principio de <span class="em">Hardy-Weinberg</span> establece que las frecuencias
+                    alélicas se mantienen constantes en una población ideal. Cualquier desviación
+                    de este equilibrio indica que la <span class="em">evolución</span> está ocurriendo.
+                </p>
+                <div class="chips">
+                    <span class="chip">Frecuencia alélica</span>
+                    <span class="chip">Genotipo</span>
+                    <span class="chip">Equilibrio</span>
+                    <span class="chip">Deriva genética</span>
+                    <span class="chip">Selección</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Condiciones ideales (1908):</strong> Población infinita, apareamiento aleatorio,
+                    sin selección, sin mutación, sin migración. Si alguna se viola, hay evolución.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Ecuación fundamental</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 1rem; margin-top: 0.5rem; color: var(--accent);">
+                    p² + 2pq + q² = 1
+                </div>
+                <ul style="margin-top: 0.75rem;">
+                    <li><strong>p:</strong> Frecuencia alelo dominante (A)</li>
+                    <li><strong>q:</strong> Frecuencia alelo recesivo (a)</li>
+                    <li><strong>p + q = 1</strong> (solo dos alelos)</li>
+                </ul>
+                <div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-panel); border-radius: 0.375rem; font-size: 0.8rem;">
+                    <strong>Genotipos:</strong><br>
+                    AA = p² | Aa = 2pq | aa = q²
+                </div>
+            </aside>
+        </section>
+
+        <!-- Equilibrium vs Drift -->
+        <section class="two">
+            <div class="card">
+                <h2>Equilibrio Hardy-Weinberg</h2>
+                <p>Estado teórico donde las frecuencias no cambian entre generaciones.</p>
+                <ul>
+                    <li><strong>Población infinita:</strong> Sin efectos de azar</li>
+                    <li><strong>Apareamiento aleatorio:</strong> Sin preferencias</li>
+                    <li><strong>Sin selección:</strong> Todos igual fitness</li>
+                    <li><strong>Sin mutación:</strong> Alelos estables</li>
+                    <li><strong>Sin migración:</strong> Población cerrada</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Deriva Genética</h2>
+                <p>Cambios aleatorios en frecuencias debido al <span class="em">tamaño finito</span> de la población.</p>
+                <ul>
+                    <li><strong>Efecto fundador:</strong> Pocos colonizadores</li>
+                    <li><strong>Cuello de botella:</strong> Reducción drástica</li>
+                    <li><strong>Fijación:</strong> Alelo llega a 100%</li>
+                    <li><strong>Pérdida:</strong> Alelo llega a 0%</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Evolutionary Forces -->
+        <section class="card section">
+            <h2>Fuerzas Evolutivas</h2>
+            <div class="two" style="margin-top: 0;">
+                <div>
+                    <ul>
+                        <li><strong>Selección natural:</strong> Alelos con mayor fitness aumentan</li>
+                        <li><strong>Mutación:</strong> Fuente de variación genética nueva</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Migración:</strong> Flujo génico entre poblaciones</li>
+                        <li><strong>Deriva:</strong> Azar en poblaciones pequeñas</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout-accent" style="margin-top: 1rem;">
+                <strong>Clave:</strong> La selección es <em>direccional</em> (favorece ciertos alelos), mientras que la deriva es <em>aleatoria</em> (puede favorecer cualquier alelo por azar).
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 1</div>
+                <h3 style="margin-top: 0.5rem;">Verificar el equilibrio Hardy-Weinberg</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">En una población grande sin selección, las frecuencias alélicas permanecerán constantes generación tras generación.</p>
+                </div>
+                <ol class="steps">
+                    <li>Configura N = 10,000 (población grande)</li>
+                    <li>Establece p = 0.3 (frecuencia inicial del alelo A)</li>
+                    <li>Desactiva selección (fitness igual para todos)</li>
+                    <li>Corre 100 generaciones y observa que p permanece ~0.3</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Hardy-Weinberg es el "modelo nulo" de la genética poblacional — las desviaciones nos dicen que algo interesante está ocurriendo.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 2</div>
+                <h3 style="margin-top: 0.5rem;">Observar la deriva genética</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">En poblaciones pequeñas, las frecuencias alélicas fluctuarán aleatoriamente y eventualmente un alelo se fijará (100%) o se perderá (0%).</p>
+                </div>
+                <ol class="steps">
+                    <li>Configura N = 20 (población pequeña)</li>
+                    <li>Establece p = 0.5 (50% cada alelo)</li>
+                    <li>Corre múltiples réplicas del experimento</li>
+                    <li>Observa que algunas réplicas fijan A, otras fijan a — es aleatorio</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> La deriva explica por qué poblaciones aisladas pequeñas (islas, fundadores) pueden tener frecuencias génicas muy diferentes.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 3</div>
+                <h3 style="margin-top: 0.5rem;">Competencia: selección vs deriva</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">En poblaciones grandes, la selección domina; en pequeñas, la deriva puede "vencer" a la selección.</p>
+                </div>
+                <ol class="steps">
+                    <li>Activa selección moderada contra el alelo a (fitness 0.9)</li>
+                    <li>Con N = 10,000: el alelo a siempre disminuye (selección gana)</li>
+                    <li>Con N = 20: a veces el alelo a se fija a pesar de ser desventajoso</li>
+                    <li>Calcula N × s (tamaño × coeficiente selección) — si << 1, deriva domina</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Esto explica por qué mutaciones ligeramente dañinas pueden acumularse en poblaciones pequeñas (carga genética).
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <h2>Conexiones interdisciplinarias</h2>
+            <div class="connections-grid">
+                <a href="../../../Mathematics/Math Visual Lab/probabilidad.html" class="connection">
+                    <div class="connection-icon icon-math">📐</div>
+                    <div class="connection-title">Probabilidad</div>
+                    <div class="connection-desc">La deriva genética es un proceso estocástico: muestreo aleatorio de gametos.</div>
+                </a>
+                <a href="evolucion.html" class="connection">
+                    <div class="connection-icon icon-biology">🧬</div>
+                    <div class="connection-title">Evolución</div>
+                    <div class="connection-desc">La genética poblacional es la base matemática de la teoría evolutiva moderna.</div>
+                </a>
+                <a href="meiosis.html" class="connection">
+                    <div class="connection-icon icon-biology">🔬</div>
+                    <div class="connection-title">Meiosis</div>
+                    <div class="connection-desc">La segregación meiótica de alelos es lo que permite predecir proporciones genotípicas.</div>
+                </a>
+                <a href="../../../Computation/Computation Lab/perceptron-playground.html" class="connection">
+                    <div class="connection-icon icon-computation">💻</div>
+                    <div class="connection-title">Algoritmos Genéticos</div>
+                    <div class="connection-desc">La computación evolutiva usa selección y mutación para optimizar soluciones.</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="section">
+            <div class="limitations">
+                <h3>⚠️ Limitaciones de la simulación</h3>
+                <ul>
+                    <li><strong>Un solo locus:</strong> La realidad tiene miles de genes interactuando</li>
+                    <li><strong>Dos alelos:</strong> Muchos genes tienen múltiples alelos</li>
+                    <li><strong>Generaciones discretas:</strong> Poblaciones reales tienen solapamiento generacional</li>
+                    <li><strong>Sin estructura espacial:</strong> No modela subpoblaciones ni aislamiento geográfico</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Reflection -->
+        <section class="section">
+            <div class="reflection">
+                <h3>🔬 Preguntas de reflexión</h3>
+                <ol>
+                    <li>Si observas que las frecuencias alélicas cambian en una población natural, ¿cómo distinguirías si es por selección o por deriva?</li>
+                    <li>¿Por qué las poblaciones fundadoras (ej. colonizadores de una isla) suelen tener menos diversidad genética?</li>
+                    <li>Un alelo recesivo letal (aa = muerte) nunca desaparece completamente. ¿Por qué?</li>
+                    <li>¿Cuál es la probabilidad de fijación de un alelo neutro nuevo en una población de tamaño N?</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="neurona.html">
+                <span class="nav-label">← Anterior</span>
+                <span class="nav-title">Neurona</span>
+            </a>
+            <a href="mitosis.html" class="next">
+                <span class="nav-label">Siguiente →</span>
+                <span class="nav-title">Mitosis</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biology Visual Lab — Genética Poblacional
+    </footer>
+</body>
+</html>

@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Traducción | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #10b981;
+            cursor: pointer;
+        }
+        .codon-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: center;
+            border: 1px solid #1e293b;
+        }
+        .codon-label { color: #64748b; font-size: 9px; margin-bottom: 4px; }
+        .codon-value { font-size: 24px; font-weight: bold; letter-spacing: 4px; }
+        .amino-name { font-size: 11px; color: #10b981; margin-top: 4px; }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #10b981; font-size: 12px; font-weight: bold; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #10b981; color: #10b981; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #10b981; }
+        .protein-chain {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            min-height: 40px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+        }
+        .amino-badge {
+            padding: 4px 6px;
+            border-radius: 4px;
+            font-size: 9px;
+            font-weight: bold;
+            color: #0f172a;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🔄 Traducción</h2>
+        <p class="text-slate-500 text-xs mb-4">ARNm → Proteína · Código genético</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">traducción</span> convierte mRNA en proteína. El ribosoma lee codones (3 nt), el tRNA aporta aminoácidos específicos.
+            </p>
+            <a href="guides/traduccion.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: código genético, ribosoma, tRNA
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Velocidad</span><span class="text-emerald-400" id="speed-val">1.0x</span></label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="codon-box">
+            <div class="codon-label">Codón en sitio A</div>
+            <div class="codon-value text-cyan-400" id="current-codon">AUG</div>
+            <div class="amino-name" id="amino-name">Metionina (Met) - INICIO</div>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Codones leídos</span>
+            <span class="stat-value" id="codon-count">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Aminoácidos</span>
+            <span class="stat-value" id="amino-count">0</span>
+        </div>
+
+        <div class="text-slate-500 text-xs mt-3 mb-1">Cadena polipeptídica:</div>
+        <div class="protein-chain" id="protein-chain"></div>
+
+        <button class="btn" id="reset">↻ Nueva traducción</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Componentes</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>Ribosoma 80S</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>ARNm</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>ARNt</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Aminoácidos</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Etapas</div>
+            <div class="legend-item">1. ARNt entra al sitio A</div>
+            <div class="legend-item">2. Enlace peptídico en sitio P</div>
+            <div class="legend-item">3. Translocación (A→P→E)</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Código genético:</strong> 64 codones → 20 aminoácidos + 3 STOP
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Genetic code
+        const codonTable = {
+            'UUU': 'Phe', 'UUC': 'Phe', 'UUA': 'Leu', 'UUG': 'Leu',
+            'UCU': 'Ser', 'UCC': 'Ser', 'UCA': 'Ser', 'UCG': 'Ser',
+            'UAU': 'Tyr', 'UAC': 'Tyr', 'UAA': 'STOP', 'UAG': 'STOP',
+            'UGU': 'Cys', 'UGC': 'Cys', 'UGA': 'STOP', 'UGG': 'Trp',
+            'CUU': 'Leu', 'CUC': 'Leu', 'CUA': 'Leu', 'CUG': 'Leu',
+            'CCU': 'Pro', 'CCC': 'Pro', 'CCA': 'Pro', 'CCG': 'Pro',
+            'CAU': 'His', 'CAC': 'His', 'CAA': 'Gln', 'CAG': 'Gln',
+            'CGU': 'Arg', 'CGC': 'Arg', 'CGA': 'Arg', 'CGG': 'Arg',
+            'AUU': 'Ile', 'AUC': 'Ile', 'AUA': 'Ile', 'AUG': 'Met',
+            'ACU': 'Thr', 'ACC': 'Thr', 'ACA': 'Thr', 'ACG': 'Thr',
+            'AAU': 'Asn', 'AAC': 'Asn', 'AAA': 'Lys', 'AAG': 'Lys',
+            'AGU': 'Ser', 'AGC': 'Ser', 'AGA': 'Arg', 'AGG': 'Arg',
+            'GUU': 'Val', 'GUC': 'Val', 'GUA': 'Val', 'GUG': 'Val',
+            'GCU': 'Ala', 'GCC': 'Ala', 'GCA': 'Ala', 'GCG': 'Ala',
+            'GAU': 'Asp', 'GAC': 'Asp', 'GAA': 'Glu', 'GAG': 'Glu',
+            'GGU': 'Gly', 'GGC': 'Gly', 'GGA': 'Gly', 'GGG': 'Gly'
+        };
+
+        const aminoFullNames = {
+            'Phe': 'Fenilalanina', 'Leu': 'Leucina', 'Ile': 'Isoleucina', 'Met': 'Metionina',
+            'Val': 'Valina', 'Ser': 'Serina', 'Pro': 'Prolina', 'Thr': 'Treonina',
+            'Ala': 'Alanina', 'Tyr': 'Tirosina', 'His': 'Histidina', 'Gln': 'Glutamina',
+            'Asn': 'Asparagina', 'Lys': 'Lisina', 'Asp': 'Aspartato', 'Glu': 'Glutamato',
+            'Cys': 'Cisteína', 'Trp': 'Triptófano', 'Arg': 'Arginina', 'Gly': 'Glicina'
+        };
+
+        const aminoColors = {
+            'Phe': '#ef4444', 'Leu': '#f97316', 'Ile': '#f59e0b', 'Met': '#eab308',
+            'Val': '#84cc16', 'Ser': '#22c55e', 'Pro': '#10b981', 'Thr': '#14b8a6',
+            'Ala': '#06b6d4', 'Tyr': '#0ea5e9', 'His': '#3b82f6', 'Gln': '#6366f1',
+            'Asn': '#8b5cf6', 'Lys': '#a855f7', 'Asp': '#d946ef', 'Glu': '#ec4899',
+            'Cys': '#f43f5e', 'Trp': '#64748b', 'Arg': '#78716c', 'Gly': '#a3a3a3'
+        };
+
+        const baseColors = { 'A': '#ef4444', 'U': '#06b6d4', 'G': '#fbbf24', 'C': '#22c55e' };
+
+        // State
+        let mRNA = [];
+        let proteinChain = [];
+        let currentCodonIndex = 0;
+        let translationProgress = 0;
+        let isTranslating = true;
+        let tRNAState = 'entering'; // entering, bound, transferring, exiting
+        let tRNAProgress = 0;
+
+        function generateMRNA() {
+            mRNA = ['A', 'U', 'G']; // Start codon
+
+            const bases = ['A', 'U', 'G', 'C'];
+            const codonCount = 12 + Math.floor(Math.random() * 8);
+
+            for (let i = 0; i < codonCount * 3; i++) {
+                mRNA.push(bases[Math.floor(Math.random() * 4)]);
+            }
+
+            // Add stop codon
+            const stops = ['UAA', 'UAG', 'UGA'];
+            mRNA.push(...stops[Math.floor(Math.random() * 3)].split(''));
+        }
+
+        function init() {
+            generateMRNA();
+            proteinChain = [];
+            currentCodonIndex = 0;
+            translationProgress = 0;
+            isTranslating = true;
+            tRNAState = 'entering';
+            tRNAProgress = 0;
+            updateProteinDisplay();
+        }
+
+        function getCurrentCodon() {
+            const start = currentCodonIndex * 3;
+            if (start + 3 <= mRNA.length) {
+                return mRNA.slice(start, start + 3).join('');
+            }
+            return null;
+        }
+
+        function getAnticodon(codon) {
+            const comp = { 'A': 'U', 'U': 'A', 'G': 'C', 'C': 'G' };
+            return codon.split('').map(b => comp[b]).reverse().join('');
+        }
+
+        function drawRibosome(x, y) {
+            // Large subunit (60S)
+            ctx.fillStyle = '#7c3aed';
+            ctx.shadowColor = '#a855f7';
+            ctx.shadowBlur = 25;
+
+            ctx.beginPath();
+            ctx.ellipse(x, y - 40, 100, 60, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Small subunit (40S)
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath();
+            ctx.ellipse(x, y + 50, 90, 45, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Labels
+            ctx.fillStyle = '#e9d5ff';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('60S', x, y - 35);
+            ctx.fillText('40S', x, y + 55);
+
+            // Sites
+            ctx.font = 'bold 16px monospace';
+            ctx.fillStyle = '#f43f5e';
+            ctx.fillText('A', x + 50, y + 10);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('P', x, y + 10);
+            ctx.fillStyle = '#38bdf8';
+            ctx.fillText('E', x - 50, y + 10);
+
+            // Site boxes
+            ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+            ctx.lineWidth = 1;
+            [-50, 0, 50].forEach(offset => {
+                ctx.strokeRect(x + offset - 20, y + 45, 40, 30);
+            });
+        }
+
+        function drawMRNA(ribosomeX, ribosomeY) {
+            const y = ribosomeY + 50;
+            const baseWidth = 22;
+
+            // mRNA strand
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 4;
+            ctx.shadowColor = '#06b6d4';
+            ctx.shadowBlur = 5;
+            ctx.beginPath();
+            ctx.moveTo(100, y);
+            ctx.lineTo(W - 100, y);
+            ctx.stroke();
+            ctx.shadowBlur = 0;
+
+            // Draw visible bases
+            const visibleStart = Math.max(0, currentCodonIndex * 3 - 9);
+            const visibleEnd = Math.min(mRNA.length, currentCodonIndex * 3 + 15);
+
+            for (let i = visibleStart; i < visibleEnd; i++) {
+                const baseX = ribosomeX + (i - currentCodonIndex * 3 - 1.5) * baseWidth;
+                const base = mRNA[i];
+
+                // Highlight current codon at A site
+                const codonStart = currentCodonIndex * 3;
+                const isCurrentCodon = i >= codonStart && i < codonStart + 3;
+
+                // Highlight P site codon
+                const pCodonStart = (currentCodonIndex - 1) * 3;
+                const isPCodon = currentCodonIndex > 0 && i >= pCodonStart && i < pCodonStart + 3;
+
+                ctx.beginPath();
+                ctx.arc(baseX, y, isCurrentCodon || isPCodon ? 12 : 9, 0, Math.PI * 2);
+                ctx.fillStyle = baseColors[base];
+
+                if (isCurrentCodon) {
+                    ctx.shadowColor = '#f43f5e';
+                    ctx.shadowBlur = 15;
+                } else if (isPCodon) {
+                    ctx.shadowColor = '#22c55e';
+                    ctx.shadowBlur = 10;
+                }
+
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = `bold ${isCurrentCodon || isPCodon ? 10 : 8}px monospace`;
+                ctx.textAlign = 'center';
+                ctx.fillText(base, baseX, y + 3);
+            }
+
+            // Direction labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText("5'", 110, y - 20);
+            ctx.textAlign = 'right';
+            ctx.fillText("3'", W - 110, y - 20);
+        }
+
+        function drawTRNA(ribosomeX, ribosomeY, site, codon, amino) {
+            let x, baseY;
+
+            if (site === 'A') {
+                x = ribosomeX + 50;
+                baseY = ribosomeY - 20;
+            } else if (site === 'P') {
+                x = ribosomeX;
+                baseY = ribosomeY - 30;
+            } else {
+                x = ribosomeX - 50;
+                baseY = ribosomeY - 15;
+            }
+
+            // Apply animation offset for entering tRNA
+            let yOffset = 0;
+            let alpha = 1;
+
+            if (site === 'A' && tRNAState === 'entering') {
+                yOffset = -80 * (1 - tRNAProgress);
+                alpha = tRNAProgress;
+            } else if (site === 'E' && tRNAState === 'exiting') {
+                yOffset = -60 * tRNAProgress;
+                alpha = 1 - tRNAProgress;
+            }
+
+            ctx.globalAlpha = alpha;
+
+            // tRNA body (L-shape)
+            ctx.fillStyle = '#22c55e';
+            ctx.shadowColor = '#22c55e';
+            ctx.shadowBlur = 12;
+
+            // Acceptor stem
+            ctx.beginPath();
+            ctx.moveTo(x - 12, baseY + yOffset);
+            ctx.lineTo(x + 12, baseY + yOffset);
+            ctx.lineTo(x + 8, baseY - 50 + yOffset);
+            ctx.lineTo(x - 8, baseY - 50 + yOffset);
+            ctx.closePath();
+            ctx.fill();
+
+            // Anticodon loop
+            ctx.beginPath();
+            ctx.arc(x, baseY + 25 + yOffset, 18, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Anticodon text
+            if (codon) {
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 9px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(getAnticodon(codon), x, baseY + 29 + yOffset);
+            }
+
+            // Amino acid
+            if (amino && amino !== 'STOP' && (site === 'A' || (site === 'P' && tRNAState !== 'transferring'))) {
+                ctx.beginPath();
+                ctx.arc(x, baseY - 65 + yOffset, 15, 0, Math.PI * 2);
+                ctx.fillStyle = aminoColors[amino] || '#fbbf24';
+                ctx.shadowColor = aminoColors[amino] || '#fbbf24';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px monospace';
+                ctx.fillText(amino, x, baseY - 62 + yOffset);
+            }
+
+            ctx.globalAlpha = 1;
+        }
+
+        function drawPeptideChain(ribosomeX, ribosomeY) {
+            if (proteinChain.length === 0) return;
+
+            const startX = ribosomeX - 30;
+            const startY = ribosomeY - 100;
+
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+
+            proteinChain.forEach((amino, i) => {
+                const x = startX - i * 18 - Math.sin(i * 0.5) * 15;
+                const y = startY - 30 - i * 8 + Math.cos(i * 0.3) * 10;
+
+                // Connection line
+                if (i > 0) {
+                    const prevX = startX - (i - 1) * 18 - Math.sin((i - 1) * 0.5) * 15;
+                    const prevY = startY - 30 - (i - 1) * 8 + Math.cos((i - 1) * 0.3) * 10;
+                    ctx.beginPath();
+                    ctx.moveTo(prevX, prevY);
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
+
+                // Amino acid
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = aminoColors[amino] || '#fbbf24';
+                ctx.shadowColor = aminoColors[amino] || '#fbbf24';
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 6px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(amino.substring(0, 3), x, y + 2);
+            });
+        }
+
+        function updateProteinDisplay() {
+            const container = document.getElementById('protein-chain');
+            container.innerHTML = '';
+
+            proteinChain.forEach(amino => {
+                const badge = document.createElement('span');
+                badge.className = 'amino-badge';
+                badge.style.background = aminoColors[amino] || '#fbbf24';
+                badge.textContent = amino;
+                container.appendChild(badge);
+            });
+
+            if (proteinChain.length === 0) {
+                container.innerHTML = '<span class="text-slate-500 text-xs">Esperando inicio...</span>';
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const speed = parseFloat(document.getElementById('speed').value);
+            const ribosomeX = W / 2 + 50;
+            const ribosomeY = H / 2;
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Traducción — Síntesis de Proteínas', W / 2, 40);
+
+            // Draw components
+            drawMRNA(ribosomeX, ribosomeY);
+            drawRibosome(ribosomeX, ribosomeY);
+
+            // Current codon info
+            const currentCodon = getCurrentCodon();
+            const currentAmino = currentCodon ? codonTable[currentCodon] : null;
+
+            // Draw tRNAs
+            if (currentCodonIndex > 0) {
+                const prevCodon = mRNA.slice((currentCodonIndex - 1) * 3, currentCodonIndex * 3).join('');
+                const prevAmino = codonTable[prevCodon];
+                if (prevAmino !== 'STOP') {
+                    drawTRNA(ribosomeX, ribosomeY, 'P', prevCodon, prevAmino);
+                }
+            }
+
+            if (currentCodon && currentAmino !== 'STOP') {
+                drawTRNA(ribosomeX, ribosomeY, 'A', currentCodon, currentAmino);
+            }
+
+            // Draw peptide chain
+            drawPeptideChain(ribosomeX, ribosomeY);
+
+            // Animation logic
+            if (isTranslating) {
+                tRNAProgress += 0.02 * speed;
+
+                if (tRNAProgress >= 1) {
+                    tRNAProgress = 0;
+
+                    if (tRNAState === 'entering') {
+                        tRNAState = 'bound';
+                    } else if (tRNAState === 'bound') {
+                        // Add amino acid to chain
+                        if (currentAmino && currentAmino !== 'STOP') {
+                            proteinChain.push(currentAmino);
+                            updateProteinDisplay();
+                        }
+                        tRNAState = 'transferring';
+                    } else if (tRNAState === 'transferring') {
+                        tRNAState = 'exiting';
+                    } else if (tRNAState === 'exiting') {
+                        // Move to next codon
+                        currentCodonIndex++;
+                        tRNAState = 'entering';
+
+                        const nextCodon = getCurrentCodon();
+                        if (!nextCodon || codonTable[nextCodon] === 'STOP') {
+                            isTranslating = false;
+                        }
+                    }
+                }
+            }
+
+            // Update UI
+            document.getElementById('current-codon').textContent = currentCodon || '---';
+
+            if (currentAmino) {
+                if (currentAmino === 'STOP') {
+                    document.getElementById('amino-name').textContent = 'Codón de PARADA';
+                } else {
+                    const extra = currentCodon === 'AUG' ? ' - INICIO' : '';
+                    document.getElementById('amino-name').textContent =
+                        `${aminoFullNames[currentAmino]} (${currentAmino})${extra}`;
+                }
+            }
+
+            document.getElementById('codon-count').textContent = currentCodonIndex;
+            document.getElementById('amino-count').textContent = proteinChain.length;
+
+            // Completion message
+            if (!isTranslating) {
+                ctx.fillStyle = '#22c55e';
+                ctx.font = 'bold 16px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('✓ Traducción completada', W / 2, H - 50);
+                ctx.font = '12px monospace';
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText(`Proteína de ${proteinChain.length} aminoácidos sintetizada`, W / 2, H - 30);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', e => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('reset').addEventListener('click', init);
+
+        init();
+        draw();
+    </script>
+</body>
+</html>

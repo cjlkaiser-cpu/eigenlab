@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finite Automata - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-tertiary: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --border: #334155;
+            --success: #22c55e;
+            --error: #ef4444;
+            --warning: #fbbf24;
+            --state-accept: #34d399;
+            --state-current: #3b82f6;
+            --state-visited: rgba(59, 130, 246, 0.3);
+            --transition-active: #fbbf24;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
+
+        .breadcrumb span {
+            color: var(--text-primary);
+        }
+
+        .main {
+            display: flex;
+            height: calc(100vh - 57px);
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #canvas {
+            flex: 1;
+            display: block;
+        }
+
+        .tape-container {
+            height: 80px;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.5rem 1rem;
+            gap: 1rem;
+        }
+
+        .tape {
+            display: flex;
+            align-items: center;
+            gap: 0;
+        }
+
+        .tape-cell {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.25rem;
+            font-weight: 500;
+            border: 2px solid var(--border);
+            background: var(--bg-tertiary);
+            transition: all 0.3s;
+        }
+
+        .tape-cell.read {
+            background: rgba(34, 197, 94, 0.2);
+            border-color: var(--success);
+            color: var(--success);
+        }
+
+        .tape-cell.current {
+            background: rgba(251, 191, 36, 0.2);
+            border-color: var(--warning);
+            color: var(--warning);
+            transform: scale(1.1);
+        }
+
+        .tape-cell.pending {
+            color: var(--text-muted);
+        }
+
+        .tape-head {
+            position: absolute;
+            top: -24px;
+            font-size: 1.5rem;
+            color: var(--warning);
+            transition: left 0.3s;
+        }
+
+        .tape-wrapper {
+            position: relative;
+        }
+
+        .result-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .result-badge.accepted {
+            background: rgba(34, 197, 94, 0.2);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .result-badge.rejected {
+            background: rgba(239, 68, 68, 0.2);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        .result-badge.running {
+            background: rgba(251, 191, 36, 0.2);
+            color: var(--warning);
+            border: 1px solid var(--warning);
+        }
+
+        .result-badge.idle {
+            background: var(--bg-tertiary);
+            color: var(--text-muted);
+            border: 1px solid var(--border);
+        }
+
+        .sidebar {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .section-title {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-muted);
+        }
+
+        .equation-box {
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'JetBrains Mono', monospace;
+            text-align: center;
+        }
+
+        .equation-main {
+            font-size: 1.25rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .equation-desc {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .input-group label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .input-row {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 0.625rem 0.875rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        input[type="text"]:focus {
+            border-color: var(--accent);
+        }
+
+        select {
+            padding: 0.625rem 0.875rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        .btn {
+            padding: 0.625rem 1rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+        }
+
+        .btn-secondary {
+            background: var(--bg-tertiary);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            border-color: var(--accent);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #16a34a;
+        }
+
+        .btn-warning {
+            background: var(--warning);
+            color: #1e293b;
+        }
+
+        .btn-warning:hover {
+            background: #f59e0b;
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .btn-group .btn {
+            flex: 1;
+        }
+
+        .speed-control {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .speed-control input[type="range"] {
+            flex: 1;
+            height: 4px;
+            -webkit-appearance: none;
+            background: var(--bg-tertiary);
+            border-radius: 2px;
+            outline: none;
+        }
+
+        .speed-control input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .speed-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            min-width: 50px;
+            text-align: right;
+        }
+
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .preset-btn {
+            padding: 0.5rem;
+            background: var(--bg-tertiary);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--text-primary);
+        }
+
+        .preset-btn.active {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            color: var(--accent);
+        }
+
+        .preset-name {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .preset-desc {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .stat-item {
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            padding: 0.75rem;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .stat-value {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 1.1rem;
+            color: var(--accent);
+            margin-top: 0.25rem;
+        }
+
+        .legend {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            border: 2px solid currentColor;
+        }
+
+        .legend-color.start {
+            background: transparent;
+            border-color: var(--accent);
+            position: relative;
+        }
+
+        .legend-color.start::after {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 50%;
+            transform: translateY(-50%);
+            border: 6px solid transparent;
+            border-right: 8px solid var(--accent);
+        }
+
+        .legend-color.accept {
+            background: transparent;
+            border-color: var(--state-accept);
+            box-shadow: inset 0 0 0 2px var(--bg-secondary), inset 0 0 0 4px var(--state-accept);
+        }
+
+        .legend-color.current {
+            background: var(--state-current);
+            border-color: var(--state-current);
+        }
+
+        .legend-color.visited {
+            background: var(--state-visited);
+            border-color: var(--border);
+        }
+
+        .alphabet-display {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            background: var(--bg-tertiary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 4px;
+        }
+
+        .help-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            line-height: 1.5;
+            padding: 0.75rem;
+            background: var(--bg-tertiary);
+            border-radius: 6px;
+            border-left: 3px solid var(--accent);
+        }
+
+        .transition-table {
+            font-size: 0.75rem;
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .transition-table th,
+        .transition-table td {
+            padding: 0.5rem;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .transition-table th {
+            background: var(--bg-tertiary);
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .transition-table td {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-primary);
+        }
+
+        .transition-table tr.accept td:first-child {
+            color: var(--state-accept);
+            font-weight: 600;
+        }
+
+        .transition-table tr.start td:first-child::before {
+            content: '→ ';
+            color: var(--accent);
+        }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+        .guide-icon {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .explanation-content p { margin: 0; }
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a> /
+                <a href="index.html">Computation Lab</a> /
+                <span>Finite Automata</span>
+            </nav>
+        </div>
+        <a href="guides/finite-automata.html" class="guide-link" title="Abrir guia explicativa">
+            <span class="guide-icon">?</span>
+            <span>Guia</span>
+        </a>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="tape-container">
+                <div class="tape-wrapper">
+                    <div class="tape" id="tape"></div>
+                </div>
+                <div class="result-badge idle" id="result">IDLE</div>
+            </div>
+        </div>
+
+        <aside class="sidebar">
+            <div class="section">
+                <div class="section-title">Definici&oacute;n Formal</div>
+                <div class="equation-box">
+                    <div class="equation-main">M = (Q, &Sigma;, &delta;, q&lt;sub&gt;0&lt;/sub&gt;, F)</div>
+                    <div class="equation-desc">&delta;: Q &times; &Sigma; &rarr; Q</div>
+                </div>
+            </div>
+
+            <!-- Quick explanation -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>Una maquina con estados finitos que lee simbolos y cambia de estado segun reglas fijas. Acepta o rechaza cadenas segun el estado final.</p>
+                    <a href="guides/finite-automata.html" class="guide-btn">
+                        <span class="guide-icon">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Input String</div>
+                <div class="input-group">
+                    <div class="input-row">
+                        <input type="text" id="inputString" placeholder="01001" value="01001">
+                        <button class="btn btn-primary" id="runBtn">Run</button>
+                    </div>
+                </div>
+                <div class="btn-group">
+                    <button class="btn btn-secondary" id="stepBtn">Step</button>
+                    <button class="btn btn-secondary" id="resetBtn">Reset</button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Velocidad</div>
+                <div class="speed-control">
+                    <input type="range" id="speedSlider" min="100" max="1500" value="500">
+                    <span class="speed-value" id="speedValue">500ms</span>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Presets DFA</div>
+                <div class="preset-grid">
+                    <button class="preset-btn active" data-preset="endsWith01">
+                        <div class="preset-name">ends01</div>
+                        <div class="preset-desc">Termina en "01"</div>
+                    </button>
+                    <button class="preset-btn" data-preset="evenZeros">
+                        <div class="preset-name">even0s</div>
+                        <div class="preset-desc">N&uacute;mero par de 0s</div>
+                    </button>
+                    <button class="preset-btn" data-preset="abStarA">
+                        <div class="preset-name">ab*a</div>
+                        <div class="preset-desc">Patr&oacute;n ab*a</div>
+                    </button>
+                    <button class="preset-btn" data-preset="divisibleBy3">
+                        <div class="preset-name">div3</div>
+                        <div class="preset-desc">Binario %3 = 0</div>
+                    </button>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Estad&iacute;sticas</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-label">Estados</div>
+                        <div class="stat-value" id="stateCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Transiciones</div>
+                        <div class="stat-value" id="transitionCount">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Paso</div>
+                        <div class="stat-value" id="currentStep">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-label">Alfabeto</div>
+                        <div class="stat-value" id="alphabetDisplay">&Sigma;</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Leyenda</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color start"></div>
+                        <span>Estado inicial</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color accept"></div>
+                        <span>Estado de aceptaci&oacute;n</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color current"></div>
+                        <span>Estado actual</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color visited"></div>
+                        <span>Estado visitado</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Tabla de Transiciones</div>
+                <div id="transitionTableContainer"></div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ==================== DFA MODEL ====================
+        class State {
+            constructor(id, isAccept = false) {
+                this.id = id;
+                this.isAccept = isAccept;
+                this.transitions = new Map();
+                this.x = 0;
+                this.y = 0;
+                this.visited = false;
+            }
+        }
+
+        class DFA {
+            constructor() {
+                this.states = new Map();
+                this.startState = null;
+                this.currentState = null;
+                this.alphabet = new Set();
+            }
+
+            addState(id, isAccept = false) {
+                const state = new State(id, isAccept);
+                this.states.set(id, state);
+                return state;
+            }
+
+            setStartState(id) {
+                this.startState = this.states.get(id);
+                this.currentState = this.startState;
+            }
+
+            addTransition(fromId, symbol, toId) {
+                const from = this.states.get(fromId);
+                const to = this.states.get(toId);
+                if (from && to) {
+                    from.transitions.set(symbol, to);
+                    this.alphabet.add(symbol);
+                }
+            }
+
+            reset() {
+                this.currentState = this.startState;
+                this.states.forEach(s => s.visited = false);
+                if (this.startState) this.startState.visited = true;
+            }
+
+            step(symbol) {
+                if (!this.currentState) {
+                    return { valid: false, reason: 'No hay estado actual' };
+                }
+
+                const nextState = this.currentState.transitions.get(symbol);
+
+                if (!nextState) {
+                    return {
+                        valid: false,
+                        reason: `Sin transici\u00f3n para '${symbol}' desde ${this.currentState.id}`
+                    };
+                }
+
+                const prevState = this.currentState;
+                this.currentState = nextState;
+                this.currentState.visited = true;
+
+                return {
+                    valid: true,
+                    from: prevState,
+                    to: nextState,
+                    symbol
+                };
+            }
+
+            accepts() {
+                return this.currentState?.isAccept ?? false;
+            }
+
+            getTransitionCount() {
+                let count = 0;
+                this.states.forEach(state => {
+                    count += state.transitions.size;
+                });
+                return count;
+            }
+        }
+
+        // ==================== PRESET DFAS ====================
+        const PRESETS = {
+            endsWith01: {
+                states: ['q0', 'q1', 'q2'],
+                accept: ['q2'],
+                start: 'q0',
+                transitions: [
+                    ['q0', '0', 'q1'],
+                    ['q0', '1', 'q0'],
+                    ['q1', '0', 'q1'],
+                    ['q1', '1', 'q2'],
+                    ['q2', '0', 'q1'],
+                    ['q2', '1', 'q0']
+                ],
+                description: 'Acepta cadenas binarias que terminan en "01"',
+                testInputs: ['01', '001', '101', '0101', '1100']
+            },
+            evenZeros: {
+                states: ['even', 'odd'],
+                accept: ['even'],
+                start: 'even',
+                transitions: [
+                    ['even', '0', 'odd'],
+                    ['even', '1', 'even'],
+                    ['odd', '0', 'even'],
+                    ['odd', '1', 'odd']
+                ],
+                description: 'Acepta cadenas con n\u00famero par de ceros',
+                testInputs: ['11', '00', '010', '1001', '000']
+            },
+            abStarA: {
+                states: ['q0', 'q1', 'q2', 'dead'],
+                accept: ['q2'],
+                start: 'q0',
+                transitions: [
+                    ['q0', 'a', 'q1'],
+                    ['q0', 'b', 'dead'],
+                    ['q1', 'a', 'q2'],
+                    ['q1', 'b', 'q1'],
+                    ['q2', 'a', 'dead'],
+                    ['q2', 'b', 'dead'],
+                    ['dead', 'a', 'dead'],
+                    ['dead', 'b', 'dead']
+                ],
+                description: 'Acepta cadenas de la forma ab*a',
+                testInputs: ['aa', 'aba', 'abba', 'abbba', 'ab']
+            },
+            divisibleBy3: {
+                states: ['r0', 'r1', 'r2'],
+                accept: ['r0'],
+                start: 'r0',
+                transitions: [
+                    ['r0', '0', 'r0'],
+                    ['r0', '1', 'r1'],
+                    ['r1', '0', 'r2'],
+                    ['r1', '1', 'r0'],
+                    ['r2', '0', 'r1'],
+                    ['r2', '1', 'r2']
+                ],
+                description: 'Acepta n\u00fameros binarios divisibles por 3',
+                testInputs: ['0', '11', '110', '1001', '1010']
+            }
+        };
+
+        // ==================== CANVAS & RENDERING ====================
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        let dfa = new DFA();
+        let currentPreset = 'endsWith01';
+        let animating = false;
+        let inputPosition = -1;
+        let lastTransition = null;
+        let transitionAnimProgress = 0;
+
+        const STATE_RADIUS = 35;
+        const COLORS = {
+            bg: '#030712',
+            stateBorder: '#64748b',
+            stateAccept: '#34d399',
+            stateCurrent: '#3b82f6',
+            stateVisited: 'rgba(59, 130, 246, 0.3)',
+            transitionNormal: '#64748b',
+            transitionActive: '#fbbf24',
+            text: '#f8fafc',
+            textMuted: '#94a3b8',
+            startArrow: '#3b82f6'
+        };
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const rect = container.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height - 80;
+            layoutStates();
+            draw();
+        }
+
+        function layoutStates() {
+            const states = Array.from(dfa.states.values());
+            const n = states.length;
+            if (n === 0) return;
+
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = Math.min(canvas.width, canvas.height) * 0.3;
+
+            if (n === 1) {
+                states[0].x = centerX;
+                states[0].y = centerY;
+            } else if (n === 2) {
+                states[0].x = centerX - radius * 0.6;
+                states[0].y = centerY;
+                states[1].x = centerX + radius * 0.6;
+                states[1].y = centerY;
+            } else {
+                const startAngle = -Math.PI / 2;
+                states.forEach((state, i) => {
+                    const angle = startAngle + (2 * Math.PI * i) / n;
+                    state.x = centerX + radius * Math.cos(angle);
+                    state.y = centerY + radius * Math.sin(angle);
+                });
+            }
+        }
+
+        function draw() {
+            ctx.fillStyle = COLORS.bg;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawGrid();
+            drawTransitions();
+            drawStates();
+        }
+
+        function drawGrid() {
+            ctx.strokeStyle = 'rgba(100, 116, 139, 0.1)';
+            ctx.lineWidth = 1;
+
+            const gridSize = 40;
+            for (let x = 0; x < canvas.width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < canvas.height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(canvas.width, y);
+                ctx.stroke();
+            }
+        }
+
+        function drawStates() {
+            dfa.states.forEach(state => {
+                const isCurrent = state === dfa.currentState;
+                const isStart = state === dfa.startState;
+                const isAccept = state.isAccept;
+
+                // Draw start arrow
+                if (isStart) {
+                    ctx.strokeStyle = COLORS.startArrow;
+                    ctx.lineWidth = 2;
+                    ctx.fillStyle = COLORS.startArrow;
+
+                    const arrowStartX = state.x - STATE_RADIUS - 40;
+                    const arrowEndX = state.x - STATE_RADIUS - 5;
+
+                    ctx.beginPath();
+                    ctx.moveTo(arrowStartX, state.y);
+                    ctx.lineTo(arrowEndX, state.y);
+                    ctx.stroke();
+
+                    // Arrow head
+                    ctx.beginPath();
+                    ctx.moveTo(arrowEndX, state.y);
+                    ctx.lineTo(arrowEndX - 10, state.y - 6);
+                    ctx.lineTo(arrowEndX - 10, state.y + 6);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Draw state circle
+                ctx.beginPath();
+                ctx.arc(state.x, state.y, STATE_RADIUS, 0, Math.PI * 2);
+
+                // Fill based on state
+                if (isCurrent) {
+                    ctx.fillStyle = COLORS.stateCurrent;
+                } else if (state.visited) {
+                    ctx.fillStyle = COLORS.stateVisited;
+                } else {
+                    ctx.fillStyle = 'transparent';
+                }
+                ctx.fill();
+
+                // Border
+                ctx.strokeStyle = isAccept ? COLORS.stateAccept : COLORS.stateBorder;
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                // Double circle for accept state
+                if (isAccept) {
+                    ctx.beginPath();
+                    ctx.arc(state.x, state.y, STATE_RADIUS - 6, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // State label
+                ctx.fillStyle = isCurrent ? '#fff' : COLORS.text;
+                ctx.font = '600 14px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(state.id, state.x, state.y);
+            });
+        }
+
+        function drawTransitions() {
+            const drawnTransitions = new Map();
+
+            dfa.states.forEach(state => {
+                state.transitions.forEach((targetState, symbol) => {
+                    const key = `${state.id}-${targetState.id}`;
+                    const reverseKey = `${targetState.id}-${state.id}`;
+
+                    const isActive = lastTransition &&
+                        lastTransition.from === state &&
+                        lastTransition.to === targetState &&
+                        lastTransition.symbol === symbol;
+
+                    if (state === targetState) {
+                        // Self-loop
+                        drawSelfLoop(state, symbol, isActive);
+                    } else if (drawnTransitions.has(reverseKey)) {
+                        // Bidirectional - draw curved
+                        const existingSymbols = drawnTransitions.get(reverseKey);
+                        drawCurvedTransition(state, targetState, symbol, true, isActive);
+                    } else {
+                        // Check if there's a reverse transition
+                        const hasReverse = targetState.transitions.has(
+                            Array.from(targetState.transitions.keys()).find(s =>
+                                targetState.transitions.get(s) === state
+                            )
+                        );
+
+                        if (hasReverse) {
+                            drawCurvedTransition(state, targetState, symbol, true, isActive);
+                        } else {
+                            drawStraightTransition(state, targetState, symbol, isActive);
+                        }
+                    }
+
+                    if (!drawnTransitions.has(key)) {
+                        drawnTransitions.set(key, []);
+                    }
+                    drawnTransitions.get(key).push(symbol);
+                });
+            });
+        }
+
+        function drawStraightTransition(from, to, symbol, isActive) {
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const startX = from.x + STATE_RADIUS * Math.cos(angle);
+            const startY = from.y + STATE_RADIUS * Math.sin(angle);
+            const endX = to.x - STATE_RADIUS * Math.cos(angle);
+            const endY = to.y - STATE_RADIUS * Math.sin(angle);
+
+            ctx.strokeStyle = isActive ? COLORS.transitionActive : COLORS.transitionNormal;
+            ctx.lineWidth = isActive ? 3 : 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.stroke();
+
+            // Arrow head
+            drawArrowHead(endX, endY, angle, isActive);
+
+            // Label
+            const midX = (startX + endX) / 2;
+            const midY = (startY + endY) / 2;
+            drawTransitionLabel(midX, midY - 12, symbol, isActive);
+        }
+
+        function drawCurvedTransition(from, to, symbol, curveUp, isActive) {
+            const angle = Math.atan2(to.y - from.y, to.x - from.x);
+            const dist = Math.sqrt((to.x - from.x) ** 2 + (to.y - from.y) ** 2);
+
+            const curveOffset = curveUp ? -30 : 30;
+            const perpAngle = angle + Math.PI / 2;
+
+            const startX = from.x + STATE_RADIUS * Math.cos(angle + 0.2);
+            const startY = from.y + STATE_RADIUS * Math.sin(angle + 0.2);
+            const endX = to.x - STATE_RADIUS * Math.cos(angle - 0.2);
+            const endY = to.y - STATE_RADIUS * Math.sin(angle - 0.2);
+
+            const midX = (from.x + to.x) / 2 + curveOffset * Math.cos(perpAngle);
+            const midY = (from.y + to.y) / 2 + curveOffset * Math.sin(perpAngle);
+
+            ctx.strokeStyle = isActive ? COLORS.transitionActive : COLORS.transitionNormal;
+            ctx.lineWidth = isActive ? 3 : 1.5;
+
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.quadraticCurveTo(midX, midY, endX, endY);
+            ctx.stroke();
+
+            // Arrow head
+            const endAngle = Math.atan2(endY - midY, endX - midX);
+            drawArrowHead(endX, endY, endAngle, isActive);
+
+            // Label
+            drawTransitionLabel(midX, midY - 8, symbol, isActive);
+        }
+
+        function drawSelfLoop(state, symbol, isActive) {
+            const loopRadius = 25;
+            const loopCenterX = state.x;
+            const loopCenterY = state.y - STATE_RADIUS - loopRadius + 5;
+
+            ctx.strokeStyle = isActive ? COLORS.transitionActive : COLORS.transitionNormal;
+            ctx.lineWidth = isActive ? 3 : 1.5;
+
+            ctx.beginPath();
+            ctx.arc(loopCenterX, loopCenterY, loopRadius, 0.3, Math.PI * 2 - 0.3);
+            ctx.stroke();
+
+            // Arrow head
+            const arrowAngle = Math.PI * 2 - 0.3;
+            const arrowX = loopCenterX + loopRadius * Math.cos(arrowAngle);
+            const arrowY = loopCenterY + loopRadius * Math.sin(arrowAngle);
+            drawArrowHead(arrowX, arrowY, arrowAngle + Math.PI / 2, isActive);
+
+            // Label
+            drawTransitionLabel(loopCenterX, loopCenterY - loopRadius - 8, symbol, isActive);
+        }
+
+        function drawArrowHead(x, y, angle, isActive) {
+            const headLen = 10;
+            ctx.fillStyle = isActive ? COLORS.transitionActive : COLORS.transitionNormal;
+
+            ctx.beginPath();
+            ctx.moveTo(x, y);
+            ctx.lineTo(
+                x - headLen * Math.cos(angle - Math.PI / 6),
+                y - headLen * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                x - headLen * Math.cos(angle + Math.PI / 6),
+                y - headLen * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawTransitionLabel(x, y, symbol, isActive) {
+            ctx.fillStyle = isActive ? COLORS.transitionActive : COLORS.text;
+            ctx.font = '500 14px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // Background
+            const padding = 4;
+            const textWidth = ctx.measureText(symbol).width;
+            ctx.fillStyle = COLORS.bg;
+            ctx.fillRect(x - textWidth / 2 - padding, y - 10, textWidth + padding * 2, 20);
+
+            ctx.fillStyle = isActive ? COLORS.transitionActive : COLORS.text;
+            ctx.fillText(symbol, x, y);
+        }
+
+        // ==================== TAPE VISUALIZATION ====================
+        const tapeContainer = document.getElementById('tape');
+        const resultBadge = document.getElementById('result');
+
+        function updateTape(input, position) {
+            tapeContainer.innerHTML = '';
+
+            if (!input || input.length === 0) {
+                const emptyCell = document.createElement('div');
+                emptyCell.className = 'tape-cell pending';
+                emptyCell.textContent = '\u03b5';
+                tapeContainer.appendChild(emptyCell);
+                return;
+            }
+
+            for (let i = 0; i < input.length; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'tape-cell';
+
+                if (i < position) {
+                    cell.classList.add('read');
+                } else if (i === position) {
+                    cell.classList.add('current');
+                } else {
+                    cell.classList.add('pending');
+                }
+
+                cell.textContent = input[i];
+                tapeContainer.appendChild(cell);
+            }
+        }
+
+        function updateResult(status, message = '') {
+            resultBadge.className = 'result-badge ' + status;
+            if (status === 'accepted') {
+                resultBadge.textContent = 'ACEPTADO';
+            } else if (status === 'rejected') {
+                resultBadge.textContent = 'RECHAZADO';
+            } else if (status === 'running') {
+                resultBadge.textContent = 'EJECUTANDO...';
+            } else if (status === 'error') {
+                resultBadge.textContent = message || 'ERROR';
+            } else {
+                resultBadge.textContent = 'IDLE';
+            }
+        }
+
+        // ==================== STATS & UI ====================
+        function updateStats() {
+            document.getElementById('stateCount').textContent = dfa.states.size;
+            document.getElementById('transitionCount').textContent = dfa.getTransitionCount();
+            document.getElementById('currentStep').textContent = Math.max(0, inputPosition);
+            document.getElementById('alphabetDisplay').textContent =
+                '{' + Array.from(dfa.alphabet).sort().join(', ') + '}';
+        }
+
+        function updateTransitionTable() {
+            const container = document.getElementById('transitionTableContainer');
+            const alphabet = Array.from(dfa.alphabet).sort();
+            const states = Array.from(dfa.states.values());
+
+            if (states.length === 0 || alphabet.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-muted); font-size: 0.75rem;">No hay transiciones</p>';
+                return;
+            }
+
+            let html = '<table class="transition-table"><thead><tr><th>\u03b4</th>';
+            alphabet.forEach(s => html += `<th>${s}</th>`);
+            html += '</tr></thead><tbody>';
+
+            states.forEach(state => {
+                const rowClass = [];
+                if (state === dfa.startState) rowClass.push('start');
+                if (state.isAccept) rowClass.push('accept');
+
+                html += `<tr class="${rowClass.join(' ')}">`;
+                html += `<td>${state.isAccept ? '*' : ''}${state.id}</td>`;
+
+                alphabet.forEach(symbol => {
+                    const target = state.transitions.get(symbol);
+                    html += `<td>${target ? target.id : '-'}</td>`;
+                });
+
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+            container.innerHTML = html;
+        }
+
+        // ==================== DFA LOADING ====================
+        function loadPreset(presetName) {
+            const preset = PRESETS[presetName];
+            if (!preset) return;
+
+            currentPreset = presetName;
+            dfa = new DFA();
+
+            // Add states
+            preset.states.forEach(id => {
+                const isAccept = preset.accept.includes(id);
+                dfa.addState(id, isAccept);
+            });
+
+            // Set start state
+            dfa.setStartState(preset.start);
+
+            // Add transitions
+            preset.transitions.forEach(([from, symbol, to]) => {
+                dfa.addTransition(from, symbol, to);
+            });
+
+            // Update UI
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.preset === presetName);
+            });
+
+            // Set default input from preset
+            if (preset.testInputs && preset.testInputs.length > 0) {
+                document.getElementById('inputString').value = preset.testInputs[0];
+            }
+
+            layoutStates();
+            resetExecution();
+            updateStats();
+            updateTransitionTable();
+            draw();
+        }
+
+        // ==================== EXECUTION ====================
+        let currentInput = '';
+        let stepTimeout = null;
+
+        function resetExecution() {
+            animating = false;
+            inputPosition = -1;
+            lastTransition = null;
+            currentInput = '';
+
+            if (stepTimeout) {
+                clearTimeout(stepTimeout);
+                stepTimeout = null;
+            }
+
+            dfa.reset();
+            updateTape('', -1);
+            updateResult('idle');
+            updateStats();
+            draw();
+        }
+
+        function getSpeed() {
+            return parseInt(document.getElementById('speedSlider').value);
+        }
+
+        async function runAutomaton() {
+            if (animating) return;
+
+            currentInput = document.getElementById('inputString').value;
+            if (!currentInput) {
+                updateResult('error', 'Sin input');
+                return;
+            }
+
+            animating = true;
+            inputPosition = -1;
+            lastTransition = null;
+            dfa.reset();
+
+            updateTape(currentInput, -1);
+            updateResult('running');
+            draw();
+
+            await sleep(getSpeed() / 2);
+
+            for (let i = 0; i < currentInput.length; i++) {
+                if (!animating) break;
+
+                inputPosition = i;
+                const symbol = currentInput[i];
+
+                updateTape(currentInput, i);
+                document.getElementById('currentStep').textContent = i + 1;
+
+                await sleep(getSpeed() / 3);
+
+                const result = dfa.step(symbol);
+
+                if (result.valid) {
+                    lastTransition = result;
+                    draw();
+                    await sleep(getSpeed());
+                } else {
+                    updateResult('rejected');
+                    animating = false;
+                    lastTransition = null;
+                    draw();
+                    return;
+                }
+            }
+
+            inputPosition = currentInput.length;
+            updateTape(currentInput, currentInput.length);
+            lastTransition = null;
+
+            if (dfa.accepts()) {
+                updateResult('accepted');
+            } else {
+                updateResult('rejected');
+            }
+
+            animating = false;
+            draw();
+        }
+
+        function stepAutomaton() {
+            if (animating) return;
+
+            // Initialize if needed
+            if (inputPosition < 0) {
+                currentInput = document.getElementById('inputString').value;
+                if (!currentInput) {
+                    updateResult('error', 'Sin input');
+                    return;
+                }
+                inputPosition = 0;
+                dfa.reset();
+                updateTape(currentInput, -1);
+                updateResult('running');
+                draw();
+                return;
+            }
+
+            if (inputPosition >= currentInput.length) {
+                // Already finished
+                return;
+            }
+
+            const symbol = currentInput[inputPosition];
+            updateTape(currentInput, inputPosition);
+            document.getElementById('currentStep').textContent = inputPosition + 1;
+
+            const result = dfa.step(symbol);
+
+            if (result.valid) {
+                lastTransition = result;
+                inputPosition++;
+                draw();
+
+                // Clear highlight after delay
+                setTimeout(() => {
+                    lastTransition = null;
+                    draw();
+                }, 300);
+
+                if (inputPosition >= currentInput.length) {
+                    updateTape(currentInput, currentInput.length);
+                    if (dfa.accepts()) {
+                        updateResult('accepted');
+                    } else {
+                        updateResult('rejected');
+                    }
+                }
+            } else {
+                updateResult('rejected');
+                lastTransition = null;
+                draw();
+            }
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => {
+                stepTimeout = setTimeout(resolve, ms);
+            });
+        }
+
+        // ==================== EVENT LISTENERS ====================
+        document.getElementById('runBtn').addEventListener('click', runAutomaton);
+        document.getElementById('stepBtn').addEventListener('click', stepAutomaton);
+        document.getElementById('resetBtn').addEventListener('click', resetExecution);
+
+        document.getElementById('speedSlider').addEventListener('input', (e) => {
+            document.getElementById('speedValue').textContent = e.target.value + 'ms';
+        });
+
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                loadPreset(btn.dataset.preset);
+            });
+        });
+
+        document.getElementById('inputString').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                resetExecution();
+                runAutomaton();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // ==================== INITIALIZATION ====================
+        function init() {
+            resizeCanvas();
+            loadPreset('endsWith01');
+        }
+
+        init();
+    </script>
+</body>
+</html>

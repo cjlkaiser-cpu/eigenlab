@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack & Heap Visualizer - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --stack-color: #22c55e;
+            --heap-color: #f472b6;
+            --pointer-color: #fbbf24;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 1.25rem; font-weight: 600; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .main { flex: 1; display: flex; gap: 1rem; padding: 1rem; }
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+        #canvas { width: 100%; height: 100%; display: block; }
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+        .equation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+        .equation { font-family: 'JetBrains Mono', monospace; color: #f472b6; font-size: 0.85rem; }
+        .equation-label { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.5rem; }
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; }
+        .btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .btn:hover { background: var(--border); }
+        .btn-full { grid-column: 1 / -1; }
+        .btn-stack { border-color: var(--stack-color); color: var(--stack-color); }
+        .btn-heap { border-color: var(--heap-color); color: var(--heap-color); }
+        .code-editor {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            line-height: 1.6;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .code-line { padding: 0.15rem 0; display: flex; gap: 0.5rem; }
+        .code-line.active { background: rgba(59, 130, 246, 0.2); border-radius: 0.25rem; }
+        .line-num { color: var(--text-secondary); min-width: 20px; text-align: right; }
+        .code-keyword { color: #c084fc; }
+        .code-type { color: #22d3ee; }
+        .code-func { color: #fbbf24; }
+        .code-var { color: #f8fafc; }
+        .code-num { color: #f472b6; }
+        .memory-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .mem-item {
+            background: var(--bg-panel);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        .mem-label { color: var(--text-secondary); font-size: 0.75rem; }
+        .mem-value { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        .mem-stack { color: var(--stack-color); }
+        .mem-heap { color: var(--heap-color); }
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.4rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .legend-color { width: 12px; height: 12px; border-radius: 2px; }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+        .guide-icon {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .explanation-content p { margin: 0; }
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a>
+                <span> / </span>
+                <a href="index.html">Computation Lab</a>
+                <span> / </span>
+                <span>Stack & Heap Visualizer</span>
+            </nav>
+            <h1>Stack & Heap Visualizer</h1>
+        </div>
+        <a href="guides/stack-heap.html" class="guide-link" title="Abrir guia explicativa">
+            <span class="guide-icon">?</span>
+            <span>Guia</span>
+        </a>
+    </header>
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+        <aside class="controls">
+            <div class="equation-box">
+                <div class="equation">Stack: LIFO | Heap: malloc/free</div>
+                <div class="equation-label">Modelo de memoria - Stack crece ↓, Heap crece ↑</div>
+            </div>
+
+            <!-- Quick explanation -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>El Stack guarda variables locales y se libera automaticamente. El Heap es memoria dinamica que debes gestionar manualmente (malloc/free).</p>
+                    <a href="guides/stack-heap.html" class="guide-btn">
+                        <span class="guide-icon">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <div class="section-title">Código de Ejemplo</div>
+                <div class="code-editor" id="codeEditor"></div>
+            </div>
+            <div>
+                <div class="section-title">Controles</div>
+                <div class="btn-group">
+                    <button class="btn" id="stepBtn">→ Paso</button>
+                    <button class="btn" id="runBtn">▶ Ejecutar</button>
+                    <button class="btn" id="resetBtn">↺ Reset</button>
+                    <button class="btn" id="pauseBtn">⏸ Pausar</button>
+                </div>
+            </div>
+            <div>
+                <div class="section-title">Operaciones Manuales</div>
+                <div class="btn-group">
+                    <button class="btn btn-stack" id="pushFrameBtn">Push Frame</button>
+                    <button class="btn btn-stack" id="popFrameBtn">Pop Frame</button>
+                    <button class="btn btn-heap" id="mallocBtn">malloc()</button>
+                    <button class="btn btn-heap" id="freeBtn">free()</button>
+                </div>
+            </div>
+            <div>
+                <div class="section-title">Estado de Memoria</div>
+                <div class="memory-info">
+                    <div class="mem-item">
+                        <span class="mem-label">Stack Frames</span>
+                        <span class="mem-value mem-stack" id="stackFrames">0</span>
+                    </div>
+                    <div class="mem-item">
+                        <span class="mem-label">Heap Blocks</span>
+                        <span class="mem-value mem-heap" id="heapBlocks">0</span>
+                    </div>
+                    <div class="mem-item">
+                        <span class="mem-label">Variables</span>
+                        <span class="mem-value" id="varCount">0</span>
+                    </div>
+                    <div class="mem-item">
+                        <span class="mem-label">Punteros</span>
+                        <span class="mem-value" id="ptrCount">0</span>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <div class="section-title">Leyenda</div>
+                <div class="legend">
+                    <div class="legend-item"><div class="legend-color" style="background: var(--stack-color)"></div><span>Stack</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--heap-color)"></div><span>Heap</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: var(--pointer-color)"></div><span>Puntero</span></div>
+                    <div class="legend-item"><div class="legend-color" style="background: #64748b"></div><span>Free</span></div>
+                </div>
+            </div>
+        </aside>
+    </main>
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        let width, height;
+
+        // Memory model
+        let memory = {
+            stack: [],
+            heap: [],
+            nextAddr: 0x1000
+        };
+
+        let currentLine = 0;
+        let running = false;
+        let animationId = null;
+
+        // Example code
+        const code = [
+            { type: 'func', name: 'main', text: 'function main() {' },
+            { type: 'var', name: 'x', value: 10, text: '    int x = 10;' },
+            { type: 'var', name: 'y', value: 20, text: '    int y = 20;' },
+            { type: 'malloc', name: 'ptr', size: 4, text: '    int* ptr = malloc(4);' },
+            { type: 'assign', ptr: 'ptr', value: 42, text: '    *ptr = 42;' },
+            { type: 'call', name: 'add', args: ['x', 'y'], text: '    int z = add(x, y);' },
+            { type: 'free', name: 'ptr', text: '    free(ptr);' },
+            { type: 'return', text: '    return z;' },
+            { type: 'end', text: '}' },
+            { type: 'func', name: 'add', text: 'function add(a, b) {' },
+            { type: 'var', name: 'result', expr: 'a+b', text: '    int result = a + b;' },
+            { type: 'return', text: '    return result;' },
+            { type: 'end', text: '}' }
+        ];
+
+        function renderCode() {
+            const editor = document.getElementById('codeEditor');
+            editor.innerHTML = code.map((line, i) => {
+                const active = i === currentLine ? ' active' : '';
+                let html = line.text
+                    .replace(/function/g, '<span class="code-keyword">function</span>')
+                    .replace(/int\*/g, '<span class="code-type">int*</span>')
+                    .replace(/int/g, '<span class="code-type">int</span>')
+                    .replace(/malloc/g, '<span class="code-func">malloc</span>')
+                    .replace(/free/g, '<span class="code-func">free</span>')
+                    .replace(/return/g, '<span class="code-keyword">return</span>')
+                    .replace(/(\d+)/g, '<span class="code-num">$1</span>');
+                return `<div class="code-line${active}"><span class="line-num">${i + 1}</span><span>${html}</span></div>`;
+            }).join('');
+        }
+
+        function executeStep() {
+            if (currentLine >= code.length) {
+                running = false;
+                return;
+            }
+
+            const instr = code[currentLine];
+
+            switch (instr.type) {
+                case 'func':
+                    memory.stack.push({
+                        name: instr.name + '()',
+                        vars: [],
+                        baseAddr: memory.nextAddr
+                    });
+                    memory.nextAddr += 0x10;
+                    break;
+                case 'var':
+                    if (memory.stack.length > 0) {
+                        const frame = memory.stack[memory.stack.length - 1];
+                        frame.vars.push({
+                            name: instr.name,
+                            value: instr.value || 0,
+                            type: 'int'
+                        });
+                    }
+                    break;
+                case 'malloc':
+                    const block = {
+                        addr: memory.nextAddr,
+                        size: instr.size,
+                        label: instr.name,
+                        value: null
+                    };
+                    memory.heap.push(block);
+                    if (memory.stack.length > 0) {
+                        const frame = memory.stack[memory.stack.length - 1];
+                        frame.vars.push({
+                            name: instr.name,
+                            value: '0x' + block.addr.toString(16),
+                            type: 'ptr',
+                            target: block.addr
+                        });
+                    }
+                    memory.nextAddr += instr.size + 0x10;
+                    break;
+                case 'assign':
+                    const heapBlock = memory.heap.find(b => b.label === instr.ptr);
+                    if (heapBlock) heapBlock.value = instr.value;
+                    break;
+                case 'call':
+                    memory.stack.push({
+                        name: instr.name + '()',
+                        vars: instr.args.map((arg, i) => ({
+                            name: ['a', 'b'][i],
+                            value: arg === 'x' ? 10 : 20,
+                            type: 'int'
+                        })),
+                        baseAddr: memory.nextAddr
+                    });
+                    memory.nextAddr += 0x10;
+                    break;
+                case 'free':
+                    memory.heap = memory.heap.filter(b => b.label !== instr.name);
+                    break;
+                case 'return':
+                case 'end':
+                    if (code[currentLine + 1]?.type !== 'func' && memory.stack.length > 1) {
+                        memory.stack.pop();
+                    }
+                    break;
+            }
+
+            currentLine++;
+            renderCode();
+            draw();
+            updateInfo();
+        }
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+            draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, width, height);
+
+            const midX = width / 2;
+            const padding = 30;
+
+            // Stack section (left side, top)
+            ctx.fillStyle = '#22c55e';
+            ctx.font = 'bold 12px JetBrains Mono';
+            ctx.fillText('STACK', padding, 25);
+
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(padding, 40, midX - padding * 2, height / 2 - 50);
+
+            // Draw stack frames
+            let stackY = 50;
+            memory.stack.forEach((frame, i) => {
+                const frameHeight = 30 + frame.vars.length * 20;
+
+                ctx.fillStyle = `rgba(34, 197, 94, ${0.3 - i * 0.05})`;
+                ctx.fillRect(padding + 10, stackY, midX - padding * 2 - 20, frameHeight);
+
+                ctx.fillStyle = '#a7f3d0';
+                ctx.font = 'bold 11px JetBrains Mono';
+                ctx.fillText(frame.name, padding + 15, stackY + 18);
+
+                ctx.font = '10px JetBrains Mono';
+                frame.vars.forEach((v, j) => {
+                    const varY = stackY + 35 + j * 18;
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillText(`${v.name}: `, padding + 20, varY);
+                    ctx.fillStyle = v.type === 'ptr' ? '#fbbf24' : '#f8fafc';
+                    ctx.fillText(v.value, padding + 60, varY);
+                });
+
+                stackY += frameHeight + 10;
+            });
+
+            // Heap section (left side, bottom)
+            const heapTop = height / 2 + 10;
+            ctx.fillStyle = '#f472b6';
+            ctx.font = 'bold 12px JetBrains Mono';
+            ctx.fillText('HEAP', padding, heapTop + 15);
+
+            ctx.strokeStyle = '#f472b6';
+            ctx.strokeRect(padding, heapTop + 30, midX - padding * 2, height / 2 - 60);
+
+            // Draw heap blocks
+            let heapX = padding + 10;
+            memory.heap.forEach((block) => {
+                const blockWidth = 80;
+                const blockHeight = 50;
+
+                ctx.fillStyle = 'rgba(244, 114, 182, 0.3)';
+                ctx.fillRect(heapX, heapTop + 40, blockWidth, blockHeight);
+
+                ctx.fillStyle = '#fbcfe8';
+                ctx.font = '10px JetBrains Mono';
+                ctx.fillText('0x' + block.addr.toString(16), heapX + 5, heapTop + 55);
+                ctx.fillText(block.label, heapX + 5, heapTop + 70);
+                if (block.value !== null) {
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.fillText('= ' + block.value, heapX + 5, heapTop + 85);
+                }
+
+                heapX += blockWidth + 10;
+            });
+
+            // Draw pointers
+            memory.stack.forEach(frame => {
+                frame.vars.filter(v => v.type === 'ptr').forEach(ptr => {
+                    const heapBlock = memory.heap.find(b => b.addr === ptr.target);
+                    if (heapBlock) {
+                        const fromY = 50 + memory.stack.indexOf(frame) * 60 + 40;
+                        const toY = heapTop + 65;
+                        const toX = padding + 10 + memory.heap.indexOf(heapBlock) * 90 + 40;
+
+                        ctx.strokeStyle = '#fbbf24';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([5, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(padding + midX / 2, fromY);
+                        ctx.bezierCurveTo(
+                            padding + midX / 2 + 50, fromY + 50,
+                            toX - 30, toY - 50,
+                            toX, toY
+                        );
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+
+                        // Arrow
+                        ctx.beginPath();
+                        ctx.moveTo(toX - 5, toY - 8);
+                        ctx.lineTo(toX, toY);
+                        ctx.lineTo(toX + 5, toY - 8);
+                        ctx.stroke();
+                    }
+                });
+            });
+
+            // Info panel (right side)
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(midX + 20, 40, width - midX - 40, height - 80);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px Inter';
+            ctx.fillText('Modelo de Memoria', midX + 40, 70);
+
+            ctx.font = '12px JetBrains Mono';
+            ctx.fillStyle = '#94a3b8';
+            const infoLines = [
+                '',
+                'Stack (LIFO):',
+                '  - Variables locales',
+                '  - Parámetros de función',
+                '  - Dirección de retorno',
+                '  - Crece hacia direcciones bajas',
+                '',
+                'Heap (Dynamic):',
+                '  - Memoria dinámica (malloc)',
+                '  - Debe liberarse (free)',
+                '  - Crece hacia direcciones altas',
+                '',
+                'Punteros:',
+                '  - Almacenan direcciones',
+                '  - Conectan stack con heap'
+            ];
+            infoLines.forEach((line, i) => {
+                ctx.fillText(line, midX + 40, 100 + i * 20);
+            });
+        }
+
+        function updateInfo() {
+            document.getElementById('stackFrames').textContent = memory.stack.length;
+            document.getElementById('heapBlocks').textContent = memory.heap.length;
+            document.getElementById('varCount').textContent = memory.stack.reduce((acc, f) => acc + f.vars.length, 0);
+            document.getElementById('ptrCount').textContent = memory.stack.reduce((acc, f) => acc + f.vars.filter(v => v.type === 'ptr').length, 0);
+        }
+
+        function reset() {
+            memory = { stack: [], heap: [], nextAddr: 0x1000 };
+            currentLine = 0;
+            running = false;
+            clearTimeout(animationId);
+            renderCode();
+            draw();
+            updateInfo();
+        }
+
+        function runCode() {
+            if (running) return;
+            running = true;
+
+            function step() {
+                if (!running || currentLine >= code.length) {
+                    running = false;
+                    return;
+                }
+                executeStep();
+                animationId = setTimeout(step, 800);
+            }
+            step();
+        }
+
+        // Event listeners
+        document.getElementById('stepBtn').addEventListener('click', executeStep);
+        document.getElementById('runBtn').addEventListener('click', runCode);
+        document.getElementById('resetBtn').addEventListener('click', reset);
+        document.getElementById('pauseBtn').addEventListener('click', () => {
+            running = false;
+            clearTimeout(animationId);
+        });
+
+        document.getElementById('pushFrameBtn').addEventListener('click', () => {
+            memory.stack.push({
+                name: 'frame_' + memory.stack.length + '()',
+                vars: [{ name: 'local', value: Math.floor(Math.random() * 100), type: 'int' }],
+                baseAddr: memory.nextAddr
+            });
+            memory.nextAddr += 0x10;
+            draw();
+            updateInfo();
+        });
+
+        document.getElementById('popFrameBtn').addEventListener('click', () => {
+            if (memory.stack.length > 0) {
+                memory.stack.pop();
+                draw();
+                updateInfo();
+            }
+        });
+
+        document.getElementById('mallocBtn').addEventListener('click', () => {
+            memory.heap.push({
+                addr: memory.nextAddr,
+                size: 4,
+                label: 'block_' + memory.heap.length,
+                value: Math.floor(Math.random() * 100)
+            });
+            memory.nextAddr += 0x20;
+            draw();
+            updateInfo();
+        });
+
+        document.getElementById('freeBtn').addEventListener('click', () => {
+            if (memory.heap.length > 0) {
+                memory.heap.pop();
+                draw();
+                updateInfo();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        renderCode();
+        updateInfo();
+    </script>
+</body>
+</html>

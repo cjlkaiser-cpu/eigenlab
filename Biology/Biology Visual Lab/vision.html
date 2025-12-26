@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema Visual - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas { cursor: crosshair; }
+        .glow-text { text-shadow: 0 0 20px rgba(16, 185, 129, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(34, 197, 94, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+        .guide-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 8px;
+            color: #6ee7b7;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+        .guide-link:hover {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+        .guide-icon {
+            width: 18px;
+            height: 18px;
+            background: #10b981;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+        .defect-btn {
+            transition: all 0.2s;
+        }
+        .defect-btn.active {
+            background: rgba(16, 185, 129, 0.3);
+            border-color: #10b981;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-emerald-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        Sistema <span class="text-emerald-400 font-medium">Visual</span>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Distancia: <span id="distance-display" class="text-emerald-400">∞</span></span>
+                    <span class="text-gray-500">Potencia: <span id="power-display" class="text-cyan-400">60 D</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Arrastra el objeto para cambiar distancia · Rueda para zoom
+            </div>
+            <!-- Legend -->
+            <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs">
+                <div class="text-gray-400 mb-2 font-medium">Estructura del Ojo</div>
+                <div class="space-y-1">
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #06b6d4"></div>
+                        <span class="text-gray-500">Córnea</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #8b5cf6"></div>
+                        <span class="text-gray-500">Iris</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #fbbf24"></div>
+                        <span class="text-gray-500">Cristalino</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #ef4444"></div>
+                        <span class="text-gray-500">Retina</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-3 h-3 rounded-full" style="background: #22c55e"></div>
+                        <span class="text-gray-500">Fóvea</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-emerald-400 glow-text">Óptica del Ojo</h2>
+
+            <!-- Info Box -->
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    El <span class="text-emerald-400">ojo humano</span> es una cámara óptica: la córnea y el cristalino enfocan la luz en la retina. La acomodación permite ver a diferentes distancias.
+                </p>
+                <a href="guides/vision.html" class="guide-link mt-3">
+                    <span class="guide-icon">?</span>
+                    Guía: anatomía, refracción, defectos visuales
+                </a>
+            </div>
+
+            <!-- Object Distance -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Distancia del objeto: <span id="dist-value" class="text-emerald-400 mono">6.0</span> m
+                </label>
+                <input type="range" id="object-distance" min="0.25" max="10" step="0.05" value="6" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>25 cm</span>
+                    <span>Infinito</span>
+                </div>
+            </div>
+
+            <!-- Accommodation -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Acomodación (cristalino): <span id="accom-value" class="text-amber-400 mono">0</span> D
+                </label>
+                <input type="range" id="accommodation" min="0" max="14" step="0.5" value="0" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Joven: hasta 14D · Adulto 40+: ~2D</p>
+            </div>
+
+            <!-- Visual Defects -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Defecto Visual</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setDefect('normal')" id="btn-normal" class="defect-btn active px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs border border-gray-700">
+                        Normal
+                    </button>
+                    <button onclick="setDefect('myopia')" id="btn-myopia" class="defect-btn px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs border border-gray-700">
+                        Miopía
+                    </button>
+                    <button onclick="setDefect('hyperopia')" id="btn-hyperopia" class="defect-btn px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs border border-gray-700">
+                        Hipermetropía
+                    </button>
+                    <button onclick="setDefect('astigmatism')" id="btn-astigmatism" class="defect-btn px-3 py-2 bg-gray-800 text-gray-400 rounded-lg text-xs border border-gray-700">
+                        Astigmatismo
+                    </button>
+                </div>
+            </div>
+
+            <!-- Correction Lens -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Lente correctiva: <span id="lens-value" class="text-cyan-400 mono">0</span> D
+                </label>
+                <input type="range" id="correction-lens" min="-10" max="10" step="0.25" value="0" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>-10 D (miopía)</span>
+                    <span>+10 D (hipermetropía)</span>
+                </div>
+            </div>
+
+            <!-- Light Intensity -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Intensidad de luz: <span id="light-value" class="text-yellow-400 mono">50</span>%
+                </label>
+                <input type="range" id="light-intensity" min="10" max="100" step="5" value="50" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Controla el diámetro de la pupila</p>
+            </div>
+
+            <!-- View Options -->
+            <div class="mb-6 space-y-2">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-rays" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-500">
+                    <span class="text-sm text-gray-400">Mostrar rayos de luz</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-focus" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-500">
+                    <span class="text-sm text-gray-400">Mostrar punto focal</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-photoreceptors" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-emerald-500">
+                    <span class="text-sm text-gray-400">Ver fotorreceptores</span>
+                </label>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-emerald-400 mb-3">Ecuaciones Ópticas</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        1/f = 1/d<sub>o</sub> + 1/d<sub>i</sub>
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        P = 1/f (dioptrías)
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        n₁ sin θ₁ = n₂ sin θ₂
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La <span class="text-cyan-400">córnea</span> aporta ~43D y el <span class="text-amber-400">cristalino</span> ~17-31D según la acomodación.
+                </p>
+            </div>
+
+            <!-- Focus Status -->
+            <div id="focus-info" class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Estado del Enfoque</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Potencia total</div>
+                        <div id="info-power" class="text-emerald-400">60 D</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Punto focal</div>
+                        <div id="info-focal" class="text-cyan-400">16.7 mm</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Imagen en</div>
+                        <div id="info-image" class="text-amber-400">retina</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Claridad</div>
+                        <div id="info-clarity" class="text-green-400">nítido</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Eye parameters (in mm for internal calculations)
+        const EYE = {
+            radius: 12,           // mm (24mm diameter)
+            corneaPower: 43,      // diopters
+            lensPowerMin: 17,     // diopters at rest
+            lensPowerMax: 31,     // diopters max accommodation
+            retinaPosition: 24,   // mm from cornea
+            foveaPosition: 23.5   // mm from cornea (center)
+        };
+
+        // State
+        let objectDistance = 6;    // meters
+        let accommodation = 0;     // diopters added by lens
+        let defect = 'normal';     // normal, myopia, hyperopia, astigmatism
+        let correctionLens = 0;    // diopters
+        let lightIntensity = 50;   // %
+        let showRays = true;
+        let showFocus = true;
+        let showPhotoreceptors = false;
+
+        // Defect parameters
+        const defects = {
+            normal: { eyeLength: 24, astigmatism: 0 },
+            myopia: { eyeLength: 26, astigmatism: 0 },      // Longer eye
+            hyperopia: { eyeLength: 22, astigmatism: 0 },   // Shorter eye
+            astigmatism: { eyeLength: 24, astigmatism: 2 }  // Different curvatures
+        };
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function calculateFocalLength() {
+            // Total power: cornea + lens + accommodation + correction
+            const lensPower = EYE.lensPowerMin + accommodation;
+            const totalPower = EYE.corneaPower + lensPower + correctionLens;
+            return 1000 / totalPower; // focal length in mm
+        }
+
+        function calculateImageDistance(objectDist, focalLength) {
+            // Thin lens equation: 1/f = 1/do + 1/di
+            // objectDist in meters, convert to mm
+            const doMm = objectDist * 1000;
+            const di = 1 / (1/focalLength - 1/doMm);
+            return di; // mm
+        }
+
+        function getPupilRadius() {
+            // Pupil diameter varies from ~2mm (bright) to ~8mm (dark)
+            const minRadius = 1;
+            const maxRadius = 4;
+            return maxRadius - (lightIntensity / 100) * (maxRadius - minRadius);
+        }
+
+        function drawEye() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Scale for drawing (1mm = scale pixels)
+            const scale = Math.min(w, h) / 60;
+            const eyeCenterX = w * 0.65;
+            const eyeCenterY = h / 2;
+
+            const currentDefect = defects[defect];
+            const eyeLength = currentDefect.eyeLength;
+            const eyeRadius = eyeLength / 2;
+
+            // Draw object (arrow)
+            const objectX = eyeCenterX - eyeRadius * scale - objectDistance * scale * 10;
+            const arrowHeight = 40;
+
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(objectX, eyeCenterY + arrowHeight);
+            ctx.lineTo(objectX, eyeCenterY - arrowHeight);
+            ctx.lineTo(objectX - 10, eyeCenterY - arrowHeight + 15);
+            ctx.moveTo(objectX, eyeCenterY - arrowHeight);
+            ctx.lineTo(objectX + 10, eyeCenterY - arrowHeight + 15);
+            ctx.stroke();
+
+            // Draw correction lens (if any)
+            if (Math.abs(correctionLens) > 0.1) {
+                const lensX = eyeCenterX - eyeRadius * scale - 20;
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                if (correctionLens > 0) {
+                    // Convex lens (hyperopia)
+                    ctx.ellipse(lensX, eyeCenterY, 5, 40, 0, -Math.PI/2, Math.PI/2);
+                    ctx.moveTo(lensX, eyeCenterY - 40);
+                    ctx.ellipse(lensX, eyeCenterY, 5, 40, 0, -Math.PI/2, Math.PI/2, true);
+                } else {
+                    // Concave lens (myopia)
+                    ctx.ellipse(lensX - 5, eyeCenterY, 5, 40, 0, -Math.PI/2, Math.PI/2, true);
+                    ctx.moveTo(lensX - 5, eyeCenterY + 40);
+                    ctx.ellipse(lensX + 5, eyeCenterY, 5, 40, 0, Math.PI/2, -Math.PI/2, true);
+                }
+                ctx.stroke();
+            }
+
+            // Draw sclera (white of eye)
+            ctx.fillStyle = '#f0f0f0';
+            ctx.beginPath();
+            ctx.ellipse(eyeCenterX, eyeCenterY, eyeRadius * scale, eyeRadius * scale * 0.9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw vitreous humor
+            ctx.fillStyle = 'rgba(200, 220, 255, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(eyeCenterX, eyeCenterY, (eyeRadius - 1) * scale, (eyeRadius - 1) * scale * 0.9, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw retina
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.arc(eyeCenterX, eyeCenterY, (eyeRadius - 0.5) * scale, Math.PI * 0.6, Math.PI * 1.4);
+            ctx.stroke();
+
+            // Draw fovea (center of retina)
+            const foveaX = eyeCenterX + (eyeRadius - 1) * scale * 0.95;
+            ctx.fillStyle = '#22c55e';
+            ctx.beginPath();
+            ctx.arc(foveaX, eyeCenterY, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw optic nerve
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.ellipse(eyeCenterX + eyeRadius * scale * 0.7, eyeCenterY + eyeRadius * scale * 0.3, 8, 5, 0.5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw iris
+            const pupilRadius = getPupilRadius() * scale;
+            const irisRadius = 5 * scale;
+            const irisX = eyeCenterX - eyeRadius * scale + 4 * scale;
+
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(irisX, eyeCenterY, irisRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw pupil
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(irisX, eyeCenterY, pupilRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw cornea
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(eyeCenterX - eyeRadius * scale, eyeCenterY, 6 * scale, -Math.PI * 0.4, Math.PI * 0.4);
+            ctx.stroke();
+
+            // Draw lens (crystalline)
+            const lensWidth = (4 + accommodation / 3) * scale;
+            const lensX = irisX + 3 * scale;
+
+            ctx.fillStyle = 'rgba(251, 191, 36, 0.4)';
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(lensX, eyeCenterY, lensWidth, 4 * scale, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+
+            // Draw light rays
+            if (showRays) {
+                const focalLength = calculateFocalLength();
+                const imageDistance = calculateImageDistance(objectDistance, focalLength);
+
+                // Ray from top of arrow
+                const rayStartY = eyeCenterY - arrowHeight;
+
+                // Calculate where rays converge
+                const convergenceX = eyeCenterX - eyeRadius * scale + imageDistance * scale / 10;
+                const effectiveEyeLength = currentDefect.eyeLength;
+                const retinaX = eyeCenterX + (effectiveEyeLength/2 - 1) * scale;
+
+                // Draw multiple rays
+                for (let i = -1; i <= 1; i++) {
+                    const rayY = eyeCenterY + i * pupilRadius * 0.8;
+
+                    // Ray from object to cornea
+                    ctx.strokeStyle = 'rgba(255, 255, 0, 0.6)';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.moveTo(objectX, rayStartY);
+                    ctx.lineTo(irisX, rayY);
+                    ctx.stroke();
+
+                    // Ray through lens to focus point
+                    ctx.strokeStyle = 'rgba(255, 200, 0, 0.6)';
+                    ctx.beginPath();
+                    ctx.moveTo(irisX, rayY);
+
+                    // Calculate intersection with retina
+                    const slope = (convergenceX > irisX) ?
+                        (eyeCenterY - arrowHeight/3 - rayY) / (convergenceX - irisX) : 0;
+                    const retinaY = rayY + slope * (retinaX - irisX);
+
+                    ctx.lineTo(retinaX, retinaY);
+                    ctx.stroke();
+                }
+
+                // Draw focal point
+                if (showFocus) {
+                    const focusX = Math.min(convergenceX, retinaX + 50);
+                    const focusY = eyeCenterY - arrowHeight / 3;
+
+                    // Circle of confusion if not focused
+                    const blur = Math.abs(convergenceX - retinaX) / scale;
+                    const circleRadius = Math.min(blur * 2, 20);
+
+                    if (blur > 1) {
+                        ctx.strokeStyle = 'rgba(239, 68, 68, 0.5)';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.arc(retinaX, focusY, circleRadius, 0, Math.PI * 2);
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    } else {
+                        ctx.fillStyle = '#22c55e';
+                        ctx.beginPath();
+                        ctx.arc(retinaX, focusY, 4, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            }
+
+            // Draw photoreceptors if enabled
+            if (showPhotoreceptors) {
+                drawPhotoreceptors(eyeCenterX + eyeRadius * scale * 0.5, eyeCenterY, scale);
+            }
+
+            // Update info
+            updateInfo();
+        }
+
+        function drawPhotoreceptors(x, y, scale) {
+            ctx.save();
+            ctx.translate(x + 50, y - 80);
+
+            // Background
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
+            ctx.fillRect(-10, -10, 150, 180);
+            ctx.strokeStyle = '#333';
+            ctx.strokeRect(-10, -10, 150, 180);
+
+            ctx.fillStyle = '#888';
+            ctx.font = '10px Inter';
+            ctx.fillText('Fotorreceptores', 0, 5);
+
+            // Draw cones (color vision)
+            const coneColors = ['#ef4444', '#22c55e', '#3b82f6'];
+            const coneLabels = ['L (rojo)', 'M (verde)', 'S (azul)'];
+
+            for (let i = 0; i < 3; i++) {
+                const cx = 20 + i * 40;
+                const cy = 50;
+
+                // Cone shape
+                ctx.fillStyle = coneColors[i];
+                ctx.beginPath();
+                ctx.moveTo(cx - 8, cy + 30);
+                ctx.lineTo(cx + 8, cy + 30);
+                ctx.lineTo(cx + 3, cy - 10);
+                ctx.lineTo(cx - 3, cy - 10);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.fillStyle = '#666';
+                ctx.font = '8px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(coneLabels[i], cx, cy + 45);
+            }
+
+            // Draw rod (low light)
+            const rodX = 60;
+            const rodY = 120;
+
+            ctx.fillStyle = '#a855f7';
+            ctx.beginPath();
+            ctx.roundRect(rodX - 5, rodY - 20, 10, 40, 3);
+            ctx.fill();
+
+            ctx.fillStyle = '#666';
+            ctx.font = '8px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.fillText('Bastón', rodX, rodY + 30);
+            ctx.fillText('(luz baja)', rodX, rodY + 40);
+
+            ctx.restore();
+        }
+
+        function updateInfo() {
+            const currentDefect = defects[defect];
+            const focalLength = calculateFocalLength();
+            const totalPower = 1000 / focalLength;
+            const imageDistance = calculateImageDistance(objectDistance, focalLength);
+
+            document.getElementById('info-power').textContent = totalPower.toFixed(1) + ' D';
+            document.getElementById('info-focal').textContent = focalLength.toFixed(1) + ' mm';
+
+            const blur = Math.abs(imageDistance - currentDefect.eyeLength);
+            if (blur < 0.5) {
+                document.getElementById('info-image').textContent = 'en retina';
+                document.getElementById('info-image').className = 'text-green-400';
+                document.getElementById('info-clarity').textContent = 'nítido';
+                document.getElementById('info-clarity').className = 'text-green-400';
+            } else if (imageDistance < currentDefect.eyeLength) {
+                document.getElementById('info-image').textContent = 'delante';
+                document.getElementById('info-image').className = 'text-amber-400';
+                document.getElementById('info-clarity').textContent = 'borroso';
+                document.getElementById('info-clarity').className = 'text-red-400';
+            } else {
+                document.getElementById('info-image').textContent = 'detrás';
+                document.getElementById('info-image').className = 'text-amber-400';
+                document.getElementById('info-clarity').textContent = 'borroso';
+                document.getElementById('info-clarity').className = 'text-red-400';
+            }
+
+            document.getElementById('power-display').textContent = totalPower.toFixed(1) + ' D';
+        }
+
+        function setDefect(d) {
+            defect = d;
+
+            // Update buttons
+            document.querySelectorAll('.defect-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.getElementById('btn-' + d).classList.add('active');
+
+            // Suggest correction
+            if (d === 'myopia') {
+                document.getElementById('correction-lens').value = -3;
+                correctionLens = -3;
+            } else if (d === 'hyperopia') {
+                document.getElementById('correction-lens').value = 3;
+                correctionLens = 3;
+            } else {
+                document.getElementById('correction-lens').value = 0;
+                correctionLens = 0;
+            }
+            document.getElementById('lens-value').textContent = correctionLens;
+
+            drawEye();
+        }
+
+        // Event listeners
+        document.getElementById('object-distance').addEventListener('input', (e) => {
+            objectDistance = parseFloat(e.target.value);
+            document.getElementById('dist-value').textContent = objectDistance.toFixed(2);
+            document.getElementById('distance-display').textContent =
+                objectDistance > 9 ? '∞' : objectDistance.toFixed(1) + ' m';
+            drawEye();
+        });
+
+        document.getElementById('accommodation').addEventListener('input', (e) => {
+            accommodation = parseFloat(e.target.value);
+            document.getElementById('accom-value').textContent = accommodation.toFixed(1);
+            drawEye();
+        });
+
+        document.getElementById('correction-lens').addEventListener('input', (e) => {
+            correctionLens = parseFloat(e.target.value);
+            document.getElementById('lens-value').textContent = correctionLens.toFixed(2);
+            drawEye();
+        });
+
+        document.getElementById('light-intensity').addEventListener('input', (e) => {
+            lightIntensity = parseInt(e.target.value);
+            document.getElementById('light-value').textContent = lightIntensity;
+            drawEye();
+        });
+
+        document.getElementById('show-rays').addEventListener('change', (e) => {
+            showRays = e.target.checked;
+            drawEye();
+        });
+
+        document.getElementById('show-focus').addEventListener('change', (e) => {
+            showFocus = e.target.checked;
+            drawEye();
+        });
+
+        document.getElementById('show-photoreceptors').addEventListener('change', (e) => {
+            showPhotoreceptors = e.target.checked;
+            drawEye();
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            drawEye();
+        });
+
+        // Initialize
+        initCanvas();
+        drawEye();
+    </script>
+</body>
+</html>

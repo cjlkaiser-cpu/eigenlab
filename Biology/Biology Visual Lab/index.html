@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Biology Visual Lab - Visualizaciones de Biología</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(16, 185, 129, 0.15);
+        }
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card:hover .card-border {
+            opacity: 1;
+        }
+        .card-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #10b981, #34d399, #06b6d4);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .preview-canvas {
+            border-radius: 0.5rem;
+        }
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-style: normal;
+        }
+        .category-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+        .bio-symbol {
+            font-size: 1.5rem;
+        }
+        /* Cells background */
+        .cells {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen relative">
+    <!-- Cells Background -->
+    <canvas id="cells" class="cells"></canvas>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <nav class="text-xs text-gray-600 mb-1">
+                        <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                        <span class="mx-1">/</span>
+                        <span class="text-gray-500">Biology Visual Lab</span>
+                    </nav>
+                    <h1 class="text-2xl font-light">
+                        <span class="text-emerald-400 font-medium glow-text">Biology</span> Visual Lab
+                    </h1>
+                    <p class="text-gray-600 text-sm mono">La vida en movimiento</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="bio-symbol text-emerald-400">&#9830;</span>
+                    <span class="bio-symbol text-green-300">&#10047;</span>
+                    <span class="bio-symbol text-teal-400">&#9673;</span>
+                    <span class="bio-symbol text-lime-400">&#10070;</span>
+                    <a href="https://github.com/cjlkaiser-cpu" target="_blank" class="text-gray-500 hover:text-white transition ml-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 relative z-10">
+        <!-- Hero -->
+        <section class="text-center mb-16">
+            <h2 class="text-4xl font-light mb-4">
+                La vida <span class="text-emerald-400 font-medium glow-text">interactiva</span>
+            </h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">
+                8 experiencias visuales donde la biología cobra vida.
+                Neurociencia, ecología, genética y biología celular.
+            </p>
+        </section>
+
+        <!-- Grid de Simulaciones -->
+        <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+
+            <!-- Neurona -->
+            <a href="neurona.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-neurona" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-violet-500/20 text-violet-400">Neurociencia</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Potencial de Acción</h3>
+                        <p class="text-gray-500 text-sm mb-3">Modelo Hodgkin-Huxley. Visualiza cómo los canales iónicos generan el impulso nervioso que viaja por el axón.</p>
+                        <div class="equation text-violet-400/70 text-sm mb-4">C·dV/dt = I - I_ion</div>
+                        <span class="block w-full text-center py-2 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition text-sm font-medium">
+                            Estimular →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ecosistema -->
+            <a href="ecosistema.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-ecosistema" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-emerald-500/20 text-emerald-400">Ecología</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Ecosistema</h3>
+                        <p class="text-gray-500 text-sm mb-3">Modelo Lotka-Volterra. Dinámica depredador-presa con poblaciones que oscilan en ciclos naturales.</p>
+                        <div class="equation text-emerald-400/70 text-sm mb-4">dx/dt = αx - βxy</div>
+                        <span class="block w-full text-center py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition text-sm font-medium">
+                            Observar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Genética Poblacional -->
+            <a href="genetica-poblacional.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-genetica" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-cyan-500/20 text-cyan-400">Genética</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Genética Poblacional</h3>
+                        <p class="text-gray-500 text-sm mb-3">Equilibrio Hardy-Weinberg y deriva genética. Cómo cambian las frecuencias alélicas en una población.</p>
+                        <div class="equation text-cyan-400/70 text-sm mb-4">p² + 2pq + q² = 1</div>
+                        <span class="block w-full text-center py-2 bg-cyan-500/10 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition text-sm font-medium">
+                            Simular →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Mitosis -->
+            <a href="mitosis.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-mitosis" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-rose-500/20 text-rose-400">Biología Celular</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Mitosis</h3>
+                        <p class="text-gray-500 text-sm mb-3">División celular somática. Profase, metafase, anafase y telofase. Los cromosomas se duplican y separan.</p>
+                        <div class="equation text-rose-400/70 text-sm mb-4">2n → 2n + 2n</div>
+                        <span class="block w-full text-center py-2 bg-rose-500/10 text-rose-400 rounded-lg hover:bg-rose-500/20 transition text-sm font-medium">
+                            Dividir →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Meiosis -->
+            <a href="meiosis.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-meiosis" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-rose-500/20 text-rose-400">Biología Celular</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Meiosis</h3>
+                        <p class="text-gray-500 text-sm mb-3">División gamética con crossing-over. Reduce el número de cromosomas a la mitad y genera variabilidad genética.</p>
+                        <div class="equation text-rose-400/70 text-sm mb-4">2n → n + n + n + n</div>
+                        <span class="block w-full text-center py-2 bg-rose-500/10 text-rose-400 rounded-lg hover:bg-rose-500/20 transition text-sm font-medium">
+                            Recombinar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Evolución -->
+            <a href="evolucion.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-evolucion" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-amber-500/20 text-amber-400">Evolución</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Selección Natural</h3>
+                        <p class="text-gray-500 text-sm mb-3">Algoritmo genético visual. Observa cómo la presión selectiva moldea una población a través de generaciones.</p>
+                        <div class="equation text-amber-400/70 text-sm mb-4">Δp = p·s·(1-p)</div>
+                        <span class="block w-full text-center py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition text-sm font-medium">
+                            Evolucionar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Ritmos Circadianos -->
+            <a href="ritmos-circadianos.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-circadianos" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-indigo-500/20 text-indigo-400">Cronobiología</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Ritmos Circadianos</h3>
+                        <p class="text-gray-500 text-sm mb-3">El reloj biológico interno. Melatonina, cortisol, temperatura corporal sincronizados con el ciclo día-noche.</p>
+                        <div class="equation text-indigo-400/70 text-sm mb-4">τ ≈ 24h, luz → SCN</div>
+                        <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                            Sincronizar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Visión -->
+            <a href="vision.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-vision" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-sky-500/20 text-sky-400">Fisiología</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Visión</h3>
+                        <p class="text-gray-500 text-sm mb-3">Óptica del ojo humano. Refracción, acomodación, defectos visuales y corrección con lentes.</p>
+                        <div class="equation text-sky-400/70 text-sm mb-4">1/f = 1/d_o + 1/d_i</div>
+                        <span class="block w-full text-center py-2 bg-sky-500/10 text-sky-400 rounded-lg hover:bg-sky-500/20 transition text-sm font-medium">
+                            Enfocar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+        </section>
+
+        <!-- Info Section -->
+        <section class="text-center text-gray-600 text-sm">
+            <p>Parte del ecosistema <a href="../../_portal/index.html" class="text-emerald-400 hover:underline">EigenLab</a></p>
+            <p class="mt-1 mono text-xs">Simulaciones interactivas para entender la vida</p>
+        </section>
+    </main>
+
+    <script>
+        // Floating cells background
+        const cellsCanvas = document.getElementById('cells');
+        const cellsCtx = cellsCanvas.getContext('2d');
+
+        let cells = [];
+
+        function resizeCells() {
+            cellsCanvas.width = window.innerWidth;
+            cellsCanvas.height = window.innerHeight;
+            initCells();
+        }
+
+        function initCells() {
+            cells = [];
+            for (let i = 0; i < 30; i++) {
+                cells.push({
+                    x: Math.random() * cellsCanvas.width,
+                    y: Math.random() * cellsCanvas.height,
+                    radius: 20 + Math.random() * 40,
+                    vx: (Math.random() - 0.5) * 0.3,
+                    vy: (Math.random() - 0.5) * 0.3,
+                    alpha: 0.03 + Math.random() * 0.05
+                });
+            }
+        }
+
+        function drawCells() {
+            cellsCtx.fillStyle = '#000';
+            cellsCtx.fillRect(0, 0, cellsCanvas.width, cellsCanvas.height);
+
+            cells.forEach(cell => {
+                cell.x += cell.vx;
+                cell.y += cell.vy;
+
+                if (cell.x < -cell.radius) cell.x = cellsCanvas.width + cell.radius;
+                if (cell.x > cellsCanvas.width + cell.radius) cell.x = -cell.radius;
+                if (cell.y < -cell.radius) cell.y = cellsCanvas.height + cell.radius;
+                if (cell.y > cellsCanvas.height + cell.radius) cell.y = -cell.radius;
+
+                // Cell membrane
+                cellsCtx.strokeStyle = `rgba(16, 185, 129, ${cell.alpha})`;
+                cellsCtx.lineWidth = 2;
+                cellsCtx.beginPath();
+                cellsCtx.arc(cell.x, cell.y, cell.radius, 0, Math.PI * 2);
+                cellsCtx.stroke();
+
+                // Nucleus
+                cellsCtx.fillStyle = `rgba(16, 185, 129, ${cell.alpha * 0.5})`;
+                cellsCtx.beginPath();
+                cellsCtx.arc(cell.x, cell.y, cell.radius * 0.3, 0, Math.PI * 2);
+                cellsCtx.fill();
+            });
+
+            requestAnimationFrame(drawCells);
+        }
+
+        window.addEventListener('resize', resizeCells);
+        resizeCells();
+        drawCells();
+
+        // Preview animations
+        const previews = {
+            neurona: document.getElementById('preview-neurona'),
+            ecosistema: document.getElementById('preview-ecosistema'),
+            genetica: document.getElementById('preview-genetica'),
+            mitosis: document.getElementById('preview-mitosis'),
+            meiosis: document.getElementById('preview-meiosis'),
+            evolucion: document.getElementById('preview-evolucion'),
+            circadianos: document.getElementById('preview-circadianos'),
+            vision: document.getElementById('preview-vision')
+        };
+
+        // Initialize canvases
+        Object.values(previews).forEach(canvas => {
+            if (canvas) {
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+            }
+        });
+
+        // Neurona preview
+        function drawNeuronaPreview() {
+            const canvas = previews.neurona;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 1000;
+            const cx = w * 0.3, cy = h / 2;
+
+            // Soma (cell body)
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dendrites
+            ctx.strokeStyle = '#8b5cf6';
+            ctx.lineWidth = 3;
+            for (let i = 0; i < 5; i++) {
+                const angle = (i / 5) * Math.PI - Math.PI / 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                const dx = Math.cos(angle) * 40;
+                const dy = Math.sin(angle) * 40;
+                ctx.quadraticCurveTo(cx + dx * 0.5, cy + dy * 0.5 + 10, cx + dx, cy + dy);
+                ctx.stroke();
+            }
+
+            // Axon
+            ctx.strokeStyle = '#a78bfa';
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            ctx.moveTo(cx + 25, cy);
+            ctx.lineTo(w - 40, cy);
+            ctx.stroke();
+
+            // Myelin sheaths
+            for (let i = 0; i < 4; i++) {
+                const x = cx + 60 + i * 50;
+                ctx.fillStyle = '#4c1d95';
+                ctx.beginPath();
+                ctx.ellipse(x, cy, 15, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Action potential pulse
+            const pulseX = cx + 30 + ((time * 100) % (w - cx - 70));
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(pulseX, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Glow
+            const gradient = ctx.createRadialGradient(pulseX, cy, 0, pulseX, cy, 15);
+            gradient.addColorStop(0, 'rgba(251, 191, 36, 0.6)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(pulseX, cy, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Axon terminal
+            ctx.fillStyle = '#8b5cf6';
+            for (let i = 0; i < 3; i++) {
+                const angle = (i / 3) * Math.PI - Math.PI / 2 + Math.PI / 2;
+                ctx.beginPath();
+                ctx.arc(w - 30 + Math.cos(angle) * 15, cy + Math.sin(angle) * 15, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Ecosistema preview
+        function drawEcosistemaPreview() {
+            const canvas = previews.ecosistema;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 1000;
+
+            // Preys (green)
+            for (let i = 0; i < 12; i++) {
+                const x = (i * 47 + time * 30) % w;
+                const y = h/2 + Math.sin(time + i) * 50;
+                ctx.fillStyle = '#10b981';
+                ctx.beginPath();
+                ctx.arc(x, y, 5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Predators (red)
+            for (let i = 0; i < 5; i++) {
+                const x = (i * 73 + time * 20) % w;
+                const y = h/2 + Math.cos(time + i * 2) * 40;
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Population graph
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 5) {
+                const y = h - 30 - Math.sin(x / 30 + time) * 20 - 30;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.strokeStyle = '#ef4444';
+            ctx.beginPath();
+            for (let x = 0; x < w; x += 5) {
+                const y = h - 30 - Math.sin(x / 30 + time + 1.5) * 15 - 25;
+                if (x === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        // Genética preview
+        function drawGeneticaPreview() {
+            const canvas = previews.genetica;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Population pool
+            const colors = ['#06b6d4', '#0891b2', '#67e8f9']; // AA, Aa, aa
+            for (let i = 0; i < 40; i++) {
+                const x = 30 + (i % 10) * 25;
+                const y = 30 + Math.floor(i / 10) * 25;
+                const colorIdx = Math.floor(Math.random() * 3);
+                ctx.fillStyle = colors[colorIdx];
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Frequency bars
+            const time = Date.now() / 2000;
+            const p = 0.5 + Math.sin(time) * 0.2;
+            const q = 1 - p;
+
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(w - 80, h - 20 - p * p * 80, 20, p * p * 80);
+
+            ctx.fillStyle = '#0891b2';
+            ctx.fillRect(w - 55, h - 20 - 2 * p * q * 80, 20, 2 * p * q * 80);
+
+            ctx.fillStyle = '#67e8f9';
+            ctx.fillRect(w - 30, h - 20 - q * q * 80, 20, q * q * 80);
+
+            // Labels
+            ctx.fillStyle = '#666';
+            ctx.font = '16px JetBrains Mono';
+            ctx.fillText('AA', w - 80, h - 5);
+            ctx.fillText('Aa', w - 55, h - 5);
+            ctx.fillText('aa', w - 30, h - 5);
+        }
+
+        // Mitosis preview
+        function drawMitosisPreview() {
+            const canvas = previews.mitosis;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 2000;
+            const phase = time % 4;
+            const cx = w / 2, cy = h / 2;
+
+            // Cell membrane
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 3;
+
+            if (phase < 3) {
+                ctx.beginPath();
+                ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+                ctx.stroke();
+            } else {
+                // Dividing
+                const sep = (phase - 3) * 30;
+                ctx.beginPath();
+                ctx.arc(cx - sep, cy, 40, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + sep, cy, 40, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Chromosomes
+            ctx.fillStyle = '#fb7185';
+            if (phase < 1) {
+                // Prophase - condensing
+                for (let i = 0; i < 4; i++) {
+                    const angle = (i / 4) * Math.PI * 2;
+                    const r = 15;
+                    ctx.fillRect(cx + Math.cos(angle) * r - 3, cy + Math.sin(angle) * r - 8, 6, 16);
+                }
+            } else if (phase < 2) {
+                // Metaphase - aligned
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillRect(cx - 3, cy - 30 + i * 15, 6, 12);
+                }
+            } else if (phase < 3) {
+                // Anaphase - separating
+                const sep = (phase - 2) * 30;
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillRect(cx - sep - 3, cy - 20 + i * 12, 6, 8);
+                    ctx.fillRect(cx + sep - 3, cy - 20 + i * 12, 6, 8);
+                }
+            } else {
+                // Telophase
+                const sep = (phase - 3) * 30;
+                for (let i = 0; i < 4; i++) {
+                    ctx.fillRect(cx - sep - 3, cy - 15 + i * 10, 6, 8);
+                    ctx.fillRect(cx + sep - 3, cy - 15 + i * 10, 6, 8);
+                }
+            }
+        }
+
+        // Meiosis preview
+        function drawMeiosisPreview() {
+            const canvas = previews.meiosis;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 3000;
+            const cy = h / 2;
+
+            // 4 cells at different stages
+            const positions = [w * 0.2, w * 0.4, w * 0.6, w * 0.8];
+
+            positions.forEach((x, i) => {
+                const size = 30 - i * 3;
+                ctx.strokeStyle = '#f43f5e';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(x, cy, size, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Chromosomes (decreasing)
+                ctx.fillStyle = '#fb7185';
+                const numChrom = 4 - i;
+                for (let j = 0; j < numChrom; j++) {
+                    const angle = (j / numChrom) * Math.PI * 2 + time;
+                    const r = size * 0.5;
+                    ctx.fillRect(x + Math.cos(angle) * r - 2, cy + Math.sin(angle) * r - 5, 4, 10);
+                }
+            });
+
+            // Crossing over visualization
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([3, 3]);
+            ctx.beginPath();
+            ctx.moveTo(w * 0.15, cy - 10);
+            ctx.lineTo(w * 0.25, cy + 10);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // Evolución preview
+        function drawEvolucionPreview() {
+            const canvas = previews.evolucion;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 1000;
+
+            // Environment gradient (selection pressure)
+            const gradient = ctx.createLinearGradient(0, 0, w, 0);
+            gradient.addColorStop(0, '#1a1a1a');
+            gradient.addColorStop(1, '#3d3d3d');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, h - 40, w, 40);
+
+            // Population of creatures with varying colors
+            for (let i = 0; i < 20; i++) {
+                const x = 20 + (i % 10) * 30;
+                const gen = Math.floor(i / 10);
+                const y = 40 + gen * 60;
+
+                // Color based on fitness (darker = better camouflage on dark bg)
+                const fitness = Math.sin(time + i * 0.5) * 0.5 + 0.5;
+                const brightness = gen === 0 ? 150 + Math.random() * 100 : 50 + fitness * 50;
+                ctx.fillStyle = `rgb(${brightness}, ${brightness * 0.8}, ${brightness * 0.5})`;
+
+                // Size based on fitness
+                const size = 8 + fitness * 6;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Generation labels
+            ctx.fillStyle = '#f59e0b';
+            ctx.font = '14px JetBrains Mono';
+            ctx.fillText('Gen 1', w - 60, 50);
+            ctx.fillText('Gen 2', w - 60, 110);
+
+            // Arrow
+            ctx.strokeStyle = '#f59e0b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w - 30, 60);
+            ctx.lineTo(w - 30, 90);
+            ctx.lineTo(w - 35, 85);
+            ctx.moveTo(w - 30, 90);
+            ctx.lineTo(w - 25, 85);
+            ctx.stroke();
+        }
+
+        // Ritmos Circadianos preview
+        function drawCircadianosPreview() {
+            const canvas = previews.circadianos;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 1000;
+            const cx = w / 2, cy = h / 2;
+            const radius = Math.min(w, h) * 0.35;
+
+            // Clock face
+            ctx.strokeStyle = '#4338ca';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Day/Night arc
+            // Night (top half - purple)
+            ctx.strokeStyle = 'rgba(99, 102, 241, 0.4)';
+            ctx.lineWidth = 15;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.7, -Math.PI, 0);
+            ctx.stroke();
+
+            // Day (bottom half - yellow)
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius * 0.7, 0, Math.PI);
+            ctx.stroke();
+
+            // Hour markers
+            for (let i = 0; i < 24; i += 6) {
+                const angle = (i / 24) * Math.PI * 2 - Math.PI / 2;
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const labelR = radius * 0.9;
+                ctx.fillText(i.toString(), cx + Math.cos(angle) * labelR, cy + Math.sin(angle) * labelR);
+            }
+
+            // Animated hour hand
+            const hour = (time * 2) % 24; // Speed up for preview
+            const handAngle = (hour / 24) * Math.PI * 2 - Math.PI / 2;
+
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(cx + Math.cos(handAngle) * radius * 0.5, cy + Math.sin(handAngle) * radius * 0.5);
+            ctx.stroke();
+
+            // Center dot
+            ctx.fillStyle = '#10b981';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Melatonin curve (simplified)
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 0; i <= 360; i++) {
+                const t = (i / 360) * 24;
+                // Melatonin peaks around 3 AM (high at night)
+                const mel = Math.max(0, Math.cos((t - 3) * Math.PI / 12) * 0.5 + 0.5);
+                const r = radius * 0.3 + mel * radius * 0.15;
+                const angle = (i / 360) * Math.PI * 2 - Math.PI / 2;
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.closePath();
+            ctx.stroke();
+
+            // Sun/Moon icons
+            const isDaytime = hour >= 6 && hour < 18;
+            ctx.font = '20px serif';
+            ctx.textAlign = 'center';
+            ctx.fillText(isDaytime ? '☀️' : '🌙', cx, cy - radius - 15);
+        }
+
+        // Vision preview
+        function drawVisionPreview() {
+            const canvas = previews.vision;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 1000;
+            const eyeCx = w * 0.55, eyeCy = h / 2;
+            const eyeRx = 60, eyeRy = 50;
+
+            // Eyeball outline
+            ctx.strokeStyle = '#0ea5e9';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.ellipse(eyeCx, eyeCy, eyeRx, eyeRy, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Cornea bulge
+            ctx.beginPath();
+            ctx.ellipse(eyeCx - eyeRx + 10, eyeCy, 15, eyeRy * 0.7, 0, -Math.PI/2, Math.PI/2);
+            ctx.stroke();
+
+            // Lens (cristalino)
+            const lensX = eyeCx - eyeRx + 35;
+            const accommodation = Math.sin(time) * 0.3 + 0.7; // Oscillate
+            ctx.fillStyle = 'rgba(14, 165, 233, 0.3)';
+            ctx.beginPath();
+            ctx.ellipse(lensX, eyeCy, 8 * accommodation, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#38bdf8';
+            ctx.stroke();
+
+            // Iris/Pupil
+            const pupilSize = 12 + Math.sin(time * 2) * 4;
+            ctx.fillStyle = '#1e3a5f';
+            ctx.beginPath();
+            ctx.arc(eyeCx - eyeRx + 18, eyeCy, 18, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = '#000';
+            ctx.beginPath();
+            ctx.arc(eyeCx - eyeRx + 18, eyeCy, pupilSize, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Retina (back of eye)
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(eyeCx + eyeRx - 5, eyeCy, 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Fovea marker
+            ctx.fillStyle = '#f97316';
+            ctx.beginPath();
+            ctx.arc(eyeCx + eyeRx - 5, eyeCy, 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Light rays coming from left
+            const objectX = 30;
+            ctx.strokeStyle = 'rgba(251, 191, 36, 0.6)';
+            ctx.lineWidth = 1.5;
+
+            // Ray 1 - top
+            ctx.beginPath();
+            ctx.moveTo(objectX, eyeCy - 30);
+            ctx.lineTo(eyeCx - eyeRx + 18, eyeCy);
+            ctx.lineTo(eyeCx + eyeRx - 5, eyeCy + 5 * Math.sin(time));
+            ctx.stroke();
+
+            // Ray 2 - center
+            ctx.beginPath();
+            ctx.moveTo(objectX, eyeCy);
+            ctx.lineTo(eyeCx - eyeRx + 18, eyeCy);
+            ctx.lineTo(eyeCx + eyeRx - 5, eyeCy);
+            ctx.stroke();
+
+            // Ray 3 - bottom
+            ctx.beginPath();
+            ctx.moveTo(objectX, eyeCy + 30);
+            ctx.lineTo(eyeCx - eyeRx + 18, eyeCy);
+            ctx.lineTo(eyeCx + eyeRx - 5, eyeCy - 5 * Math.sin(time));
+            ctx.stroke();
+
+            // Object (candle)
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(objectX - 3, eyeCy - 30, 6, 25);
+            ctx.beginPath();
+            ctx.moveTo(objectX, eyeCy - 30);
+            ctx.lineTo(objectX - 5, eyeCy - 35);
+            ctx.lineTo(objectX + 5, eyeCy - 35);
+            ctx.closePath();
+            ctx.fill();
+
+            // Photoreceptors mini display
+            const prX = w - 50, prY = h - 30;
+            // Cones
+            ctx.fillStyle = '#ef4444';
+            ctx.fillRect(prX, prY, 4, 8);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillRect(prX + 6, prY, 4, 8);
+            ctx.fillStyle = '#3b82f6';
+            ctx.fillRect(prX + 12, prY, 4, 8);
+            // Rod
+            ctx.fillStyle = '#94a3b8';
+            ctx.fillRect(prX + 20, prY, 3, 10);
+
+            // Label
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px Inter';
+            ctx.fillText('L M S', prX, prY - 4);
+        }
+
+        // Animation loop
+        function animate() {
+            drawNeuronaPreview();
+            drawEcosistemaPreview();
+            drawGeneticaPreview();
+            drawMitosisPreview();
+            drawMeiosisPreview();
+            drawEvolucionPreview();
+            drawCircadianosPreview();
+            drawVisionPreview();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

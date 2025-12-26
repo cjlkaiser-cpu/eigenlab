@@ -1,0 +1,880 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Boids Masivo - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #34d399;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .boid-color { color: #10b981; }
+        .predator-color { color: #ef4444; }
+        .attractor-color { color: #eab308; }
+
+        .preset-btn {
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .preset-btn:hover {
+            border-color: rgba(16, 185, 129, 0.5);
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .preset-btn.active {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+        .visualization-mode {
+            transition: all 0.2s;
+        }
+        .visualization-mode:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+        .visualization-mode.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+        }
+
+        #canvas {
+            cursor: crosshair;
+        }
+
+        .loading-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            transition: opacity 0.3s;
+        }
+        .loading-overlay.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Loading overlay -->
+    <div id="loading" class="loading-overlay">
+        <div class="text-center">
+            <div class="w-12 h-12 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin mx-auto mb-4"></div>
+            <p class="text-emerald-400 mono">Cargando motor WASM...</p>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Boids Masivo</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-emerald-400 font-medium glow-text">Boids Masivo</span>
+                            <span class="text-gray-600 text-sm ml-2">Comportamiento Emergente</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-emerald-500"></span>
+                        <span class="text-gray-500">Boids:</span>
+                        <span id="boid-count" class="boid-color mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="w-3 h-3 rounded-full bg-red-500"></span>
+                        <span class="text-gray-500">Depredadores:</span>
+                        <span id="predator-count" class="predator-color mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">FPS:</span>
+                        <span id="fps-display" class="text-emerald-400 mono">60</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+
+            <!-- Stats overlay -->
+            <div class="absolute bottom-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs mono">
+                <div class="flex gap-6">
+                    <div>
+                        <span class="text-gray-500">Polarizacion:</span>
+                        <span id="polarization" class="text-emerald-400 ml-1">0.00</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Dispersion:</span>
+                        <span id="spread" class="text-emerald-400 ml-1">0.0</span>
+                    </div>
+                    <div>
+                        <span class="text-gray-500">Vecinos prom:</span>
+                        <span id="avg-neighbors" class="text-emerald-400 ml-1">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Instructions overlay -->
+            <div class="absolute top-4 left-4 bg-black/70 backdrop-blur-sm rounded-lg p-3 text-xs">
+                <p class="text-gray-400"><span class="text-emerald-400">Click</span>: Atraer boids</p>
+                <p class="text-gray-400"><span class="text-emerald-400">Shift+Click</span>: Repeler boids</p>
+                <p class="text-gray-400"><span class="text-emerald-400">Ctrl+Click</span>: Agregar depredador</p>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950/50 overflow-y-auto p-4 flex flex-col gap-4">
+            <!-- Algorithm info -->
+            <div class="math-box rounded-lg p-4">
+                <h3 class="text-sm font-medium text-emerald-400 mb-2">Algoritmo de Reynolds (1987)</h3>
+                <div class="mono text-xs text-gray-400 space-y-1">
+                    <p>F = S + A + C</p>
+                    <p class="text-gray-600 text-[10px]">S: Separacion | A: Alineacion | C: Cohesion</p>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Presets</h3>
+                <div class="grid grid-cols-5 gap-2">
+                    <button class="preset-btn active rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="birds" title="Pajaros">
+                        <span class="text-lg">🐦</span>
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="fish" title="Peces">
+                        <span class="text-lg">🐟</span>
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="insects" title="Insectos">
+                        <span class="text-lg">🐝</span>
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="slow" title="Medusas">
+                        <span class="text-lg">🪼</span>
+                    </button>
+                    <button class="preset-btn rounded px-2 py-1.5 text-xs bg-gray-900" data-preset="chaos" title="Caos">
+                        <span class="text-lg">💥</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Population control -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Poblacion</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Cantidad de boids</label>
+                            <span id="count-value" class="mono text-emerald-400">2000</span>
+                        </div>
+                        <input type="range" id="count-slider" min="100" max="10000" step="100" value="2000" class="w-full">
+                    </div>
+                    <button id="reset-btn" class="w-full py-2 px-4 bg-emerald-500/20 border border-emerald-500/50 rounded text-emerald-400 text-sm hover:bg-emerald-500/30 transition">
+                        Reiniciar Simulacion
+                    </button>
+                </div>
+            </div>
+
+            <!-- Behavior weights -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Comportamientos</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Separacion</label>
+                            <span id="separation-value" class="mono text-emerald-400">1.50</span>
+                        </div>
+                        <input type="range" id="separation-slider" min="0" max="5" step="0.1" value="1.5" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Alineacion</label>
+                            <span id="alignment-value" class="mono text-emerald-400">1.00</span>
+                        </div>
+                        <input type="range" id="alignment-slider" min="0" max="5" step="0.1" value="1.0" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Cohesion</label>
+                            <span id="cohesion-value" class="mono text-emerald-400">1.00</span>
+                        </div>
+                        <input type="range" id="cohesion-slider" min="0" max="5" step="0.1" value="1.0" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Movement -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Movimiento</h3>
+                <div class="space-y-3">
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Velocidad maxima</label>
+                            <span id="speed-value" class="mono text-emerald-400">5.0</span>
+                        </div>
+                        <input type="range" id="speed-slider" min="1" max="15" step="0.5" value="5" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Fuerza maxima</label>
+                            <span id="force-value" class="mono text-emerald-400">0.15</span>
+                        </div>
+                        <input type="range" id="force-slider" min="0.01" max="0.5" step="0.01" value="0.15" class="w-full">
+                    </div>
+                    <div>
+                        <div class="flex justify-between text-xs mb-1">
+                            <label class="text-gray-400">Radio de percepcion</label>
+                            <span id="perception-value" class="mono text-emerald-400">50</span>
+                        </div>
+                        <input type="range" id="perception-slider" min="20" max="150" step="5" value="50" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Visualizacion</h3>
+                <div class="grid grid-cols-2 gap-2">
+                    <button class="visualization-mode active border border-gray-800 rounded px-3 py-2 text-xs" data-mode="arrows">
+                        Flechas
+                    </button>
+                    <button class="visualization-mode border border-gray-800 rounded px-3 py-2 text-xs" data-mode="dots">
+                        Puntos
+                    </button>
+                    <button class="visualization-mode border border-gray-800 rounded px-3 py-2 text-xs" data-mode="trails">
+                        Estelas
+                    </button>
+                    <button class="visualization-mode border border-gray-800 rounded px-3 py-2 text-xs" data-mode="neighbors">
+                        Vecinos
+                    </button>
+                </div>
+            </div>
+
+            <!-- Options -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Opciones</h3>
+                <div class="space-y-2">
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="wrap-edges" class="accent-emerald-500">
+                        <span>Bordes toroidales (wrap)</span>
+                    </label>
+                    <label class="flex items-center gap-2 text-xs text-gray-400 cursor-pointer">
+                        <input type="checkbox" id="show-perception" class="accent-emerald-500">
+                        <span>Mostrar radio de percepcion</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Predators -->
+            <div>
+                <h3 class="text-xs text-gray-500 uppercase tracking-wider mb-2">Depredadores</h3>
+                <div class="flex gap-2">
+                    <button id="add-predator" class="flex-1 py-2 px-4 bg-red-500/20 border border-red-500/50 rounded text-red-400 text-sm hover:bg-red-500/30 transition">
+                        + Agregar
+                    </button>
+                    <button id="clear-predators" class="py-2 px-4 bg-gray-800 rounded text-gray-400 text-sm hover:bg-gray-700 transition">
+                        Limpiar
+                    </button>
+                </div>
+                <p class="text-[10px] text-gray-600 mt-1">Ctrl+Click en el canvas para agregar</p>
+            </div>
+
+            <!-- Guide link -->
+            <a href="guides/boids-masivo.md" class="block mt-auto py-2 px-4 bg-gray-900 rounded text-center text-emerald-400 text-sm hover:bg-gray-800 transition">
+                Ver Guia Educativa
+            </a>
+        </aside>
+    </main>
+
+    <!-- WASM Module -->
+    <script src="../../_wasm/eigenlab-core.js"></script>
+    <script>
+        // ====================================================================
+        // Configuration
+        // ====================================================================
+        const CONFIG = {
+            boidCount: 2000,
+            visualMode: 'arrows',
+            showPerception: false,
+            wrapEdges: false,
+            trailLength: 10
+        };
+
+        // ====================================================================
+        // State
+        // ====================================================================
+        let Module = null;
+        let boidSystem = null;
+        let canvas, ctx;
+        let width, height;
+        let lastTime = 0;
+        let frameCount = 0;
+        let fps = 60;
+
+        // Trail history for trail visualization
+        let trailHistory = [];
+
+        // Mouse interaction
+        let mousePos = { x: 0, y: 0 };
+        let mouseDown = false;
+        let mouseMode = 'attract'; // 'attract', 'repel', 'predator'
+
+        // ====================================================================
+        // Initialization
+        // ====================================================================
+        async function init() {
+            canvas = document.getElementById('canvas');
+            ctx = canvas.getContext('2d');
+
+            // Set canvas size
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                width = rect.width;
+                height = rect.height;
+                canvas.width = width;
+                canvas.height = height;
+
+                // Update boid system bounds if exists
+                if (boidSystem) {
+                    const config = Module.boidPresetBirds();
+                    config.bounds = {
+                        min: { x: 0, y: 0 },
+                        max: { x: width, y: height }
+                    };
+                    config.maxBoids = 15000;
+                    boidSystem.setConfig(config);
+                }
+            }
+
+            window.addEventListener('resize', resize);
+            resize();
+
+            // Load WASM module
+            try {
+                Module = await EigenLabCore();
+                console.log('EigenLab WASM loaded');
+                document.getElementById('loading').classList.add('hidden');
+
+                // Initialize boid system
+                initBoidSystem();
+                setupControls();
+                setupMouseInteraction();
+
+                // Start animation loop
+                requestAnimationFrame(animate);
+            } catch (error) {
+                console.error('Failed to load WASM:', error);
+                document.getElementById('loading').innerHTML = `
+                    <div class="text-center">
+                        <p class="text-red-400">Error cargando WASM</p>
+                        <p class="text-gray-500 text-sm mt-2">${error.message}</p>
+                    </div>
+                `;
+            }
+        }
+
+        function initBoidSystem() {
+            const config = Module.boidPresetBirds();
+            config.bounds = {
+                min: { x: 0, y: 0 },
+                max: { x: width, y: height }
+            };
+            config.maxBoids = 15000;
+            config.wrapEdges = CONFIG.wrapEdges;
+
+            boidSystem = new Module.BoidSystem(config);
+            boidSystem.initializeRandom(CONFIG.boidCount);
+
+            // Reset trail history
+            trailHistory = [];
+        }
+
+        // ====================================================================
+        // Controls
+        // ====================================================================
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const preset = btn.dataset.preset;
+                    let config;
+                    switch (preset) {
+                        case 'birds': config = Module.boidPresetBirds(); break;
+                        case 'fish': config = Module.boidPresetFish(); break;
+                        case 'insects': config = Module.boidPresetInsects(); break;
+                        case 'slow': config = Module.boidPresetSlow(); break;
+                        case 'chaos': config = Module.boidPresetChaos(); break;
+                    }
+
+                    config.bounds = {
+                        min: { x: 0, y: 0 },
+                        max: { x: width, y: height }
+                    };
+                    config.maxBoids = 15000;
+                    config.wrapEdges = CONFIG.wrapEdges;
+
+                    boidSystem.setConfig(config);
+
+                    // Update sliders to match preset
+                    updateSlidersFromConfig(config);
+                });
+            });
+
+            // Population
+            const countSlider = document.getElementById('count-slider');
+            countSlider.addEventListener('input', e => {
+                CONFIG.boidCount = parseInt(e.target.value);
+                document.getElementById('count-value').textContent = CONFIG.boidCount;
+            });
+
+            document.getElementById('reset-btn').addEventListener('click', () => {
+                boidSystem.clear();
+                boidSystem.initializeRandom(CONFIG.boidCount);
+                trailHistory = [];
+            });
+
+            // Behavior sliders
+            setupSlider('separation', val => boidSystem.setSeparationWeight(val));
+            setupSlider('alignment', val => boidSystem.setAlignmentWeight(val));
+            setupSlider('cohesion', val => boidSystem.setCohesionWeight(val));
+            setupSlider('speed', val => boidSystem.setMaxSpeed(val));
+            setupSlider('force', val => boidSystem.setMaxForce(val));
+            setupSlider('perception', val => boidSystem.setPerceptionRadius(val));
+
+            // Visualization modes
+            document.querySelectorAll('.visualization-mode').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.visualization-mode').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    CONFIG.visualMode = btn.dataset.mode;
+                    if (CONFIG.visualMode !== 'trails') {
+                        trailHistory = [];
+                    }
+                });
+            });
+
+            // Options
+            document.getElementById('wrap-edges').addEventListener('change', e => {
+                CONFIG.wrapEdges = e.target.checked;
+                // Need to reinitialize with new config
+                const currentConfig = Module.boidPresetBirds();
+                currentConfig.bounds = {
+                    min: { x: 0, y: 0 },
+                    max: { x: width, y: height }
+                };
+                currentConfig.maxBoids = 15000;
+                currentConfig.wrapEdges = CONFIG.wrapEdges;
+                boidSystem.setConfig(currentConfig);
+            });
+
+            document.getElementById('show-perception').addEventListener('change', e => {
+                CONFIG.showPerception = e.target.checked;
+            });
+
+            // Predators
+            document.getElementById('add-predator').addEventListener('click', () => {
+                const x = width / 2 + (Math.random() - 0.5) * 200;
+                const y = height / 2 + (Math.random() - 0.5) * 200;
+                boidSystem.addPredator(
+                    { x, y },
+                    { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 4 }
+                );
+            });
+
+            document.getElementById('clear-predators').addEventListener('click', () => {
+                boidSystem.clearPredators();
+            });
+        }
+
+        function setupSlider(name, callback) {
+            const slider = document.getElementById(`${name}-slider`);
+            const valueEl = document.getElementById(`${name}-value`);
+
+            slider.addEventListener('input', e => {
+                const val = parseFloat(e.target.value);
+                valueEl.textContent = val.toFixed(2);
+                callback(val);
+            });
+        }
+
+        function updateSlidersFromConfig(config) {
+            document.getElementById('separation-slider').value = config.separationWeight;
+            document.getElementById('separation-value').textContent = config.separationWeight.toFixed(2);
+            document.getElementById('alignment-slider').value = config.alignmentWeight;
+            document.getElementById('alignment-value').textContent = config.alignmentWeight.toFixed(2);
+            document.getElementById('cohesion-slider').value = config.cohesionWeight;
+            document.getElementById('cohesion-value').textContent = config.cohesionWeight.toFixed(2);
+            document.getElementById('speed-slider').value = config.maxSpeed;
+            document.getElementById('speed-value').textContent = config.maxSpeed.toFixed(1);
+            document.getElementById('force-slider').value = config.maxForce;
+            document.getElementById('force-value').textContent = config.maxForce.toFixed(2);
+            document.getElementById('perception-slider').value = config.perceptionRadius;
+            document.getElementById('perception-value').textContent = Math.round(config.perceptionRadius);
+        }
+
+        // ====================================================================
+        // Mouse Interaction
+        // ====================================================================
+        function setupMouseInteraction() {
+            canvas.addEventListener('mousedown', e => {
+                mouseDown = true;
+                updateMouseMode(e);
+            });
+
+            canvas.addEventListener('mouseup', () => {
+                mouseDown = false;
+                boidSystem.clearAttractors();
+            });
+
+            canvas.addEventListener('mousemove', e => {
+                const rect = canvas.getBoundingClientRect();
+                mousePos.x = e.clientX - rect.left;
+                mousePos.y = e.clientY - rect.top;
+            });
+
+            canvas.addEventListener('mouseleave', () => {
+                mouseDown = false;
+                boidSystem.clearAttractors();
+            });
+
+            canvas.addEventListener('click', e => {
+                if (e.ctrlKey || e.metaKey) {
+                    // Add predator at click position
+                    const rect = canvas.getBoundingClientRect();
+                    const x = e.clientX - rect.left;
+                    const y = e.clientY - rect.top;
+                    boidSystem.addPredator(
+                        { x, y },
+                        { x: (Math.random() - 0.5) * 4, y: (Math.random() - 0.5) * 4 }
+                    );
+                }
+            });
+        }
+
+        function updateMouseMode(e) {
+            if (e.ctrlKey || e.metaKey) {
+                mouseMode = 'predator';
+            } else if (e.shiftKey) {
+                mouseMode = 'repel';
+            } else {
+                mouseMode = 'attract';
+            }
+        }
+
+        function applyMouseForce() {
+            if (!mouseDown || mouseMode === 'predator') return;
+
+            boidSystem.clearAttractors();
+
+            const strength = mouseMode === 'attract' ? 2.0 : -3.0;
+            boidSystem.addAttractor(
+                { x: mousePos.x, y: mousePos.y },
+                strength,
+                200
+            );
+        }
+
+        // ====================================================================
+        // Animation Loop
+        // ====================================================================
+        function animate(time) {
+            const dt = Math.min((time - lastTime) / 1000, 0.1);
+            lastTime = time;
+
+            // FPS counter
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                fps = Math.round(1 / dt);
+                document.getElementById('fps-display').textContent = fps;
+            }
+
+            // Apply mouse interaction
+            applyMouseForce();
+
+            // Step simulation
+            boidSystem.step(1.0); // Fixed timestep for stability
+
+            // Compute stats periodically
+            if (frameCount % 10 === 0) {
+                boidSystem.computeStatistics();
+                updateStats();
+            }
+
+            // Store trail history
+            if (CONFIG.visualMode === 'trails') {
+                const data = Module.getBoidData(boidSystem);
+                const positions = [];
+                for (let i = 0; i < data.length; i += 6) {
+                    positions.push({ x: data[i], y: data[i + 1] });
+                }
+                trailHistory.push(positions);
+                if (trailHistory.length > CONFIG.trailLength) {
+                    trailHistory.shift();
+                }
+            }
+
+            // Draw
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        function updateStats() {
+            const stats = boidSystem.stats();
+            document.getElementById('boid-count').textContent = stats.activeBoids;
+            document.getElementById('predator-count').textContent = stats.activePredators;
+            document.getElementById('polarization').textContent = stats.polarization.toFixed(2);
+            document.getElementById('spread').textContent = stats.flockSpread.toFixed(0);
+            document.getElementById('avg-neighbors').textContent = stats.averageNeighbors.toFixed(1);
+        }
+
+        // ====================================================================
+        // Drawing
+        // ====================================================================
+        function draw() {
+            // Clear with slight fade for trail effect in trails mode
+            if (CONFIG.visualMode === 'trails') {
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+            } else {
+                ctx.fillStyle = '#000';
+            }
+            ctx.fillRect(0, 0, width, height);
+
+            // Get boid data from WASM
+            const boidData = Module.getBoidData(boidSystem);
+
+            // Draw based on visualization mode
+            switch (CONFIG.visualMode) {
+                case 'arrows':
+                    drawArrows(boidData);
+                    break;
+                case 'dots':
+                    drawDots(boidData);
+                    break;
+                case 'trails':
+                    drawTrails();
+                    break;
+                case 'neighbors':
+                    drawWithNeighbors(boidData);
+                    break;
+            }
+
+            // Draw predators
+            const predatorData = Module.getPredatorData(boidSystem);
+            drawPredators(predatorData);
+
+            // Draw mouse attractor
+            if (mouseDown && mouseMode !== 'predator') {
+                ctx.beginPath();
+                ctx.arc(mousePos.x, mousePos.y, 200, 0, Math.PI * 2);
+                ctx.strokeStyle = mouseMode === 'attract'
+                    ? 'rgba(16, 185, 129, 0.3)'
+                    : 'rgba(239, 68, 68, 0.3)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(mousePos.x, mousePos.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = mouseMode === 'attract'
+                    ? 'rgba(16, 185, 129, 0.8)'
+                    : 'rgba(239, 68, 68, 0.8)';
+                ctx.fill();
+            }
+        }
+
+        function drawArrows(data) {
+            const arrowSize = 8;
+
+            for (let i = 0; i < data.length; i += 6) {
+                const x = data[i];
+                const y = data[i + 1];
+                const vx = data[i + 2];
+                const vy = data[i + 3];
+                const hue = data[i + 4];
+                const neighbors = data[i + 5];
+
+                // Calculate angle from velocity
+                const angle = Math.atan2(vy, vx);
+
+                // Color based on hue (stored in boid)
+                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+
+                // Draw arrow/triangle
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+
+                ctx.beginPath();
+                ctx.moveTo(arrowSize, 0);
+                ctx.lineTo(-arrowSize * 0.5, -arrowSize * 0.4);
+                ctx.lineTo(-arrowSize * 0.5, arrowSize * 0.4);
+                ctx.closePath();
+                ctx.fill();
+
+                ctx.restore();
+
+                // Show perception radius for first few boids
+                if (CONFIG.showPerception && i < 6 * 3) {
+                    ctx.beginPath();
+                    ctx.arc(x, y, parseFloat(document.getElementById('perception-slider').value), 0, Math.PI * 2);
+                    ctx.strokeStyle = 'rgba(16, 185, 129, 0.2)';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawDots(data) {
+            for (let i = 0; i < data.length; i += 6) {
+                const x = data[i];
+                const y = data[i + 1];
+                const hue = data[i + 4];
+
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+                ctx.fill();
+            }
+        }
+
+        function drawTrails() {
+            // Draw trails with fading
+            for (let t = 0; t < trailHistory.length; t++) {
+                const alpha = (t + 1) / trailHistory.length * 0.5;
+                const positions = trailHistory[t];
+
+                ctx.fillStyle = `rgba(16, 185, 129, ${alpha})`;
+                for (const pos of positions) {
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Draw current positions
+            const data = Module.getBoidData(boidSystem);
+            ctx.fillStyle = 'rgba(52, 211, 153, 0.9)';
+            for (let i = 0; i < data.length; i += 6) {
+                ctx.beginPath();
+                ctx.arc(data[i], data[i + 1], 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function drawWithNeighbors(data) {
+            // Draw boids with color based on neighbor count
+            for (let i = 0; i < data.length; i += 6) {
+                const x = data[i];
+                const y = data[i + 1];
+                const neighbors = data[i + 5];
+
+                // Color: blue (isolated) -> green (connected) -> yellow (crowded)
+                const t = Math.min(neighbors / 15, 1);
+                const hue = 200 - t * 160; // 200 (blue) to 40 (yellow)
+
+                ctx.beginPath();
+                ctx.arc(x, y, 3 + neighbors * 0.2, 0, Math.PI * 2);
+                ctx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                ctx.fill();
+            }
+        }
+
+        function drawPredators(data) {
+            for (let i = 0; i < data.length; i += 5) {
+                const x = data[i];
+                const y = data[i + 1];
+                const vx = data[i + 2];
+                const vy = data[i + 3];
+                const kills = data[i + 4];
+
+                const angle = Math.atan2(vy, vx);
+                const size = 15 + kills * 0.5;
+
+                // Draw predator as red triangle
+                ctx.save();
+                ctx.translate(x, y);
+                ctx.rotate(angle);
+
+                ctx.beginPath();
+                ctx.moveTo(size, 0);
+                ctx.lineTo(-size * 0.6, -size * 0.5);
+                ctx.lineTo(-size * 0.6, size * 0.5);
+                ctx.closePath();
+                ctx.fillStyle = '#ef4444';
+                ctx.fill();
+
+                // Glow effect
+                ctx.shadowColor = '#ef4444';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.restore();
+
+                // Kill count badge
+                if (kills > 0) {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px JetBrains Mono';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(kills.toString(), x, y - size - 5);
+                }
+            }
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

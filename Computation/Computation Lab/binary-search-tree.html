@@ -1,0 +1,1173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Tree - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --node-default: #1e293b;
+            --node-highlight: #3b82f6;
+            --node-found: #22c55e;
+            --node-notfound: #ef4444;
+            --node-insert: #a855f7;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .equation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            color: #22d3ee;
+            font-size: 0.85rem;
+        }
+
+        .equation-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-group input {
+            flex: 1;
+            padding: 0.6rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.9rem;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover { background: var(--border); }
+        .btn-full { grid-column: 1 / -1; }
+
+        .btn-primary {
+            background: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .btn-primary:hover { background: #2563eb; }
+
+        .btn-success {
+            background: var(--node-found);
+            border-color: var(--node-found);
+        }
+
+        .btn-danger {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Tree info */
+        .tree-info {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .info-item {
+            background: var(--bg-panel);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .info-label {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .info-value {
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--accent);
+            font-size: 0.85rem;
+        }
+
+        /* Traversal display */
+        .traversal-box {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            min-height: 60px;
+            word-break: break-all;
+        }
+
+        .traversal-label {
+            color: var(--text-secondary);
+            margin-bottom: 0.5rem;
+        }
+
+        .traversal-values {
+            color: #22d3ee;
+        }
+
+        /* Legend */
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        /* Operation log */
+        .operation-log {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.7rem;
+            max-height: 100px;
+            overflow-y: auto;
+            color: var(--text-secondary);
+        }
+
+        .log-entry {
+            padding: 0.2rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .log-entry:last-child { border-bottom: none; }
+
+        .log-success { color: var(--node-found); }
+        .log-error { color: var(--node-notfound); }
+        .log-info { color: var(--accent); }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+        .guide-icon {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .explanation-content p { margin: 0; }
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a>
+                <span> / </span>
+                <a href="index.html">Computation Lab</a>
+                <span> / </span>
+                <span>Binary Search Tree</span>
+            </nav>
+            <h1>Binary Search Tree</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="mono" style="font-size: 0.8rem; color: var(--text-secondary);">
+                Nodos: <span id="nodeCount">0</span> | Altura: <span id="treeHeight">0</span>
+            </div>
+            <a href="guides/binary-search-tree.html" class="guide-link" title="Abrir guia explicativa">
+                <span class="guide-icon">?</span>
+                <span>Guia</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <aside class="controls">
+            <!-- Equation -->
+            <div class="equation-box">
+                <div class="equation">if val < node: left else: right</div>
+                <div class="equation-label">Propiedad BST - O(log n) promedio</div>
+            </div>
+
+            <!-- Quick explanation -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>En cada nodo, los valores menores van a la izquierda y los mayores a la derecha. Esto permite buscar descartando la mitad del arbol en cada paso.</p>
+                    <a href="guides/binary-search-tree.html" class="guide-btn">
+                        <span class="guide-icon">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Insert -->
+            <div>
+                <div class="section-title">Insertar</div>
+                <div class="input-group">
+                    <input type="number" id="insertInput" placeholder="Valor..." min="1" max="999">
+                    <button class="btn btn-primary" id="insertBtn">Insertar</button>
+                </div>
+            </div>
+
+            <!-- Search -->
+            <div>
+                <div class="section-title">Buscar</div>
+                <div class="input-group">
+                    <input type="number" id="searchInput" placeholder="Valor..." min="1" max="999">
+                    <button class="btn btn-success" id="searchBtn">Buscar</button>
+                </div>
+            </div>
+
+            <!-- Delete -->
+            <div>
+                <div class="section-title">Eliminar</div>
+                <div class="input-group">
+                    <input type="number" id="deleteInput" placeholder="Valor..." min="1" max="999">
+                    <button class="btn btn-danger" id="deleteBtn">Eliminar</button>
+                </div>
+            </div>
+
+            <!-- Tree actions -->
+            <div>
+                <div class="section-title">Acciones</div>
+                <div class="btn-group">
+                    <button class="btn" id="randomBtn">🎲 Random</button>
+                    <button class="btn" id="balancedBtn">⚖️ Balanceado</button>
+                    <button class="btn btn-danger btn-full" id="clearBtn">🗑️ Limpiar Árbol</button>
+                </div>
+            </div>
+
+            <!-- Traversals -->
+            <div>
+                <div class="section-title">Recorridos</div>
+                <div class="btn-group">
+                    <button class="btn" id="inorderBtn">Inorder</button>
+                    <button class="btn" id="preorderBtn">Preorder</button>
+                    <button class="btn" id="postorderBtn">Postorder</button>
+                    <button class="btn" id="levelorderBtn">Level Order</button>
+                </div>
+                <div class="traversal-box" style="margin-top: 0.5rem;">
+                    <div class="traversal-label" id="traversalLabel">Selecciona un recorrido</div>
+                    <div class="traversal-values" id="traversalValues"></div>
+                </div>
+            </div>
+
+            <!-- Tree info -->
+            <div>
+                <div class="section-title">Información del Árbol</div>
+                <div class="tree-info">
+                    <div class="info-item">
+                        <span class="info-label">Nodos</span>
+                        <span class="info-value" id="infoNodes">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Altura</span>
+                        <span class="info-value" id="infoHeight">0</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Mín</span>
+                        <span class="info-value" id="infoMin">--</span>
+                    </div>
+                    <div class="info-item">
+                        <span class="info-label">Máx</span>
+                        <span class="info-value" id="infoMax">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Operation log -->
+            <div>
+                <div class="section-title">Log de Operaciones</div>
+                <div class="operation-log" id="operationLog">
+                    <div class="log-entry log-info">Árbol inicializado</div>
+                </div>
+            </div>
+
+            <!-- Legend -->
+            <div>
+                <div class="section-title">Leyenda</div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--node-default)"></div>
+                        <span>Normal</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--node-highlight)"></div>
+                        <span>Visitando</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--node-found)"></div>
+                        <span>Encontrado</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: var(--node-insert)"></div>
+                        <span>Insertando</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ============================================
+        // BINARY SEARCH TREE - Computation Lab
+        // Implementación canónica con visualización
+        // ============================================
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        let width, height;
+
+        // ============================================
+        // BST NODE CLASS
+        // ============================================
+
+        class TreeNode {
+            constructor(value) {
+                this.value = value;
+                this.left = null;
+                this.right = null;
+                this.x = 0;
+                this.y = 0;
+                this.highlight = null; // null, 'visiting', 'found', 'notfound', 'insert'
+            }
+        }
+
+        // ============================================
+        // BST CLASS
+        // ============================================
+
+        class BST {
+            constructor() {
+                this.root = null;
+            }
+
+            insert(value) {
+                const newNode = new TreeNode(value);
+
+                if (!this.root) {
+                    this.root = newNode;
+                    return { success: true, path: [], node: newNode };
+                }
+
+                const path = [];
+                let current = this.root;
+
+                while (true) {
+                    path.push(current);
+
+                    if (value < current.value) {
+                        if (!current.left) {
+                            current.left = newNode;
+                            return { success: true, path, node: newNode };
+                        }
+                        current = current.left;
+                    } else if (value > current.value) {
+                        if (!current.right) {
+                            current.right = newNode;
+                            return { success: true, path, node: newNode };
+                        }
+                        current = current.right;
+                    } else {
+                        // Duplicate
+                        return { success: false, path, reason: 'duplicate' };
+                    }
+                }
+            }
+
+            search(value) {
+                const path = [];
+                let current = this.root;
+
+                while (current) {
+                    path.push(current);
+
+                    if (value === current.value) {
+                        return { found: true, path, node: current };
+                    }
+
+                    current = value < current.value ? current.left : current.right;
+                }
+
+                return { found: false, path };
+            }
+
+            delete(value) {
+                const path = [];
+
+                const deleteNode = (node, val) => {
+                    if (!node) return { node: null, deleted: false };
+
+                    path.push(node);
+
+                    if (val < node.value) {
+                        const result = deleteNode(node.left, val);
+                        node.left = result.node;
+                        return { node, deleted: result.deleted };
+                    } else if (val > node.value) {
+                        const result = deleteNode(node.right, val);
+                        node.right = result.node;
+                        return { node, deleted: result.deleted };
+                    } else {
+                        // Found node to delete
+                        // Case 1: Leaf
+                        if (!node.left && !node.right) {
+                            return { node: null, deleted: true };
+                        }
+                        // Case 2: One child
+                        if (!node.left) {
+                            return { node: node.right, deleted: true };
+                        }
+                        if (!node.right) {
+                            return { node: node.left, deleted: true };
+                        }
+                        // Case 3: Two children - find inorder successor
+                        let successor = node.right;
+                        while (successor.left) {
+                            successor = successor.left;
+                        }
+                        node.value = successor.value;
+                        const result = deleteNode(node.right, successor.value);
+                        node.right = result.node;
+                        return { node, deleted: true };
+                    }
+                };
+
+                const result = deleteNode(this.root, value);
+                this.root = result.node;
+                return { deleted: result.deleted, path };
+            }
+
+            // Traversals
+            inorder(node = this.root, result = []) {
+                if (node) {
+                    this.inorder(node.left, result);
+                    result.push(node);
+                    this.inorder(node.right, result);
+                }
+                return result;
+            }
+
+            preorder(node = this.root, result = []) {
+                if (node) {
+                    result.push(node);
+                    this.preorder(node.left, result);
+                    this.preorder(node.right, result);
+                }
+                return result;
+            }
+
+            postorder(node = this.root, result = []) {
+                if (node) {
+                    this.postorder(node.left, result);
+                    this.postorder(node.right, result);
+                    result.push(node);
+                }
+                return result;
+            }
+
+            levelorder() {
+                if (!this.root) return [];
+                const result = [];
+                const queue = [this.root];
+
+                while (queue.length > 0) {
+                    const node = queue.shift();
+                    result.push(node);
+                    if (node.left) queue.push(node.left);
+                    if (node.right) queue.push(node.right);
+                }
+
+                return result;
+            }
+
+            // Utilities
+            getHeight(node = this.root) {
+                if (!node) return 0;
+                return 1 + Math.max(this.getHeight(node.left), this.getHeight(node.right));
+            }
+
+            getNodeCount(node = this.root) {
+                if (!node) return 0;
+                return 1 + this.getNodeCount(node.left) + this.getNodeCount(node.right);
+            }
+
+            getMin(node = this.root) {
+                if (!node) return null;
+                while (node.left) node = node.left;
+                return node.value;
+            }
+
+            getMax(node = this.root) {
+                if (!node) return null;
+                while (node.right) node = node.right;
+                return node.value;
+            }
+
+            clear() {
+                this.root = null;
+            }
+
+            clearHighlights(node = this.root) {
+                if (node) {
+                    node.highlight = null;
+                    this.clearHighlights(node.left);
+                    this.clearHighlights(node.right);
+                }
+            }
+        }
+
+        // ============================================
+        // STATE
+        // ============================================
+
+        let bst = new BST();
+        let animating = false;
+
+        // Colors
+        const COLORS = {
+            background: '#0f172a',
+            edge: '#475569',
+            nodeDefault: '#1e293b',
+            nodeBorder: '#64748b',
+            nodeHighlight: '#3b82f6',
+            nodeFound: '#22c55e',
+            nodeNotFound: '#ef4444',
+            nodeInsert: '#a855f7',
+            text: '#f8fafc',
+            textSecondary: '#94a3b8'
+        };
+
+        // ============================================
+        // LAYOUT CALCULATION
+        // ============================================
+
+        function calculatePositions() {
+            if (!bst.root) return;
+
+            const levelHeight = 70;
+            const nodeRadius = 22;
+            const minSpacing = 50;
+
+            // Calculate x positions using inorder traversal
+            let xPos = 0;
+            const padding = 50;
+
+            function assignX(node) {
+                if (!node) return;
+                assignX(node.left);
+                node.x = padding + xPos * minSpacing;
+                xPos++;
+                assignX(node.right);
+            }
+
+            // Calculate y positions by level
+            function assignY(node, level = 0) {
+                if (!node) return;
+                node.y = padding + level * levelHeight;
+                assignY(node.left, level + 1);
+                assignY(node.right, level + 1);
+            }
+
+            assignX(bst.root);
+            assignY(bst.root);
+
+            // Center horizontally
+            const allNodes = bst.inorder();
+            if (allNodes.length > 0) {
+                const minX = Math.min(...allNodes.map(n => n.x));
+                const maxX = Math.max(...allNodes.map(n => n.x));
+                const treeWidth = maxX - minX;
+                const offsetX = (width - treeWidth) / 2 - minX;
+
+                allNodes.forEach(n => n.x += offsetX);
+            }
+        }
+
+        // ============================================
+        // DRAWING
+        // ============================================
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+            calculatePositions();
+            draw();
+        }
+
+        function draw() {
+            ctx.fillStyle = COLORS.background;
+            ctx.fillRect(0, 0, width, height);
+
+            if (!bst.root) {
+                ctx.fillStyle = COLORS.textSecondary;
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Árbol vacío - Inserta valores para comenzar', width / 2, height / 2);
+                return;
+            }
+
+            // Draw edges first
+            drawEdges(bst.root);
+
+            // Draw nodes
+            drawNodes(bst.root);
+        }
+
+        function drawEdges(node) {
+            if (!node) return;
+
+            if (node.left) {
+                ctx.strokeStyle = COLORS.edge;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.left.x, node.left.y);
+                ctx.stroke();
+                drawEdges(node.left);
+            }
+
+            if (node.right) {
+                ctx.strokeStyle = COLORS.edge;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(node.x, node.y);
+                ctx.lineTo(node.right.x, node.right.y);
+                ctx.stroke();
+                drawEdges(node.right);
+            }
+        }
+
+        function drawNodes(node) {
+            if (!node) return;
+
+            drawNodes(node.left);
+            drawNodes(node.right);
+
+            const radius = 22;
+
+            // Determine colors based on highlight state
+            let fillColor = COLORS.nodeDefault;
+            let borderColor = COLORS.nodeBorder;
+
+            switch (node.highlight) {
+                case 'visiting':
+                    fillColor = COLORS.nodeHighlight;
+                    borderColor = '#60a5fa';
+                    break;
+                case 'found':
+                    fillColor = COLORS.nodeFound;
+                    borderColor = '#4ade80';
+                    break;
+                case 'notfound':
+                    fillColor = COLORS.nodeNotFound;
+                    borderColor = '#f87171';
+                    break;
+                case 'insert':
+                    fillColor = COLORS.nodeInsert;
+                    borderColor = '#c084fc';
+                    break;
+            }
+
+            // Glow effect for highlighted nodes
+            if (node.highlight) {
+                ctx.shadowColor = borderColor;
+                ctx.shadowBlur = 15;
+            }
+
+            // Node circle
+            ctx.beginPath();
+            ctx.arc(node.x, node.y, radius, 0, Math.PI * 2);
+            ctx.fillStyle = fillColor;
+            ctx.fill();
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            ctx.shadowBlur = 0;
+
+            // Node value
+            ctx.fillStyle = COLORS.text;
+            ctx.font = 'bold 14px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(node.value, node.x, node.y);
+        }
+
+        // ============================================
+        // ANIMATIONS
+        // ============================================
+
+        async function animateInsert(value) {
+            if (animating) return;
+            animating = true;
+
+            bst.clearHighlights();
+            const result = bst.insert(value);
+
+            if (!result.success) {
+                addLog(`Valor ${value} ya existe`, 'error');
+                animating = false;
+                return;
+            }
+
+            // Animate path
+            for (const node of result.path) {
+                node.highlight = 'visiting';
+                calculatePositions();
+                draw();
+                await sleep(300);
+                node.highlight = null;
+            }
+
+            // Highlight inserted node
+            result.node.highlight = 'insert';
+            calculatePositions();
+            draw();
+            addLog(`Insertado: ${value}`, 'success');
+
+            await sleep(500);
+            result.node.highlight = null;
+            draw();
+
+            animating = false;
+            updateInfo();
+        }
+
+        async function animateSearch(value) {
+            if (animating) return;
+            animating = true;
+
+            bst.clearHighlights();
+            const result = bst.search(value);
+
+            // Animate path
+            for (const node of result.path) {
+                node.highlight = 'visiting';
+                draw();
+                await sleep(300);
+
+                if (node.value === value) {
+                    node.highlight = 'found';
+                    draw();
+                    addLog(`Encontrado: ${value}`, 'success');
+                    await sleep(1000);
+                    node.highlight = null;
+                    draw();
+                    animating = false;
+                    return;
+                }
+
+                node.highlight = null;
+            }
+
+            // Not found - highlight last visited as red
+            if (result.path.length > 0) {
+                result.path[result.path.length - 1].highlight = 'notfound';
+                draw();
+                await sleep(500);
+                result.path[result.path.length - 1].highlight = null;
+                draw();
+            }
+
+            addLog(`No encontrado: ${value}`, 'error');
+            animating = false;
+        }
+
+        async function animateDelete(value) {
+            if (animating) return;
+            animating = true;
+
+            bst.clearHighlights();
+
+            // First search
+            const searchResult = bst.search(value);
+
+            for (const node of searchResult.path) {
+                node.highlight = 'visiting';
+                draw();
+                await sleep(200);
+                node.highlight = null;
+            }
+
+            if (!searchResult.found) {
+                addLog(`No encontrado para eliminar: ${value}`, 'error');
+                animating = false;
+                return;
+            }
+
+            // Found - highlight red before delete
+            searchResult.node.highlight = 'notfound';
+            draw();
+            await sleep(500);
+
+            // Delete
+            bst.delete(value);
+            calculatePositions();
+            draw();
+            addLog(`Eliminado: ${value}`, 'success');
+
+            animating = false;
+            updateInfo();
+        }
+
+        async function animateTraversal(type) {
+            if (animating) return;
+            animating = true;
+
+            bst.clearHighlights();
+
+            let nodes;
+            let label;
+
+            switch (type) {
+                case 'inorder':
+                    nodes = bst.inorder();
+                    label = 'Inorder (Izq → Raíz → Der)';
+                    break;
+                case 'preorder':
+                    nodes = bst.preorder();
+                    label = 'Preorder (Raíz → Izq → Der)';
+                    break;
+                case 'postorder':
+                    nodes = bst.postorder();
+                    label = 'Postorder (Izq → Der → Raíz)';
+                    break;
+                case 'levelorder':
+                    nodes = bst.levelorder();
+                    label = 'Level Order (BFS)';
+                    break;
+            }
+
+            document.getElementById('traversalLabel').textContent = label;
+            document.getElementById('traversalValues').textContent = '';
+
+            const values = [];
+
+            for (const node of nodes) {
+                node.highlight = 'found';
+                draw();
+                values.push(node.value);
+                document.getElementById('traversalValues').textContent = values.join(' → ');
+                await sleep(400);
+                node.highlight = null;
+            }
+
+            draw();
+            animating = false;
+        }
+
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        // ============================================
+        // UI
+        // ============================================
+
+        function updateInfo() {
+            const count = bst.getNodeCount();
+            const height = bst.getHeight();
+            const min = bst.getMin();
+            const max = bst.getMax();
+
+            document.getElementById('nodeCount').textContent = count;
+            document.getElementById('treeHeight').textContent = height;
+            document.getElementById('infoNodes').textContent = count;
+            document.getElementById('infoHeight').textContent = height;
+            document.getElementById('infoMin').textContent = min !== null ? min : '--';
+            document.getElementById('infoMax').textContent = max !== null ? max : '--';
+        }
+
+        function addLog(message, type = 'info') {
+            const log = document.getElementById('operationLog');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${type}`;
+            entry.textContent = message;
+            log.insertBefore(entry, log.firstChild);
+
+            // Keep only last 20 entries
+            while (log.children.length > 20) {
+                log.removeChild(log.lastChild);
+            }
+        }
+
+        function generateRandomTree(n = 10) {
+            bst.clear();
+            const values = new Set();
+
+            while (values.size < n) {
+                values.add(Math.floor(Math.random() * 99) + 1);
+            }
+
+            values.forEach(v => bst.insert(v));
+            calculatePositions();
+            draw();
+            updateInfo();
+            addLog(`Generado árbol aleatorio con ${n} nodos`, 'info');
+        }
+
+        function generateBalancedTree() {
+            bst.clear();
+            // Insert in order that creates balanced tree
+            const values = [50, 25, 75, 12, 37, 62, 87, 6, 18, 31, 43, 56, 68, 81, 93];
+            values.forEach(v => bst.insert(v));
+            calculatePositions();
+            draw();
+            updateInfo();
+            addLog('Generado árbol balanceado', 'info');
+        }
+
+        // ============================================
+        // EVENT LISTENERS
+        // ============================================
+
+        document.getElementById('insertBtn').addEventListener('click', () => {
+            const input = document.getElementById('insertInput');
+            const value = parseInt(input.value);
+            if (!isNaN(value) && value >= 1 && value <= 999) {
+                animateInsert(value);
+                input.value = '';
+            }
+        });
+
+        document.getElementById('insertInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('insertBtn').click();
+            }
+        });
+
+        document.getElementById('searchBtn').addEventListener('click', () => {
+            const input = document.getElementById('searchInput');
+            const value = parseInt(input.value);
+            if (!isNaN(value)) {
+                animateSearch(value);
+                input.value = '';
+            }
+        });
+
+        document.getElementById('searchInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('searchBtn').click();
+            }
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            const input = document.getElementById('deleteInput');
+            const value = parseInt(input.value);
+            if (!isNaN(value)) {
+                animateDelete(value);
+                input.value = '';
+            }
+        });
+
+        document.getElementById('deleteInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                document.getElementById('deleteBtn').click();
+            }
+        });
+
+        document.getElementById('randomBtn').addEventListener('click', () => generateRandomTree(10));
+        document.getElementById('balancedBtn').addEventListener('click', generateBalancedTree);
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            bst.clear();
+            draw();
+            updateInfo();
+            addLog('Árbol limpiado', 'info');
+            document.getElementById('traversalLabel').textContent = 'Selecciona un recorrido';
+            document.getElementById('traversalValues').textContent = '';
+        });
+
+        document.getElementById('inorderBtn').addEventListener('click', () => animateTraversal('inorder'));
+        document.getElementById('preorderBtn').addEventListener('click', () => animateTraversal('preorder'));
+        document.getElementById('postorderBtn').addEventListener('click', () => animateTraversal('postorder'));
+        document.getElementById('levelorderBtn').addEventListener('click', () => animateTraversal('levelorder'));
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        generateBalancedTree();
+    </script>
+</body>
+</html>

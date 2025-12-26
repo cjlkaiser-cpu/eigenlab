@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcripción — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Transcripción</nav>
+                <h1>Transcripción — Guía</h1>
+                <div class="subtitle">De DNA a RNA: la primera lectura del gen</div>
+            </div>
+            <a href="../transcripcion.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la transcripción?</div>
+                <p class="lead">La <span class="em">transcripción</span> copia la información genética del DNA a RNA. La RNA polimerasa lee la hebra molde en dirección 3'→5' y sintetiza el mRNA en dirección 5'→3', complementario al molde.</p>
+                <div class="chips">
+                    <span class="chip">Promotor</span>
+                    <span class="chip">RNA Pol</span>
+                    <span class="chip">mRNA</span>
+                    <span class="chip">Terminación</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Dogma central (Crick, 1958):</strong> DNA → RNA → Proteína. La información fluye del genotipo al fenotipo.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Fases del proceso</div>
+                <ul>
+                    <li><strong>Iniciación:</strong> RNA Pol se une al promotor</li>
+                    <li><strong>Elongación:</strong> Síntesis del RNA naciente</li>
+                    <li><strong>Terminación:</strong> Señal de stop, liberación</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><strong>En eucariotas:</strong> Procesamiento adicional (cap, splicing, poly-A).</p>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>En Procariotas</h2>
+                <ul>
+                    <li>Una sola RNA polimerasa (holoenzima)</li>
+                    <li>Promotor: secuencias -10 (TATAAT) y -35</li>
+                    <li>Factor σ (sigma) reconoce el promotor</li>
+                    <li>mRNA usado directamente (polisomas)</li>
+                    <li>Transcripción y traducción acopladas</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>En Eucariotas</h2>
+                <ul>
+                    <li>Tres RNA Pol: I (rRNA), II (mRNA), III (tRNA)</li>
+                    <li>Factores generales de transcripción (TFIIA-H)</li>
+                    <li>Promotor con TATA box, elementos reguladores</li>
+                    <li>Procesamiento: cap 5', splicing de intrones, cola poly-A</li>
+                    <li>mRNA exportado al citoplasma para traducción</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Observa cómo la información genética se transcribe y comprende la regulación del proceso.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>El ciclo de transcripción</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>La RNA polimerasa inicia en el promotor, elonga el RNA y termina en secuencias específicas.</p>
+                </div>
+                <ol>
+                    <li>Observa la RNA Pol reconociendo el promotor</li>
+                    <li>Ve la formación de la burbuja de transcripción (~17 bp)</li>
+                    <li>Sigue el RNA naciente emergiendo de la polimerasa</li>
+                    <li>Nota la re-hibridación del DNA detrás de la enzima</li>
+                    <li>Observa la terminación y liberación del transcrito</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> El RNA producido es complementario al molde y tiene la misma secuencia que la hebra codificante (con U en vez de T).</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>Regulación por activadores y represores</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Los factores de transcripción modulan la frecuencia de iniciación al unirse a elementos reguladores.</p>
+                </div>
+                <ol>
+                    <li>Observa la transcripción basal sin factores</li>
+                    <li>Añade un activador transcripcional</li>
+                    <li>Nota el aumento en la tasa de iniciación</li>
+                    <li>Añade un represor que compite con el activador</li>
+                    <li>Observa cómo la transcripción disminuye o se detiene</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Los genes se encienden o apagan según el balance de activadores/represores.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>Procesamiento del pre-mRNA (eucariotas)</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>El pre-mRNA requiere modificaciones (cap, splicing, poly-A) antes de ser funcional.</p>
+                </div>
+                <ol>
+                    <li>Observa el transcrito primario emergiendo</li>
+                    <li>Ve la adición del cap 5' (7-metilguanosina)</li>
+                    <li>Observa el spliceosoma removiendo intrones</li>
+                    <li>Nota la unión de exones (empalme)</li>
+                    <li>Ve la adición de la cola poly-A en 3'</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> El mRNA maduro es más corto que el pre-mRNA y está listo para exportar.</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🧬</div>
+                    <div>
+                        <h4>Replicación</h4>
+                        <p>Usa el mismo principio de complementariedad pero copia ambas hebras.</p>
+                        <a href="adn-replicacion.html">Ver Replicación →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔤</div>
+                    <div>
+                        <h4>Traducción</h4>
+                        <p>El mRNA producido aquí es el sustrato para sintetizar proteínas.</p>
+                        <a href="traduccion.html">Ver Traducción →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🎛️</div>
+                    <div>
+                        <h4>Regulación génica</h4>
+                        <p>Operones, enhancers y silencers controlan cuándo y cuánto se transcribe.</p>
+                        <a href="regulacion-genica.html">Ver Regulación →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biology">🧪</div>
+                    <div>
+                        <h4>Evolución</h4>
+                        <p>Cambios en promotores y enhancers dirigen la evolución fenotípica.</p>
+                        <a href="../../../Biology/Biology Visual Lab/evolucion.html">Ver Evolución →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Estructura simplificada:</strong> La RNA Pol real tiene ~12 subunidades y pesa ~500 kDa.</li>
+                <li><strong>Cromatina:</strong> En eucariotas, los nucleosomas deben ser desplazados para transcribir.</li>
+                <li><strong>Cotranscripción:</strong> En eucariotas, el procesamiento ocurre mientras se transcribe.</li>
+                <li><strong>RNAs no codificantes:</strong> No muestra la diversidad de ncRNAs (miRNA, lncRNA, etc.).</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué la transcripción no necesita primers como la replicación?</li>
+                <li>¿Qué ventaja tiene el splicing alternativo para la complejidad de un organismo?</li>
+                <li>¿Por qué los antibióticos que inhiben RNA Pol bacteriana no afectan a eucariotas?</li>
+                <li>¿Cómo puede un solo gen producir múltiples proteínas diferentes?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="adn-replicacion.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Replicación ADN</div>
+                </div>
+            </a>
+            <a href="traduccion.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Traducción</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Transcripción
+    </footer>
+</body>
+</html>

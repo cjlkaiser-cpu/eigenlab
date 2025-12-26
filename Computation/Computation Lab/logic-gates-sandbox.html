@@ -1,0 +1,1206 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Gates Sandbox - Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.3);
+            --color-false: #334155;
+            --color-true: #fbbf24;
+            --color-gate: #1e293b;
+            --color-gate-border: #475569;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            position: relative;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--text-secondary);
+            margin-bottom: 0.75rem;
+        }
+
+        .equation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            color: #fbbf24;
+            font-size: 0.85rem;
+        }
+
+        .equation-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+        }
+
+        /* Gate palette */
+        .gate-palette {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .gate-btn {
+            padding: 0.75rem 0.5rem;
+            background: var(--bg-panel);
+            border: 2px solid var(--border);
+            border-radius: 0.5rem;
+            color: var(--text-primary);
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.15s;
+            text-align: center;
+        }
+
+        .gate-btn:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+        }
+
+        .gate-btn.selected {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.2);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .gate-btn .gate-symbol {
+            font-size: 1.2rem;
+            display: block;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            padding: 0.6rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn:hover { background: var(--border); }
+
+        .btn-full { grid-column: 1 / -1; }
+
+        .btn-danger {
+            border-color: #ef4444;
+            color: #ef4444;
+        }
+
+        .btn-danger:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+        /* Truth table */
+        .truth-table {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .truth-table table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .truth-table th {
+            background: var(--border);
+            padding: 0.5rem;
+            text-align: center;
+            font-weight: 500;
+        }
+
+        .truth-table td {
+            padding: 0.4rem;
+            text-align: center;
+            border-top: 1px solid var(--border);
+        }
+
+        .truth-table .val-0 { color: var(--color-false); }
+        .truth-table .val-1 { color: var(--color-true); }
+
+        /* Instructions */
+        .instructions {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+
+        .instructions li {
+            margin-left: 1rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Presets */
+        .preset-btn {
+            padding: 0.5rem;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            color: var(--text-primary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .preset-btn:hover {
+            border-color: var(--accent);
+        }
+
+        /* Output display */
+        .output-display {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+        }
+
+        .output-led {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            border: 2px solid var(--border);
+            transition: all 0.15s;
+        }
+
+        .output-led.on {
+            background: var(--color-true);
+            box-shadow: 0 0 15px var(--color-true);
+        }
+
+        .output-led.off {
+            background: var(--color-false);
+        }
+
+        .tooltip {
+            position: absolute;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            font-size: 0.75rem;
+            pointer-events: none;
+            z-index: 100;
+            display: none;
+        }
+
+        .guide-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-link:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+        .guide-icon {
+            font-weight: 700;
+            font-size: 0.9rem;
+        }
+
+        .explanation-box {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 0.75rem 1rem;
+        }
+        .explanation-content {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+        .explanation-content p { margin: 0; }
+        .guide-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+            padding: 0.6rem 0.75rem;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.25);
+            border-radius: 0.5rem;
+            color: var(--accent);
+            font-size: 0.75rem;
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+        .guide-btn:hover {
+            background: rgba(59, 130, 246, 0.2);
+            border-color: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a>
+                <span> / </span>
+                <a href="index.html">Computation Lab</a>
+                <span> / </span>
+                <span>Logic Gates Sandbox</span>
+            </nav>
+            <h1>Logic Gates Sandbox</h1>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1rem;">
+            <div class="mono" style="font-size: 0.8rem; color: var(--text-secondary);">
+                Compuertas: <span id="gateCount">0</span> | Conexiones: <span id="wireCount">0</span>
+            </div>
+            <a href="guides/logic-gates.html" class="guide-link" title="Abrir guia explicativa">
+                <span class="guide-icon">?</span>
+                <span>Guia</span>
+            </a>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+
+        <aside class="controls">
+            <!-- Equations -->
+            <div class="equation-box">
+                <div class="equation">AND: A ∧ B &nbsp;|&nbsp; OR: A ∨ B &nbsp;|&nbsp; NOT: ¬A</div>
+                <div class="equation-label">Operaciones lógicas fundamentales</div>
+            </div>
+
+            <!-- Quick explanation -->
+            <div class="explanation-box">
+                <div class="explanation-content">
+                    <p>Las compuertas logicas son los bloques fundamentales de los circuitos digitales. Combinandolas puedes construir cualquier operacion computacional.</p>
+                    <a href="guides/logic-gates.html" class="guide-btn">
+                        <span class="guide-icon">?</span>
+                        Guia completa: como funciona, complejidad, experimentos
+                    </a>
+                </div>
+            </div>
+
+            <!-- Gate Palette -->
+            <div>
+                <div class="section-title">Compuertas (click para seleccionar)</div>
+                <div class="gate-palette">
+                    <button class="gate-btn" data-gate="INPUT">
+                        <span class="gate-symbol">◯</span>
+                        INPUT
+                    </button>
+                    <button class="gate-btn" data-gate="OUTPUT">
+                        <span class="gate-symbol">◉</span>
+                        OUTPUT
+                    </button>
+                    <button class="gate-btn" data-gate="AND">
+                        <span class="gate-symbol">&amp;</span>
+                        AND
+                    </button>
+                    <button class="gate-btn" data-gate="OR">
+                        <span class="gate-symbol">≥1</span>
+                        OR
+                    </button>
+                    <button class="gate-btn" data-gate="NOT">
+                        <span class="gate-symbol">1</span>
+                        NOT
+                    </button>
+                    <button class="gate-btn" data-gate="XOR">
+                        <span class="gate-symbol">=1</span>
+                        XOR
+                    </button>
+                    <button class="gate-btn" data-gate="NAND">
+                        <span class="gate-symbol">&amp;̄</span>
+                        NAND
+                    </button>
+                    <button class="gate-btn" data-gate="NOR">
+                        <span class="gate-symbol">≥̄1</span>
+                        NOR
+                    </button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div>
+                <div class="section-title">Acciones</div>
+                <div class="btn-group">
+                    <button class="btn" id="selectModeBtn">🖱️ Seleccionar</button>
+                    <button class="btn" id="wireModeBtn">🔗 Conectar</button>
+                    <button class="btn btn-danger" id="deleteBtn">🗑️ Eliminar</button>
+                    <button class="btn btn-full" id="clearBtn">↺ Limpiar Todo</button>
+                </div>
+            </div>
+
+            <!-- Presets -->
+            <div>
+                <div class="section-title">Circuitos de Ejemplo</div>
+                <div class="btn-group">
+                    <button class="preset-btn" data-preset="halfAdder">Half Adder</button>
+                    <button class="preset-btn" data-preset="srLatch">SR Latch</button>
+                    <button class="preset-btn" data-preset="xorFromNand">XOR (NAND)</button>
+                    <button class="preset-btn" data-preset="mux2to1">MUX 2:1</button>
+                </div>
+            </div>
+
+            <!-- Truth Table -->
+            <div>
+                <div class="section-title">Tabla de Verdad</div>
+                <div class="truth-table" id="truthTable">
+                    <table>
+                        <thead>
+                            <tr id="truthTableHeader"></tr>
+                        </thead>
+                        <tbody id="truthTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Instructions -->
+            <div>
+                <div class="section-title">Instrucciones</div>
+                <div class="instructions">
+                    <ul>
+                        <li>Selecciona una compuerta y haz click en el canvas</li>
+                        <li>Arrastra las compuertas para moverlas</li>
+                        <li>Click en INPUT para cambiar su valor</li>
+                        <li>Usa modo Conectar para crear cables</li>
+                        <li>Los cables propagan señales automáticamente</li>
+                    </ul>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ============================================
+        // LOGIC GATES SANDBOX - Computation Lab
+        // ============================================
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+        let width, height;
+
+        // ============================================
+        // GATE DEFINITIONS
+        // ============================================
+
+        const GATE_LOGIC = {
+            AND:  (inputs) => inputs.every(v => v),
+            OR:   (inputs) => inputs.some(v => v),
+            NOT:  (inputs) => !inputs[0],
+            XOR:  (inputs) => inputs.reduce((a, b) => a !== b, false),
+            NAND: (inputs) => !inputs.every(v => v),
+            NOR:  (inputs) => !inputs.some(v => v),
+            XNOR: (inputs) => !inputs.reduce((a, b) => a !== b, false),
+            INPUT: () => false,
+            OUTPUT: (inputs) => inputs[0] || false
+        };
+
+        const GATE_INPUT_COUNT = {
+            AND: 2, OR: 2, NOT: 1, XOR: 2, NAND: 2, NOR: 2, XNOR: 2,
+            INPUT: 0, OUTPUT: 1
+        };
+
+        // ============================================
+        // STATE
+        // ============================================
+
+        let gates = [];
+        let connections = [];
+        let selectedGateType = null;
+        let selectedGate = null;
+        let mode = 'select'; // 'select', 'place', 'wire', 'delete'
+        let wireStart = null;
+        let dragging = null;
+        let dragOffset = { x: 0, y: 0 };
+        let mousePos = { x: 0, y: 0 };
+
+        // Colors
+        const COLORS = {
+            background: '#0f172a',
+            grid: '#1e293b',
+            gateFill: '#1e293b',
+            gateBorder: '#475569',
+            gateSelected: '#3b82f6',
+            wireFalse: '#334155',
+            wireTrue: '#fbbf24',
+            text: '#94a3b8',
+            inputOff: '#334155',
+            inputOn: '#fbbf24',
+            outputOff: '#334155',
+            outputOn: '#22c55e'
+        };
+
+        // ============================================
+        // GATE CLASS
+        // ============================================
+
+        class Gate {
+            constructor(type, x, y) {
+                this.id = Math.random().toString(36).substr(2, 9);
+                this.type = type;
+                this.x = x;
+                this.y = y;
+                this.width = type === 'INPUT' || type === 'OUTPUT' ? 50 : 70;
+                this.height = 50;
+                this.inputs = [];
+                this.output = false;
+                this.value = false; // For INPUT gates
+                this.label = type === 'INPUT' ? 'IN' : type === 'OUTPUT' ? 'OUT' : '';
+            }
+
+            getInputPositions() {
+                const count = GATE_INPUT_COUNT[this.type];
+                const positions = [];
+                for (let i = 0; i < count; i++) {
+                    const y = this.y + (i + 1) * this.height / (count + 1);
+                    positions.push({ x: this.x, y });
+                }
+                return positions;
+            }
+
+            getOutputPosition() {
+                return {
+                    x: this.x + this.width,
+                    y: this.y + this.height / 2
+                };
+            }
+
+            evaluate() {
+                if (this.type === 'INPUT') {
+                    this.output = this.value;
+                } else {
+                    const inputValues = this.inputs.map(conn => conn ? conn.value : false);
+                    this.output = GATE_LOGIC[this.type](inputValues);
+                }
+                return this.output;
+            }
+
+            containsPoint(x, y) {
+                return x >= this.x && x <= this.x + this.width &&
+                       y >= this.y && y <= this.y + this.height;
+            }
+
+            getPortAt(x, y) {
+                // Check output port
+                const outPos = this.getOutputPosition();
+                if (Math.hypot(x - outPos.x, y - outPos.y) < 15) {
+                    return { type: 'output', index: 0 };
+                }
+
+                // Check input ports
+                const inPositions = this.getInputPositions();
+                for (let i = 0; i < inPositions.length; i++) {
+                    if (Math.hypot(x - inPositions[i].x, y - inPositions[i].y) < 15) {
+                        return { type: 'input', index: i };
+                    }
+                }
+
+                return null;
+            }
+        }
+
+        // ============================================
+        // CONNECTION CLASS
+        // ============================================
+
+        class Connection {
+            constructor(fromGate, toGate, toInputIndex) {
+                this.id = Math.random().toString(36).substr(2, 9);
+                this.from = fromGate;
+                this.to = toGate;
+                this.toInputIndex = toInputIndex;
+                this.value = false;
+            }
+
+            update() {
+                this.value = this.from.output;
+            }
+        }
+
+        // ============================================
+        // CIRCUIT EVALUATION
+        // ============================================
+
+        function evaluateCircuit() {
+            // Topological sort for proper evaluation order
+            const visited = new Set();
+            const order = [];
+
+            function visit(gate) {
+                if (visited.has(gate.id)) return;
+                visited.add(gate.id);
+
+                // Visit dependencies first
+                gate.inputs.forEach(conn => {
+                    if (conn) visit(conn.from);
+                });
+
+                order.push(gate);
+            }
+
+            gates.forEach(g => visit(g));
+
+            // Evaluate in order
+            order.forEach(gate => {
+                // Update input connections
+                gate.inputs = [];
+                connections.filter(c => c.to === gate)
+                    .forEach(c => gate.inputs[c.toInputIndex] = c);
+
+                // Evaluate gate
+                gate.evaluate();
+
+                // Update outgoing connections
+                connections.filter(c => c.from === gate)
+                    .forEach(c => c.update());
+            });
+
+            updateUI();
+        }
+
+        // ============================================
+        // DRAWING
+        // ============================================
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            width = rect.width;
+            height = rect.height;
+            canvas.width = width * dpr;
+            canvas.height = height * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = height + 'px';
+            ctx.scale(dpr, dpr);
+            draw();
+        }
+
+        function draw() {
+            // Background
+            ctx.fillStyle = COLORS.background;
+            ctx.fillRect(0, 0, width, height);
+
+            // Grid
+            ctx.strokeStyle = COLORS.grid;
+            ctx.lineWidth = 1;
+            const gridSize = 20;
+            for (let x = 0; x < width; x += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, height);
+                ctx.stroke();
+            }
+            for (let y = 0; y < height; y += gridSize) {
+                ctx.beginPath();
+                ctx.moveTo(0, y);
+                ctx.lineTo(width, y);
+                ctx.stroke();
+            }
+
+            // Draw connections
+            connections.forEach(conn => drawConnection(conn));
+
+            // Draw temp wire while connecting
+            if (mode === 'wire' && wireStart) {
+                ctx.strokeStyle = COLORS.wireTrue;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5, 5]);
+                ctx.beginPath();
+                const startPos = wireStart.gate.getOutputPosition();
+                ctx.moveTo(startPos.x, startPos.y);
+                ctx.lineTo(mousePos.x, mousePos.y);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Draw gates
+            gates.forEach(gate => drawGate(gate));
+        }
+
+        function drawConnection(conn) {
+            const start = conn.from.getOutputPosition();
+            const endPos = conn.to.getInputPositions()[conn.toInputIndex];
+
+            ctx.strokeStyle = conn.value ? COLORS.wireTrue : COLORS.wireFalse;
+            ctx.lineWidth = 3;
+            ctx.lineCap = 'round';
+
+            // Bezier curve for smooth wire
+            const midX = (start.x + endPos.x) / 2;
+            ctx.beginPath();
+            ctx.moveTo(start.x, start.y);
+            ctx.bezierCurveTo(midX, start.y, midX, endPos.y, endPos.x, endPos.y);
+            ctx.stroke();
+        }
+
+        function drawGate(gate) {
+            const isSelected = gate === selectedGate;
+
+            ctx.save();
+
+            if (gate.type === 'INPUT') {
+                // Input switch
+                ctx.beginPath();
+                ctx.arc(gate.x + 25, gate.y + 25, 20, 0, Math.PI * 2);
+                ctx.fillStyle = gate.value ? COLORS.inputOn : COLORS.inputOff;
+                ctx.fill();
+                ctx.strokeStyle = isSelected ? COLORS.gateSelected : COLORS.gateBorder;
+                ctx.lineWidth = isSelected ? 3 : 2;
+                ctx.stroke();
+
+                // Label
+                ctx.fillStyle = gate.value ? '#000' : COLORS.text;
+                ctx.font = 'bold 12px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(gate.value ? '1' : '0', gate.x + 25, gate.y + 25);
+
+                // Output port
+                ctx.beginPath();
+                ctx.arc(gate.x + gate.width, gate.y + gate.height / 2, 5, 0, Math.PI * 2);
+                ctx.fillStyle = gate.output ? COLORS.wireTrue : COLORS.wireFalse;
+                ctx.fill();
+
+            } else if (gate.type === 'OUTPUT') {
+                // Output LED
+                ctx.beginPath();
+                ctx.arc(gate.x + 25, gate.y + 25, 20, 0, Math.PI * 2);
+                ctx.fillStyle = gate.output ? COLORS.outputOn : COLORS.outputOff;
+                ctx.fill();
+                ctx.strokeStyle = isSelected ? COLORS.gateSelected : COLORS.gateBorder;
+                ctx.lineWidth = isSelected ? 3 : 2;
+                ctx.stroke();
+
+                if (gate.output) {
+                    // Glow effect
+                    ctx.shadowColor = COLORS.outputOn;
+                    ctx.shadowBlur = 15;
+                    ctx.beginPath();
+                    ctx.arc(gate.x + 25, gate.y + 25, 15, 0, Math.PI * 2);
+                    ctx.fillStyle = COLORS.outputOn;
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                }
+
+                // Input port
+                ctx.beginPath();
+                ctx.arc(gate.x, gate.y + gate.height / 2, 5, 0, Math.PI * 2);
+                ctx.fillStyle = COLORS.wireFalse;
+                ctx.fill();
+
+            } else {
+                // Logic gate body
+                ctx.fillStyle = COLORS.gateFill;
+                ctx.strokeStyle = isSelected ? COLORS.gateSelected : COLORS.gateBorder;
+                ctx.lineWidth = isSelected ? 3 : 2;
+
+                // Gate shape
+                ctx.beginPath();
+                ctx.roundRect(gate.x, gate.y, gate.width, gate.height, 8);
+                ctx.fill();
+                ctx.stroke();
+
+                // Gate label
+                ctx.fillStyle = gate.output ? COLORS.wireTrue : COLORS.text;
+                ctx.font = 'bold 14px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(gate.type, gate.x + gate.width / 2, gate.y + gate.height / 2);
+
+                // Input ports
+                const inputPositions = gate.getInputPositions();
+                inputPositions.forEach((pos, i) => {
+                    const conn = connections.find(c => c.to === gate && c.toInputIndex === i);
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, 5, 0, Math.PI * 2);
+                    ctx.fillStyle = conn && conn.value ? COLORS.wireTrue : COLORS.wireFalse;
+                    ctx.fill();
+                });
+
+                // Output port
+                const outPos = gate.getOutputPosition();
+                ctx.beginPath();
+                ctx.arc(outPos.x, outPos.y, 5, 0, Math.PI * 2);
+                ctx.fillStyle = gate.output ? COLORS.wireTrue : COLORS.wireFalse;
+                ctx.fill();
+
+                // NOT bubble
+                if (gate.type === 'NOT' || gate.type === 'NAND' || gate.type === 'NOR') {
+                    ctx.beginPath();
+                    ctx.arc(outPos.x - 2, outPos.y, 6, 0, Math.PI * 2);
+                    ctx.fillStyle = COLORS.gateFill;
+                    ctx.fill();
+                    ctx.strokeStyle = gate.output ? COLORS.wireTrue : COLORS.gateBorder;
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            }
+
+            ctx.restore();
+        }
+
+        // ============================================
+        // EVENT HANDLERS
+        // ============================================
+
+        canvas.addEventListener('mousedown', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            mousePos = { x, y };
+
+            if (mode === 'place' && selectedGateType) {
+                // Place new gate
+                const gate = new Gate(selectedGateType, x - 35, y - 25);
+                gates.push(gate);
+                evaluateCircuit();
+                draw();
+                return;
+            }
+
+            // Find clicked gate
+            const clickedGate = gates.find(g => g.containsPoint(x, y));
+
+            if (mode === 'delete' && clickedGate) {
+                // Remove gate and its connections
+                connections = connections.filter(c => c.from !== clickedGate && c.to !== clickedGate);
+                gates = gates.filter(g => g !== clickedGate);
+                selectedGate = null;
+                evaluateCircuit();
+                draw();
+                return;
+            }
+
+            if (mode === 'wire') {
+                if (clickedGate) {
+                    const port = clickedGate.getPortAt(x, y);
+                    if (port) {
+                        if (!wireStart && port.type === 'output') {
+                            // Start wire from output
+                            wireStart = { gate: clickedGate };
+                        } else if (wireStart && port.type === 'input') {
+                            // Complete wire to input
+                            // Check if input already has connection
+                            const existing = connections.find(
+                                c => c.to === clickedGate && c.toInputIndex === port.index
+                            );
+                            if (!existing && clickedGate !== wireStart.gate) {
+                                const conn = new Connection(wireStart.gate, clickedGate, port.index);
+                                connections.push(conn);
+                                evaluateCircuit();
+                            }
+                            wireStart = null;
+                        }
+                    }
+                } else {
+                    wireStart = null;
+                }
+                draw();
+                return;
+            }
+
+            // Select mode
+            if (clickedGate) {
+                // Toggle INPUT value on click
+                if (clickedGate.type === 'INPUT') {
+                    clickedGate.value = !clickedGate.value;
+                    evaluateCircuit();
+                }
+
+                selectedGate = clickedGate;
+                dragging = clickedGate;
+                dragOffset = { x: x - clickedGate.x, y: y - clickedGate.y };
+            } else {
+                selectedGate = null;
+            }
+
+            draw();
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            mousePos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
+
+            if (dragging) {
+                dragging.x = mousePos.x - dragOffset.x;
+                dragging.y = mousePos.y - dragOffset.y;
+
+                // Snap to grid
+                dragging.x = Math.round(dragging.x / 20) * 20;
+                dragging.y = Math.round(dragging.y / 20) * 20;
+            }
+
+            draw();
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            dragging = null;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            dragging = null;
+            wireStart = null;
+            draw();
+        });
+
+        // Gate palette
+        document.querySelectorAll('.gate-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+                selectedGateType = btn.dataset.gate;
+                mode = 'place';
+                updateModeButtons();
+            });
+        });
+
+        // Mode buttons
+        document.getElementById('selectModeBtn').addEventListener('click', () => {
+            mode = 'select';
+            selectedGateType = null;
+            document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('selected'));
+            updateModeButtons();
+        });
+
+        document.getElementById('wireModeBtn').addEventListener('click', () => {
+            mode = 'wire';
+            wireStart = null;
+            selectedGateType = null;
+            document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('selected'));
+            updateModeButtons();
+        });
+
+        document.getElementById('deleteBtn').addEventListener('click', () => {
+            mode = 'delete';
+            selectedGateType = null;
+            document.querySelectorAll('.gate-btn').forEach(b => b.classList.remove('selected'));
+            updateModeButtons();
+        });
+
+        document.getElementById('clearBtn').addEventListener('click', () => {
+            gates = [];
+            connections = [];
+            selectedGate = null;
+            wireStart = null;
+            updateUI();
+            draw();
+        });
+
+        function updateModeButtons() {
+            document.getElementById('selectModeBtn').classList.toggle('selected', mode === 'select');
+            document.getElementById('wireModeBtn').classList.toggle('selected', mode === 'wire');
+            document.getElementById('deleteBtn').classList.toggle('selected', mode === 'delete');
+        }
+
+        // Presets
+        document.querySelectorAll('.preset-btn').forEach(btn => {
+            btn.addEventListener('click', () => loadPreset(btn.dataset.preset));
+        });
+
+        function loadPreset(name) {
+            gates = [];
+            connections = [];
+
+            const presets = {
+                halfAdder: () => {
+                    const inA = new Gate('INPUT', 60, 60);
+                    const inB = new Gate('INPUT', 60, 160);
+                    const xorG = new Gate('XOR', 200, 60);
+                    const andG = new Gate('AND', 200, 160);
+                    const outS = new Gate('OUTPUT', 340, 80);
+                    const outC = new Gate('OUTPUT', 340, 180);
+
+                    gates.push(inA, inB, xorG, andG, outS, outC);
+
+                    connections.push(
+                        new Connection(inA, xorG, 0),
+                        new Connection(inB, xorG, 1),
+                        new Connection(inA, andG, 0),
+                        new Connection(inB, andG, 1),
+                        new Connection(xorG, outS, 0),
+                        new Connection(andG, outC, 0)
+                    );
+                },
+                srLatch: () => {
+                    const inS = new Gate('INPUT', 60, 60);
+                    const inR = new Gate('INPUT', 60, 200);
+                    const nor1 = new Gate('NOR', 180, 60);
+                    const nor2 = new Gate('NOR', 180, 180);
+                    const outQ = new Gate('OUTPUT', 320, 80);
+                    const outQn = new Gate('OUTPUT', 320, 200);
+
+                    gates.push(inS, inR, nor1, nor2, outQ, outQn);
+
+                    connections.push(
+                        new Connection(inS, nor1, 0),
+                        new Connection(inR, nor2, 1),
+                        new Connection(nor1, outQ, 0),
+                        new Connection(nor2, outQn, 0),
+                        new Connection(nor2, nor1, 1),
+                        new Connection(nor1, nor2, 0)
+                    );
+                },
+                xorFromNand: () => {
+                    const inA = new Gate('INPUT', 40, 80);
+                    const inB = new Gate('INPUT', 40, 200);
+                    const nand1 = new Gate('NAND', 140, 120);
+                    const nand2 = new Gate('NAND', 260, 60);
+                    const nand3 = new Gate('NAND', 260, 180);
+                    const nand4 = new Gate('NAND', 380, 120);
+                    const out = new Gate('OUTPUT', 500, 140);
+
+                    gates.push(inA, inB, nand1, nand2, nand3, nand4, out);
+
+                    connections.push(
+                        new Connection(inA, nand1, 0),
+                        new Connection(inB, nand1, 1),
+                        new Connection(inA, nand2, 0),
+                        new Connection(nand1, nand2, 1),
+                        new Connection(nand1, nand3, 0),
+                        new Connection(inB, nand3, 1),
+                        new Connection(nand2, nand4, 0),
+                        new Connection(nand3, nand4, 1),
+                        new Connection(nand4, out, 0)
+                    );
+                },
+                mux2to1: () => {
+                    const inA = new Gate('INPUT', 40, 40);
+                    const inB = new Gate('INPUT', 40, 140);
+                    const inS = new Gate('INPUT', 40, 240);
+                    const not1 = new Gate('NOT', 140, 220);
+                    const and1 = new Gate('AND', 240, 40);
+                    const and2 = new Gate('AND', 240, 140);
+                    const or1 = new Gate('OR', 360, 90);
+                    const out = new Gate('OUTPUT', 480, 110);
+
+                    gates.push(inA, inB, inS, not1, and1, and2, or1, out);
+
+                    connections.push(
+                        new Connection(inS, not1, 0),
+                        new Connection(inA, and1, 0),
+                        new Connection(not1, and1, 1),
+                        new Connection(inB, and2, 0),
+                        new Connection(inS, and2, 1),
+                        new Connection(and1, or1, 0),
+                        new Connection(and2, or1, 1),
+                        new Connection(or1, out, 0)
+                    );
+                }
+            };
+
+            if (presets[name]) {
+                presets[name]();
+                evaluateCircuit();
+                draw();
+            }
+        }
+
+        // ============================================
+        // UI UPDATES
+        // ============================================
+
+        function updateUI() {
+            document.getElementById('gateCount').textContent = gates.length;
+            document.getElementById('wireCount').textContent = connections.length;
+            generateTruthTable();
+        }
+
+        function generateTruthTable() {
+            const inputs = gates.filter(g => g.type === 'INPUT');
+            const outputs = gates.filter(g => g.type === 'OUTPUT');
+
+            if (inputs.length === 0 || outputs.length === 0) {
+                document.getElementById('truthTableHeader').innerHTML = '';
+                document.getElementById('truthTableBody').innerHTML = '<tr><td colspan="3" style="color: var(--text-secondary)">Agrega INPUTs y OUTPUTs</td></tr>';
+                return;
+            }
+
+            // Header
+            let headerHtml = '';
+            inputs.forEach((_, i) => headerHtml += `<th>IN${i}</th>`);
+            outputs.forEach((_, i) => headerHtml += `<th>OUT${i}</th>`);
+            document.getElementById('truthTableHeader').innerHTML = headerHtml;
+
+            // Body - generate all combinations
+            const rows = Math.pow(2, inputs.length);
+            let bodyHtml = '';
+
+            // Save current state
+            const savedValues = inputs.map(inp => inp.value);
+
+            for (let r = 0; r < rows; r++) {
+                bodyHtml += '<tr>';
+
+                // Set inputs
+                for (let i = 0; i < inputs.length; i++) {
+                    const val = (r >> (inputs.length - 1 - i)) & 1;
+                    inputs[i].value = val === 1;
+                    bodyHtml += `<td class="val-${val}">${val}</td>`;
+                }
+
+                // Evaluate
+                evaluateCircuitSilent();
+
+                // Get outputs
+                outputs.forEach(out => {
+                    const val = out.output ? 1 : 0;
+                    bodyHtml += `<td class="val-${val}">${val}</td>`;
+                });
+
+                bodyHtml += '</tr>';
+            }
+
+            // Restore state
+            inputs.forEach((inp, i) => inp.value = savedValues[i]);
+            evaluateCircuitSilent();
+
+            document.getElementById('truthTableBody').innerHTML = bodyHtml;
+        }
+
+        function evaluateCircuitSilent() {
+            const visited = new Set();
+            const order = [];
+
+            function visit(gate) {
+                if (visited.has(gate.id)) return;
+                visited.add(gate.id);
+                gate.inputs.forEach(conn => { if (conn) visit(conn.from); });
+                order.push(gate);
+            }
+
+            gates.forEach(g => visit(g));
+
+            order.forEach(gate => {
+                gate.inputs = [];
+                connections.filter(c => c.to === gate)
+                    .forEach(c => gate.inputs[c.toInputIndex] = c);
+                gate.evaluate();
+                connections.filter(c => c.from === gate)
+                    .forEach(c => c.update());
+            });
+        }
+
+        // ============================================
+        // INIT
+        // ============================================
+
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+        updateModeButtons();
+        updateUI();
+
+        // Start with Half Adder
+        loadPreset('halfAdder');
+    </script>
+</body>
+</html>

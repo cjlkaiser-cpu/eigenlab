@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estaciones — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #6366f1;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.35rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.15); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .lead { color: var(--text-primary); font-size: 0.95rem; line-height: 1.65; }
+        h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.625rem; color: var(--text-primary); }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.4rem 0; }
+        strong { color: var(--text-primary); font-weight: 500; } .em { color: var(--accent); font-weight: 600; }
+
+        /* Layout */
+        .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+
+        /* Chips & Badges */
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.7rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .badge { display: inline-block; font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: 500; margin-left: 0.5rem; vertical-align: middle; }
+        .b-good { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+        .b-warn { background: rgba(234,179,8,0.15); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
+        .b-info { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+        /* Callouts */
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+        .callout-warn { border-color: #eab308; background: rgba(234,179,8,0.08); }
+
+        /* Equation box */
+        .equation-box { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin: 0.75rem 0; font-family: 'JetBrains Mono', monospace; }
+        .equation-box .label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .equation-box .eq { font-size: 1rem; color: var(--accent); }
+        .equation-box .eq-small { font-size: 0.85rem; color: var(--text-primary); margin-top: 0.5rem; }
+
+        /* Seasons visual */
+        .seasons-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+        .season-item { text-align: center; padding: 0.75rem 0.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; }
+        .season-icon { font-size: 1.5rem; margin-bottom: 0.375rem; }
+        .season-name { font-size: 0.75rem; color: var(--text-primary); font-weight: 500; }
+        .season-date { font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .season-note { font-size: 0.6rem; color: var(--accent); margin-top: 0.125rem; }
+        @media (max-width: 500px) { .seasons-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* Experiments */
+        .exp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; }
+        .exp-num { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 600; border-radius: 50%; margin-right: 0.5rem; }
+        .exp-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); display: inline; }
+        .hypo { background: rgba(99,102,241,0.1); border-left: 3px solid var(--accent); padding: 0.625rem 0.875rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypo-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypo p { margin: 0.25rem 0 0; color: var(--text-primary); font-size: 0.8rem; }
+
+        /* Section spacing */
+        .section { margin-top: 1.25rem; }
+        .section-title { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .timeline::before { content: ''; position: absolute; left: 0.35rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background: var(--border); }
+        .tl-item { position: relative; margin: 0.875rem 0; }
+        .tl-item::before { content: ''; position: absolute; left: -1.15rem; top: 0.4rem; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+        .tl-year { font-size: 0.7rem; color: var(--accent); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        .tl-text { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Connections */
+        .conn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+        .conn-item { display: flex; align-items: flex-start; gap: 0.625rem; padding: 0.75rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; transition: border-color 0.2s; }
+        .conn-item:hover { border-color: var(--accent); }
+        .conn-icon { font-size: 1.25rem; flex-shrink: 0; }
+        .conn-info { flex: 1; }
+        .conn-title { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); }
+        .conn-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Reflection */
+        .reflection-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+        .reflection-list li { position: relative; padding: 0.625rem 0 0.625rem 1.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); }
+        .reflection-list li:last-child { border-bottom: none; }
+        .reflection-list li::before { content: '?'; position: absolute; left: 0; top: 0.625rem; width: 1.25rem; height: 1.25rem; background: rgba(99,102,241,0.15); color: var(--accent); font-size: 0.75rem; font-weight: 600; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Summary */
+        .summary-box { background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(99,102,241,0.05) 100%); border: 1px solid rgba(99,102,241,0.3); border-radius: 0.625rem; padding: 1.25rem; }
+        .summary-box h2 { color: var(--accent); }
+
+        /* Planet comparison */
+        .planet-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.5rem; margin: 0.75rem 0; }
+        .planet-item { text-align: center; padding: 0.625rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; }
+        .planet-name { font-size: 0.7rem; font-weight: 500; color: var(--text-primary); }
+        .planet-tilt { font-size: 0.85rem; color: var(--accent); font-weight: 600; margin: 0.25rem 0; }
+        .planet-note { font-size: 0.6rem; color: var(--text-secondary); }
+        @media (max-width: 500px) { .planet-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        footer { max-width: 980px; margin: 2.5rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Astronomy Visual Lab</a> / Estaciones</nav>
+                <h1>Estaciones — Guia</h1>
+                <div class="subtitle">Por que existen primavera, verano, otono e invierno</div>
+            </div>
+            <a href="../estaciones.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    Las <span class="em">estaciones</span> existen porque el eje de rotacion terrestre esta inclinado 23.44° respecto al plano orbital. Esta inclinacion hace que durante el ano cada hemisferio reciba luz solar con diferente angulo e intensidad — creando los ciclos climaticos que gobiernan la vida, la agricultura y la cultura humana.
+                </p>
+                <div class="chips">
+                    <span class="chip">Inclinacion Axial</span>
+                    <span class="chip">Solsticio</span>
+                    <span class="chip">Equinoccio</span>
+                    <span class="chip">Ecliptica</span>
+                    <span class="chip">Precesion</span>
+                </div>
+
+                <div class="callout callout-warn">
+                    <p><strong>Mito muy comun:</strong> Las estaciones NO se deben a la distancia Tierra-Sol. La orbita terrestre es casi circular (e ≈ 0.017) y el perihelio (punto mas cercano) ocurre en enero — en pleno invierno del hemisferio norte!</p>
+                </div>
+
+                <div class="equation-box">
+                    <div class="label">Intensidad solar por unidad de area</div>
+                    <div class="eq">I = I₀ · cos(θ)</div>
+                    <div class="eq-small">θ = angulo de incidencia (0° = perpendicular, maximo)</div>
+                    <div class="eq-small" style="margin-top: 0.5rem;">Cuando el Sol esta bajo en el cielo, la misma energia se reparte en mas area → menos calor</div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Las 4 fechas clave (hemisferio norte)</div>
+                <div class="seasons-grid">
+                    <div class="season-item">
+                        <div class="season-icon">&#127800;</div>
+                        <div class="season-name">Primavera</div>
+                        <div class="season-date">~21 marzo</div>
+                        <div class="season-note">Equinoccio</div>
+                    </div>
+                    <div class="season-item">
+                        <div class="season-icon">&#9728;&#65039;</div>
+                        <div class="season-name">Verano</div>
+                        <div class="season-date">~21 junio</div>
+                        <div class="season-note">Solsticio</div>
+                    </div>
+                    <div class="season-item">
+                        <div class="season-icon">&#127810;</div>
+                        <div class="season-name">Otono</div>
+                        <div class="season-date">~23 sept</div>
+                        <div class="season-note">Equinoccio</div>
+                    </div>
+                    <div class="season-item">
+                        <div class="season-icon">&#10052;&#65039;</div>
+                        <div class="season-name">Invierno</div>
+                        <div class="season-date">~21 dic</div>
+                        <div class="season-note">Solsticio</div>
+                    </div>
+                </div>
+                <p style="margin-top: 0.75rem; font-size: 0.75rem; text-align: center; color: var(--text-secondary);">
+                    En el hemisferio sur las estaciones estan invertidas
+                </p>
+            </aside>
+        </section>
+
+        <!-- CONCEPTOS -->
+        <section class="two">
+            <div class="card">
+                <h2>Por que la inclinacion causa estaciones</h2>
+                <p>La inclinacion axial de 23.44° tiene dos efectos combinados:</p>
+                <ul>
+                    <li><strong>Angulo de incidencia:</strong> Cuando un hemisferio se inclina hacia el Sol, recibe rayos mas perpendiculares → mas energia por metro cuadrado</li>
+                    <li><strong>Duracion del dia:</strong> El hemisferio inclinado hacia el Sol tiene mas horas de luz → mas tiempo de calentamiento</li>
+                    <li><strong>Efecto acumulativo:</strong> Mas horas + mas intensidad = verano</li>
+                    <li><strong>Retraso termico:</strong> El maximo calor llega ~1 mes despues del solsticio (julio/agosto en el norte)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Solsticios y equinoccios</h2>
+                <p>Los cuatro momentos que definen las estaciones:</p>
+                <ul>
+                    <li><strong>Solsticio de verano:</strong> El polo norte apunta mas hacia el Sol — dia mas largo del ano</li>
+                    <li><strong>Solsticio de invierno:</strong> El polo norte apunta mas lejos del Sol — dia mas corto</li>
+                    <li><strong>Equinoccios:</strong> Eje perpendicular a la linea Sol-Tierra — dia = noche (12h en todo el mundo)</li>
+                    <li><strong>Tropicos:</strong> Latitudes donde el Sol alcanza el cenit exacto (Cancer 23.44°N, Capricornio 23.44°S)</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Latitud y estacionalidad</h2>
+                <p>La intensidad de las estaciones varia dramaticamente con la latitud:</p>
+                <ul>
+                    <li><strong>Ecuador (0°):</strong> Estaciones casi inexistentes — siempre ~12h de luz, Sol alto</li>
+                    <li><strong>Tropicos (±23.5°):</strong> Estaciones suaves, epoca de lluvias mas notable</li>
+                    <li><strong>Templadas (±45°):</strong> Cuatro estaciones bien marcadas, gran variacion de horas de luz</li>
+                    <li><strong>Polares (>66.5°):</strong> Extremas — sol de medianoche en verano, noche polar en invierno</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Comparacion planetaria</h2>
+                <p>La inclinacion axial varia enormemente en el sistema solar:</p>
+                <div class="planet-grid">
+                    <div class="planet-item">
+                        <div class="planet-name">Mercurio</div>
+                        <div class="planet-tilt">0.03°</div>
+                        <div class="planet-note">Sin estaciones</div>
+                    </div>
+                    <div class="planet-item">
+                        <div class="planet-name">Tierra</div>
+                        <div class="planet-tilt">23.4°</div>
+                        <div class="planet-note">Moderadas</div>
+                    </div>
+                    <div class="planet-item">
+                        <div class="planet-name">Marte</div>
+                        <div class="planet-tilt">25.2°</div>
+                        <div class="planet-note">Similares</div>
+                    </div>
+                    <div class="planet-item">
+                        <div class="planet-name">Urano</div>
+                        <div class="planet-tilt">97.8°</div>
+                        <div class="planet-note">Extremas!</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ESTADOS VISUALES -->
+        <section class="card section">
+            <div class="kicker">Estados visuales en la simulacion</div>
+            <h2>Que observar en cada elemento</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <h3>Vista orbital</h3>
+                    <ul>
+                        <li><strong>Sol:</strong> Centro del sistema, fuente de luz</li>
+                        <li><strong>Orbita terrestre:</strong> Elipse (casi circular) alrededor del Sol</li>
+                        <li><strong>Eje terrestre:</strong> Linea inclinada que siempre apunta en la misma direccion</li>
+                        <li><strong>Posicion actual:</strong> Fecha del ano y estacion correspondiente</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Indicadores</h3>
+                    <ul>
+                        <li><strong>Iluminacion:</strong> Que hemisferio recibe mas luz directa</li>
+                        <li><strong>Terminador:</strong> Linea dia/noche en la Tierra</li>
+                        <li><strong>Horas de luz:</strong> Variacion segun latitud y fecha</li>
+                        <li><strong>Nombre de estacion:</strong> Actualizado para cada hemisferio</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS -->
+        <section class="section">
+            <div class="section-title">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="exp-card">
+                    <div><span class="exp-num">1</span><span class="exp-title">Ciclo anual completo</span></div>
+                    <span class="badge b-good">Fundamental</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>El eje terrestre siempre apunta en la misma direccion mientras la Tierra orbita.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Inicia en el solsticio de verano (21 junio, hemisferio norte)</li>
+                        <li>Observa la direccion del eje — anota hacia donde apunta</li>
+                        <li>Avanza la simulacion a traves del ano completo</li>
+                        <li>En cada estacion, verifica que el eje sigue apuntando igual</li>
+                        <li>Nota como cambia la iluminacion de cada hemisferio</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>El eje siempre apunta hacia la misma estrella (Polaris actualmente)</li>
+                        <li>En junio: polo norte hacia el Sol → verano norte, invierno sur</li>
+                        <li>En diciembre: polo sur hacia el Sol → verano sur, invierno norte</li>
+                        <li>En equinoccios: eje perpendicular a la linea Sol-Tierra</li>
+                    </ul>
+                </div>
+
+                <div class="exp-card">
+                    <div><span class="exp-num">2</span><span class="exp-title">Efecto de la latitud</span></div>
+                    <span class="badge b-info">Practico</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>Las latitudes altas experimentan mayor variacion estacional que las ecuatoriales.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Selecciona un punto en el ecuador (0°)</li>
+                        <li>Observa cuantas horas de luz hay en verano vs invierno</li>
+                        <li>Repite para latitud media (45°)</li>
+                        <li>Repite para latitud alta (70°)</li>
+                        <li>Compara los resultados</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>Ecuador: ~12h de luz todo el ano, sin variacion</li>
+                        <li>Latitud 45°: 8-16h de luz segun la estacion</li>
+                        <li>Latitud 70°: 0-24h — sol de medianoche o noche polar</li>
+                        <li>Circulos polares (66.5°): limite donde ocurren estos extremos</li>
+                    </ul>
+                </div>
+
+                <div class="exp-card">
+                    <div><span class="exp-num">3</span><span class="exp-title">Distancia vs inclinacion</span></div>
+                    <span class="badge b-warn">Avanzado</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>La distancia Tierra-Sol varia solo ~3% y no causa las estaciones.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Encuentra la posicion de perihelio (punto mas cercano al Sol)</li>
+                        <li>Nota la fecha: ~3 enero (invierno norte!)</li>
+                        <li>Encuentra el afelio (mas lejano): ~4 julio</li>
+                        <li>Calcula: 152M km / 147M km ≈ 1.034 (solo 3.4% de diferencia)</li>
+                        <li>Compara con la variacion por angulo de incidencia</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>La Tierra esta MAS CERCA del Sol en enero que en julio</li>
+                        <li>Sin embargo, enero es invierno en el hemisferio norte (donde vive la mayoria de la poblacion)</li>
+                        <li>La variacion del 3% en distancia es insignificante frente al efecto de la inclinacion</li>
+                        <li>Conclusion: la inclinacion, no la distancia, causa las estaciones</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONEXIONES -->
+        <section class="section">
+            <div class="section-title">Conexiones interdisciplinarias</div>
+            <div class="conn-grid">
+                <a href="fases-lunares.html" class="conn-item">
+                    <span class="conn-icon">&#127769;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Fases Lunares</div>
+                        <div class="conn-desc">Misma geometria Sol-Tierra aplicada al sistema Tierra-Luna</div>
+                    </div>
+                </a>
+                <a href="../../../Physics/Physics Sound Lab/metronomos/polirritmico/index.html" class="conn-item">
+                    <span class="conn-icon">&#9203;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Oscilaciones</div>
+                        <div class="conn-desc">Las estaciones como oscilacion anual de temperatura</div>
+                    </div>
+                </a>
+                <a href="../../../Biology/Biology Visual Lab/guides/ritmos-circadianos.html" class="conn-item">
+                    <span class="conn-icon">&#128337;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Ritmos Biologicos</div>
+                        <div class="conn-desc">Migraciones, hibernacion, floracion — vida sincronizada con las estaciones</div>
+                    </div>
+                </a>
+                <a href="../../../Geology/Geology Visual Lab/guides/erosion.html" class="conn-item">
+                    <span class="conn-icon">&#127956;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Erosion y Clima</div>
+                        <div class="conn-desc">Ciclos de congelacion-deshielo fracturan rocas</div>
+                    </div>
+                </a>
+                <a href="../../../Mathematics/Math Visual Lab/guides/trigonometria.html" class="conn-item">
+                    <span class="conn-icon">&#128208;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Trigonometria</div>
+                        <div class="conn-desc">Angulos, proyecciones, coseno de la inclinacion</div>
+                    </div>
+                </a>
+                <a href="diagrama-hr.html" class="conn-item">
+                    <span class="conn-icon">&#11088;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Estrellas y Energia</div>
+                        <div class="conn-desc">El Sol como fuente de toda la energia estacional</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2>Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <ul>
+                    <li><strong>Orbita circular:</strong> La orbita real tiene excentricidad 0.017</li>
+                    <li><strong>Inclinacion fija:</strong> El eje real varia entre 22.1° y 24.5° (ciclo de 41,000 anos)</li>
+                    <li><strong>Sin precesion:</strong> El eje describe un circulo en 26,000 anos</li>
+                    <li><strong>Atmosfera ignorada:</strong> No modela la inercia termica real</li>
+                </ul>
+                <ul>
+                    <li><strong>Sin oceanos:</strong> Los oceanos moderan los cambios de temperatura</li>
+                    <li><strong>Geografia uniforme:</strong> Continentes afectan el clima regional</li>
+                    <li><strong>Escala no real:</strong> Tamanos y distancias exagerados para visualizacion</li>
+                    <li><strong>Ciclo Milankovitch:</strong> No modela variaciones orbitales a largo plazo</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Contexto historico</div>
+            <h2>Como entendimos las estaciones</h2>
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-year">~3000 a.C.</div>
+                    <div class="tl-text">Stonehenge y otras estructuras alineadas con solsticios — observacion precisa sin teoria</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">~350 a.C.</div>
+                    <div class="tl-text">Aristoteles propone Tierra esferica, pero no explica correctamente las estaciones</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">~150 a.C.</div>
+                    <div class="tl-text">Hiparco descubre la precesion de los equinoccios — el eje "tambalea"</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1543</div>
+                    <div class="tl-text">Copernico: modelo heliocentrico — la Tierra orbita el Sol, no al reves</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1609</div>
+                    <div class="tl-text">Kepler: orbitas elipticas y velocidad variable — leyes del movimiento planetario</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1920s</div>
+                    <div class="tl-text">Milankovitch: ciclos orbitales (excentricidad, inclinacion, precesion) causan eras glaciales</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1976</div>
+                    <div class="tl-text">Confirmacion de ciclos Milankovitch en sedimentos oceanicos — teoria validada</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="card section">
+            <div class="kicker">Para reflexionar</div>
+            <h2>Preguntas que van mas alla</h2>
+            <ul class="reflection-list">
+                <li>Si la inclinacion terrestre fuera 0°, como seria el clima en tu ciudad?</li>
+                <li>Que pasaria si la inclinacion fuera 90° como Urano?</li>
+                <li>Por que diciembre-febrero son los meses mas frios en el norte si el perihelio es en enero?</li>
+                <li>Como afectaria a la agricultura y las civilizaciones un mundo sin estaciones?</li>
+                <li>La precesion cambiara cuales meses son calidos — cuando sera julio invierno en el norte?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="summary-box section">
+            <div class="kicker">En resumen</div>
+            <h2>Las estaciones en una frase</h2>
+            <p class="lead" style="margin-top: 0.5rem;">
+                Las estaciones existen porque el <strong>eje terrestre esta inclinado 23.5°</strong> y siempre apunta en la misma direccion mientras la Tierra orbita. Esto hace que cada hemisferio reciba luz solar con diferente angulo y duracion a lo largo del ano — no tiene nada que ver con la distancia al Sol.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Estaciones
+    </footer>
+</body>
+</html>

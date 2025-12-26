@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Knowledge Graph - EigenLab</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.8.5/d3.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #030712;
+            color: #e2e8f0;
+            overflow: hidden;
+        }
+
+        header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 60px;
+            background: rgba(3, 7, 18, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #1e293b;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 20px;
+            z-index: 100;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .logo h1 { font-size: 1.1rem; font-weight: 600; }
+        .logo h1 span { color: #6366f1; }
+        .logo p { font-size: 0.7rem; color: #64748b; }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .search-box { position: relative; }
+        .search-box input {
+            width: 200px;
+            padding: 8px 12px 8px 36px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #e2e8f0;
+            font-size: 0.8rem;
+            outline: none;
+            transition: all 0.2s;
+        }
+        .search-box input:focus { border-color: #6366f1; width: 280px; }
+        .search-box i {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            font-size: 0.8rem;
+        }
+
+        .btn {
+            padding: 8px 14px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .btn-ghost { background: transparent; color: #94a3b8; border-color: #334155; }
+        .btn-ghost:hover { background: #1e293b; color: #e2e8f0; }
+
+        .sidebar {
+            position: fixed;
+            top: 60px;
+            left: 0;
+            width: 260px;
+            height: calc(100vh - 60px);
+            background: rgba(3, 7, 18, 0.98);
+            border-right: 1px solid #1e293b;
+            padding: 20px;
+            overflow-y: auto;
+            z-index: 50;
+            transition: transform 0.3s;
+        }
+        .sidebar.collapsed { transform: translateX(-260px); }
+
+        .filter-section { margin-bottom: 24px; }
+        .filter-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .filter-btn {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            width: 100%;
+            padding: 8px 12px;
+            background: transparent;
+            border: none;
+            border-radius: 6px;
+            color: #94a3b8;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+        }
+        .filter-btn:hover { background: #1e293b; color: #e2e8f0; }
+        .filter-btn.active { background: rgba(99, 102, 241, 0.2); color: #a5b4fc; }
+        .filter-btn .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .filter-btn .count { margin-left: auto; font-size: 0.7rem; color: #475569; }
+
+        .stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+        .stat {
+            background: #0f172a;
+            border: 1px solid #1e293b;
+            border-radius: 8px;
+            padding: 12px;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.4rem; font-weight: 700; color: #6366f1; }
+        .stat-label { font-size: 0.65rem; color: #64748b; text-transform: uppercase; }
+
+        #graph-container {
+            position: fixed;
+            top: 60px;
+            left: 260px;
+            right: 0;
+            bottom: 0;
+            background: #030712;
+            transition: left 0.3s;
+        }
+        #graph-container.expanded { left: 0; }
+        svg { width: 100%; height: 100%; }
+
+        .node { cursor: pointer; transition: opacity 0.3s; }
+        .node.has-link { cursor: pointer; }
+        .node.has-link:hover circle { filter: brightness(1.3) drop-shadow(0 0 12px currentColor); }
+        .node circle { stroke-width: 2px; transition: all 0.2s; }
+        .node:hover circle { stroke-width: 4px; filter: brightness(1.2) drop-shadow(0 0 8px currentColor); }
+        .node text { font-size: 10px; fill: #e2e8f0; pointer-events: none; text-anchor: middle; dominant-baseline: middle; }
+        .node .label { font-size: 9px; fill: #94a3b8; opacity: 0; transition: opacity 0.2s; }
+        .node:hover .label { opacity: 1; }
+        .node .link-indicator { font-size: 8px; fill: #a5b4fc; opacity: 0; transition: opacity 0.2s; }
+        .node:hover .link-indicator { opacity: 1; }
+
+        /* Wave propagation effects */
+        .node.wave-origin circle {
+            animation: wave-pulse-origin 0.6s ease-out;
+        }
+        .node.wave-hit circle {
+            animation: wave-pulse 0.5s ease-out;
+        }
+        .link.wave-active {
+            stroke-opacity: 1 !important;
+            animation: wave-link 0.4s ease-out;
+        }
+        @keyframes wave-pulse-origin {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.4); filter: brightness(1.8) drop-shadow(0 0 20px currentColor); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        @keyframes wave-pulse {
+            0% { transform: scale(1); filter: brightness(1); }
+            50% { transform: scale(1.3); filter: brightness(1.5) drop-shadow(0 0 15px currentColor); }
+            100% { transform: scale(1); filter: brightness(1); }
+        }
+        @keyframes wave-link {
+            0% { stroke-width: 1px; stroke-opacity: 0.4; }
+            50% { stroke-width: 4px; stroke-opacity: 1; filter: drop-shadow(0 0 8px currentColor); }
+            100% { stroke-width: 1px; stroke-opacity: 0.4; }
+        }
+
+        .link { stroke: #334155; stroke-opacity: 0.4; transition: all 0.2s; }
+        .link.highlighted { stroke-opacity: 1; stroke-width: 2px; }
+        .link.cross-discipline { stroke-dasharray: 4 2; }
+
+        .dimmed { opacity: 0.1; }
+
+        .tooltip {
+            position: fixed;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            max-width: 320px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            z-index: 200;
+        }
+        .tooltip.visible { opacity: 1; }
+        .tooltip-header { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+        .tooltip-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+        .tooltip-title { font-weight: 600; font-size: 0.95rem; }
+        .tooltip-type { font-size: 0.7rem; color: #64748b; text-transform: uppercase; }
+        .tooltip-desc { font-size: 0.8rem; color: #94a3b8; line-height: 1.5; }
+        .tooltip-connections {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid #334155;
+            font-size: 0.75rem;
+            color: #64748b;
+        }
+        .tooltip-action {
+            margin-top: 10px;
+            padding: 8px 12px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.2), rgba(139, 92, 246, 0.2));
+            border-radius: 6px;
+            font-size: 0.7rem;
+            color: #a5b4fc;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .tooltip-action i { font-size: 0.8rem; }
+
+        .legend {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 16px;
+            z-index: 50;
+        }
+        .legend-title { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: #64748b; margin-bottom: 12px; }
+        .legend-items { display: flex; flex-direction: column; gap: 8px; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: #94a3b8; }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
+
+        .zoom-controls {
+            position: fixed;
+            bottom: 20px;
+            left: 280px;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 50;
+            transition: left 0.3s;
+        }
+        .zoom-controls.expanded { left: 20px; }
+        .zoom-btn {
+            width: 36px;
+            height: 36px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            color: #94a3b8;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+        .zoom-btn:hover { background: #334155; color: #e2e8f0; }
+
+        .toggle-sidebar {
+            position: fixed;
+            top: 80px;
+            left: 260px;
+            width: 24px;
+            height: 48px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-left: none;
+            border-radius: 0 8px 8px 0;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            transition: all 0.3s;
+            z-index: 60;
+        }
+        .toggle-sidebar:hover { color: #e2e8f0; }
+        .toggle-sidebar.collapsed { left: 0; }
+
+        @media (max-width: 768px) {
+            .sidebar { transform: translateX(-260px); }
+            #graph-container { left: 0; }
+            .zoom-controls { left: 20px; }
+            .toggle-sidebar { left: 0; }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="logo">
+            <div class="logo-icon"><i class="fa-solid fa-atom"></i></div>
+            <div>
+                <h1><span>Eigen</span>Lab Graph</h1>
+                <p>Mapa de conexiones interdisciplinarias</p>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="search-box">
+                <i class="fa-solid fa-search"></i>
+                <input type="text" id="search" placeholder="Buscar simulacion...">
+            </div>
+            <a href="index.html" class="btn btn-ghost"><i class="fa-solid fa-home"></i> Portal</a>
+        </div>
+    </header>
+
+    <aside class="sidebar" id="sidebar">
+        <div class="stats">
+            <div class="stat">
+                <div class="stat-value" id="stat-nodes">0</div>
+                <div class="stat-label">Nodos</div>
+            </div>
+            <div class="stat">
+                <div class="stat-value" id="stat-links">0</div>
+                <div class="stat-label">Conexiones</div>
+            </div>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-title">Disciplinas</div>
+            <button class="filter-btn active" data-filter="all">
+                <span class="dot" style="background: #64748b"></span>
+                Todas <span class="count" id="count-all">0</span>
+            </button>
+            <button class="filter-btn" data-filter="physics">
+                <span class="dot" style="background: #22c55e"></span>
+                Physics <span class="count" id="count-physics">0</span>
+            </button>
+            <button class="filter-btn" data-filter="chemistry">
+                <span class="dot" style="background: #06b6d4"></span>
+                Chemistry <span class="count" id="count-chemistry">0</span>
+            </button>
+            <button class="filter-btn" data-filter="biology">
+                <span class="dot" style="background: #10b981"></span>
+                Biology <span class="count" id="count-biology">0</span>
+            </button>
+            <button class="filter-btn" data-filter="biochemistry">
+                <span class="dot" style="background: #ec4899"></span>
+                Biochemistry <span class="count" id="count-biochemistry">0</span>
+            </button>
+            <button class="filter-btn" data-filter="geology">
+                <span class="dot" style="background: #d97706"></span>
+                Geology <span class="count" id="count-geology">0</span>
+            </button>
+            <button class="filter-btn" data-filter="astronomy">
+                <span class="dot" style="background: #6366f1"></span>
+                Astronomy <span class="count" id="count-astronomy">0</span>
+            </button>
+            <button class="filter-btn" data-filter="mathematics">
+                <span class="dot" style="background: #f97316"></span>
+                Mathematics <span class="count" id="count-mathematics">0</span>
+            </button>
+            <button class="filter-btn" data-filter="computation">
+                <span class="dot" style="background: #3b82f6"></span>
+                Computation <span class="count" id="count-computation">0</span>
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-title">Tipo de Nodo</div>
+            <button class="filter-btn" data-type="simulation">
+                <i class="fa-solid fa-flask" style="width: 10px; color: #a5b4fc"></i>
+                Simulaciones
+            </button>
+            <button class="filter-btn" data-type="concept">
+                <i class="fa-solid fa-lightbulb" style="width: 10px; color: #fbbf24"></i>
+                Conceptos
+            </button>
+            <button class="filter-btn" data-type="method">
+                <i class="fa-solid fa-code" style="width: 10px; color: #34d399"></i>
+                Metodos
+            </button>
+        </div>
+
+        <div class="filter-section">
+            <div class="filter-title">Acciones</div>
+            <button class="filter-btn" onclick="resetView()">
+                <i class="fa-solid fa-arrows-to-circle"></i> Centrar Vista
+            </button>
+            <button class="filter-btn" onclick="toggleLabels()">
+                <i class="fa-solid fa-tag"></i> Toggle Labels
+            </button>
+            <button class="filter-btn" onclick="showCrossDiscipline()">
+                <i class="fa-solid fa-link"></i> Conexiones Cross
+            </button>
+        </div>
+    </aside>
+
+    <button class="toggle-sidebar" id="toggle-sidebar">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+
+    <div id="graph-container">
+        <svg id="graph"></svg>
+    </div>
+
+    <div class="zoom-controls" id="zoom-controls">
+        <button class="zoom-btn" onclick="zoomIn()"><i class="fa-solid fa-plus"></i></button>
+        <button class="zoom-btn" onclick="zoomOut()"><i class="fa-solid fa-minus"></i></button>
+        <button class="zoom-btn" onclick="resetView()"><i class="fa-solid fa-compress"></i></button>
+    </div>
+
+    <div class="tooltip" id="tooltip"></div>
+
+    <div class="legend">
+        <div class="legend-title">Disciplinas</div>
+        <div class="legend-items">
+            <div class="legend-item"><span class="legend-dot" style="background: #22c55e"></span>Physics</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #06b6d4"></span>Chemistry</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #10b981"></span>Biology</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #ec4899"></span>Biochemistry</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #d97706"></span>Geology</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #6366f1"></span>Astronomy</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #f97316"></span>Mathematics</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #3b82f6"></span>Computation</div>
+            <div class="legend-item"><span class="legend-dot" style="background: #fbbf24"></span>Conceptos</div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================
+        // DATA - EigenLab Simulations & Connections
+        // ============================================
+        const graphData = {
+            nodes: [
+                // === PHYSICS VISUAL LAB ===
+                { id: "pendulo-simple", label: "Pendulo Simple", type: "simulation", discipline: "physics", desc: "Oscilador armonico simple", url: "../Physics/Physics Visual Lab/pendulo-simple.html" },
+                { id: "pendulo-doble", label: "Pendulo Doble", type: "simulation", discipline: "physics", desc: "Sistema caotico clasico", url: "../Physics/Physics Visual Lab/pendulo-doble.html" },
+                { id: "pendulos-acoplados", label: "Pendulos Acoplados", type: "simulation", discipline: "physics", desc: "Modos normales de oscilacion", url: "../Physics/Physics Visual Lab/pendulos-acoplados.html" },
+                { id: "ondas", label: "Ondas", type: "simulation", discipline: "physics", desc: "Propagacion y superposicion", url: "../Physics/Physics Visual Lab/ondas.html" },
+                { id: "interferencia", label: "Interferencia", type: "simulation", discipline: "physics", desc: "Patron de Young", url: "../Physics/Physics Visual Lab/interferencia.html" },
+                { id: "difraccion", label: "Difraccion", type: "simulation", discipline: "physics", desc: "Rendija simple y doble", url: "../Physics/Physics Visual Lab/difraccion.html" },
+                { id: "relatividad", label: "Relatividad", type: "simulation", discipline: "physics", desc: "Dilatacion temporal y contraccion", url: "../Physics/Physics Visual Lab/relatividad.html" },
+                { id: "termodinamica", label: "Termodinamica", type: "simulation", discipline: "physics", desc: "Maxwell-Boltzmann", url: "../Physics/Physics Visual Lab/termodinamica.html" },
+                { id: "optica", label: "Optica", type: "simulation", discipline: "physics", desc: "Refraccion y reflexion", url: "../Physics/Physics Visual Lab/optica.html" },
+                { id: "campo-electrico", label: "Campo Electrico", type: "simulation", discipline: "physics", desc: "Lineas de campo", url: "../Physics/Physics Visual Lab/campo-electrico.html" },
+                { id: "circuitos-rlc", label: "Circuitos RLC", type: "simulation", discipline: "physics", desc: "Impedancia y resonancia", url: "../Physics/Physics Visual Lab/circuitos.html" },
+                { id: "entropia-sim", label: "Entropia", type: "simulation", discipline: "physics", desc: "Segunda ley termodinamica", url: "../Physics/Physics Visual Lab/entropia.html" },
+
+                // === PHYSICS SOUND LAB - Metronomos ===
+                { id: "metronomo-pendulo", label: "Metronomo Pendulo", type: "simulation", discipline: "physics", desc: "Sonificacion del pendulo simple", url: "../Physics/Physics Sound Lab/metronomos/pendulo/index.html" },
+                { id: "metronomo-resorte", label: "Metronomo Resorte", type: "simulation", discipline: "physics", desc: "Oscilador armonico con sonido", url: "../Physics/Physics Sound Lab/metronomos/resorte/index.html" },
+                { id: "metronomo-onda", label: "Metronomo Onda", type: "simulation", discipline: "physics", desc: "Ondas convertidas en ritmo", url: "../Physics/Physics Sound Lab/metronomos/onda/index.html" },
+                { id: "metronomo-rebote", label: "Metronomo Rebote", type: "simulation", discipline: "physics", desc: "Colisiones elasticas sonoras", url: "../Physics/Physics Sound Lab/metronomos/rebote/index.html" },
+                { id: "lissajous-sound", label: "Lissajous Sonoro", type: "simulation", discipline: "physics", desc: "Figuras de Lissajous audibles", url: "../Physics/Physics Sound Lab/metronomos/lissajous/index.html" },
+                { id: "polirritmico", label: "Polirritmico", type: "simulation", discipline: "physics", desc: "Polirritmos fisicos", url: "../Physics/Physics Sound Lab/metronomos/polirritmico/index.html" },
+                { id: "kepler-metronomo", label: "Kepler Metronomo", type: "simulation", discipline: "physics", desc: "Leyes de Kepler sonificadas", url: "../Physics/Physics Sound Lab/metronomos/kepler/index.html" },
+                { id: "experimental-sound", label: "Experimental", type: "simulation", discipline: "physics", desc: "Laboratorio sonoro experimental", url: "../Physics/Physics Sound Lab/metronomos/experimental/index.html" },
+
+                // === PHYSICS SOUND LAB - Generativos ===
+                { id: "cadencia-orbital", label: "Cadencia Orbital", type: "simulation", discipline: "physics", desc: "Musica generada por orbitas", url: "../Physics/Physics Sound Lab/generativos/cadencia-orbital/index.html" },
+                { id: "chromatic-emission", label: "Chromatic Emission", type: "simulation", discipline: "physics", desc: "Emision cromatica sonora", url: "../Physics/Physics Sound Lab/generativos/chromatic-emission/index.html" },
+                { id: "harmonices-mundi", label: "Harmonices Mundi", type: "simulation", discipline: "physics", desc: "Armonia de Kepler", url: "../Physics/Physics Sound Lab/generativos/harmonices-mundi/index.html" },
+                { id: "orbifold-walker", label: "Orbifold Walker", type: "simulation", discipline: "physics", desc: "Caminata en orbifold musical", url: "../Physics/Physics Sound Lab/generativos/orbifold-walker/index.html" },
+                { id: "rameau-machine", label: "Rameau Machine", type: "simulation", discipline: "physics", desc: "Teoria de Rameau generativa", url: "../Physics/Physics Sound Lab/generativos/rameau-machine/index.html" },
+                { id: "set-class-attractor", label: "Set Class Attractor", type: "simulation", discipline: "physics", desc: "Atractores de clases de altura", url: "../Physics/Physics Sound Lab/generativos/set-class-attractor/index.html" },
+                { id: "tonnetz-atractor", label: "Tonnetz Atractor", type: "simulation", discipline: "physics", desc: "Tonnetz como sistema dinamico", url: "../Physics/Physics Sound Lab/generativos/tonnetz-atractor/index.html" },
+
+                // === CHEMISTRY VISUAL LAB ===
+                { id: "tabla-periodica", label: "Tendencias Periodicas", type: "simulation", discipline: "chemistry", desc: "Propiedades y tendencias", url: "../Chemistry/Chemistry Visual Lab/tendencias.html" },
+                { id: "orbitales", label: "Orbitales Atomicos", type: "simulation", discipline: "chemistry", desc: "Formas s, p, d, f", url: "../Chemistry/Chemistry Visual Lab/orbitales.html" },
+                { id: "modelo-bohr", label: "Modelo de Bohr", type: "simulation", discipline: "chemistry", desc: "Orbitas cuantizadas", url: "../Chemistry/Chemistry Visual Lab/modelo-bohr.html" },
+                { id: "vsepr", label: "VSEPR", type: "simulation", discipline: "chemistry", desc: "Geometria molecular 3D", url: "../Chemistry/Chemistry Visual Lab/vsepr.html" },
+                { id: "isomeria", label: "Isomeria", type: "simulation", discipline: "chemistry", desc: "Isomeros estructurales y geometricos", url: "../Chemistry/Chemistry Visual Lab/isomeria.html" },
+                { id: "reactivo-limitante", label: "Reactivo Limitante", type: "simulation", discipline: "chemistry", desc: "Estequiometria de reacciones", url: "../Chemistry/Chemistry Visual Lab/reactivo-limitante.html" },
+                { id: "equilibrio", label: "Le Chatelier", type: "simulation", discipline: "chemistry", desc: "Equilibrio quimico dinamico", url: "../Chemistry/Chemistry Visual Lab/le-chatelier.html" },
+                { id: "cinetica-colisiones", label: "Cinetica Colisiones", type: "simulation", discipline: "chemistry", desc: "Teoria de colisiones", url: "../Chemistry/Chemistry Visual Lab/cinetica-colisiones.html" },
+                { id: "acido-base", label: "Titulacion", type: "simulation", discipline: "chemistry", desc: "pH y curvas de titulacion", url: "../Chemistry/Chemistry Visual Lab/titulacion.html" },
+                { id: "solubilidad", label: "Solubilidad", type: "simulation", discipline: "chemistry", desc: "Producto de solubilidad Kps", url: "../Chemistry/Chemistry Visual Lab/solubilidad.html" },
+                { id: "electroquimica", label: "Celda Galvanica", type: "simulation", discipline: "chemistry", desc: "Electroquimica y potenciales", url: "../Chemistry/Chemistry Visual Lab/celda-galvanica.html" },
+                { id: "nernst", label: "Ecuacion Nernst", type: "simulation", discipline: "chemistry", desc: "Potencial de electrodo", url: "../Chemistry/Chemistry Visual Lab/nernst.html" },
+                { id: "gases-reales", label: "Gases Reales", type: "simulation", discipline: "chemistry", desc: "Van der Waals", url: "../Chemistry/Chemistry Visual Lab/gases-reales.html" },
+                { id: "diagrama-fases", label: "Diagrama de Fases", type: "simulation", discipline: "chemistry", desc: "Estados de la materia", url: "../Chemistry/Chemistry Visual Lab/diagrama-fases.html" },
+                { id: "calorimetria", label: "Calorimetria", type: "simulation", discipline: "chemistry", desc: "Entalpia y calor", url: "../Chemistry/Chemistry Visual Lab/calorimetria.html" },
+                { id: "decaimiento", label: "Decaimiento Radiactivo", type: "simulation", discipline: "chemistry", desc: "Vida media nuclear", url: "../Chemistry/Chemistry Visual Lab/decaimiento.html" },
+
+                // === BIOLOGY VISUAL LAB ===
+                { id: "neurona", label: "Neurona", type: "simulation", discipline: "biology", desc: "Hodgkin-Huxley", url: "../Biology/Biology Visual Lab/potencial-accion.html" },
+                { id: "ecosistema", label: "Ecosistema", type: "simulation", discipline: "biology", desc: "Lotka-Volterra", url: "../Biology/Biology Visual Lab/ecosistema.html" },
+                { id: "genetica-poblacional", label: "Genetica Poblacional", type: "simulation", discipline: "biology", desc: "Hardy-Weinberg", url: "../Biology/Biology Visual Lab/genetica-poblacional.html" },
+                { id: "mitosis", label: "Mitosis", type: "simulation", discipline: "biology", desc: "Division celular", url: "../Biology/Biology Visual Lab/mitosis.html" },
+                { id: "meiosis", label: "Meiosis", type: "simulation", discipline: "biology", desc: "Division reproductiva", url: "../Biology/Biology Visual Lab/meiosis.html" },
+                { id: "evolucion", label: "Evolucion", type: "simulation", discipline: "biology", desc: "Seleccion natural", url: "../Biology/Biology Visual Lab/seleccion-natural.html" },
+
+                // === BIOCHEMISTRY VISUAL LAB ===
+                { id: "glucolisis", label: "Glucolisis", type: "simulation", discipline: "biochemistry", desc: "10 pasos enzimaticos", url: "../Biochemistry/Biochem Visual Lab/glucolisis.html" },
+                { id: "krebs", label: "Ciclo de Krebs", type: "simulation", discipline: "biochemistry", desc: "Oxidacion del acetil-CoA", url: "../Biochemistry/Biochem Visual Lab/krebs.html" },
+                { id: "cadena-respiratoria", label: "Cadena Respiratoria", type: "simulation", discipline: "biochemistry", desc: "Fosforilacion oxidativa", url: "../Biochemistry/Biochem Visual Lab/cadena-respiratoria.html" },
+                { id: "fermentacion", label: "Fermentacion", type: "simulation", discipline: "biochemistry", desc: "Lactica vs alcoholica", url: "../Biochemistry/Biochem Visual Lab/fermentacion.html" },
+                { id: "michaelis-menten", label: "Michaelis-Menten", type: "simulation", discipline: "biochemistry", desc: "Cinetica enzimatica", url: "../Biochemistry/Biochem Visual Lab/michaelis-menten.html" },
+                { id: "adn-replicacion", label: "Replicacion ADN", type: "simulation", discipline: "biochemistry", desc: "Semiconservativa", url: "../Biochemistry/Biochem Visual Lab/adn-replicacion.html" },
+                { id: "transcripcion", label: "Transcripcion", type: "simulation", discipline: "biochemistry", desc: "ADN a ARN", url: "../Biochemistry/Biochem Visual Lab/transcripcion.html" },
+                { id: "traduccion", label: "Traduccion", type: "simulation", discipline: "biochemistry", desc: "ARN a proteina", url: "../Biochemistry/Biochem Visual Lab/traduccion.html" },
+                { id: "plegamiento", label: "Plegamiento", type: "simulation", discipline: "biochemistry", desc: "Estructura 3D proteica", url: "../Biochemistry/Biochem Visual Lab/plegamiento.html" },
+                { id: "membrana-fluida", label: "Membrana Fluida", type: "simulation", discipline: "biochemistry", desc: "Mosaico fluido", url: "../Biochemistry/Biochem Visual Lab/membrana-fluida.html" },
+                { id: "mutaciones", label: "Mutaciones", type: "simulation", discipline: "biochemistry", desc: "Tipos y efectos", url: "../Biochemistry/Biochem Visual Lab/mutaciones.html" },
+                { id: "regulacion-genica", label: "Regulacion Genica", type: "simulation", discipline: "biochemistry", desc: "Operon lac", url: "../Biochemistry/Biochem Visual Lab/regulacion-genica.html" },
+
+                // === GEOLOGY VISUAL LAB ===
+                { id: "terremotos", label: "Terremotos", type: "simulation", discipline: "geology", desc: "Ondas sismicas P, S", url: "../Geology/Geology Visual Lab/terremotos.html" },
+                { id: "volcanes", label: "Volcanes", type: "simulation", discipline: "geology", desc: "Tipos y VEI", url: "../Geology/Geology Visual Lab/volcanes.html" },
+                { id: "tectonica", label: "Tectonica Placas", type: "simulation", discipline: "geology", desc: "Deriva continental", url: "../Geology/Geology Visual Lab/tectonica.html" },
+                { id: "ciclo-rocas", label: "Ciclo de Rocas", type: "simulation", discipline: "geology", desc: "Igneas, sedimentarias, metamorficas", url: "../Geology/Geology Visual Lab/ciclo-rocas.html" },
+                { id: "erosion", label: "Erosion", type: "simulation", discipline: "geology", desc: "Agentes erosivos", url: "../Geology/Geology Visual Lab/erosion.html" },
+                { id: "estratigrafia", label: "Estratigrafia", type: "simulation", discipline: "geology", desc: "Columna geologica", url: "../Geology/Geology Visual Lab/estratigrafia.html" },
+
+                // === ASTRONOMY VISUAL LAB ===
+                { id: "expansion-universo", label: "Expansion Universo", type: "simulation", discipline: "astronomy", desc: "Ley de Hubble", url: "../Astronomy/Astronomy Visual Lab/expansion-universo.html" },
+                { id: "diagrama-hr", label: "Diagrama H-R", type: "simulation", discipline: "astronomy", desc: "Clasificacion estelar", url: "../Astronomy/Astronomy Visual Lab/diagrama-hr.html" },
+                { id: "lentes-gravitacionales", label: "Lentes Gravitacionales", type: "simulation", discipline: "astronomy", desc: "Curvatura espacio-tiempo", url: "../Astronomy/Astronomy Visual Lab/lentes-gravitacionales.html" },
+                { id: "fases-lunares", label: "Fases Lunares", type: "simulation", discipline: "astronomy", desc: "Ciclo sinodico", url: "../Astronomy/Astronomy Visual Lab/fases-lunares.html" },
+                { id: "estaciones", label: "Estaciones", type: "simulation", discipline: "astronomy", desc: "Inclinacion axial", url: "../Astronomy/Astronomy Visual Lab/estaciones.html" },
+                { id: "agujero-negro", label: "Agujero Negro", type: "simulation", discipline: "astronomy", desc: "Schwarzschild", url: "../Astronomy/Astronomy Visual Lab/agujero-negro.html" },
+
+                // === ASTRONOMY SOUND LAB ===
+                { id: "pulsares", label: "Pulsares", type: "simulation", discipline: "astronomy", desc: "Estrellas de neutrones", url: "../Astronomy/Astronomy Sound Lab/pulsares.html" },
+                { id: "ondas-gravitacionales", label: "Ondas Gravitacionales", type: "simulation", discipline: "astronomy", desc: "LIGO chirp", url: "../Astronomy/Astronomy Sound Lab/ondas-gravitacionales.html" },
+                { id: "musica-esferas", label: "Musica Esferas", type: "simulation", discipline: "astronomy", desc: "Kepler sonificado", url: "../Astronomy/Astronomy Sound Lab/musica-esferas-moderna.html" },
+
+                // === MATHEMATICS VISUAL LAB ===
+                { id: "mandelbrot", label: "Mandelbrot", type: "simulation", discipline: "mathematics", desc: "Fractal complejo", url: "../Mathematics/Math Visual Lab/mandelbrot.html" },
+                { id: "julia", label: "Conjunto Julia", type: "simulation", discipline: "mathematics", desc: "Fractales parametricos", url: "../Mathematics/Math Visual Lab/julia.html" },
+                { id: "lorenz", label: "Atractor Lorenz", type: "simulation", discipline: "mathematics", desc: "Caos deterministico", url: "../Mathematics/Math Visual Lab/lorenz.html" },
+                { id: "mobius", label: "Banda Mobius", type: "simulation", discipline: "mathematics", desc: "Topologia", url: "../Mathematics/Math Visual Lab/mobius.html" },
+                { id: "klein", label: "Botella Klein", type: "simulation", discipline: "mathematics", desc: "Superficie no orientable", url: "../Mathematics/Math Visual Lab/klein.html" },
+                { id: "fourier-visual", label: "Series Fourier", type: "simulation", discipline: "mathematics", desc: "Descomposicion en frecuencias", url: "../Mathematics/Math Visual Lab/fourier.html" },
+                { id: "domain-coloring", label: "Domain Coloring", type: "simulation", discipline: "mathematics", desc: "Funciones complejas", url: "../Mathematics/Math Visual Lab/domain-coloring.html" },
+                { id: "three-body", label: "Problema 3 Cuerpos", type: "simulation", discipline: "mathematics", desc: "Caos gravitacional", url: "../Mathematics/Math Visual Lab/three-body.html" },
+                { id: "probabilidad", label: "Probabilidad", type: "simulation", discipline: "mathematics", desc: "Distribuciones estadisticas", url: "../Mathematics/Math Visual Lab/probabilidad.html" },
+                { id: "funciones", label: "Funciones", type: "simulation", discipline: "mathematics", desc: "Explorador de funciones", url: "../Mathematics/Math Visual Lab/funciones.html" },
+                { id: "geometria-3d", label: "Geometria 3D", type: "simulation", discipline: "mathematics", desc: "Solidos platonicos", url: "../Mathematics/Math Visual Lab/geometria-3d.html" },
+                { id: "edo-visual", label: "Ecuaciones Diferenciales", type: "simulation", discipline: "mathematics", desc: "Campos de pendientes", url: "../Mathematics/Math Visual Lab/ecuaciones-diferenciales.html" },
+
+                // === MATHEMATICS GENERATIVE ART LAB ===
+                { id: "flow-fields", label: "Flow Fields", type: "simulation", discipline: "mathematics", desc: "Campos vectoriales generativos", url: "../Mathematics/Math Generative Art Lab/flow-fields.html" },
+                { id: "fractales-ifs", label: "Fractales IFS", type: "simulation", discipline: "mathematics", desc: "Sistemas de funciones iteradas", url: "../Mathematics/Math Generative Art Lab/fractales-ifs.html" },
+                { id: "l-systems", label: "L-Systems", type: "simulation", discipline: "mathematics", desc: "Gramaticas formales botanicas", url: "../Mathematics/Math Generative Art Lab/l-systems.html" },
+                { id: "phyllotaxis", label: "Phyllotaxis", type: "simulation", discipline: "mathematics", desc: "Espirales de Fibonacci", url: "../Mathematics/Math Generative Art Lab/phyllotaxis.html" },
+                { id: "reaccion-difusion", label: "Reaccion-Difusion", type: "simulation", discipline: "mathematics", desc: "Gray-Scott patterns", url: "../Mathematics/Math Generative Art Lab/reaccion-difusion.html" },
+                { id: "strange-attractors", label: "Strange Attractors", type: "simulation", discipline: "mathematics", desc: "Atractores exoticos", url: "../Mathematics/Math Generative Art Lab/strange-attractors.html" },
+                { id: "teselaciones-aperiodicas", label: "Teselaciones Aperiodicas", type: "simulation", discipline: "mathematics", desc: "Penrose tilings", url: "../Mathematics/Math Generative Art Lab/teselaciones-aperiodicas.html" },
+
+                // === COMPUTATION LAB ===
+                { id: "bubble-sort", label: "Bubble Sort", type: "simulation", discipline: "computation", desc: "Ordenamiento O(n2)", url: "../Computation/Computation Lab/bubble-sort-race.html" },
+                { id: "bst", label: "Binary Search Tree", type: "simulation", discipline: "computation", desc: "Estructura de datos", url: "../Computation/Computation Lab/binary-search-tree.html" },
+                { id: "logic-gates", label: "Logic Gates", type: "simulation", discipline: "computation", desc: "AND, OR, NOT, XOR", url: "../Computation/Computation Lab/logic-gates-sandbox.html" },
+                { id: "stack-heap", label: "Stack & Heap", type: "simulation", discipline: "computation", desc: "Modelo de memoria", url: "../Computation/Computation Lab/stack-heap-visualizer.html" },
+                { id: "perceptron", label: "Perceptron", type: "simulation", discipline: "computation", desc: "Clasificador lineal", url: "../Computation/Computation Lab/perceptron-playground.html" },
+                { id: "finite-automata", label: "Automatas Finitos", type: "simulation", discipline: "computation", desc: "DFA/NFA", url: "../Computation/Computation Lab/finite-automata.html" },
+
+                // === CONCEPTOS TRANSVERSALES ===
+                { id: "rk4", label: "Runge-Kutta 4", type: "method", discipline: "mathematics", desc: "Integracion numerica de EDOs" },
+                { id: "caos", label: "Teoria del Caos", type: "concept", discipline: "mathematics", desc: "Sensibilidad a condiciones iniciales" },
+                { id: "ondas-concept", label: "Ondas", type: "concept", discipline: "physics", desc: "Propagacion de energia" },
+                { id: "energia", label: "Conservacion Energia", type: "concept", discipline: "physics", desc: "Principio fundamental" },
+                { id: "entropia", label: "Entropia", type: "concept", discipline: "physics", desc: "Segunda ley termodinamica" },
+                { id: "gravedad", label: "Gravedad", type: "concept", discipline: "physics", desc: "Fuerza fundamental" },
+                { id: "electromagnetismo", label: "Electromagnetismo", type: "concept", discipline: "physics", desc: "Fuerza fundamental" },
+                { id: "cuantica", label: "Mecanica Cuantica", type: "concept", discipline: "physics", desc: "Mundo subatomico" },
+                { id: "relatividad-concept", label: "Relatividad General", type: "concept", discipline: "physics", desc: "Geometria del espacio-tiempo" },
+                { id: "evolucion-concept", label: "Evolucion Darwiniana", type: "concept", discipline: "biology", desc: "Seleccion natural" },
+                { id: "metabolismo", label: "Metabolismo", type: "concept", discipline: "biochemistry", desc: "Transformacion de energia" },
+                { id: "dogma-central", label: "Dogma Central", type: "concept", discipline: "biochemistry", desc: "ADN -> ARN -> Proteina" },
+                { id: "algoritmos", label: "Algoritmos", type: "concept", discipline: "computation", desc: "Resolucion de problemas" },
+                { id: "complejidad", label: "Complejidad", type: "concept", discipline: "computation", desc: "Big O notation" }
+            ],
+            links: [
+                // PHYSICS VISUAL LAB internal connections
+                { source: "pendulo-simple", target: "rk4" },
+                { source: "pendulo-doble", target: "rk4" },
+                { source: "pendulo-doble", target: "caos" },
+                { source: "pendulos-acoplados", target: "ondas-concept" },
+                { source: "ondas", target: "ondas-concept" },
+                { source: "interferencia", target: "ondas-concept" },
+                { source: "difraccion", target: "ondas-concept" },
+                { source: "termodinamica", target: "entropia" },
+                { source: "termodinamica", target: "energia" },
+                { source: "optica", target: "ondas-concept" },
+                { source: "campo-electrico", target: "electromagnetismo" },
+                { source: "circuitos-rlc", target: "electromagnetismo" },
+                { source: "circuitos-rlc", target: "ondas-concept" },
+                { source: "entropia-sim", target: "entropia" },
+                { source: "entropia-sim", target: "termodinamica" },
+                { source: "entropia-sim", target: "energia" },
+                { source: "relatividad", target: "relatividad-concept" },
+
+                // PHYSICS SOUND LAB - Metronomos connections
+                { source: "metronomo-pendulo", target: "pendulo-simple" },
+                { source: "metronomo-pendulo", target: "rk4" },
+                { source: "metronomo-pendulo", target: "ondas-concept" },
+                { source: "metronomo-resorte", target: "energia" },
+                { source: "metronomo-resorte", target: "ondas-concept" },
+                { source: "metronomo-onda", target: "ondas" },
+                { source: "metronomo-onda", target: "ondas-concept" },
+                { source: "metronomo-rebote", target: "energia" },
+                { source: "lissajous-sound", target: "ondas-concept" },
+                { source: "lissajous-sound", target: "interferencia" },
+                { source: "polirritmico", target: "ondas-concept" },
+                { source: "polirritmico", target: "pendulos-acoplados" },
+                { source: "kepler-metronomo", target: "gravedad" },
+                { source: "kepler-metronomo", target: "rk4" },
+
+                // PHYSICS SOUND LAB - Generativos connections
+                { source: "cadencia-orbital", target: "gravedad" },
+                { source: "cadencia-orbital", target: "rk4" },
+                { source: "cadencia-orbital", target: "kepler-metronomo" },
+                { source: "chromatic-emission", target: "cuantica" },
+                { source: "chromatic-emission", target: "ondas-concept" },
+                { source: "harmonices-mundi", target: "gravedad" },
+                { source: "harmonices-mundi", target: "kepler-metronomo" },
+                { source: "orbifold-walker", target: "caos" },
+                { source: "orbifold-walker", target: "rk4" },
+                { source: "rameau-machine", target: "ondas-concept" },
+                { source: "set-class-attractor", target: "caos" },
+                { source: "set-class-attractor", target: "lorenz" },
+                { source: "tonnetz-atractor", target: "caos" },
+                { source: "tonnetz-atractor", target: "lorenz" },
+
+                // CHEMISTRY internal connections
+                { source: "orbitales", target: "cuantica" },
+                { source: "modelo-bohr", target: "cuantica" },
+                { source: "modelo-bohr", target: "orbitales" },
+                { source: "vsepr", target: "orbitales" },
+                { source: "isomeria", target: "vsepr" },
+                { source: "reactivo-limitante", target: "equilibrio" },
+                { source: "equilibrio", target: "entropia" },
+                { source: "cinetica-colisiones", target: "equilibrio" },
+                { source: "cinetica-colisiones", target: "energia" },
+                { source: "acido-base", target: "equilibrio" },
+                { source: "solubilidad", target: "equilibrio" },
+                { source: "electroquimica", target: "electromagnetismo" },
+                { source: "nernst", target: "electroquimica" },
+                { source: "nernst", target: "equilibrio" },
+                { source: "gases-reales", target: "termodinamica" },
+                { source: "gases-reales", target: "energia" },
+                { source: "diagrama-fases", target: "entropia" },
+                { source: "diagrama-fases", target: "energia" },
+                { source: "calorimetria", target: "energia" },
+                { source: "calorimetria", target: "entropia" },
+                { source: "decaimiento", target: "cuantica" },
+
+                // BIOLOGY internal connections
+                { source: "neurona", target: "rk4" },
+                { source: "ecosistema", target: "rk4" },
+                { source: "genetica-poblacional", target: "evolucion-concept" },
+                { source: "evolucion", target: "evolucion-concept" },
+                { source: "mitosis", target: "meiosis" },
+
+                // BIOCHEMISTRY internal connections
+                { source: "glucolisis", target: "metabolismo" },
+                { source: "krebs", target: "metabolismo" },
+                { source: "cadena-respiratoria", target: "metabolismo" },
+                { source: "fermentacion", target: "metabolismo" },
+                { source: "glucolisis", target: "krebs" },
+                { source: "krebs", target: "cadena-respiratoria" },
+                { source: "michaelis-menten", target: "glucolisis" },
+                { source: "adn-replicacion", target: "dogma-central" },
+                { source: "transcripcion", target: "dogma-central" },
+                { source: "traduccion", target: "dogma-central" },
+                { source: "adn-replicacion", target: "transcripcion" },
+                { source: "transcripcion", target: "traduccion" },
+                { source: "plegamiento", target: "traduccion" },
+                { source: "mutaciones", target: "adn-replicacion" },
+                { source: "regulacion-genica", target: "transcripcion" },
+
+                // GEOLOGY internal connections
+                { source: "terremotos", target: "ondas-concept" },
+                { source: "terremotos", target: "tectonica" },
+                { source: "volcanes", target: "tectonica" },
+                { source: "ciclo-rocas", target: "erosion" },
+                { source: "estratigrafia", target: "ciclo-rocas" },
+
+                // ASTRONOMY internal connections
+                { source: "expansion-universo", target: "relatividad-concept" },
+                { source: "lentes-gravitacionales", target: "relatividad-concept" },
+                { source: "agujero-negro", target: "relatividad-concept" },
+                { source: "agujero-negro", target: "gravedad" },
+                { source: "diagrama-hr", target: "energia" },
+                { source: "pulsares", target: "ondas-concept" },
+                { source: "ondas-gravitacionales", target: "relatividad-concept" },
+                { source: "musica-esferas", target: "gravedad" },
+                { source: "fases-lunares", target: "gravedad" },
+                { source: "estaciones", target: "gravedad" },
+
+                // MATHEMATICS VISUAL LAB internal connections
+                { source: "mandelbrot", target: "julia" },
+                { source: "lorenz", target: "caos" },
+                { source: "lorenz", target: "rk4" },
+                { source: "three-body", target: "caos" },
+                { source: "three-body", target: "rk4" },
+                { source: "three-body", target: "gravedad" },
+                { source: "mobius", target: "klein" },
+                { source: "funciones", target: "fourier-visual" },
+                { source: "funciones", target: "domain-coloring" },
+                { source: "edo-visual", target: "rk4" },
+                { source: "edo-visual", target: "lorenz" },
+                { source: "edo-visual", target: "caos" },
+                { source: "edo-visual", target: "three-body" },
+                { source: "geometria-3d", target: "mobius" },
+                { source: "geometria-3d", target: "klein" },
+                { source: "probabilidad", target: "caos" },
+
+                // MATHEMATICS GENERATIVE ART LAB internal connections
+                { source: "fractales-ifs", target: "mandelbrot" },
+                { source: "fractales-ifs", target: "julia" },
+                { source: "fractales-ifs", target: "caos" },
+                { source: "strange-attractors", target: "lorenz" },
+                { source: "strange-attractors", target: "caos" },
+                { source: "strange-attractors", target: "rk4" },
+                { source: "flow-fields", target: "caos" },
+                { source: "flow-fields", target: "rk4" },
+                { source: "l-systems", target: "fractales-ifs" },
+                { source: "phyllotaxis", target: "l-systems" },
+                { source: "reaccion-difusion", target: "caos" },
+                { source: "teselaciones-aperiodicas", target: "mobius" },
+
+                // COMPUTATION internal connections
+                { source: "bubble-sort", target: "algoritmos" },
+                { source: "bubble-sort", target: "complejidad" },
+                { source: "bst", target: "algoritmos" },
+                { source: "bst", target: "complejidad" },
+                { source: "perceptron", target: "algoritmos" },
+                { source: "finite-automata", target: "algoritmos" },
+
+                // === CROSS-DISCIPLINE CONNECTIONS ===
+
+                // Physics <-> Chemistry
+                { source: "termodinamica", target: "equilibrio", cross: true },
+                { source: "cuantica", target: "orbitales", cross: true },
+                { source: "electroquimica", target: "campo-electrico", cross: true },
+                { source: "difraccion", target: "orbitales", cross: true },
+                { source: "termodinamica", target: "gases-reales", cross: true },
+                { source: "termodinamica", target: "diagrama-fases", cross: true },
+                { source: "termodinamica", target: "calorimetria", cross: true },
+                { source: "cinetica-colisiones", target: "termodinamica", cross: true },
+                { source: "decaimiento", target: "relatividad", cross: true },
+                { source: "modelo-bohr", target: "optica", cross: true },
+
+                // Physics <-> Biology
+                { source: "neurona", target: "electromagnetismo", cross: true },
+                { source: "termodinamica", target: "ecosistema", cross: true },
+                { source: "ondas-concept", target: "neurona", cross: true },
+
+                // Physics <-> Astronomy
+                { source: "relatividad", target: "agujero-negro", cross: true },
+                { source: "ondas", target: "ondas-gravitacionales", cross: true },
+                { source: "termodinamica", target: "diagrama-hr", cross: true },
+                { source: "optica", target: "lentes-gravitacionales", cross: true },
+                { source: "campo-electrico", target: "pulsares", cross: true },
+                { source: "energia", target: "diagrama-hr", cross: true },
+                { source: "kepler-metronomo", target: "musica-esferas", cross: true },
+                { source: "harmonices-mundi", target: "musica-esferas", cross: true },
+                { source: "cadencia-orbital", target: "musica-esferas", cross: true },
+                { source: "cadencia-orbital", target: "expansion-universo", cross: true },
+                { source: "kepler-metronomo", target: "estaciones", cross: true },
+
+                // Physics <-> Geology
+                { source: "ondas", target: "terremotos", cross: true },
+                { source: "termodinamica", target: "volcanes", cross: true },
+                { source: "energia", target: "tectonica", cross: true },
+
+                // Physics <-> Mathematics
+                { source: "fourier-visual", target: "ondas", cross: true },
+                { source: "caos", target: "pendulo-doble", cross: true },
+                { source: "pendulo-simple", target: "fourier-visual", cross: true },
+                { source: "domain-coloring", target: "cuantica", cross: true },
+                { source: "interferencia", target: "fourier-visual", cross: true },
+                { source: "lissajous-sound", target: "fourier-visual", cross: true },
+                { source: "polirritmico", target: "fourier-visual", cross: true },
+                { source: "orbifold-walker", target: "mobius", cross: true },
+                { source: "orbifold-walker", target: "klein", cross: true },
+                { source: "tonnetz-atractor", target: "mobius", cross: true },
+                { source: "set-class-attractor", target: "lorenz", cross: true },
+                { source: "rameau-machine", target: "fourier-visual", cross: true },
+                { source: "harmonices-mundi", target: "three-body", cross: true },
+                { source: "termodinamica", target: "flow-fields", cross: true },
+                { source: "ondas", target: "flow-fields", cross: true },
+                { source: "pendulo-doble", target: "strange-attractors", cross: true },
+                { source: "optica", target: "reaccion-difusion", cross: true },
+
+                // Physics <-> Computation
+                { source: "termodinamica", target: "perceptron", cross: true },
+                { source: "entropia", target: "algoritmos", cross: true },
+                { source: "orbifold-walker", target: "algoritmos", cross: true },
+                { source: "tonnetz-atractor", target: "algoritmos", cross: true },
+                { source: "set-class-attractor", target: "finite-automata", cross: true },
+                { source: "rameau-machine", target: "algoritmos", cross: true },
+
+                // Chemistry <-> Biochemistry
+                { source: "equilibrio", target: "michaelis-menten", cross: true },
+                { source: "acido-base", target: "glucolisis", cross: true },
+                { source: "cinetica-colisiones", target: "michaelis-menten", cross: true },
+                { source: "electroquimica", target: "cadena-respiratoria", cross: true },
+                { source: "nernst", target: "cadena-respiratoria", cross: true },
+                { source: "nernst", target: "neurona", cross: true },
+                { source: "acido-base", target: "membrana-fluida", cross: true },
+                { source: "isomeria", target: "plegamiento", cross: true },
+                { source: "calorimetria", target: "metabolismo", cross: true },
+
+                // Chemistry <-> Biology
+                { source: "acido-base", target: "neurona", cross: true },
+                { source: "isomeria", target: "mitosis", cross: true },
+                { source: "equilibrio", target: "ecosistema", cross: true },
+
+                // Chemistry <-> Geology
+                { source: "diagrama-fases", target: "ciclo-rocas", cross: true },
+                { source: "diagrama-fases", target: "volcanes", cross: true },
+                { source: "equilibrio", target: "volcanes", cross: true },
+                { source: "acido-base", target: "erosion", cross: true },
+                { source: "solubilidad", target: "erosion", cross: true },
+                { source: "decaimiento", target: "estratigrafia", cross: true },
+
+                // Chemistry <-> Astronomy
+                { source: "tabla-periodica", target: "diagrama-hr", cross: true },
+                { source: "modelo-bohr", target: "diagrama-hr", cross: true },
+                { source: "decaimiento", target: "pulsares", cross: true },
+                { source: "decaimiento", target: "expansion-universo", cross: true },
+
+                // Chemistry <-> Mathematics
+                { source: "orbitales", target: "domain-coloring", cross: true },
+                { source: "equilibrio", target: "lorenz", cross: true },
+                { source: "reaccion-difusion", target: "equilibrio", cross: true },
+                { source: "cinetica-colisiones", target: "rk4", cross: true },
+                { source: "decaimiento", target: "rk4", cross: true },
+                { source: "gases-reales", target: "rk4", cross: true },
+                { source: "nernst", target: "domain-coloring", cross: true },
+
+                // Chemistry <-> Computation
+                { source: "orbitales", target: "perceptron", cross: true },
+                { source: "vsepr", target: "algoritmos", cross: true },
+                { source: "isomeria", target: "algoritmos", cross: true },
+                { source: "reactivo-limitante", target: "algoritmos", cross: true },
+                { source: "cinetica-colisiones", target: "perceptron", cross: true },
+
+                // Biology <-> Biochemistry
+                { source: "mitosis", target: "adn-replicacion", cross: true },
+                { source: "meiosis", target: "adn-replicacion", cross: true },
+                { source: "evolucion", target: "mutaciones", cross: true },
+                { source: "neurona", target: "membrana-fluida", cross: true },
+                { source: "genetica-poblacional", target: "regulacion-genica", cross: true },
+                { source: "evolucion", target: "plegamiento", cross: true },
+
+                // Biology <-> Geology
+                { source: "evolucion", target: "estratigrafia", cross: true },
+                { source: "ecosistema", target: "erosion", cross: true },
+                { source: "evolucion", target: "tectonica", cross: true },
+
+                // Biology <-> Astronomy
+                { source: "evolucion", target: "expansion-universo", cross: true },
+                { source: "ecosistema", target: "estaciones", cross: true },
+
+                // Biology <-> Mathematics
+                { source: "ecosistema", target: "caos", cross: true },
+                { source: "ecosistema", target: "lorenz", cross: true },
+                { source: "genetica-poblacional", target: "mandelbrot", cross: true },
+                { source: "neurona", target: "fourier-visual", cross: true },
+                { source: "l-systems", target: "evolucion", cross: true },
+                { source: "phyllotaxis", target: "evolucion", cross: true },
+                { source: "reaccion-difusion", target: "evolucion", cross: true },
+                { source: "l-systems", target: "mitosis", cross: true },
+
+                // Biology <-> Computation
+                { source: "perceptron", target: "neurona", cross: true },
+                { source: "evolucion", target: "algoritmos", cross: true },
+                { source: "genetica-poblacional", target: "finite-automata", cross: true },
+                { source: "neurona", target: "bst", cross: true },
+
+                // Biochemistry <-> Geology
+                { source: "metabolismo", target: "volcanes", cross: true },
+                { source: "fermentacion", target: "estratigrafia", cross: true },
+
+                // Biochemistry <-> Astronomy
+                { source: "metabolismo", target: "diagrama-hr", cross: true },
+                { source: "dogma-central", target: "expansion-universo", cross: true },
+
+                // Biochemistry <-> Mathematics
+                { source: "michaelis-menten", target: "rk4", cross: true },
+                { source: "glucolisis", target: "lorenz", cross: true },
+                { source: "adn-replicacion", target: "fourier-visual", cross: true },
+                { source: "cadena-respiratoria", target: "caos", cross: true },
+                { source: "reaccion-difusion", target: "membrana-fluida", cross: true },
+                { source: "reaccion-difusion", target: "regulacion-genica", cross: true },
+                { source: "plegamiento", target: "strange-attractors", cross: true },
+
+                // Biochemistry <-> Computation
+                { source: "plegamiento", target: "perceptron", cross: true },
+                { source: "regulacion-genica", target: "logic-gates", cross: true },
+                { source: "traduccion", target: "finite-automata", cross: true },
+                { source: "dogma-central", target: "algoritmos", cross: true },
+
+                // Geology <-> Astronomy
+                { source: "tectonica", target: "gravedad", cross: true },
+                { source: "terremotos", target: "ondas-gravitacionales", cross: true },
+                { source: "volcanes", target: "pulsares", cross: true },
+                { source: "estratigrafia", target: "expansion-universo", cross: true },
+                { source: "erosion", target: "fases-lunares", cross: true },
+
+                // Geology <-> Mathematics
+                { source: "terremotos", target: "caos", cross: true },
+                { source: "erosion", target: "mandelbrot", cross: true },
+                { source: "tectonica", target: "lorenz", cross: true },
+                { source: "ciclo-rocas", target: "rk4", cross: true },
+                { source: "erosion", target: "flow-fields", cross: true },
+                { source: "erosion", target: "fractales-ifs", cross: true },
+                { source: "volcanes", target: "flow-fields", cross: true },
+                { source: "estratigrafia", target: "l-systems", cross: true },
+
+                // Geology <-> Computation
+                { source: "terremotos", target: "perceptron", cross: true },
+                { source: "estratigrafia", target: "stack-heap", cross: true },
+
+                // Astronomy <-> Mathematics
+                { source: "three-body", target: "musica-esferas", cross: true },
+                { source: "agujero-negro", target: "domain-coloring", cross: true },
+                { source: "expansion-universo", target: "lorenz", cross: true },
+                { source: "lentes-gravitacionales", target: "domain-coloring", cross: true },
+                { source: "pulsares", target: "fourier-visual", cross: true },
+                { source: "diagrama-hr", target: "mandelbrot", cross: true },
+
+                // Astronomy <-> Computation
+                { source: "expansion-universo", target: "algoritmos", cross: true },
+                { source: "diagrama-hr", target: "perceptron", cross: true },
+                { source: "finite-automata", target: "pulsares", cross: true },
+                { source: "agujero-negro", target: "complejidad", cross: true },
+
+                // Mathematics <-> Computation
+                { source: "lorenz", target: "perceptron", cross: true },
+                { source: "complejidad", target: "rk4", cross: true },
+                { source: "mandelbrot", target: "algoritmos", cross: true },
+                { source: "caos", target: "perceptron", cross: true },
+                { source: "fourier-visual", target: "algoritmos", cross: true },
+                { source: "julia", target: "complejidad", cross: true },
+                { source: "three-body", target: "complejidad", cross: true },
+                { source: "l-systems", target: "algoritmos", cross: true },
+                { source: "l-systems", target: "finite-automata", cross: true },
+                { source: "fractales-ifs", target: "algoritmos", cross: true },
+                { source: "fractales-ifs", target: "complejidad", cross: true },
+                { source: "flow-fields", target: "algoritmos", cross: true },
+                { source: "reaccion-difusion", target: "algoritmos", cross: true },
+                { source: "strange-attractors", target: "perceptron", cross: true },
+                { source: "teselaciones-aperiodicas", target: "algoritmos", cross: true },
+                { source: "phyllotaxis", target: "algoritmos", cross: true }
+            ]
+        };
+
+        // ============================================
+        // GRAPH SETUP
+        // ============================================
+        const container = document.getElementById('graph-container');
+        const svg = d3.select('#graph');
+        const width = container.clientWidth;
+        const height = container.clientHeight;
+
+        const disciplineColors = {
+            physics: '#22c55e',
+            chemistry: '#06b6d4',
+            biology: '#10b981',
+            biochemistry: '#ec4899',
+            geology: '#d97706',
+            astronomy: '#6366f1',
+            mathematics: '#f97316',
+            computation: '#3b82f6'
+        };
+
+        const typeColors = {
+            simulation: null, // use discipline color
+            concept: '#fbbf24',
+            method: '#34d399'
+        };
+
+        // Calculate connections
+        const linkCount = {};
+        graphData.links.forEach(l => {
+            linkCount[l.source] = (linkCount[l.source] || 0) + 1;
+            linkCount[l.target] = (linkCount[l.target] || 0) + 1;
+        });
+
+        graphData.nodes.forEach(n => {
+            n.connections = linkCount[n.id] || 0;
+            n.radius = Math.max(8, Math.min(22, 6 + n.connections * 1.2));
+        });
+
+        const g = svg.append('g');
+
+        const zoom = d3.zoom()
+            .scaleExtent([0.2, 4])
+            .on('zoom', (event) => g.attr('transform', event.transform));
+
+        svg.call(zoom);
+
+        const simulation = d3.forceSimulation(graphData.nodes)
+            .force('link', d3.forceLink(graphData.links).id(d => d.id).distance(80))
+            .force('charge', d3.forceManyBody().strength(-200))
+            .force('center', d3.forceCenter(width / 2, height / 2))
+            .force('collision', d3.forceCollide().radius(d => d.radius + 8));
+
+        const link = g.append('g')
+            .attr('class', 'links')
+            .selectAll('line')
+            .data(graphData.links)
+            .enter()
+            .append('line')
+            .attr('class', d => 'link' + (d.cross ? ' cross-discipline' : ''))
+            .attr('stroke', d => d.cross ? '#8b5cf6' : '#334155')
+            .attr('stroke-width', d => d.cross ? 1.5 : 1);
+
+        const node = g.append('g')
+            .attr('class', 'nodes')
+            .selectAll('g')
+            .data(graphData.nodes)
+            .enter()
+            .append('g')
+            .attr('class', d => 'node' + (d.url ? ' has-link' : ''))
+            .call(d3.drag()
+                .on('start', dragStarted)
+                .on('drag', dragged)
+                .on('end', dragEnded));
+
+        node.append('circle')
+            .attr('r', d => d.radius)
+            .attr('fill', d => {
+                if (d.type !== 'simulation') return typeColors[d.type];
+                return disciplineColors[d.discipline];
+            })
+            .attr('stroke', d => disciplineColors[d.discipline])
+            .attr('stroke-opacity', 0.6);
+
+        node.append('text')
+            .attr('class', 'icon')
+            .attr('dy', 1)
+            .text(d => d.label.charAt(0).toUpperCase());
+
+        node.append('text')
+            .attr('class', 'label')
+            .attr('dy', d => d.radius + 14)
+            .text(d => d.label);
+
+        // Add link indicator for navigable nodes
+        node.filter(d => d.url)
+            .append('text')
+            .attr('class', 'link-indicator')
+            .attr('dx', d => d.radius - 4)
+            .attr('dy', d => -d.radius + 4)
+            .text('↗');
+
+        const tooltip = document.getElementById('tooltip');
+
+        node.on('mouseenter', (event, d) => {
+            showTooltip(event, d);
+            highlightConnections(d);
+        })
+        .on('mouseleave', () => {
+            hideTooltip();
+            resetHighlight();
+        })
+        .on('click', (event, d) => {
+            // Alt+Click: propagate wave without navigation
+            if (event.altKey) {
+                event.preventDefault();
+                propagateWave(d);
+                return;
+            }
+
+            if (d.url) {
+                // Ctrl/Cmd + click opens in new tab
+                if (event.ctrlKey || event.metaKey) {
+                    window.open(d.url, '_blank');
+                } else {
+                    window.location.href = d.url;
+                }
+            } else {
+                // Concept/method nodes: propagate wave and focus
+                propagateWave(d);
+                focusNode(d);
+            }
+        })
+        .on('dblclick', (event, d) => {
+            if (d.url) {
+                window.open(d.url, '_blank');
+            }
+        });
+
+        simulation.on('tick', () => {
+            link
+                .attr('x1', d => d.source.x)
+                .attr('y1', d => d.source.y)
+                .attr('x2', d => d.target.x)
+                .attr('y2', d => d.target.y);
+            node.attr('transform', d => `translate(${d.x},${d.y})`);
+        });
+
+        // ============================================
+        // INTERACTIONS
+        // ============================================
+        function dragStarted(event, d) {
+            if (!event.active) simulation.alphaTarget(0.3).restart();
+            d.fx = d.x; d.fy = d.y;
+        }
+        function dragged(event, d) { d.fx = event.x; d.fy = event.y; }
+        function dragEnded(event, d) {
+            if (!event.active) simulation.alphaTarget(0);
+            d.fx = null; d.fy = null;
+        }
+
+        function showTooltip(event, d) {
+            const connectedNodes = graphData.links
+                .filter(l => l.source.id === d.id || l.target.id === d.id)
+                .map(l => l.source.id === d.id ? l.target.label : l.source.label);
+
+            const color = d.type === 'simulation' ? disciplineColors[d.discipline] : typeColors[d.type];
+
+            const actionHtml = d.url ? `
+                <div class="tooltip-action">
+                    <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                    Click abrir · Ctrl+Click nueva pestaña
+                </div>
+            ` : `
+                <div class="tooltip-action">
+                    <i class="fa-solid fa-wave-square"></i>
+                    Click para propagar onda
+                </div>
+            `;
+
+            tooltip.innerHTML = `
+                <div class="tooltip-header">
+                    <div class="tooltip-icon" style="background: ${color}30; color: ${color}">
+                        <i class="fa-solid fa-${d.type === 'simulation' ? 'flask' : d.type === 'concept' ? 'lightbulb' : 'code'}"></i>
+                    </div>
+                    <div>
+                        <div class="tooltip-title">${d.label}</div>
+                        <div class="tooltip-type">${d.discipline} · ${d.type}</div>
+                    </div>
+                </div>
+                <div class="tooltip-desc">${d.desc || ''}</div>
+                <div class="tooltip-connections">
+                    <strong>${d.connections}</strong> conexiones: ${connectedNodes.slice(0, 5).join(', ')}${connectedNodes.length > 5 ? '...' : ''}
+                </div>
+                ${actionHtml}
+            `;
+            tooltip.style.left = (event.pageX + 15) + 'px';
+            tooltip.style.top = (event.pageY - 10) + 'px';
+            tooltip.classList.add('visible');
+        }
+
+        function hideTooltip() { tooltip.classList.remove('visible'); }
+
+        // Wave propagation function
+        function propagateWave(startNode) {
+            // Build adjacency map
+            const adjacency = new Map();
+            graphData.nodes.forEach(n => adjacency.set(n.id, []));
+            graphData.links.forEach(l => {
+                const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                adjacency.get(sourceId).push(targetId);
+                adjacency.get(targetId).push(sourceId);
+            });
+
+            // BFS to get nodes by distance
+            const visited = new Set([startNode.id]);
+            const levels = [[startNode.id]];
+            let currentLevel = [startNode.id];
+
+            while (currentLevel.length > 0 && levels.length < 6) {
+                const nextLevel = [];
+                currentLevel.forEach(nodeId => {
+                    adjacency.get(nodeId).forEach(neighborId => {
+                        if (!visited.has(neighborId)) {
+                            visited.add(neighborId);
+                            nextLevel.push(neighborId);
+                        }
+                    });
+                });
+                if (nextLevel.length > 0) {
+                    levels.push(nextLevel);
+                }
+                currentLevel = nextLevel;
+            }
+
+            // Animate origin node
+            node.filter(n => n.id === startNode.id)
+                .classed('wave-origin', true);
+
+            // Animate each level with delay
+            levels.forEach((levelNodes, levelIndex) => {
+                if (levelIndex === 0) return; // Skip origin
+
+                const delay = levelIndex * 150;
+                const fadeDelay = delay + 500;
+
+                setTimeout(() => {
+                    // Animate nodes at this level
+                    node.filter(n => levelNodes.includes(n.id))
+                        .classed('wave-hit', true);
+
+                    // Animate links connecting to this level
+                    link.filter(l => {
+                        const sourceId = typeof l.source === 'object' ? l.source.id : l.source;
+                        const targetId = typeof l.target === 'object' ? l.target.id : l.target;
+                        const prevLevelNodes = levels[levelIndex - 1];
+                        return (levelNodes.includes(sourceId) && prevLevelNodes.includes(targetId)) ||
+                               (levelNodes.includes(targetId) && prevLevelNodes.includes(sourceId));
+                    }).classed('wave-active', true);
+                }, delay);
+
+                // Remove classes after animation
+                setTimeout(() => {
+                    node.filter(n => levelNodes.includes(n.id))
+                        .classed('wave-hit', false);
+                    link.classed('wave-active', false);
+                }, fadeDelay);
+            });
+
+            // Clean up origin
+            setTimeout(() => {
+                node.classed('wave-origin', false);
+            }, 600);
+        }
+
+        function highlightConnections(d) {
+            const connectedIds = new Set([d.id]);
+            graphData.links.forEach(l => {
+                if (l.source.id === d.id) connectedIds.add(l.target.id);
+                if (l.target.id === d.id) connectedIds.add(l.source.id);
+            });
+            node.classed('dimmed', n => !connectedIds.has(n.id));
+            link.classed('dimmed', l => l.source.id !== d.id && l.target.id !== d.id);
+            link.classed('highlighted', l => l.source.id === d.id || l.target.id === d.id);
+        }
+
+        function resetHighlight() {
+            node.classed('dimmed', false);
+            link.classed('dimmed', false);
+            link.classed('highlighted', false);
+        }
+
+        function focusNode(d) {
+            const transform = d3.zoomIdentity
+                .translate(width / 2, height / 2)
+                .scale(1.5)
+                .translate(-d.x, -d.y);
+            svg.transition().duration(750).call(zoom.transform, transform);
+        }
+
+        // ============================================
+        // CONTROLS
+        // ============================================
+        function zoomIn() { svg.transition().duration(300).call(zoom.scaleBy, 1.3); }
+        function zoomOut() { svg.transition().duration(300).call(zoom.scaleBy, 0.7); }
+        function resetView() {
+            svg.transition().duration(750).call(
+                zoom.transform,
+                d3.zoomIdentity.translate(width / 2, height / 2).scale(0.7).translate(-width / 2, -height / 2)
+            );
+        }
+
+        let labelsVisible = false;
+        function toggleLabels() {
+            labelsVisible = !labelsVisible;
+            node.selectAll('.label').style('opacity', labelsVisible ? 1 : 0);
+        }
+
+        function showCrossDiscipline() {
+            const crossLinks = graphData.links.filter(l => l.cross);
+            const involvedIds = new Set();
+            crossLinks.forEach(l => {
+                involvedIds.add(l.source.id);
+                involvedIds.add(l.target.id);
+            });
+            node.style('opacity', d => involvedIds.has(d.id) ? 1 : 0.1);
+            link.style('opacity', l => l.cross ? 1 : 0.05);
+        }
+
+        function randomWave() {
+            // Pick a random node with connections
+            const nodesWithConnections = graphData.nodes.filter(n => n.connections > 2);
+            const randomNode = nodesWithConnections[Math.floor(Math.random() * nodesWithConnections.length)];
+            propagateWave(randomNode);
+            focusNode(randomNode);
+        }
+
+        // ============================================
+        // FILTERS
+        // ============================================
+        document.querySelectorAll('.filter-btn[data-filter]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn[data-filter]').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                const filter = btn.dataset.filter;
+                if (filter === 'all') {
+                    node.style('opacity', 1);
+                    link.style('opacity', 1);
+                } else {
+                    node.style('opacity', d => d.discipline === filter ? 1 : 0.1);
+                    link.style('opacity', l =>
+                        (l.source.discipline === filter || l.target.discipline === filter) ? 0.6 : 0.05
+                    );
+                }
+            });
+        });
+
+        document.querySelectorAll('.filter-btn[data-type]').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const type = btn.dataset.type;
+                node.style('opacity', d => d.type === type ? 1 : 0.1);
+                link.style('opacity', 0.1);
+            });
+        });
+
+        document.getElementById('search').addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            if (!query) {
+                node.style('opacity', 1);
+                link.style('opacity', 1);
+                return;
+            }
+            const matchingIds = new Set();
+            graphData.nodes.forEach(n => {
+                if (n.label.toLowerCase().includes(query) || (n.desc && n.desc.toLowerCase().includes(query))) {
+                    matchingIds.add(n.id);
+                }
+            });
+            node.style('opacity', d => matchingIds.has(d.id) ? 1 : 0.1);
+            link.style('opacity', 0.1);
+            if (matchingIds.size > 0) {
+                const firstMatch = graphData.nodes.find(n => matchingIds.has(n.id));
+                if (firstMatch && firstMatch.x) focusNode(firstMatch);
+            }
+        });
+
+        document.getElementById('toggle-sidebar').addEventListener('click', () => {
+            const sidebar = document.getElementById('sidebar');
+            const graphContainer = document.getElementById('graph-container');
+            const zoomControls = document.getElementById('zoom-controls');
+            const toggleBtn = document.getElementById('toggle-sidebar');
+            sidebar.classList.toggle('collapsed');
+            graphContainer.classList.toggle('expanded');
+            zoomControls.classList.toggle('expanded');
+            toggleBtn.classList.toggle('collapsed');
+            const icon = toggleBtn.querySelector('i');
+            icon.classList.toggle('fa-chevron-left');
+            icon.classList.toggle('fa-chevron-right');
+        });
+
+        // ============================================
+        // STATS
+        // ============================================
+        function updateStats() {
+            document.getElementById('stat-nodes').textContent = graphData.nodes.length;
+            document.getElementById('stat-links').textContent = graphData.links.length;
+
+            const counts = { all: graphData.nodes.length };
+            graphData.nodes.forEach(n => {
+                counts[n.discipline] = (counts[n.discipline] || 0) + 1;
+            });
+
+            document.getElementById('count-all').textContent = counts.all;
+            Object.keys(disciplineColors).forEach(d => {
+                const el = document.getElementById('count-' + d);
+                if (el) el.textContent = counts[d] || 0;
+            });
+        }
+        updateStats();
+
+        setTimeout(() => resetView(), 500);
+
+        window.addEventListener('resize', () => {
+            const newWidth = container.clientWidth;
+            const newHeight = container.clientHeight;
+            simulation.force('center', d3.forceCenter(newWidth / 2, newHeight / 2));
+            simulation.alpha(0.3).restart();
+        });
+    </script>
+</body>
+</html>

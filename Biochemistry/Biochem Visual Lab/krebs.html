@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ciclo de Krebs | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            width: 260px;
+            z-index: 100;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            z-index: 100;
+        }
+        .back-btn:hover { border-color: #22c55e; color: #22c55e; }
+        .stat-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 6px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-label { color: #64748b; font-size: 11px; }
+        .stat-value { font-size: 16px; font-weight: bold; }
+        .slider-container { margin: 12px 0; }
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #22c55e;
+            cursor: pointer;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #22c55e; background: #22c55e20; }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #94a3b8;
+            margin: 3px 0;
+        }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .cycle-count {
+            text-align: center;
+            padding: 15px;
+            background: #22c55e20;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+        .cycle-count .number {
+            font-size: 36px;
+            font-weight: bold;
+            color: #22c55e;
+        }
+        .cycle-count .label {
+            font-size: 11px;
+            color: #64748b;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Volver</a>
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-panel">
+        <h2 class="text-white text-lg font-bold mb-2">🔄 Ciclo de Krebs</h2>
+        <p class="text-slate-500 text-xs mb-4">Acetil-CoA → CO₂ + Energía</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                El <span class="text-pink-400">ciclo de Krebs</span> oxida acetil-CoA en la matriz mitocondrial, generando CO₂, NADH, FADH₂ y GTP. Centro del metabolismo oxidativo.
+            </p>
+            <a href="guides/krebs.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: 8 pasos, intermediarios, regulación
+            </a>
+        </div>
+
+        <div class="cycle-count">
+            <div class="number" id="cycles">0</div>
+            <div class="label">Ciclos Completados</div>
+        </div>
+
+        <div class="stat-box">
+            <span class="stat-label">NADH</span>
+            <span class="stat-value" style="color: #a855f7;" id="nadh">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">FADH₂</span>
+            <span class="stat-value" style="color: #f97316;" id="fadh2">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">GTP (≈ATP)</span>
+            <span class="stat-value" style="color: #fbbf24;" id="gtp">0</span>
+        </div>
+        <div class="stat-box">
+            <span class="stat-label">CO₂ Liberado</span>
+            <span class="stat-value" style="color: #94a3b8;" id="co2">0</span>
+        </div>
+
+        <div class="slider-container">
+            <label>
+                <span>Velocidad</span>
+                <span id="speed-val" class="text-green-400">1.0x</span>
+            </label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <button class="btn" id="add-acetyl">+ Añadir Acetil-CoA</button>
+        <button class="btn" id="restart">↻ Reiniciar</button>
+
+        <div class="mt-4 pt-4 border-t border-slate-700">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Por ciclo:</div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #a855f7;"></div>
+                <span>3 NADH</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #f97316;"></div>
+                <span>1 FADH₂</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #fbbf24;"></div>
+                <span>1 GTP</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #94a3b8;"></div>
+                <span>2 CO₂</span>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-700 text-slate-500 text-xs">
+            <strong>Ubicación:</strong> Matriz mitocondrial<br>
+            <strong>Entrada:</strong> Acetil-CoA (2C) + Oxalacetato (4C)<br>
+            <strong>Salida:</strong> CO₂ + Energía (NADH, FADH₂, GTP)
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Krebs cycle intermediates
+        const intermediates = [
+            { name: 'Oxalacetato', formula: 'C4', carbons: 4, nadh: 0, fadh2: 0, gtp: 0, co2: 0 },
+            { name: 'Citrato', formula: 'C6', carbons: 6, nadh: 0, fadh2: 0, gtp: 0, co2: 0 },
+            { name: 'Isocitrato', formula: 'C6', carbons: 6, nadh: 0, fadh2: 0, gtp: 0, co2: 0 },
+            { name: 'α-Cetoglutarato', formula: 'C5', carbons: 5, nadh: 1, fadh2: 0, gtp: 0, co2: 1 },
+            { name: 'Succinil-CoA', formula: 'C4', carbons: 4, nadh: 1, fadh2: 0, gtp: 0, co2: 1 },
+            { name: 'Succinato', formula: 'C4', carbons: 4, nadh: 0, fadh2: 0, gtp: 1, co2: 0 },
+            { name: 'Fumarato', formula: 'C4', carbons: 4, nadh: 0, fadh2: 1, gtp: 0, co2: 0 },
+            { name: 'Malato', formula: 'C4', carbons: 4, nadh: 0, fadh2: 0, gtp: 0, co2: 0 },
+            { name: 'Oxalacetato', formula: 'C4', carbons: 4, nadh: 1, fadh2: 0, gtp: 0, co2: 0 }
+        ];
+
+        // State
+        let currentStep = 0;
+        let progress = 0;
+        let cycles = 0;
+        let nadh = 0;
+        let fadh2 = 0;
+        let gtp = 0;
+        let co2 = 0;
+
+        // Particles
+        let moleculeParticles = [];
+        let productParticles = [];
+        let acetylParticles = [];
+
+        // Layout
+        const centerX = () => window.innerWidth / 2 + 100;
+        const centerY = () => window.innerHeight / 2;
+        const radius = 200;
+
+        function getStepPosition(index) {
+            const angle = (index / 8) * Math.PI * 2 - Math.PI / 2;
+            return {
+                x: centerX() + Math.cos(angle) * radius,
+                y: centerY() + Math.sin(angle) * radius
+            };
+        }
+
+        function createProductParticle(type, x, y) {
+            const colors = {
+                nadh: '#a855f7',
+                fadh2: '#f97316',
+                gtp: '#fbbf24',
+                co2: '#94a3b8'
+            };
+            return {
+                x, y,
+                vx: (Math.random() - 0.5) * 3,
+                vy: -2 - Math.random() * 2,
+                type,
+                color: colors[type],
+                alpha: 1,
+                size: 12
+            };
+        }
+
+        function init() {
+            currentStep = 0;
+            progress = 0;
+            cycles = 0;
+            nadh = 0;
+            fadh2 = 0;
+            gtp = 0;
+            co2 = 0;
+            moleculeParticles = [];
+            productParticles = [];
+            acetylParticles = [];
+
+            // Create initial molecule
+            const pos = getStepPosition(0);
+            moleculeParticles.push({
+                x: pos.x,
+                y: pos.y,
+                targetX: pos.x,
+                targetY: pos.y,
+                carbons: 4,
+                color: '#22c55e'
+            });
+
+            updateUI();
+        }
+
+        function addAcetylCoA() {
+            acetylParticles.push({
+                x: centerX() - 300,
+                y: centerY() - 100,
+                targetX: centerX(),
+                targetY: centerY() - radius - 50,
+                color: '#38bdf8',
+                alpha: 1
+            });
+        }
+
+        function updateUI() {
+            document.getElementById('cycles').textContent = cycles;
+            document.getElementById('nadh').textContent = nadh;
+            document.getElementById('fadh2').textContent = fadh2;
+            document.getElementById('gtp').textContent = gtp;
+            document.getElementById('co2').textContent = co2;
+        }
+
+        function drawCycle() {
+            const cx = centerX();
+            const cy = centerY();
+
+            // Draw cycle circle
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 40;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Draw progress arc
+            const startAngle = -Math.PI / 2;
+            const endAngle = startAngle + (currentStep / 8) * Math.PI * 2 + (progress / 100) * (Math.PI * 2 / 8);
+            ctx.strokeStyle = '#22c55e40';
+            ctx.lineWidth = 38;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, startAngle, endAngle);
+            ctx.stroke();
+
+            // Draw intermediates
+            for (let i = 0; i < 8; i++) {
+                const pos = getStepPosition(i);
+                const inter = intermediates[i];
+                const isActive = i === currentStep;
+
+                // Node circle
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, isActive ? 45 : 35, 0, Math.PI * 2);
+                ctx.fillStyle = isActive ? '#1e293b' : '#0f172a';
+                ctx.strokeStyle = isActive ? '#22c55e' : '#334155';
+                ctx.lineWidth = isActive ? 3 : 1;
+                ctx.fill();
+                ctx.stroke();
+
+                // Carbon count indicator
+                const carbonRadius = 8 + inter.carbons;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y - 8, carbonRadius, 0, Math.PI * 2);
+                ctx.fillStyle = inter.carbons === 6 ? '#38bdf8' : inter.carbons === 5 ? '#a3e635' : '#22c55e';
+                ctx.fill();
+
+                // Carbon label
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`C${inter.carbons}`, pos.x, pos.y - 5);
+
+                // Name
+                ctx.fillStyle = isActive ? '#f8fafc' : '#94a3b8';
+                ctx.font = `${isActive ? 'bold ' : ''}9px monospace`;
+                ctx.fillText(inter.name, pos.x, pos.y + 18);
+
+                // Products at this step
+                const prodY = pos.y + 60;
+                let prodX = pos.x - 30;
+
+                if (inter.nadh > 0) {
+                    ctx.fillStyle = '#a855f7';
+                    ctx.font = '10px monospace';
+                    ctx.fillText('NADH', prodX, prodY);
+                    prodX += 40;
+                }
+                if (inter.fadh2 > 0) {
+                    ctx.fillStyle = '#f97316';
+                    ctx.fillText('FADH₂', prodX, prodY);
+                    prodX += 45;
+                }
+                if (inter.gtp > 0) {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillText('GTP', prodX, prodY);
+                }
+                if (inter.co2 > 0) {
+                    ctx.fillStyle = '#94a3b8';
+                    ctx.fillText('CO₂↑', pos.x, pos.y - 50);
+                }
+
+                // Arrow to next
+                if (i < 7) {
+                    const nextPos = getStepPosition(i + 1);
+                    const angle = Math.atan2(nextPos.y - pos.y, nextPos.x - pos.x);
+                    const startX = pos.x + Math.cos(angle) * 45;
+                    const startY = pos.y + Math.sin(angle) * 45;
+                    const endX = nextPos.x - Math.cos(angle) * 50;
+                    const endY = nextPos.y - Math.sin(angle) * 50;
+
+                    ctx.strokeStyle = '#334155';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(startX, startY);
+                    ctx.lineTo(endX, endY);
+                    ctx.stroke();
+
+                    // Arrow head
+                    ctx.save();
+                    ctx.translate(endX, endY);
+                    ctx.rotate(angle);
+                    ctx.beginPath();
+                    ctx.moveTo(0, 0);
+                    ctx.lineTo(-10, -5);
+                    ctx.lineTo(-10, 5);
+                    ctx.closePath();
+                    ctx.fillStyle = '#334155';
+                    ctx.fill();
+                    ctx.restore();
+                }
+            }
+
+            // Arrow from last to first (complete cycle)
+            const lastPos = getStepPosition(7);
+            const firstPos = getStepPosition(0);
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, Math.PI * 0.35, -Math.PI * 0.6, true);
+            ctx.stroke();
+
+            // Acetyl-CoA entry arrow
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(cx - 150, cy - radius - 100);
+            ctx.lineTo(cx, cy - radius + 30);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Acetyl-CoA label
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Acetil-CoA (C2)', cx - 100, cy - radius - 110);
+            ctx.font = '10px monospace';
+            ctx.fillText('entrada', cx - 100, cy - radius - 95);
+
+            // Center info
+            ctx.fillStyle = '#22c55e';
+            ctx.font = 'bold 16px monospace';
+            ctx.fillText('CICLO DE', cx, cy - 15);
+            ctx.fillText('KREBS', cx, cy + 5);
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px monospace';
+            ctx.fillText('(Ácido Cítrico)', cx, cy + 25);
+        }
+
+        function updateParticles() {
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            // Update molecule particles
+            moleculeParticles.forEach(p => {
+                p.x += (p.targetX - p.x) * 0.08 * speed;
+                p.y += (p.targetY - p.y) * 0.08 * speed;
+                p.x += (Math.random() - 0.5) * 1;
+                p.y += (Math.random() - 0.5) * 1;
+            });
+
+            // Update product particles
+            productParticles.forEach(p => {
+                p.vy += 0.05;
+                p.x += p.vx;
+                p.y += p.vy;
+                p.alpha -= 0.01;
+            });
+            productParticles = productParticles.filter(p => p.alpha > 0);
+
+            // Update acetyl particles
+            acetylParticles.forEach(p => {
+                p.x += (p.targetX - p.x) * 0.05;
+                p.y += (p.targetY - p.y) * 0.05;
+
+                // Check if arrived
+                const dist = Math.sqrt((p.x - p.targetX) ** 2 + (p.y - p.targetY) ** 2);
+                if (dist < 20 && currentStep === 0) {
+                    p.alpha = 0; // Remove
+                    // Add carbons to molecule
+                    moleculeParticles.forEach(m => {
+                        m.carbons = 6;
+                        m.color = '#38bdf8';
+                    });
+                }
+            });
+            acetylParticles = acetylParticles.filter(p => p.alpha > 0);
+        }
+
+        function drawParticles() {
+            // Molecule particles
+            moleculeParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 15 + p.carbons, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 20;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`C${p.carbons}`, p.x, p.y + 4);
+            });
+
+            // Product particles
+            productParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color.replace(')', `, ${p.alpha})`).replace('rgb', 'rgba');
+                ctx.fill();
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(p.type.toUpperCase(), p.x, p.y + 3);
+            });
+
+            // Acetyl particles
+            acetylParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 18, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(56, 189, 248, ${p.alpha})`;
+                ctx.shadowColor = '#38bdf8';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 10px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('C2', p.x, p.y + 4);
+            });
+        }
+
+        function advanceStep() {
+            const inter = intermediates[currentStep];
+
+            // Generate products
+            const pos = getStepPosition(currentStep);
+
+            for (let i = 0; i < inter.nadh; i++) {
+                nadh++;
+                productParticles.push(createProductParticle('nadh', pos.x, pos.y));
+            }
+            for (let i = 0; i < inter.fadh2; i++) {
+                fadh2++;
+                productParticles.push(createProductParticle('fadh2', pos.x, pos.y));
+            }
+            for (let i = 0; i < inter.gtp; i++) {
+                gtp++;
+                productParticles.push(createProductParticle('gtp', pos.x, pos.y));
+            }
+            for (let i = 0; i < inter.co2; i++) {
+                co2++;
+                const p = createProductParticle('co2', pos.x, pos.y - 30);
+                p.vy = -3;
+                productParticles.push(p);
+            }
+
+            currentStep++;
+
+            if (currentStep >= 8) {
+                currentStep = 0;
+                cycles++;
+            }
+
+            // Update molecule
+            const nextPos = getStepPosition(currentStep);
+            const nextInter = intermediates[currentStep];
+
+            moleculeParticles.forEach(m => {
+                m.targetX = nextPos.x;
+                m.targetY = nextPos.y;
+                m.carbons = nextInter.carbons;
+                m.color = nextInter.carbons === 6 ? '#38bdf8' : nextInter.carbons === 5 ? '#a3e635' : '#22c55e';
+            });
+
+            updateUI();
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Ciclo de Krebs (Ácido Cítrico)', 320, 50);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px monospace';
+            ctx.fillText('Matriz Mitocondrial · 8 Reacciones · 1 Ciclo = 1 Acetil-CoA', 320, 75);
+
+            drawCycle();
+            updateParticles();
+            drawParticles();
+
+            // Auto advance
+            const speed = parseFloat(document.getElementById('speed').value);
+            progress += speed * 0.8;
+
+            if (progress >= 100) {
+                progress = 0;
+                advanceStep();
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('add-acetyl').addEventListener('click', addAcetylCoA);
+        document.getElementById('restart').addEventListener('click', init);
+
+        init();
+        draw();
+    </script>
+</body>
+</html>

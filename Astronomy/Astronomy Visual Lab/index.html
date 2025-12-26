@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astronomy Visual Lab - Visualizaciones Astronómicas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+        }
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card:hover .card-border {
+            opacity: 1;
+        }
+        .card-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #06b6d4);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .preview-canvas {
+            border-radius: 0.5rem;
+        }
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-style: normal;
+        }
+        .category-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(99, 102, 241, 0.5);
+        }
+        .astro-symbol {
+            font-size: 1.5rem;
+        }
+        /* Stars background */
+        .stars {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen relative">
+    <!-- Stars Background -->
+    <canvas id="stars" class="stars"></canvas>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto px-6 py-4">
+            <div class="flex justify-between items-center">
+                <div>
+                    <nav class="text-xs text-gray-600 mb-1">
+                        <a href="../../_portal/index.html" class="hover:text-indigo-400 transition">EigenLab</a>
+                        <span class="mx-1">/</span>
+                        <span class="text-gray-500">Astronomy Visual Lab</span>
+                    </nav>
+                    <h1 class="text-2xl font-light">
+                        <span class="text-indigo-400 font-medium glow-text">Astronomy</span> Visual Lab
+                    </h1>
+                    <p class="text-gray-600 text-sm mono">Explorando el cosmos interactivo</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <span class="astro-symbol text-yellow-400">&#9788;</span>
+                    <span class="astro-symbol text-gray-300">&#9790;</span>
+                    <span class="astro-symbol text-indigo-400">&#9733;</span>
+                    <span class="astro-symbol text-cyan-400">&#10022;</span>
+                    <a href="https://github.com/cjlkaiser-cpu" target="_blank" class="text-gray-500 hover:text-white transition ml-2">
+                        <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-12 relative z-10">
+        <!-- Hero -->
+        <section class="text-center mb-16">
+            <h2 class="text-4xl font-light mb-4">
+                El universo <span class="text-indigo-400 font-medium glow-text">interactivo</span>
+            </h2>
+            <p class="text-gray-500 max-w-2xl mx-auto">
+                7 experiencias visuales donde la física del cosmos cobra vida.
+                Cosmología, mecánica orbital, óptica gravitacional y el sistema solar.
+            </p>
+        </section>
+
+        <!-- Grid de Simulaciones -->
+        <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+
+            <!-- Expansión del Universo -->
+            <a href="expansion-universo.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-hubble" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-indigo-500/20 text-indigo-400">Cosmología</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Expansión del Universo</h3>
+                        <p class="text-gray-500 text-sm mb-3">Visualiza la Ley de Hubble-Lemaître. Las galaxias se alejan proporcionalmente a su distancia. El espacio mismo se expande.</p>
+                        <div class="equation text-indigo-400/70 text-sm mb-4">v = H₀ · d</div>
+                        <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                            Expandir →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Agujero Negro -->
+            <a href="agujero-negro.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-blackhole" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-violet-500/20 text-violet-400">Relatividad</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Agujero Negro</h3>
+                        <p class="text-gray-500 text-sm mb-3">Órbitas relativistas alrededor de un agujero negro de Schwarzschild. Horizonte de eventos, fotosfera y disco de acreción.</p>
+                        <div class="equation text-violet-400/70 text-sm mb-4">r_s = 2GM/c²</div>
+                        <span class="block w-full text-center py-2 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition text-sm font-medium">
+                            Orbitar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Lentes Gravitacionales -->
+            <a href="lentes-gravitacionales.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-lensing" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-violet-500/20 text-violet-400">Relatividad</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Lentes Gravitacionales</h3>
+                        <p class="text-gray-500 text-sm mb-3">La masa curva el espacio-tiempo y desvía la luz. Anillos de Einstein, arcos y magnificación de galaxias lejanas.</p>
+                        <div class="equation text-violet-400/70 text-sm mb-4">θ = 4GM/(c²b)</div>
+                        <span class="block w-full text-center py-2 bg-violet-500/10 text-violet-400 rounded-lg hover:bg-violet-500/20 transition text-sm font-medium">
+                            Curvar Luz →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Diagrama H-R -->
+            <a href="diagrama-hr.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-hr" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-cyan-500/20 text-cyan-400">Astrofísica Estelar</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Diagrama H-R</h3>
+                        <p class="text-gray-500 text-sm mb-3">El mapa de las estrellas: luminosidad vs temperatura. Secuencia principal, gigantes rojas, enanas blancas y evolución estelar.</p>
+                        <div class="equation text-cyan-400/70 text-sm mb-4">L = 4πR²σT⁴</div>
+                        <span class="block w-full text-center py-2 bg-cyan-500/10 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition text-sm font-medium">
+                            Clasificar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Fases Lunares -->
+            <a href="fases-lunares.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-lunar" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-yellow-500/20 text-yellow-400">Sistema Solar</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Fases Lunares</h3>
+                        <p class="text-gray-500 text-sm mb-3">La danza Sol-Tierra-Luna. Comprende por qué vemos la Luna cambiar de fase a lo largo del mes sinódico.</p>
+                        <div class="equation text-yellow-400/70 text-sm mb-4">P_syn = 29.53 días</div>
+                        <span class="block w-full text-center py-2 bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20 transition text-sm font-medium">
+                            Observar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Estaciones -->
+            <a href="estaciones.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-seasons" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-yellow-500/20 text-yellow-400">Sistema Solar</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Las Estaciones</h3>
+                        <p class="text-gray-500 text-sm mb-3">La inclinación axial de 23.5° causa las estaciones. Visualiza solsticios, equinoccios y la distribución de luz solar.</p>
+                        <div class="equation text-yellow-400/70 text-sm mb-4">ε = 23.44°</div>
+                        <span class="block w-full text-center py-2 bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20 transition text-sm font-medium">
+                            Rotar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Nucleosíntesis Estelar -->
+            <a href="nucleosintesis.html" class="card-link">
+                <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                    <div class="card-border"></div>
+                    <div class="p-4">
+                        <canvas id="preview-nucleosintesis" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                        <span class="category-tag bg-amber-500/20 text-amber-400">Astrofísica Estelar</span>
+                        <h3 class="text-lg font-medium mb-1 mt-2">Nucleosíntesis Estelar</h3>
+                        <p class="text-gray-500 text-sm mb-3">Las estrellas forjan elementos. Cadena p-p, ciclo CNO, estructura de cebolla y supernovas: la fábrica del cosmos.</p>
+                        <div class="equation text-amber-400/70 text-sm mb-4">4¹H → ⁴He + γ</div>
+                        <span class="block w-full text-center py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition text-sm font-medium">
+                            Fusionar →
+                        </span>
+                    </div>
+                </div>
+            </a>
+
+        </section>
+
+        <!-- Info Section -->
+        <section class="text-center text-gray-600 text-sm">
+            <p>Parte del ecosistema <a href="../../_portal/index.html" class="text-indigo-400 hover:underline">EigenLab</a></p>
+            <p class="mt-1 mono text-xs">Simulaciones interactivas para entender el cosmos</p>
+        </section>
+    </main>
+
+    <script>
+        // Starfield background
+        const starsCanvas = document.getElementById('stars');
+        const starsCtx = starsCanvas.getContext('2d');
+
+        function resizeStars() {
+            starsCanvas.width = window.innerWidth;
+            starsCanvas.height = window.innerHeight;
+            drawStars();
+        }
+
+        function drawStars() {
+            starsCtx.fillStyle = '#000';
+            starsCtx.fillRect(0, 0, starsCanvas.width, starsCanvas.height);
+
+            for (let i = 0; i < 200; i++) {
+                const x = Math.random() * starsCanvas.width;
+                const y = Math.random() * starsCanvas.height;
+                const radius = Math.random() * 1.5;
+                const alpha = Math.random() * 0.8 + 0.2;
+
+                starsCtx.beginPath();
+                starsCtx.arc(x, y, radius, 0, Math.PI * 2);
+                starsCtx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+                starsCtx.fill();
+            }
+        }
+
+        window.addEventListener('resize', resizeStars);
+        resizeStars();
+
+        // Preview animations
+        const previews = {
+            hubble: document.getElementById('preview-hubble'),
+            blackhole: document.getElementById('preview-blackhole'),
+            lensing: document.getElementById('preview-lensing'),
+            hr: document.getElementById('preview-hr'),
+            lunar: document.getElementById('preview-lunar'),
+            seasons: document.getElementById('preview-seasons'),
+            nucleosintesis: document.getElementById('preview-nucleosintesis')
+        };
+
+        // Initialize canvases
+        Object.values(previews).forEach(canvas => {
+            if (canvas) {
+                canvas.width = canvas.offsetWidth * 2;
+                canvas.height = canvas.offsetHeight * 2;
+            }
+        });
+
+        // Hubble expansion preview
+        function drawHubblePreview() {
+            const canvas = previews.hubble;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 3000;
+            const cx = w / 2, cy = h / 2;
+
+            // Draw expanding galaxies
+            for (let i = 0; i < 20; i++) {
+                const angle = (i / 20) * Math.PI * 2 + i * 0.5;
+                const baseR = 30 + i * 15;
+                const r = baseR * (1 + 0.3 * Math.sin(time));
+                const x = cx + Math.cos(angle) * r;
+                const y = cy + Math.sin(angle) * r;
+
+                const alpha = 1 - (r / (w / 2)) * 0.5;
+                ctx.fillStyle = `rgba(99, 102, 241, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3 + Math.random() * 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Center point
+            ctx.fillStyle = '#6366f1';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Black hole preview
+        function drawBlackholePreview() {
+            const canvas = previews.blackhole;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+            const time = Date.now() / 1000;
+
+            // Accretion disk
+            for (let r = 80; r > 30; r -= 3) {
+                const alpha = (r - 30) / 50;
+                const hue = 30 + (80 - r);
+                ctx.strokeStyle = `hsla(${hue}, 100%, 50%, ${alpha * 0.5})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, r, r * 0.3, 0.3, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Event horizon
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 25);
+            gradient.addColorStop(0, '#000');
+            gradient.addColorStop(0.8, '#000');
+            gradient.addColorStop(1, '#1a1a2e');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Orbiting particle
+            const orbitR = 60;
+            const px = cx + Math.cos(time * 2) * orbitR;
+            const py = cy + Math.sin(time * 2) * orbitR * 0.3;
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(px, py, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Gravitational lensing preview
+        function drawLensingPreview() {
+            const canvas = previews.lensing;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+            const time = Date.now() / 2000;
+
+            // Background stars (distorted)
+            for (let i = 0; i < 30; i++) {
+                const bx = (i * 47) % w;
+                const by = (i * 31) % h;
+                const dx = bx - cx, dy = by - cy;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+
+                // Lens distortion
+                const factor = dist < 100 ? 1 + 50 / (dist + 10) : 1;
+                const lx = cx + dx * factor;
+                const ly = cy + dy * factor;
+
+                ctx.fillStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.4})`;
+                ctx.beginPath();
+                ctx.arc(lx, ly, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Einstein ring
+            ctx.strokeStyle = 'rgba(139, 92, 246, 0.6)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 40 + Math.sin(time) * 5, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Lens mass
+            ctx.fillStyle = '#1e1b4b';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 15, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // H-R diagram preview
+        function drawHRPreview() {
+            const canvas = previews.hr;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Main sequence
+            const stars = [
+                { x: 0.8, y: 0.9, color: '#ff6b6b', size: 8 },   // Red dwarf
+                { x: 0.6, y: 0.6, color: '#ffd93d', size: 6 },   // Sun-like
+                { x: 0.4, y: 0.3, color: '#fff', size: 5 },       // A-type
+                { x: 0.2, y: 0.1, color: '#6ec6ff', size: 7 },   // Blue giant
+                { x: 0.9, y: 0.2, color: '#ff6b6b', size: 12 },  // Red giant
+                { x: 0.15, y: 0.85, color: '#fff', size: 3 },    // White dwarf
+            ];
+
+            // Axes
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(30, h - 20);
+            ctx.lineTo(w - 20, h - 20);
+            ctx.moveTo(30, h - 20);
+            ctx.lineTo(30, 20);
+            ctx.stroke();
+
+            // Stars
+            stars.forEach(star => {
+                const x = 30 + star.x * (w - 50);
+                const y = 20 + star.y * (h - 40);
+
+                ctx.fillStyle = star.color;
+                ctx.beginPath();
+                ctx.arc(x, y, star.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow
+                ctx.fillStyle = star.color.replace(')', ', 0.3)').replace('rgb', 'rgba');
+                ctx.beginPath();
+                ctx.arc(x, y, star.size * 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // Lunar phases preview
+        function drawLunarPreview() {
+            const canvas = previews.lunar;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const time = Date.now() / 3000;
+            const cx = w / 2, cy = h / 2;
+
+            // Earth
+            ctx.fillStyle = '#1e40af';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 20, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Moon orbit
+            ctx.strokeStyle = '#333';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Moon
+            const moonX = cx + Math.cos(time) * 60;
+            const moonY = cy + Math.sin(time) * 60;
+
+            // Moon shadow
+            ctx.fillStyle = '#888';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lit portion
+            const phase = (Math.cos(time) + 1) / 2;
+            ctx.fillStyle = '#f5f5f5';
+            ctx.beginPath();
+            ctx.arc(moonX, moonY, 12, -Math.PI/2, Math.PI/2);
+            ctx.fill();
+
+            // Sun direction indicator
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.moveTo(w - 30, cy - 10);
+            ctx.lineTo(w - 10, cy);
+            ctx.lineTo(w - 30, cy + 10);
+            ctx.fill();
+        }
+
+        // Seasons preview
+        function drawSeasonsPreview() {
+            const canvas = previews.seasons;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+            const time = Date.now() / 4000;
+
+            // Sun
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sun glow
+            const gradient = ctx.createRadialGradient(cx, cy, 25, cx, cy, 50);
+            gradient.addColorStop(0, 'rgba(251, 191, 36, 0.4)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Earth orbit
+            ctx.strokeStyle = '#333';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, 90, 70, 0, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Earth position
+            const earthX = cx + Math.cos(time) * 90;
+            const earthY = cy + Math.sin(time) * 70;
+
+            // Earth with tilt
+            ctx.save();
+            ctx.translate(earthX, earthY);
+            ctx.rotate(0.41); // 23.5° tilt
+
+            ctx.fillStyle = '#1e40af';
+            ctx.beginPath();
+            ctx.arc(0, 0, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Axis line
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 1.5;
+            ctx.beginPath();
+            ctx.moveTo(0, -18);
+            ctx.lineTo(0, 18);
+            ctx.stroke();
+
+            ctx.restore();
+        }
+
+        // Nucleosíntesis preview
+        function drawNucleosintesisPreview() {
+            const canvas = previews.nucleosintesis;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+            const time = Date.now() / 1000;
+
+            // Concentric fusion layers (onion structure)
+            const layers = [
+                { r: 70, color: '#fef08a' },  // H shell
+                { r: 55, color: '#fde047' },  // He shell
+                { r: 40, color: '#f97316' },  // C shell
+                { r: 28, color: '#ef4444' },  // O shell
+                { r: 18, color: '#7f1d1d' }   // Fe core
+            ];
+
+            layers.forEach((layer, i) => {
+                const gradient = ctx.createRadialGradient(cx, cy, layer.r * 0.5, cx, cy, layer.r);
+                gradient.addColorStop(0, layer.color);
+                gradient.addColorStop(1, layer.color + '44');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, layer.r, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Core glow
+            const coreGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 12);
+            coreGradient.addColorStop(0, '#ffffff');
+            coreGradient.addColorStop(1, '#7f1d1d');
+            ctx.fillStyle = coreGradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 12, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Fusion flashes
+            for (let i = 0; i < 3; i++) {
+                const angle = time * 2 + i * 2.1;
+                const r = 25 + Math.sin(time * 3 + i) * 20;
+                const fx = cx + Math.cos(angle) * r;
+                const fy = cy + Math.sin(angle) * r;
+
+                const flashGradient = ctx.createRadialGradient(fx, fy, 0, fx, fy, 8);
+                flashGradient.addColorStop(0, '#ffffff');
+                flashGradient.addColorStop(0.5, '#fde047');
+                flashGradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = flashGradient;
+                ctx.beginPath();
+                ctx.arc(fx, fy, 8, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Animation loop
+        function animate() {
+            drawHubblePreview();
+            drawBlackholePreview();
+            drawLensingPreview();
+            drawHRPreview();
+            drawLunarPreview();
+            drawSeasonsPreview();
+            drawNucleosintesisPreview();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

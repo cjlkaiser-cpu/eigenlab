@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulación Génica | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 300px;
+        }
+        .toggle-group {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        .toggle-label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 8px;
+        }
+        .toggle {
+            position: relative;
+            width: 50px;
+            height: 26px;
+            background: #1e293b;
+            border-radius: 13px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active { background: #22c55e; }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            background: #f8fafc;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s;
+        }
+        .toggle.active::after { transform: translateX(24px); }
+        .status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px;
+            background: #0f172a;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+        .status-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        .status-text { color: #94a3b8; font-size: 11px; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .legend-rect { width: 20px; height: 10px; border-radius: 2px; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #8b5cf6; color: #8b5cf6; }
+        .info-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            border-left: 3px solid #8b5cf6;
+        }
+        .info-box h4 { color: #8b5cf6; font-size: 11px; margin: 0 0 6px 0; }
+        .info-box p { color: #94a3b8; font-size: 10px; margin: 0; line-height: 1.4; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🎛️ Regulación Génica</h2>
+        <p class="text-slate-500 text-xs mb-4">Operón lac · E. coli</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">regulación génica</span> controla cuándo y cuánto se expresa cada gen. En procariotas: operones; en eucariotas: enhancers y epigenética.
+            </p>
+            <a href="guides/regulacion-genica.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: operones, enhancers, niveles de control
+            </a>
+        </div>
+
+        <div class="toggle-group">
+            <div class="toggle-label">
+                <span>Glucosa disponible</span>
+                <div class="toggle active" id="glucose-toggle"></div>
+            </div>
+            <div class="text-slate-500 text-xs">Sin glucosa → ↑cAMP → activa CAP</div>
+        </div>
+
+        <div class="toggle-group">
+            <div class="toggle-label">
+                <span>Lactosa disponible</span>
+                <div class="toggle" id="lactose-toggle"></div>
+            </div>
+            <div class="text-slate-500 text-xs">Lactosa → alolactosa → inactiva represor</div>
+        </div>
+
+        <div class="status-indicator">
+            <div class="status-dot" id="status-dot" style="background: #ef4444;"></div>
+            <span class="status-text" id="status-text">Operón REPRIMIDO</span>
+        </div>
+
+        <div class="status-indicator">
+            <span class="text-slate-500 text-xs">Nivel de transcripción:</span>
+            <span class="text-purple-400 font-bold" id="transcription-level">0%</span>
+        </div>
+
+        <div class="info-box" id="info-box">
+            <h4>Estado: Represión por defecto</h4>
+            <p>Con glucosa presente, la bacteria no necesita lactosa. El represor lac bloquea la transcripción.</p>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Elementos del operón</div>
+            <div class="legend-item"><div class="legend-rect" style="background:#fbbf24"></div>Promotor (P)</div>
+            <div class="legend-item"><div class="legend-rect" style="background:#8b5cf6"></div>Operador (O)</div>
+            <div class="legend-item"><div class="legend-rect" style="background:#22c55e"></div>Genes estructurales (lacZ, Y, A)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Represor lac</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>CAP-cAMP</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>RNA Polimerasa</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Condiciones</div>
+            <div class="legend-item text-xs">+Glu +Lac → Represión (usa glucosa)</div>
+            <div class="legend-item text-xs">+Glu −Lac → Represión</div>
+            <div class="legend-item text-xs">−Glu −Lac → Represión basal</div>
+            <div class="legend-item text-xs">−Glu +Lac → <span class="text-green-400">ACTIVACIÓN MÁXIMA</span></div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // State
+        let hasGlucose = true;
+        let hasLactose = false;
+        let repressorBound = true;
+        let capBound = false;
+        let polymeraseActive = false;
+        let transcriptionLevel = 0;
+        let mRNAParticles = [];
+
+        // Animation states
+        let repressorX = 0;
+        let repressorTargetX = 0;
+        let capY = 0;
+        let capTargetY = 0;
+        let polymeraseX = 0;
+        let polymeraseProgress = 0;
+
+        function updateState() {
+            // Logic based on glucose and lactose
+            // Repressor binds operator when NO lactose (allolactose inactivates repressor)
+            repressorBound = !hasLactose;
+
+            // CAP-cAMP binds when NO glucose (low glucose = high cAMP)
+            capBound = !hasGlucose;
+
+            // Transcription requires: repressor NOT bound AND (ideally CAP bound for high expression)
+            if (repressorBound) {
+                polymeraseActive = false;
+                transcriptionLevel = 0;
+            } else if (capBound) {
+                // Maximum expression: no glucose, has lactose
+                polymeraseActive = true;
+                transcriptionLevel = 100;
+            } else {
+                // Basal expression: has glucose, has lactose
+                polymeraseActive = true;
+                transcriptionLevel = 20;
+            }
+
+            updateUI();
+        }
+
+        function updateUI() {
+            const statusDot = document.getElementById('status-dot');
+            const statusText = document.getElementById('status-text');
+            const transLevel = document.getElementById('transcription-level');
+            const infoBox = document.getElementById('info-box');
+
+            transLevel.textContent = transcriptionLevel + '%';
+
+            if (transcriptionLevel === 0) {
+                statusDot.style.background = '#ef4444';
+                statusText.textContent = 'Operón REPRIMIDO';
+            } else if (transcriptionLevel < 50) {
+                statusDot.style.background = '#fbbf24';
+                statusText.textContent = 'Expresión BASAL';
+            } else {
+                statusDot.style.background = '#22c55e';
+                statusText.textContent = 'Expresión MÁXIMA';
+            }
+
+            // Info box content
+            let info = { title: '', desc: '' };
+
+            if (hasGlucose && !hasLactose) {
+                info.title = 'Represión por defecto';
+                info.desc = 'Con glucosa y sin lactosa, el represor bloquea el operador. No hay necesidad de enzimas para lactosa.';
+            } else if (hasGlucose && hasLactose) {
+                info.title = 'Represión catabólica';
+                info.desc = 'Aunque hay lactosa, la bacteria prefiere glucosa (más eficiente). Expresión basal solo si se agota la glucosa.';
+            } else if (!hasGlucose && !hasLactose) {
+                info.title = 'Sin inductor';
+                info.desc = 'Sin glucosa pero sin lactosa. El represor sigue bloqueando porque no hay alolactosa para inactivarlo.';
+            } else {
+                info.title = 'Inducción máxima';
+                info.desc = 'Sin glucosa + con lactosa = condición óptima. CAP-cAMP activa, represor inactivo. Máxima transcripción de lacZ, lacY, lacA.';
+            }
+
+            infoBox.innerHTML = `<h4>Estado: ${info.title}</h4><p>${info.desc}</p>`;
+        }
+
+        function drawDNA(y) {
+            const startX = 350;
+            const width = W - 450;
+
+            // DNA double helix background
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(startX, y - 15, width, 30);
+
+            // Regulatory region (CAP site)
+            ctx.fillStyle = '#06b6d4';
+            ctx.fillRect(startX, y - 15, 60, 30);
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('CAP', startX + 30, y + 4);
+
+            // Promoter
+            ctx.fillStyle = '#fbbf24';
+            ctx.fillRect(startX + 65, y - 15, 70, 30);
+            ctx.fillStyle = '#0f172a';
+            ctx.fillText('Promotor', startX + 100, y + 4);
+
+            // Operator
+            ctx.fillStyle = '#8b5cf6';
+            ctx.fillRect(startX + 140, y - 15, 50, 30);
+            ctx.fillStyle = '#fff';
+            ctx.fillText('Op', startX + 165, y + 4);
+
+            // Structural genes
+            const genes = [
+                { name: 'lacZ', width: 120, desc: 'β-galactosidasa' },
+                { name: 'lacY', width: 80, desc: 'permeasa' },
+                { name: 'lacA', width: 60, desc: 'transacetilasa' }
+            ];
+
+            let geneX = startX + 195;
+            genes.forEach((gene, i) => {
+                ctx.fillStyle = '#22c55e';
+                ctx.fillRect(geneX, y - 15, gene.width, 30);
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText(gene.name, geneX + gene.width / 2, y + 4);
+
+                geneX += gene.width + 5;
+            });
+
+            // Labels below
+            ctx.fillStyle = '#64748b';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Sitio CAP', startX + 30, y + 35);
+            ctx.fillText('−35 / −10', startX + 100, y + 35);
+            ctx.fillText('Operador', startX + 165, y + 35);
+        }
+
+        function drawRepressor(operatorX, operatorY) {
+            // Repressor protein (tetramer)
+            const targetX = repressorBound ? operatorX : operatorX + 150;
+            repressorX += (targetX - repressorX) * 0.05;
+
+            const y = repressorBound ? operatorY - 40 : operatorY - 80;
+
+            ctx.fillStyle = '#ef4444';
+            ctx.shadowColor = '#ef4444';
+            ctx.shadowBlur = repressorBound ? 20 : 10;
+
+            // Four subunits
+            for (let i = 0; i < 4; i++) {
+                const angle = (i / 4) * Math.PI * 2 + Date.now() / 2000;
+                const ox = Math.cos(angle) * 12;
+                const oy = Math.sin(angle) * 8;
+
+                ctx.beginPath();
+                ctx.arc(repressorX + ox, y + oy, 15, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            ctx.shadowBlur = 0;
+
+            // Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Represor', repressorX, y + 4);
+            ctx.fillText('lac', repressorX, y + 14);
+
+            // If not bound, show lactose molecules nearby
+            if (!repressorBound && hasLactose) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '10px monospace';
+
+                for (let i = 0; i < 3; i++) {
+                    const lx = repressorX + 50 + Math.sin(Date.now() / 500 + i) * 20;
+                    const ly = y - 20 + Math.cos(Date.now() / 700 + i * 2) * 15;
+
+                    ctx.beginPath();
+                    ctx.arc(lx, ly, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.fillText('Alolactosa', repressorX + 70, y + 40);
+            }
+
+            // Binding indicator
+            if (repressorBound) {
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(repressorX, y + 25);
+                ctx.lineTo(operatorX, operatorY - 15);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+        }
+
+        function drawCAP(capSiteX, capSiteY) {
+            const targetY = capBound ? capSiteY - 45 : capSiteY - 100;
+            capY += (targetY - capY) * 0.05;
+
+            ctx.fillStyle = '#06b6d4';
+            ctx.shadowColor = '#06b6d4';
+            ctx.shadowBlur = capBound ? 20 : 10;
+
+            // CAP dimer
+            ctx.beginPath();
+            ctx.ellipse(capSiteX, capY, 25, 18, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#0f172a';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('CAP', capSiteX, capY - 2);
+            ctx.fillText('cAMP', capSiteX, capY + 10);
+
+            // cAMP molecules when active
+            if (capBound) {
+                ctx.fillStyle = '#06b6d4';
+                ctx.globalAlpha = 0.6;
+                for (let i = 0; i < 5; i++) {
+                    const cx = capSiteX - 80 + Math.random() * 60;
+                    const cy = capY - 30 + Math.random() * 60;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Binding line
+                ctx.strokeStyle = '#06b6d4';
+                ctx.lineWidth = 2;
+                ctx.setLineDash([4, 4]);
+                ctx.beginPath();
+                ctx.moveTo(capSiteX, capY + 18);
+                ctx.lineTo(capSiteX, capSiteY - 15);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Label for glucose status
+            ctx.fillStyle = hasGlucose ? '#22c55e' : '#ef4444';
+            ctx.font = '9px monospace';
+            ctx.fillText(hasGlucose ? '+Glucosa' : '−Glucosa', capSiteX, capY - 35);
+            ctx.fillText(hasGlucose ? '↓cAMP' : '↑cAMP', capSiteX, capY - 25);
+        }
+
+        function drawRNAPolymerase(promoterX, promoterY) {
+            if (!polymeraseActive) return;
+
+            // Polymerase moves along DNA during transcription
+            polymeraseProgress += 0.005 * (transcriptionLevel / 50);
+            if (polymeraseProgress > 1) {
+                polymeraseProgress = 0;
+                // Spawn mRNA particle
+                if (transcriptionLevel > 50) {
+                    mRNAParticles.push({
+                        x: promoterX + 300,
+                        y: promoterY - 60,
+                        vx: 1 + Math.random(),
+                        vy: -0.5 - Math.random(),
+                        life: 1
+                    });
+                }
+            }
+
+            const x = promoterX + polymeraseProgress * 350;
+            const y = promoterY - 50;
+
+            ctx.fillStyle = '#d946ef';
+            ctx.shadowColor = '#d946ef';
+            ctx.shadowBlur = 15;
+
+            ctx.beginPath();
+            ctx.ellipse(x, y, 30, 20, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 8px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('RNA', x, y - 3);
+            ctx.fillText('Pol', x, y + 7);
+
+            // Nascent mRNA
+            if (polymeraseProgress > 0.1) {
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(x - 10, y - 15);
+
+                for (let i = 0; i < polymeraseProgress * 20; i++) {
+                    const mx = x - 10 - i * 15;
+                    const my = y - 15 - i * 3 + Math.sin(i) * 5;
+                    ctx.lineTo(mx, my);
+                }
+                ctx.stroke();
+            }
+        }
+
+        function drawMRNAParticles() {
+            mRNAParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.life -= 0.005;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 6, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(249, 115, 22, ${p.life})`;
+                ctx.fill();
+            });
+
+            mRNAParticles = mRNAParticles.filter(p => p.life > 0);
+        }
+
+        function drawLegendDiagram() {
+            const x = W - 280;
+            const y = 80;
+
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.9)';
+            ctx.fillRect(x, y, 230, 200);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Tabla de verdad', x + 15, y + 25);
+
+            ctx.font = '9px monospace';
+            ctx.fillStyle = '#94a3b8';
+
+            const rows = [
+                { glu: '+', lac: '+', exp: 'Baja', color: '#fbbf24' },
+                { glu: '+', lac: '-', exp: 'OFF', color: '#ef4444' },
+                { glu: '-', lac: '-', exp: 'OFF', color: '#ef4444' },
+                { glu: '-', lac: '+', exp: 'ALTA', color: '#22c55e' }
+            ];
+
+            ctx.fillText('Glu  Lac  Expresión', x + 15, y + 50);
+
+            rows.forEach((row, i) => {
+                const ry = y + 70 + i * 25;
+
+                // Highlight current condition
+                const isCurrent = (hasGlucose === (row.glu === '+')) && (hasLactose === (row.lac === '+'));
+
+                if (isCurrent) {
+                    ctx.fillStyle = 'rgba(139, 92, 246, 0.3)';
+                    ctx.fillRect(x + 10, ry - 12, 210, 20);
+                }
+
+                ctx.fillStyle = row.glu === '+' ? '#22c55e' : '#ef4444';
+                ctx.fillText(row.glu, x + 25, ry);
+
+                ctx.fillStyle = row.lac === '+' ? '#22c55e' : '#ef4444';
+                ctx.fillText(row.lac, x + 65, ry);
+
+                ctx.fillStyle = row.color;
+                ctx.fillText(row.exp, x + 120, ry);
+
+                if (isCurrent) {
+                    ctx.fillText('←', x + 180, ry);
+                }
+            });
+
+            // Enzyme products
+            ctx.fillStyle = '#64748b';
+            ctx.font = '9px monospace';
+            ctx.fillText('Productos si activo:', x + 15, y + 175);
+            ctx.fillStyle = '#22c55e';
+            ctx.font = '8px monospace';
+            ctx.fillText('β-gal · Permeasa · Transacet.', x + 15, y + 190);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Regulación del Operón lac — E. coli', W / 2, 40);
+
+            const dnaY = H / 2 + 50;
+            const startX = 350;
+
+            // Draw DNA with regulatory elements
+            drawDNA(dnaY);
+
+            // Draw regulatory proteins
+            drawCAP(startX + 30, dnaY);
+            drawRepressor(startX + 165, dnaY);
+
+            // Draw RNA Polymerase if active
+            drawRNAPolymerase(startX + 100, dnaY);
+
+            // Draw mRNA particles
+            drawMRNAParticles();
+
+            // Draw legend/truth table
+            drawLegendDiagram();
+
+            // Transcription indicator
+            if (polymeraseActive) {
+                ctx.fillStyle = transcriptionLevel > 50 ? '#22c55e' : '#fbbf24';
+                ctx.font = '12px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(`Transcripción: ${transcriptionLevel}%`, W / 2, H - 40);
+
+                // Activity visualization
+                const barWidth = 200;
+                const barX = W / 2 - barWidth / 2;
+                const barY = H - 70;
+
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(barX, barY, barWidth, 10);
+
+                ctx.fillStyle = transcriptionLevel > 50 ? '#22c55e' : '#fbbf24';
+                ctx.fillRect(barX, barY, barWidth * (transcriptionLevel / 100), 10);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('glucose-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            hasGlucose = this.classList.contains('active');
+            updateState();
+        });
+
+        document.getElementById('lactose-toggle').addEventListener('click', function() {
+            this.classList.toggle('active');
+            hasLactose = this.classList.contains('active');
+            updateState();
+        });
+
+        updateState();
+        draw();
+    </script>
+</body>
+</html>

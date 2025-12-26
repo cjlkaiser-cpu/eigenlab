@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visión — Guía · Biology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border: 1px solid var(--accent); background: var(--accent-dim); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; position: relative; }
+        .experiment-number { position: absolute; top: -0.75rem; left: 1rem; background: var(--accent); color: var(--bg-primary); font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .steps { counter-reset: step; list-style: none; padding-left: 0; margin-top: 0.75rem; }
+        .steps li { counter-increment: step; padding-left: 2rem; position: relative; margin: 0.5rem 0; }
+        .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+
+        /* Connections */
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; display: block; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+        .connection-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem; }
+        .connection-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .icon-astronomy { background: rgba(99, 102, 241, 0.15); }
+
+        /* Limitations */
+        .limitations { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--accent); margin-bottom: 0.75rem; }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; flex-direction: column; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .guide-nav a:hover { border-color: var(--accent); text-decoration: none; }
+        .guide-nav .nav-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .guide-nav .nav-title { font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .guide-nav .next { text-align: right; margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Biology Visual Lab</a>
+                    <span> / </span>
+                    <span>Visión</span>
+                </nav>
+                <h1>Visión — Guía</h1>
+                <div class="subtitle">Óptica del ojo y fotorreceptores</div>
+            </div>
+            <a href="../vision.html" class="pill">
+                <span>▶</span>
+                <span>Abrir simulación</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Cómo funciona el ojo?</div>
+                <p class="lead">
+                    El <span class="em">ojo humano</span> es un sistema óptico que enfoca luz sobre la retina.
+                    La córnea y el cristalino refractan los rayos, mientras que millones de fotorreceptores
+                    (conos y bastones) convierten la luz en señales nerviosas.
+                </p>
+                <div class="chips">
+                    <span class="chip">Córnea ~43 D</span>
+                    <span class="chip">Cristalino ~17-31 D</span>
+                    <span class="chip">Acomodación</span>
+                    <span class="chip">6M conos</span>
+                    <span class="chip">120M bastones</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Dioptrías (D):</strong> Unidad de poder refractivo. 1 D = 1/metro de distancia focal.
+                    El ojo tiene ~60 D total, equivalente a una lente de ~17 mm de distancia focal.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Ecuación del lente delgado</div>
+                <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; margin-top: 0.5rem; color: var(--accent);">
+                    1/f = 1/d_o + 1/d_i
+                </div>
+                <ul style="margin-top: 0.75rem;">
+                    <li><strong>f:</strong> Distancia focal del sistema óptico</li>
+                    <li><strong>d_o:</strong> Distancia al objeto</li>
+                    <li><strong>d_i:</strong> Distancia a la imagen (retina)</li>
+                    <li><strong>P = 1/f:</strong> Poder dióptrico total</li>
+                </ul>
+            </aside>
+        </section>
+
+        <!-- Eye Anatomy -->
+        <section class="two">
+            <div class="card">
+                <h2>Sistema óptico anterior</h2>
+                <p>Las estructuras que refractan la luz antes de llegar a la retina.</p>
+                <ul>
+                    <li><strong>Córnea:</strong> Principal elemento refractivo (~43 D), transparente, avascular</li>
+                    <li><strong>Humor acuoso:</strong> Líquido que nutre córnea y cristalino</li>
+                    <li><strong>Iris:</strong> Controla cantidad de luz (pupila 2-8 mm)</li>
+                    <li><strong>Cristalino:</strong> Lente flexible para enfocar (acomodación)</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Retina y fotorreceptores</h2>
+                <p>La capa neural donde se procesa la imagen.</p>
+                <ul>
+                    <li><strong>Fóvea:</strong> Centro de alta agudeza, solo conos</li>
+                    <li><strong>Conos L/M/S:</strong> Visión diurna, color (rojo/verde/azul)</li>
+                    <li><strong>Bastones:</strong> Visión nocturna, muy sensibles, sin color</li>
+                    <li><strong>Punto ciego:</strong> Salida del nervio óptico, sin fotorreceptores</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Visual Defects -->
+        <section class="card section">
+            <h2>Defectos de refracción</h2>
+            <div class="three" style="margin-top: 0;">
+                <div>
+                    <h3 style="color: #ef4444;">Miopía</h3>
+                    <ul>
+                        <li>Ojo demasiado largo o córnea muy curva</li>
+                        <li>Imagen se forma <em>antes</em> de la retina</li>
+                        <li>Ve borroso de lejos</li>
+                        <li><strong>Corrección:</strong> Lente divergente (negativa)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: #22c55e;">Hipermetropía</h3>
+                    <ul>
+                        <li>Ojo demasiado corto o córnea muy plana</li>
+                        <li>Imagen se forma <em>detrás</em> de la retina</li>
+                        <li>Ve borroso de cerca</li>
+                        <li><strong>Corrección:</strong> Lente convergente (positiva)</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 style="color: #f59e0b;">Astigmatismo</h3>
+                    <ul>
+                        <li>Córnea con curvatura irregular</li>
+                        <li>Múltiples puntos focales</li>
+                        <li>Imagen distorsionada a todas las distancias</li>
+                        <li><strong>Corrección:</strong> Lente cilíndrica</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Accommodation -->
+        <section class="card section">
+            <h2>Acomodación</h2>
+            <p>El proceso por el cual el cristalino cambia de forma para enfocar objetos a diferentes distancias.</p>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <h3>Visión lejana (relajado)</h3>
+                    <ul>
+                        <li>Músculo ciliar relajado</li>
+                        <li>Ligamentos suspensorios tensos</li>
+                        <li>Cristalino aplanado (~17 D)</li>
+                        <li>Punto remoto: infinito</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Visión cercana (acomodado)</h3>
+                    <ul>
+                        <li>Músculo ciliar contraído</li>
+                        <li>Ligamentos suspensorios flojos</li>
+                        <li>Cristalino abombado (~31 D)</li>
+                        <li>Punto próximo: ~10-25 cm</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout">
+                <p><strong>Presbicia:</strong> Con la edad, el cristalino pierde elasticidad.
+                A los 45-50 años, el punto próximo se aleja a >40 cm, requiriendo gafas para leer.</p>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 1</div>
+                <h3 style="margin-top: 0.5rem;">Entender la acomodación</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">El cristalino debe aumentar su poder dióptrico para enfocar objetos cercanos en la retina.</p>
+                </div>
+                <ol class="steps">
+                    <li>Coloca el objeto a 6 metros (distancia infinita óptica)</li>
+                    <li>Observa que la imagen se forma nítida en la retina con el cristalino relajado</li>
+                    <li>Acerca el objeto a 25 cm — la imagen se desenfoca</li>
+                    <li>Aumenta la acomodación hasta que la imagen vuelva a estar nítida</li>
+                    <li>Nota cuántas dioptrías adicionales se necesitan</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> La acomodación es automática e inconsciente, pero tiene límites. Entenderla explica por qué necesitamos gafas para leer.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 2</div>
+                <h3 style="margin-top: 0.5rem;">Corregir la miopía</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Una lente divergente (negativa) puede compensar un ojo demasiado largo, moviendo el foco hacia la retina.</p>
+                </div>
+                <ol class="steps">
+                    <li>Activa el defecto "Miopía" y observa dónde se forma la imagen</li>
+                    <li>Nota que los rayos convergen antes de llegar a la retina</li>
+                    <li>Activa la lente correctora y ajusta a valores negativos (-1, -2, -3 D...)</li>
+                    <li>Encuentra el valor que coloca el foco exactamente en la retina</li>
+                    <li>Este valor corresponde a la "graduación" de las gafas</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Entender la corrección óptica ayuda a comprender las recetas de gafas y por qué la miopía progresiva requiere lentes cada vez más fuertes.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 3</div>
+                <h3 style="margin-top: 0.5rem;">Respuesta pupilar</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">La pupila se contrae en luz intensa y se dilata en oscuridad para regular la cantidad de luz que entra.</p>
+                </div>
+                <ol class="steps">
+                    <li>Ajusta la intensidad de luz a máximo — observa el tamaño de la pupila</li>
+                    <li>Reduce gradualmente la luz y observa cómo la pupila se dilata</li>
+                    <li>Nota el rango: ~2 mm (luz brillante) a ~8 mm (oscuridad)</li>
+                    <li>Calcula: el área pupilar cambia ~16x, regulando la luz que entra</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> La respuesta pupilar es un reflejo que protege la retina. Los oftalmólogos la usan para evaluar función neurológica.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 4</div>
+                <h3 style="margin-top: 0.5rem;">Distribución de fotorreceptores</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Los conos se concentran en la fóvea para alta resolución, mientras los bastones dominan la periferia para detectar movimiento.</p>
+                </div>
+                <ol class="steps">
+                    <li>Observa el gráfico de distribución de fotorreceptores</li>
+                    <li>Identifica el pico de conos en el centro (fóvea)</li>
+                    <li>Nota que los bastones están ausentes en la fóvea pero abundan en la periferia</li>
+                    <li>Localiza el "punto ciego" donde no hay fotorreceptores</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Esta distribución explica por qué vemos mejor los detalles mirando directamente, pero detectamos mejor el movimiento con visión periférica.
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <h2>Conexiones interdisciplinarias</h2>
+            <div class="connections-grid">
+                <a href="../../../Physics/Physics Visual Lab/refraccion.html" class="connection">
+                    <div class="connection-icon icon-physics">⚡</div>
+                    <div class="connection-title">Refracción</div>
+                    <div class="connection-desc">La ley de Snell gobierna cómo la luz se dobla al pasar por córnea, humor acuoso y cristalino.</div>
+                </a>
+                <a href="../../../Physics/Physics Visual Lab/ondas.html" class="connection">
+                    <div class="connection-icon icon-physics">🌊</div>
+                    <div class="connection-title">Ondas</div>
+                    <div class="connection-desc">La luz visible es radiación electromagnética con longitudes de onda de 380-700 nm.</div>
+                </a>
+                <a href="../neurona.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(16, 185, 129, 0.15);">🧠</div>
+                    <div class="connection-title">Neurona</div>
+                    <div class="connection-desc">Los fotorreceptores generan potenciales de acción que viajan por el nervio óptico al cerebro.</div>
+                </a>
+                <a href="../../../Astronomy/Astronomy Visual Lab/espectro-em.html" class="connection">
+                    <div class="connection-icon icon-astronomy">🌌</div>
+                    <div class="connection-title">Espectro EM</div>
+                    <div class="connection-desc">Solo vemos una pequeña fracción del espectro electromagnético: luz visible.</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="section">
+            <div class="limitations">
+                <h3>Limitaciones de la simulación</h3>
+                <ul>
+                    <li><strong>Óptica paraxial:</strong> Asume rayos cercanos al eje óptico, no modela aberraciones reales</li>
+                    <li><strong>2D simplificado:</strong> El ojo real es 3D con estructuras complejas</li>
+                    <li><strong>Sin procesamiento neural:</strong> No modela el procesamiento en retina, tálamo y corteza visual</li>
+                    <li><strong>Fotorreceptores idealizados:</strong> No incluye adaptación, fatiga ni curvas de sensibilidad espectral completas</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Reflection -->
+        <section class="section">
+            <div class="reflection">
+                <h3>Preguntas de reflexión</h3>
+                <ol>
+                    <li>¿Por qué crees que la fóvea no tiene bastones si estos son más sensibles a la luz?</li>
+                    <li>Si pudieras rediseñar el ojo, ¿eliminarías el punto ciego? ¿Cómo lo harías?</li>
+                    <li>¿Por qué la miopía se ha vuelto más común en las últimas décadas? (Pista: hábitos de lectura)</li>
+                    <li>¿Cómo funcionan los lentes de contacto si se colocan directamente sobre la córnea?</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="ritmos-circadianos.html">
+                <span class="nav-label">Anterior</span>
+                <span class="nav-title">Ritmos Circadianos</span>
+            </a>
+            <a href="ecosistema.html" class="next">
+                <span class="nav-label">Siguiente</span>
+                <span class="nav-title">Ecosistema</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biology Visual Lab — Visión
+    </footer>
+</body>
+</html>

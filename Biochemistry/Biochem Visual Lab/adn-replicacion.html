@@ -1,0 +1,363 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Replicación ADN | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 260px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #38bdf8;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+            text-align: center;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { font-size: 28px; font-weight: bold; color: #38bdf8; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #38bdf8; color: #38bdf8; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 10px;
+        }
+        .btn:hover { border-color: #38bdf8; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🧬 Replicación ADN</h2>
+        <p class="text-slate-500 text-xs mb-4">Horquilla de replicación · Semiconservativa</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">replicación del ADN</span> es semiconservativa. Helicasa abre la doble hélice, primasa inicia, DNA polimerasa sintetiza 5'→3'.
+            </p>
+            <a href="guides/adn-replicacion.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: enzimas, hebra líder y rezagada, fragmentos de Okazaki
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Velocidad</span><span class="text-sky-400" id="speed-val">1.0x</span></label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Nucleótidos Replicados</div>
+            <div class="stat-value" id="nucleotides">0</div>
+        </div>
+
+        <button class="btn" id="reset">↻ Reiniciar</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Bases nitrogenadas</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Adenina (A)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Timina (T)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Citosina (C)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Guanina (G)</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Enzimas</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>Helicasa</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a855f7"></div>ADN Polimerasa</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Complementariedad:</strong><br>
+            A ↔ T · C ↔ G
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // DNA sequence
+        const bases = ['A', 'T', 'C', 'G'];
+        const complement = { A: 'T', T: 'A', C: 'G', G: 'C' };
+        const colors = { A: '#ef4444', T: '#38bdf8', C: '#22c55e', G: '#fbbf24' };
+
+        const LENGTH = 50;
+        let sequence = [];
+        let replicationProgress = 0;
+        let nucleotidesReplicated = 0;
+
+        function generateSequence() {
+            sequence = [];
+            for (let i = 0; i < LENGTH; i++) {
+                sequence.push(bases[Math.floor(Math.random() * 4)]);
+            }
+        }
+
+        // Helix parameters
+        const helixAmplitude = 80;
+        const helixPitch = 25;
+
+        function getHelixPosition(index, strand, separation = 0) {
+            const baseY = H / 2;
+            const startX = W * 0.15;
+            const x = startX + index * helixPitch;
+
+            const phase = (index / 10) * Math.PI * 2;
+            const offset = strand === 1 ? 0 : Math.PI;
+
+            const y = baseY + Math.sin(phase + offset) * helixAmplitude;
+            const z = Math.cos(phase + offset); // For depth effect
+
+            // Apply separation for replication fork
+            const sepOffset = strand === 1 ? -separation : separation;
+
+            return { x, y: y + sepOffset, z };
+        }
+
+        function init() {
+            generateSequence();
+            replicationProgress = 0;
+            nucleotidesReplicated = 0;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const speed = parseFloat(document.getElementById('speed').value);
+            replicationProgress += 0.015 * speed;
+
+            const forkIndex = Math.floor(replicationProgress * 3);
+
+            // Draw title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Replicación del ADN — Horquilla de Replicación', W / 2, 40);
+
+            // Draw labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText("5'", W * 0.12, H / 2 - helixAmplitude - 20);
+            ctx.fillText("3'", W * 0.85, H / 2 - helixAmplitude - 20);
+            ctx.fillText("3'", W * 0.12, H / 2 + helixAmplitude + 30);
+            ctx.fillText("5'", W * 0.85, H / 2 + helixAmplitude + 30);
+
+            // Collect all nucleotides with depth for sorting
+            const nucleotides = [];
+
+            for (let i = 0; i < LENGTH; i++) {
+                const base1 = sequence[i];
+                const base2 = complement[base1];
+
+                // Calculate separation based on replication progress
+                let separation = 0;
+                const distFromFork = forkIndex - i;
+
+                if (distFromFork > 0 && distFromFork < 15) {
+                    separation = Math.min(50, distFromFork * 8);
+                } else if (distFromFork >= 15) {
+                    separation = 50;
+                }
+
+                const pos1 = getHelixPosition(i, 1, separation);
+                const pos2 = getHelixPosition(i, 2, separation);
+
+                // Original strands
+                nucleotides.push({ ...pos1, base: base1, type: 'original', index: i, strand: 1 });
+                nucleotides.push({ ...pos2, base: base2, type: 'original', index: i, strand: 2 });
+
+                // New complementary strands (if replicated)
+                if (distFromFork > 5) {
+                    const newPos1 = { x: pos1.x, y: pos1.y + 40, z: pos1.z };
+                    const newPos2 = { x: pos2.x, y: pos2.y - 40, z: pos2.z };
+
+                    const alpha = Math.min(1, (distFromFork - 5) / 10);
+                    nucleotides.push({ ...newPos1, base: base2, type: 'new', alpha, strand: 1 });
+                    nucleotides.push({ ...newPos2, base: base1, type: 'new', alpha, strand: 2 });
+
+                    if (i > nucleotidesReplicated) {
+                        nucleotidesReplicated = i;
+                    }
+                }
+
+                // Draw hydrogen bonds (if not separated)
+                if (separation < 20) {
+                    ctx.strokeStyle = `rgba(51, 65, 85, ${1 - separation / 20})`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(pos1.x, pos1.y);
+                    ctx.lineTo(pos2.x, pos2.y);
+                    ctx.stroke();
+                }
+
+                // Draw backbone connections
+                if (i > 0) {
+                    const prevPos1 = getHelixPosition(i - 1, 1, i - 1 < forkIndex - 15 ? 50 : Math.max(0, (forkIndex - i + 1) * 8));
+                    const prevPos2 = getHelixPosition(i - 1, 2, i - 1 < forkIndex - 15 ? 50 : Math.max(0, (forkIndex - i + 1) * 8));
+
+                    ctx.strokeStyle = '#475569';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(prevPos1.x, prevPos1.y);
+                    ctx.lineTo(pos1.x, pos1.y);
+                    ctx.stroke();
+
+                    ctx.beginPath();
+                    ctx.moveTo(prevPos2.x, prevPos2.y);
+                    ctx.lineTo(pos2.x, pos2.y);
+                    ctx.stroke();
+                }
+            }
+
+            // Sort by depth (z) and draw
+            nucleotides.sort((a, b) => a.z - b.z);
+
+            nucleotides.forEach(n => {
+                const size = 8 + n.z * 3;
+                const alpha = n.alpha !== undefined ? n.alpha : 1;
+
+                ctx.beginPath();
+                ctx.arc(n.x, n.y, size, 0, Math.PI * 2);
+
+                if (n.type === 'new') {
+                    ctx.fillStyle = colors[n.base].replace(')', `, ${alpha})`).replace('rgb', 'rgba');
+                    ctx.shadowColor = colors[n.base];
+                    ctx.shadowBlur = 15 * alpha;
+                } else {
+                    ctx.fillStyle = colors[n.base];
+                    ctx.shadowColor = colors[n.base];
+                    ctx.shadowBlur = 8;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Base letter
+                if (size > 6) {
+                    ctx.fillStyle = `rgba(0, 0, 0, ${alpha})`;
+                    ctx.font = `bold ${Math.floor(size)}px monospace`;
+                    ctx.textAlign = 'center';
+                    ctx.fillText(n.base, n.x, n.y + size / 3);
+                }
+            });
+
+            // Draw Helicase (at fork)
+            const helicaseX = W * 0.15 + forkIndex * helixPitch;
+            ctx.beginPath();
+            ctx.arc(helicaseX, H / 2, 25, 0, Math.PI * 2);
+            ctx.fillStyle = '#d946ef';
+            ctx.shadowColor = '#d946ef';
+            ctx.shadowBlur = 20;
+            ctx.fill();
+            ctx.shadowBlur = 0;
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Helicasa', helicaseX, H / 2 + 4);
+
+            // Draw Polymerases
+            if (forkIndex > 8) {
+                // Leading strand polymerase
+                const poly1X = helicaseX - 80;
+                ctx.beginPath();
+                ctx.arc(poly1X, H / 2 - 70, 18, 0, Math.PI * 2);
+                ctx.fillStyle = '#a855f7';
+                ctx.shadowColor = '#a855f7';
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px monospace';
+                ctx.fillText('Pol', poly1X, H / 2 - 68);
+
+                // Lagging strand polymerase
+                const poly2X = helicaseX - 100;
+                ctx.beginPath();
+                ctx.arc(poly2X, H / 2 + 70, 18, 0, Math.PI * 2);
+                ctx.fillStyle = '#a855f7';
+                ctx.fill();
+                ctx.fillStyle = '#fff';
+                ctx.fillText('Pol', poly2X, H / 2 + 72);
+            }
+
+            // Update counter
+            document.getElementById('nucleotides').textContent = nucleotidesReplicated * 2;
+
+            // Reset when complete
+            if (forkIndex > LENGTH + 20) {
+                replicationProgress = 0;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', e => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('reset').addEventListener('click', init);
+
+        init();
+        draw();
+    </script>
+</body>
+</html>

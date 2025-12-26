@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estructura Proteica | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+        }
+        .level-btn {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin: 4px 0;
+            text-align: left;
+            transition: all 0.2s;
+        }
+        .level-btn:hover { border-color: #d946ef; }
+        .level-btn.active { border-color: #d946ef; background: rgba(217, 70, 239, 0.2); }
+        .level-btn .number {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            line-height: 24px;
+            text-align: center;
+            background: #1e293b;
+            border-radius: 50%;
+            margin-right: 10px;
+            font-weight: bold;
+        }
+        .level-btn.active .number { background: #d946ef; }
+        .info-box {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin-top: 15px;
+            border-left: 3px solid #d946ef;
+        }
+        .info-box h4 { color: #d946ef; font-size: 12px; margin: 0 0 8px 0; }
+        .info-box p { color: #94a3b8; font-size: 10px; margin: 0; line-height: 1.5; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #d946ef; color: #d946ef; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🏗️ Estructura Proteica</h2>
+        <p class="text-slate-500 text-xs mb-4">Los 4 niveles de organización</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                <span class="text-pink-400">Estructura proteica</span>: 1° secuencia, 2° α-hélice/β-lámina, 3° plegamiento 3D, 4° subunidades múltiples.
+            </p>
+            <a href="guides/estructura-proteica.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: niveles, enlaces, dominios
+            </a>
+        </div>
+
+        <button class="level-btn active" data-level="1">
+            <span class="number">1°</span> Primaria
+        </button>
+        <button class="level-btn" data-level="2">
+            <span class="number">2°</span> Secundaria
+        </button>
+        <button class="level-btn" data-level="3">
+            <span class="number">3°</span> Terciaria
+        </button>
+        <button class="level-btn" data-level="4">
+            <span class="number">4°</span> Cuaternaria
+        </button>
+
+        <div class="info-box" id="info-box">
+            <h4>Estructura Primaria</h4>
+            <p>Secuencia lineal de aminoácidos unidos por enlaces peptídicos. Determina la estructura final de la proteína.</p>
+        </div>
+
+        <div class="legend" id="legend-primary">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Componentes</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Aminoácidos hidrofóbicos</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Aminoácidos hidrofílicos</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Aminoácidos especiales</div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Interacción:</strong> Haz clic en cada nivel para ver su representación.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        let currentLevel = 1;
+        let animationProgress = 0;
+        let targetLevel = 1;
+
+        const levelInfo = {
+            1: {
+                title: 'Estructura Primaria',
+                desc: 'Secuencia lineal de aminoácidos unidos por enlaces peptídicos. Determina la estructura final de la proteína.',
+                legend: [
+                    { color: '#ef4444', label: 'Aminoácidos hidrofóbicos' },
+                    { color: '#38bdf8', label: 'Aminoácidos hidrofílicos' },
+                    { color: '#fbbf24', label: 'Aminoácidos especiales' }
+                ]
+            },
+            2: {
+                title: 'Estructura Secundaria',
+                desc: 'Patrones locales de plegamiento: α-hélices y láminas β, estabilizados por puentes de hidrógeno del esqueleto peptídico.',
+                legend: [
+                    { color: '#d946ef', label: 'α-hélice' },
+                    { color: '#22c55e', label: 'Lámina β' },
+                    { color: '#64748b', label: 'Bucles/giros' }
+                ]
+            },
+            3: {
+                title: 'Estructura Terciaria',
+                desc: 'Plegamiento 3D completo de una cadena polipeptídica. Incluye interacciones hidrofóbicas, puentes disulfuro e iónicos.',
+                legend: [
+                    { color: '#ef4444', label: 'Núcleo hidrofóbico' },
+                    { color: '#38bdf8', label: 'Superficie hidrofílica' },
+                    { color: '#f97316', label: 'Puentes disulfuro' }
+                ]
+            },
+            4: {
+                title: 'Estructura Cuaternaria',
+                desc: 'Asociación de múltiples cadenas polipeptídicas (subunidades) en un complejo funcional. Ejemplo: hemoglobina (4 subunidades).',
+                legend: [
+                    { color: '#d946ef', label: 'Subunidad α' },
+                    { color: '#22c55e', label: 'Subunidad β' },
+                    { color: '#ef4444', label: 'Grupo hemo' }
+                ]
+            }
+        };
+
+        // Amino acid sequence for visualization
+        const sequence = [];
+        const aminoTypes = ['hydrophobic', 'hydrophilic', 'special'];
+        for (let i = 0; i < 30; i++) {
+            sequence.push({
+                type: aminoTypes[Math.floor(Math.random() * 3)],
+                x: 0, y: 0,
+                targetX: 0, targetY: 0
+            });
+        }
+
+        function getAminoColor(type) {
+            return {
+                'hydrophobic': '#ef4444',
+                'hydrophilic': '#38bdf8',
+                'special': '#fbbf24'
+            }[type];
+        }
+
+        function drawPrimaryStructure() {
+            const centerY = H / 2;
+            const startX = W * 0.25;
+            const spacing = 25;
+
+            // Title for structure
+            ctx.fillStyle = '#d946ef';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('SECUENCIA DE AMINOÁCIDOS', W / 2, H / 2 - 80);
+
+            // Draw chain
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            sequence.forEach((aa, i) => {
+                const x = startX + i * spacing;
+                const y = centerY + Math.sin(i * 0.3) * 10;
+
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+
+                aa.x = x;
+                aa.y = y;
+            });
+            ctx.stroke();
+
+            // Draw amino acids
+            sequence.forEach((aa, i) => {
+                ctx.beginPath();
+                ctx.arc(aa.x, aa.y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = getAminoColor(aa.type);
+                ctx.shadowColor = getAminoColor(aa.type);
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Number
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 7px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(i + 1, aa.x, aa.y + 2);
+            });
+
+            // Arrow showing direction
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('N-terminal', startX - 60, centerY - 30);
+            ctx.textAlign = 'right';
+            ctx.fillText('C-terminal', startX + 29 * spacing + 60, centerY - 30);
+
+            // Peptide bond label
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Enlaces peptídicos', W / 2, centerY + 60);
+        }
+
+        function drawSecondaryStructure() {
+            const centerX = W / 2;
+            const centerY = H / 2;
+
+            // Draw alpha helix
+            ctx.fillStyle = '#d946ef';
+            ctx.font = 'bold 11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('α-HÉLICE', centerX - 180, centerY - 120);
+
+            drawAlphaHelix(centerX - 180, centerY, 100);
+
+            // Draw beta sheet
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('LÁMINA β', centerX + 150, centerY - 120);
+
+            drawBetaSheet(centerX + 150, centerY);
+
+            // Labels
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px monospace';
+            ctx.fillText('Puentes de H intracadena', centerX - 180, centerY + 130);
+            ctx.fillText('Puentes de H intercadena', centerX + 150, centerY + 130);
+        }
+
+        function drawAlphaHelix(x, y, height) {
+            const turns = 4;
+            const radius = 30;
+            const points = 50;
+
+            // Draw helix ribbon
+            ctx.strokeStyle = '#d946ef';
+            ctx.lineWidth = 8;
+            ctx.lineCap = 'round';
+
+            for (let strand = 0; strand < 2; strand++) {
+                ctx.beginPath();
+                for (let i = 0; i <= points; i++) {
+                    const t = i / points;
+                    const angle = t * turns * Math.PI * 2 + strand * Math.PI;
+                    const px = x + Math.cos(angle) * radius;
+                    const py = y - height / 2 + t * height;
+                    const z = Math.sin(angle);
+
+                    if (z > 0 || strand === 0) {
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                }
+                ctx.globalAlpha = strand === 0 ? 1 : 0.4;
+                ctx.stroke();
+            }
+            ctx.globalAlpha = 1;
+
+            // Hydrogen bonds (dashed)
+            ctx.strokeStyle = '#22c55e';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+
+            for (let i = 0; i < turns - 1; i++) {
+                const y1 = y - height / 2 + (i / turns) * height + 15;
+                const y2 = y1 + height / turns;
+                ctx.beginPath();
+                ctx.moveTo(x - 5, y1);
+                ctx.lineTo(x + 5, y2);
+                ctx.stroke();
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawBetaSheet(x, y) {
+            const strands = 4;
+            const strandWidth = 40;
+            const strandHeight = 80;
+            const spacing = 25;
+
+            for (let i = 0; i < strands; i++) {
+                const sx = x + (i - strands / 2 + 0.5) * spacing;
+                const direction = i % 2 === 0 ? 1 : -1;
+
+                // Strand arrow
+                ctx.fillStyle = '#22c55e';
+                ctx.shadowColor = '#22c55e';
+                ctx.shadowBlur = 8;
+
+                ctx.beginPath();
+                ctx.moveTo(sx - 8, y - strandHeight / 2);
+                ctx.lineTo(sx + 8, y - strandHeight / 2);
+                ctx.lineTo(sx + 8, y + strandHeight / 2 - 15);
+                ctx.lineTo(sx + 15, y + strandHeight / 2 - 15);
+                ctx.lineTo(sx, y + strandHeight / 2);
+                ctx.lineTo(sx - 15, y + strandHeight / 2 - 15);
+                ctx.lineTo(sx - 8, y + strandHeight / 2 - 15);
+                ctx.closePath();
+
+                if (direction === -1) {
+                    ctx.save();
+                    ctx.translate(sx, y);
+                    ctx.rotate(Math.PI);
+                    ctx.translate(-sx, -y);
+                }
+
+                ctx.fill();
+
+                if (direction === -1) ctx.restore();
+
+                ctx.shadowBlur = 0;
+            }
+
+            // Hydrogen bonds between strands
+            ctx.strokeStyle = '#fbbf24';
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+
+            for (let i = 0; i < strands - 1; i++) {
+                const x1 = x + (i - strands / 2 + 0.5) * spacing + 8;
+                const x2 = x + (i - strands / 2 + 1.5) * spacing - 8;
+
+                for (let j = 0; j < 3; j++) {
+                    const by = y - 25 + j * 25;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, by);
+                    ctx.lineTo(x2, by);
+                    ctx.stroke();
+                }
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawTertiaryStructure() {
+            const centerX = W / 2;
+            const centerY = H / 2;
+            const time = Date.now() / 2000;
+
+            // Draw globular protein
+            ctx.fillStyle = '#d946ef';
+            ctx.font = 'bold 11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('ESTRUCTURA GLOBULAR', centerX, centerY - 140);
+
+            // Hydrophobic core
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 50, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.3)';
+            ctx.fill();
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#ef4444';
+            ctx.font = '9px monospace';
+            ctx.fillText('Núcleo', centerX, centerY - 5);
+            ctx.fillText('hidrofóbico', centerX, centerY + 8);
+
+            // Outer shell with secondary structures
+            const structures = [
+                { type: 'helix', angle: 0 },
+                { type: 'sheet', angle: Math.PI / 2 },
+                { type: 'helix', angle: Math.PI },
+                { type: 'sheet', angle: 3 * Math.PI / 2 }
+            ];
+
+            structures.forEach(s => {
+                const r = 90;
+                const x = centerX + Math.cos(s.angle + time * 0.2) * r;
+                const y = centerY + Math.sin(s.angle + time * 0.2) * r;
+
+                if (s.type === 'helix') {
+                    // Mini helix
+                    ctx.strokeStyle = '#d946ef';
+                    ctx.lineWidth = 6;
+                    ctx.beginPath();
+                    for (let i = 0; i < 20; i++) {
+                        const t = i / 20;
+                        const px = x + Math.cos(t * 4 * Math.PI) * 15;
+                        const py = y - 20 + t * 40;
+                        if (i === 0) ctx.moveTo(px, py);
+                        else ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+                } else {
+                    // Mini sheet
+                    ctx.fillStyle = '#22c55e';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.fillRect(x - 15 + i * 12, y - 20, 8, 40);
+                    }
+                }
+            });
+
+            // Disulfide bonds
+            ctx.strokeStyle = '#f97316';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(centerX - 60, centerY - 40);
+            ctx.lineTo(centerX + 60, centerY + 40);
+            ctx.stroke();
+
+            ctx.fillStyle = '#f97316';
+            ctx.font = '8px monospace';
+            ctx.fillText('S-S', centerX + 65, centerY + 50);
+
+            // Surface label
+            ctx.fillStyle = '#38bdf8';
+            ctx.font = '9px monospace';
+            ctx.fillText('Superficie hidrofílica', centerX, centerY + 130);
+        }
+
+        function drawQuaternaryStructure() {
+            const centerX = W / 2;
+            const centerY = H / 2;
+            const time = Date.now() / 3000;
+
+            ctx.fillStyle = '#d946ef';
+            ctx.font = 'bold 11px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('HEMOGLOBINA (4 subunidades)', centerX, centerY - 160);
+
+            // Four subunits
+            const subunits = [
+                { x: -50, y: -50, type: 'alpha', color: '#d946ef' },
+                { x: 50, y: -50, type: 'beta', color: '#22c55e' },
+                { x: -50, y: 50, type: 'beta', color: '#22c55e' },
+                { x: 50, y: 50, type: 'alpha', color: '#d946ef' }
+            ];
+
+            // Draw connections between subunits
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([4, 4]);
+            subunits.forEach((s, i) => {
+                subunits.forEach((s2, j) => {
+                    if (j > i) {
+                        ctx.beginPath();
+                        ctx.moveTo(centerX + s.x, centerY + s.y);
+                        ctx.lineTo(centerX + s2.x, centerY + s2.y);
+                        ctx.stroke();
+                    }
+                });
+            });
+            ctx.setLineDash([]);
+
+            // Draw each subunit
+            subunits.forEach((s, i) => {
+                const wobble = Math.sin(time + i) * 3;
+                const x = centerX + s.x + wobble;
+                const y = centerY + s.y;
+
+                // Subunit blob
+                ctx.beginPath();
+                ctx.ellipse(x, y, 40, 35, 0, 0, Math.PI * 2);
+                ctx.fillStyle = s.color;
+                ctx.shadowColor = s.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Heme group
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#ef4444';
+                ctx.shadowColor = '#ef4444';
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Fe in center
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('Fe', x, y + 3);
+
+                // Label
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 10px monospace';
+                ctx.fillText(s.type === 'alpha' ? 'α' : 'β', x, y - 15);
+            });
+
+            // Legend
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('2 cadenas α + 2 cadenas β', centerX, centerY + 120);
+            ctx.fillText('4 grupos hemo con Fe²⁺', centerX, centerY + 135);
+        }
+
+        function updateLegend(level) {
+            const info = levelInfo[level];
+            const infoBox = document.getElementById('info-box');
+            infoBox.innerHTML = `<h4>${info.title}</h4><p>${info.desc}</p>`;
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Niveles de Estructura Proteica', W / 2, 40);
+
+            // Draw current level
+            switch (currentLevel) {
+                case 1: drawPrimaryStructure(); break;
+                case 2: drawSecondaryStructure(); break;
+                case 3: drawTertiaryStructure(); break;
+                case 4: drawQuaternaryStructure(); break;
+            }
+
+            // Level indicator
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Nivel ${currentLevel}° de estructura`, W / 2, H - 30);
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.querySelectorAll('.level-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.level-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentLevel = parseInt(btn.dataset.level);
+                updateLegend(currentLevel);
+            });
+        });
+
+        draw();
+    </script>
+</body>
+</html>

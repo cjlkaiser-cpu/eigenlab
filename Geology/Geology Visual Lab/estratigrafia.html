@@ -1,0 +1,1085 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estratigrafía | Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #030712;
+            color: #f8fafc;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #1e293b; }
+        ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+        /* Range slider */
+        input[type="range"] {
+            -webkit-appearance: none;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 3px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #d97706;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.15s;
+        }
+        input[type="range"]::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+        }
+
+        /* Accent colors */
+        .accent { color: #d97706; }
+        .accent-bg { background: #d97706; }
+
+        /* Button styles */
+        .btn {
+            padding: 0.5rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.8125rem;
+            font-weight: 500;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #d97706, #b45309);
+            color: white;
+        }
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            transform: translateY(-1px);
+        }
+        .btn-secondary {
+            background: #1e293b;
+            color: #f8fafc;
+            border: 1px solid #334155;
+        }
+        .btn-secondary:hover {
+            background: #334155;
+            border-color: #475569;
+        }
+
+        /* Header display boxes */
+        .header-display {
+            background: linear-gradient(135deg, #0f172a, #1e293b);
+            border: 1px solid #334155;
+            border-radius: 0.5rem;
+            padding: 0.375rem 0.75rem;
+            min-width: 85px;
+        }
+        .header-display.active {
+            border-color: #d97706;
+            box-shadow: 0 0 10px rgba(217, 119, 6, 0.2);
+        }
+
+        /* Sediment selector */
+        .sediment-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.375rem;
+        }
+        .sediment-btn {
+            padding: 0.5rem 0.25rem;
+            border-radius: 0.375rem;
+            text-align: center;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+            background: #1e293b;
+        }
+        .sediment-btn:hover {
+            transform: translateY(-1px);
+            border-color: #475569;
+        }
+        .sediment-btn.active {
+            border-color: #d97706;
+            background: rgba(217, 119, 6, 0.1);
+        }
+        .sediment-preview {
+            width: 100%;
+            height: 16px;
+            border-radius: 0.25rem;
+            margin-bottom: 0.25rem;
+        }
+
+        /* Event buttons */
+        .event-btn {
+            padding: 0.375rem 0.625rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            color: #94a3b8;
+            font-size: 0.6875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .event-btn:hover {
+            border-color: #d97706;
+            color: #fbbf24;
+            background: rgba(217, 119, 6, 0.1);
+        }
+
+        /* Info card styles */
+        .info-card {
+            background: linear-gradient(135deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid #334155;
+            border-radius: 0.75rem;
+            padding: 1rem;
+            backdrop-filter: blur(8px);
+        }
+
+        /* Overlay panels on canvas */
+        .canvas-overlay {
+            position: absolute;
+            pointer-events: none;
+        }
+        .canvas-overlay.interactive {
+            pointer-events: auto;
+        }
+
+        /* Keyboard hint */
+        kbd {
+            display: inline-block;
+            padding: 0.125rem 0.375rem;
+            background: #1e293b;
+            border: 1px solid #334155;
+            border-radius: 0.25rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.6875rem;
+            color: #94a3b8;
+        }
+
+        /* Geological time scale colors */
+        .period-quaternary { background: #fef3c7; }
+        .period-neogene { background: #fcd34d; }
+        .period-paleogene { background: #f97316; }
+        .period-cretaceous { background: #84cc16; }
+        .period-jurassic { background: #22d3ee; }
+        .period-triassic { background: #a855f7; }
+        .period-permian { background: #f43f5e; }
+        .period-carboniferous { background: #64748b; }
+
+        /* Toggle */
+        .toggle-switch {
+            position: relative;
+            width: 36px;
+            height: 20px;
+            background: #334155;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .toggle-switch.active {
+            background: #d97706;
+        }
+        .toggle-switch::after {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.2s;
+        }
+        .toggle-switch.active::after {
+            transform: translateX(16px);
+        }
+
+        /* Layer preview animation */
+        @keyframes layer-deposit {
+            0% { opacity: 0; transform: translateY(-10px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        .layer-depositing {
+            animation: layer-deposit 0.3s ease-out;
+        }
+    </style>
+</head>
+<body class="flex flex-col h-screen">
+    <!-- Header -->
+    <header class="bg-slate-900/80 backdrop-blur border-b border-slate-700/50 px-4 py-2 flex-shrink-0">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <!-- Breadcrumb -->
+                <nav class="flex items-center gap-2 text-sm">
+                    <a href="../../_portal/index.html" class="text-slate-400 hover:text-amber-500 transition-colors">EigenLab</a>
+                    <span class="text-slate-600">/</span>
+                    <a href="index.html" class="text-slate-400 hover:text-amber-500 transition-colors">Geology</a>
+                    <span class="text-slate-600">/</span>
+                    <span class="text-white font-medium">Estratigrafía</span>
+                </nav>
+            </div>
+
+            <!-- Live displays -->
+            <div class="flex items-center gap-3">
+                <div class="header-display" id="display-layers">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Capas</div>
+                    <div class="text-sm font-semibold accent mono">0</div>
+                </div>
+                <div class="header-display active" id="display-age">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Edad Total</div>
+                    <div class="text-sm font-semibold text-amber-400 mono">0 Ma</div>
+                </div>
+                <div class="header-display" id="display-thickness">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Espesor</div>
+                    <div class="text-sm font-semibold text-blue-400 mono">0 m</div>
+                </div>
+                <div class="header-display" id="display-period">
+                    <div class="text-[10px] text-slate-500 uppercase tracking-wider">Período</div>
+                    <div class="text-sm font-semibold text-emerald-400 mono">---</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main content -->
+    <main class="flex flex-1 overflow-hidden">
+        <!-- Canvas area -->
+        <div class="flex-1 relative bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+            <canvas id="canvas" class="w-full h-full cursor-pointer"></canvas>
+
+            <!-- Principles overlay -->
+            <div class="canvas-overlay top-4 left-4">
+                <div class="info-card p-3 w-56">
+                    <div class="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mb-2">Principios Estratigráficos</div>
+                    <div class="space-y-1.5 text-[10px] text-slate-400">
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400">1.</span>
+                            <span><b class="text-slate-300">Superposición:</b> Capas inferiores = más antiguas</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400">2.</span>
+                            <span><b class="text-slate-300">Horizontalidad:</b> Sedimentos se depositan horizontales</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400">3.</span>
+                            <span><b class="text-slate-300">Continuidad:</b> Capas se extienden lateralmente</span>
+                        </div>
+                        <div class="flex items-start gap-2">
+                            <span class="text-amber-400">4.</span>
+                            <span><b class="text-slate-300">Sucesión faunística:</b> Fósiles datan capas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Selected layer info -->
+            <div class="canvas-overlay top-4 right-4" id="layer-info-overlay" style="display: none;">
+                <div class="info-card p-3 w-64">
+                    <div class="flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded" id="layer-color-preview"></div>
+                        <div>
+                            <div class="text-xs font-semibold text-white" id="layer-name">Nombre</div>
+                            <div class="text-[10px] text-slate-400" id="layer-age">Edad</div>
+                        </div>
+                    </div>
+                    <div class="space-y-1 text-[10px]">
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Ambiente</span>
+                            <span class="text-slate-300" id="layer-environment">---</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Espesor</span>
+                            <span class="text-amber-400 mono" id="layer-thickness">---</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-slate-500">Fósiles típicos</span>
+                            <span class="text-slate-300" id="layer-fossils">---</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Geological time scale -->
+            <div class="canvas-overlay bottom-4 left-4">
+                <div class="info-card p-2">
+                    <div class="text-[9px] text-slate-500 uppercase tracking-wider mb-1">Escala Geológica</div>
+                    <div class="flex gap-0.5 text-[8px]">
+                        <div class="px-1 py-0.5 rounded period-quaternary text-gray-800">Q</div>
+                        <div class="px-1 py-0.5 rounded period-neogene text-gray-800">N</div>
+                        <div class="px-1 py-0.5 rounded period-paleogene text-gray-800">Pg</div>
+                        <div class="px-1 py-0.5 rounded period-cretaceous text-gray-800">K</div>
+                        <div class="px-1 py-0.5 rounded period-jurassic text-gray-800">J</div>
+                        <div class="px-1 py-0.5 rounded period-triassic text-white">T</div>
+                        <div class="px-1 py-0.5 rounded period-permian text-white">P</div>
+                        <div class="px-1 py-0.5 rounded period-carboniferous text-white">C</div>
+                    </div>
+                    <div class="text-[8px] text-slate-500 mt-1">0 → 360 Ma</div>
+                </div>
+            </div>
+
+            <!-- Keyboard shortcuts -->
+            <div class="canvas-overlay bottom-4 right-4">
+                <div class="flex gap-2 text-[10px] text-slate-500">
+                    <span><kbd>1</kbd>-<kbd>6</kbd> Sedimento</span>
+                    <span><kbd>D</kbd> Depositar</span>
+                    <span><kbd>Space</kbd> Auto</span>
+                    <span><kbd>R</kbd> Reset</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sidebar -->
+        <aside class="w-80 bg-slate-900/95 border-l border-slate-700/50 flex flex-col overflow-hidden flex-shrink-0">
+            <div class="flex-1 overflow-y-auto p-4 space-y-5">
+
+                <!-- Explanation + Guide -->
+                <div class="bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                    <p class="text-xs text-gray-400 leading-relaxed">
+                        La <span class="text-amber-400">estratigrafia</span> lee la historia en capas de roca. Las capas inferiores son mas antiguas (<span class="text-amber-400">principio de superposicion</span>).
+                    </p>
+                    <a href="guides/estratigrafia.html" class="mt-3 flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                        <span class="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">?</span>
+                        Guia completa: principios, datacion, discordancias
+                    </a>
+                </div>
+
+                <!-- Sediment Type -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Tipo de Sedimento
+                    </h3>
+                    <div class="sediment-grid">
+                        <button class="sediment-btn active" data-type="sand">
+                            <div class="sediment-preview" style="background: #fef3c7;"></div>
+                            <div class="text-[10px] text-slate-300">Arena</div>
+                        </button>
+                        <button class="sediment-btn" data-type="clay">
+                            <div class="sediment-preview" style="background: #64748b;"></div>
+                            <div class="text-[10px] text-slate-300">Arcilla</div>
+                        </button>
+                        <button class="sediment-btn" data-type="limestone">
+                            <div class="sediment-preview" style="background: #e2e8f0;"></div>
+                            <div class="text-[10px] text-slate-300">Caliza</div>
+                        </button>
+                        <button class="sediment-btn" data-type="shale">
+                            <div class="sediment-preview" style="background: #334155;"></div>
+                            <div class="text-[10px] text-slate-300">Lutita</div>
+                        </button>
+                        <button class="sediment-btn" data-type="coal">
+                            <div class="sediment-preview" style="background: #1c1917;"></div>
+                            <div class="text-[10px] text-slate-300">Carbón</div>
+                        </button>
+                        <button class="sediment-btn" data-type="conglomerate">
+                            <div class="sediment-preview" style="background: linear-gradient(45deg, #92400e, #a8a29e);"></div>
+                            <div class="text-[10px] text-slate-300">Conglom.</div>
+                        </button>
+                    </div>
+                </section>
+
+                <!-- Geological Events -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                        </svg>
+                        Eventos Geológicos
+                    </h3>
+                    <div class="flex flex-wrap gap-1.5">
+                        <button class="event-btn" data-event="erosion">🏔️ Erosión</button>
+                        <button class="event-btn" data-event="fault">⚡ Falla</button>
+                        <button class="event-btn" data-event="fold">🌀 Pliegue</button>
+                        <button class="event-btn" data-event="intrusion">🔥 Intrusión</button>
+                        <button class="event-btn" data-event="unconformity">📐 Discordancia</button>
+                        <button class="event-btn" data-event="fossil">🦴 Fósil</button>
+                    </div>
+                </section>
+
+                <!-- Deposition Controls -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                        </svg>
+                        Deposición
+                    </h3>
+                    <div class="space-y-3 bg-slate-800/50 rounded-lg p-3 border border-slate-700/50">
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Espesor de capa</span>
+                                <span class="mono accent" id="thickness-value">25 m</span>
+                            </div>
+                            <input type="range" id="thickness-slider" class="w-full" min="10" max="50" value="25">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Intervalo de edad</span>
+                                <span class="mono accent" id="age-interval-value">10 Ma</span>
+                            </div>
+                            <input type="range" id="age-interval-slider" class="w-full" min="1" max="30" value="10">
+                        </div>
+                        <div>
+                            <div class="flex justify-between text-xs mb-1.5">
+                                <span class="text-slate-400">Velocidad auto</span>
+                                <span class="mono accent" id="speed-value">1.0x</span>
+                            </div>
+                            <input type="range" id="speed-slider" class="w-full" min="0.5" max="3" step="0.5" value="1">
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Controls -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Controles
+                    </h3>
+                    <div class="space-y-2">
+                        <button class="btn btn-primary w-full" id="deposit-btn">+ Depositar Capa</button>
+                        <div class="flex gap-2">
+                            <button class="btn btn-secondary flex-1" id="auto-btn">▶ Auto</button>
+                            <button class="btn btn-secondary flex-1" id="reset-btn">Reset</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Visualization Options -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Visualización
+                    </h3>
+                    <div class="space-y-2.5">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400">Mostrar edades</span>
+                            <div class="toggle-switch active" id="toggle-ages"></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400">Mostrar fósiles</span>
+                            <div class="toggle-switch active" id="toggle-fossils"></div>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-slate-400">Mostrar textura</span>
+                            <div class="toggle-switch active" id="toggle-texture"></div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Dating Methods -->
+                <section>
+                    <h3 class="flex items-center gap-2 text-[11px] font-semibold text-slate-400 uppercase tracking-wider mb-3">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Métodos de Datación
+                    </h3>
+                    <div class="bg-gradient-to-br from-amber-950/30 to-slate-900 rounded-lg p-3 border border-amber-900/30">
+                        <div class="space-y-2 text-[10px]">
+                            <div class="flex items-center gap-2">
+                                <span class="text-amber-400 font-bold">Relativa:</span>
+                                <span class="text-slate-400">Posición de capas y fósiles guía</span>
+                            </div>
+                            <div class="border-t border-slate-700/50 pt-2">
+                                <div class="text-amber-400 font-bold mb-1">Absoluta:</div>
+                                <div class="space-y-1 text-slate-400">
+                                    <div class="flex justify-between">
+                                        <span>¹⁴C (Carbono-14)</span>
+                                        <span class="mono text-slate-500">< 50 ka</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>⁴⁰K/⁴⁰Ar (Potasio-Argón)</span>
+                                        <span class="mono text-slate-500">> 100 ka</span>
+                                    </div>
+                                    <div class="flex justify-between">
+                                        <span>²³⁸U/²⁰⁶Pb (Uranio-Plomo)</span>
+                                        <span class="mono text-slate-500">> 1 Ma</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ===== CONFIGURATION =====
+        const CONFIG = {
+            sedimentType: 'sand',
+            thickness: 25,
+            ageInterval: 10,
+            speed: 1,
+            showAges: true,
+            showFossils: true,
+            showTexture: true,
+            autoDeposit: false
+        };
+
+        // Sediment types
+        const SEDIMENTS = {
+            sand: {
+                name: 'Arenisca',
+                color: '#fef3c7',
+                colorDark: '#fcd34d',
+                texture: 'dotted',
+                environment: 'Playas, ríos, desiertos',
+                fossils: ['Bivalvos', 'Huellas'],
+                fossilEmoji: ['🐚', '🦶']
+            },
+            clay: {
+                name: 'Arcilla',
+                color: '#64748b',
+                colorDark: '#475569',
+                texture: 'smooth',
+                environment: 'Lagos, llanuras aluviales',
+                fossils: ['Hojas', 'Peces'],
+                fossilEmoji: ['🌿', '🐟']
+            },
+            limestone: {
+                name: 'Caliza',
+                color: '#e2e8f0',
+                colorDark: '#cbd5e1',
+                texture: 'chalky',
+                environment: 'Mares poco profundos',
+                fossils: ['Corales', 'Amonites'],
+                fossilEmoji: ['🐚', '🦑']
+            },
+            shale: {
+                name: 'Lutita',
+                color: '#334155',
+                colorDark: '#1e293b',
+                texture: 'layered',
+                environment: 'Fondos marinos profundos',
+                fossils: ['Graptolites', 'Trilobites'],
+                fossilEmoji: ['🦐', '🦀']
+            },
+            coal: {
+                name: 'Carbón',
+                color: '#1c1917',
+                colorDark: '#0c0a09',
+                texture: 'solid',
+                environment: 'Pantanos, turberas',
+                fossils: ['Helechos', 'Troncos'],
+                fossilEmoji: ['🌿', '🪵']
+            },
+            conglomerate: {
+                name: 'Conglomerado',
+                color: '#92400e',
+                colorDark: '#78350f',
+                texture: 'pebbly',
+                environment: 'Ríos torrenciales, abanicos',
+                fossils: ['Fragmentos óseos'],
+                fossilEmoji: ['🦴']
+            }
+        };
+
+        // Geological periods
+        const PERIODS = [
+            { name: 'Cuaternario', max: 2.6, color: '#fef3c7' },
+            { name: 'Neógeno', max: 23, color: '#fcd34d' },
+            { name: 'Paleógeno', max: 66, color: '#f97316' },
+            { name: 'Cretácico', max: 145, color: '#84cc16' },
+            { name: 'Jurásico', max: 201, color: '#22d3ee' },
+            { name: 'Triásico', max: 252, color: '#a855f7' },
+            { name: 'Pérmico', max: 299, color: '#f43f5e' },
+            { name: 'Carbonífero', max: 359, color: '#64748b' }
+        ];
+
+        // ===== CANVAS SETUP =====
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        // Layers data
+        let layers = [];
+        let selectedLayer = null;
+        let currentAge = 0;
+
+        function resize() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+        }
+
+        resize();
+        window.addEventListener('resize', resize);
+
+        // ===== DOM ELEMENTS =====
+        const sedimentBtns = document.querySelectorAll('.sediment-btn');
+        const eventBtns = document.querySelectorAll('.event-btn');
+        const thicknessSlider = document.getElementById('thickness-slider');
+        const thicknessValue = document.getElementById('thickness-value');
+        const ageIntervalSlider = document.getElementById('age-interval-slider');
+        const ageIntervalValue = document.getElementById('age-interval-value');
+        const speedSlider = document.getElementById('speed-slider');
+        const speedValue = document.getElementById('speed-value');
+        const depositBtn = document.getElementById('deposit-btn');
+        const autoBtn = document.getElementById('auto-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const toggleAges = document.getElementById('toggle-ages');
+        const toggleFossils = document.getElementById('toggle-fossils');
+        const toggleTexture = document.getElementById('toggle-texture');
+
+        // Header displays
+        const displayLayers = document.getElementById('display-layers').querySelector('div:last-child');
+        const displayAge = document.getElementById('display-age').querySelector('div:last-child');
+        const displayThickness = document.getElementById('display-thickness').querySelector('div:last-child');
+        const displayPeriod = document.getElementById('display-period').querySelector('div:last-child');
+
+        // Layer info overlay
+        const layerInfoOverlay = document.getElementById('layer-info-overlay');
+
+        // ===== EVENT HANDLERS =====
+        sedimentBtns.forEach((btn, i) => {
+            btn.addEventListener('click', () => {
+                sedimentBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                CONFIG.sedimentType = btn.dataset.type;
+            });
+        });
+
+        eventBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                applyEvent(btn.dataset.event);
+            });
+        });
+
+        thicknessSlider.addEventListener('input', (e) => {
+            CONFIG.thickness = parseInt(e.target.value);
+            thicknessValue.textContent = CONFIG.thickness + ' m';
+        });
+
+        ageIntervalSlider.addEventListener('input', (e) => {
+            CONFIG.ageInterval = parseInt(e.target.value);
+            ageIntervalValue.textContent = CONFIG.ageInterval + ' Ma';
+        });
+
+        speedSlider.addEventListener('input', (e) => {
+            CONFIG.speed = parseFloat(e.target.value);
+            speedValue.textContent = CONFIG.speed.toFixed(1) + 'x';
+        });
+
+        depositBtn.addEventListener('click', depositLayer);
+
+        autoBtn.addEventListener('click', () => {
+            CONFIG.autoDeposit = !CONFIG.autoDeposit;
+            autoBtn.textContent = CONFIG.autoDeposit ? '⏸ Pausar' : '▶ Auto';
+        });
+
+        resetBtn.addEventListener('click', () => {
+            layers = [];
+            selectedLayer = null;
+            currentAge = 0;
+            CONFIG.autoDeposit = false;
+            autoBtn.textContent = '▶ Auto';
+            layerInfoOverlay.style.display = 'none';
+        });
+
+        // Toggle switches
+        toggleAges.addEventListener('click', () => {
+            CONFIG.showAges = !CONFIG.showAges;
+            toggleAges.classList.toggle('active', CONFIG.showAges);
+        });
+
+        toggleFossils.addEventListener('click', () => {
+            CONFIG.showFossils = !CONFIG.showFossils;
+            toggleFossils.classList.toggle('active', CONFIG.showFossils);
+        });
+
+        toggleTexture.addEventListener('click', () => {
+            CONFIG.showTexture = !CONFIG.showTexture;
+            toggleTexture.classList.toggle('active', CONFIG.showTexture);
+        });
+
+        // Canvas click
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            const columnX = w * 0.25;
+            const columnWidth = w * 0.5;
+
+            if (x >= columnX && x <= columnX + columnWidth) {
+                for (let i = layers.length - 1; i >= 0; i--) {
+                    const layer = layers[i];
+                    if (y >= layer.displayY && y < layer.displayY + layer.displayThickness) {
+                        selectedLayer = i;
+                        showLayerInfo(layer);
+                        break;
+                    }
+                }
+            }
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            const types = ['sand', 'clay', 'limestone', 'shale', 'coal', 'conglomerate'];
+            if (e.key >= '1' && e.key <= '6') {
+                const idx = parseInt(e.key) - 1;
+                sedimentBtns.forEach((btn, i) => {
+                    btn.classList.toggle('active', i === idx);
+                });
+                CONFIG.sedimentType = types[idx];
+            }
+            if (e.key === 'd' || e.key === 'D') depositLayer();
+            if (e.key === ' ' || e.key === 'Spacebar') {
+                e.preventDefault();
+                autoBtn.click();
+            }
+            if (e.key === 'r' || e.key === 'R') resetBtn.click();
+        });
+
+        // ===== CORE FUNCTIONS =====
+        function depositLayer() {
+            const h = canvas.height / dpr;
+            const maxLayers = Math.floor((h - 150) / 20);
+
+            if (layers.length >= maxLayers) return;
+
+            const sediment = SEDIMENTS[CONFIG.sedimentType];
+            const thickness = CONFIG.thickness + (Math.random() - 0.5) * 10;
+
+            const layer = {
+                type: CONFIG.sedimentType,
+                sediment: sediment,
+                thickness: thickness,
+                age: currentAge,
+                fossils: [],
+                faultOffset: 0,
+                foldAmount: 0,
+                isNew: true
+            };
+
+            // Random fossils
+            if (Math.random() < 0.5) {
+                const fossilCount = 1 + Math.floor(Math.random() * 2);
+                for (let i = 0; i < fossilCount; i++) {
+                    layer.fossils.push({
+                        x: 0.15 + Math.random() * 0.7,
+                        y: 0.2 + Math.random() * 0.6,
+                        emoji: sediment.fossilEmoji[Math.floor(Math.random() * sediment.fossilEmoji.length)]
+                    });
+                }
+            }
+
+            layers.push(layer);
+            currentAge += CONFIG.ageInterval + Math.random() * 5;
+
+            // Clear "new" flag after animation
+            setTimeout(() => { layer.isNew = false; }, 300);
+        }
+
+        function applyEvent(eventType) {
+            if (layers.length === 0) return;
+
+            switch (eventType) {
+                case 'erosion':
+                    if (layers.length > 1) {
+                        layers.pop();
+                        currentAge = layers.length > 0 ? layers[layers.length - 1].age + CONFIG.ageInterval : 0;
+                    }
+                    break;
+
+                case 'fault':
+                    const faultPoint = Math.floor(layers.length * 0.4);
+                    const offset = 15 + Math.random() * 25;
+                    for (let i = faultPoint; i < layers.length; i++) {
+                        layers[i].faultOffset = offset * (Math.random() > 0.5 ? 1 : -1);
+                    }
+                    break;
+
+                case 'fold':
+                    layers.forEach((layer, i) => {
+                        layer.foldAmount = Math.sin((i / layers.length) * Math.PI) * 15;
+                    });
+                    break;
+
+                case 'intrusion':
+                    if (layers.length > 2) {
+                        const idx = 1 + Math.floor(Math.random() * (layers.length - 2));
+                        const intrusion = {
+                            type: 'intrusion',
+                            sediment: {
+                                name: 'Dique Ígneo',
+                                color: '#dc2626',
+                                colorDark: '#b91c1c',
+                                texture: 'solid',
+                                environment: 'Intrusión magmática',
+                                fossils: []
+                            },
+                            thickness: 12,
+                            age: layers[idx].age,
+                            fossils: [],
+                            faultOffset: 0,
+                            foldAmount: 0
+                        };
+                        layers.splice(idx, 0, intrusion);
+                    }
+                    break;
+
+                case 'unconformity':
+                    if (layers.length > 0) {
+                        const unconformity = {
+                            type: 'unconformity',
+                            sediment: {
+                                name: 'Discordancia',
+                                color: '#ef4444',
+                                colorDark: '#dc2626',
+                                texture: 'wavy',
+                                environment: 'Superficie erosiva',
+                                fossils: []
+                            },
+                            thickness: 5,
+                            age: currentAge,
+                            fossils: [],
+                            faultOffset: 0,
+                            foldAmount: 0
+                        };
+                        layers.push(unconformity);
+                        currentAge += CONFIG.ageInterval * 2;
+                    }
+                    break;
+
+                case 'fossil':
+                    const randomLayer = layers[Math.floor(Math.random() * layers.length)];
+                    if (randomLayer.sediment.fossilEmoji) {
+                        randomLayer.fossils.push({
+                            x: 0.15 + Math.random() * 0.7,
+                            y: 0.2 + Math.random() * 0.6,
+                            emoji: randomLayer.sediment.fossilEmoji[Math.floor(Math.random() * randomLayer.sediment.fossilEmoji.length)]
+                        });
+                    }
+                    break;
+            }
+        }
+
+        function showLayerInfo(layer) {
+            layerInfoOverlay.style.display = 'block';
+            document.getElementById('layer-color-preview').style.background = layer.sediment.color;
+            document.getElementById('layer-name').textContent = layer.sediment.name;
+            document.getElementById('layer-age').textContent = Math.round(layer.age) + ' Ma';
+            document.getElementById('layer-environment').textContent = layer.sediment.environment || 'Desconocido';
+            document.getElementById('layer-thickness').textContent = Math.round(layer.thickness) + ' m';
+            document.getElementById('layer-fossils').textContent = layer.sediment.fossils?.join(', ') || 'Ninguno';
+        }
+
+        function getPeriod(age) {
+            for (const period of PERIODS) {
+                if (age < period.max) return period;
+            }
+            return PERIODS[PERIODS.length - 1];
+        }
+
+        // ===== DRAWING =====
+        function draw() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            // Background
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, w, h);
+
+            const columnX = w * 0.25;
+            const columnWidth = w * 0.5;
+            const baseY = h - 60;
+
+            // Basement
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(columnX, baseY, columnWidth, 60);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Basamento Cristalino (Precámbrico)', columnX + columnWidth / 2, baseY + 35);
+
+            // Calculate layer positions
+            let currentY = baseY;
+            for (let i = 0; i < layers.length; i++) {
+                const layer = layers[i];
+                const displayThickness = Math.max(15, layer.thickness * 0.8);
+                layer.displayY = currentY - displayThickness;
+                layer.displayThickness = displayThickness;
+                currentY = layer.displayY;
+            }
+
+            // Draw layers
+            layers.forEach((layer, i) => {
+                const sediment = layer.sediment;
+                let x = columnX + layer.faultOffset;
+                let y = layer.displayY + layer.foldAmount;
+
+                // Layer fill with gradient
+                const grad = ctx.createLinearGradient(x, y, x, y + layer.displayThickness);
+                grad.addColorStop(0, sediment.color);
+                grad.addColorStop(1, sediment.colorDark || sediment.color);
+                ctx.fillStyle = grad;
+                ctx.fillRect(x, y, columnWidth, layer.displayThickness);
+
+                // Texture
+                if (CONFIG.showTexture) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.08)';
+                    if (sediment.texture === 'dotted') {
+                        for (let dx = 5; dx < columnWidth; dx += 12) {
+                            for (let dy = 4; dy < layer.displayThickness; dy += 8) {
+                                ctx.beginPath();
+                                ctx.arc(x + dx, y + dy, 1.5, 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
+                    } else if (sediment.texture === 'layered') {
+                        for (let dy = 3; dy < layer.displayThickness; dy += 4) {
+                            ctx.fillRect(x, y + dy, columnWidth, 1);
+                        }
+                    } else if (sediment.texture === 'pebbly') {
+                        for (let dx = 15; dx < columnWidth; dx += 25) {
+                            for (let dy = 5; dy < layer.displayThickness - 5; dy += 12) {
+                                ctx.beginPath();
+                                ctx.ellipse(x + dx + Math.sin(dy) * 3, y + dy, 5, 4, Math.random(), 0, Math.PI * 2);
+                                ctx.fill();
+                            }
+                        }
+                    } else if (sediment.texture === 'wavy') {
+                        ctx.strokeStyle = 'rgba(255, 255, 255, 0.5)';
+                        ctx.lineWidth = 2;
+                        ctx.setLineDash([3, 3]);
+                        ctx.beginPath();
+                        ctx.moveTo(x, y + layer.displayThickness / 2);
+                        for (let dx = 0; dx <= columnWidth; dx += 10) {
+                            ctx.lineTo(x + dx, y + layer.displayThickness / 2 + Math.sin(dx * 0.1) * 3);
+                        }
+                        ctx.stroke();
+                        ctx.setLineDash([]);
+                    }
+                }
+
+                // Selection highlight
+                if (selectedLayer === i) {
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.lineWidth = 3;
+                    ctx.strokeRect(x + 1.5, y + 1.5, columnWidth - 3, layer.displayThickness - 3);
+                }
+
+                // Layer boundary
+                ctx.strokeStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+                ctx.lineTo(x + columnWidth, y);
+                ctx.stroke();
+
+                // Fossils
+                if (CONFIG.showFossils && layer.fossils) {
+                    layer.fossils.forEach(fossil => {
+                        ctx.font = '14px sans-serif';
+                        ctx.fillText(fossil.emoji, x + fossil.x * columnWidth, y + fossil.y * layer.displayThickness + 5);
+                    });
+                }
+
+                // Age label
+                if (CONFIG.showAges && layer.displayThickness > 18) {
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                    ctx.font = '9px JetBrains Mono';
+                    ctx.textAlign = 'right';
+                    ctx.fillText(Math.round(layer.age) + ' Ma', x - 8, y + layer.displayThickness / 2 + 3);
+                }
+            });
+
+            // Scale bar
+            const scaleX = columnX + columnWidth + 25;
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(scaleX, 80);
+            ctx.lineTo(scaleX, baseY);
+            ctx.stroke();
+
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.font = '9px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText('Superficie', scaleX + 8, 85);
+            ctx.fillText('Profundidad', scaleX + 8, baseY - 5);
+
+            // Period color bar
+            if (layers.length > 0) {
+                const period = getPeriod(currentAge);
+                displayPeriod.textContent = period.name;
+            }
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '600 15px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Columna Estratigráfica', columnX + columnWidth / 2, 35);
+
+            // Empty state
+            if (layers.length === 0) {
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.font = '13px Inter';
+                ctx.fillText('Deposita capas para construir la columna', columnX + columnWidth / 2, h / 2);
+                ctx.font = '11px Inter';
+                ctx.fillText('Presiona D o el botón "+ Depositar Capa"', columnX + columnWidth / 2, h / 2 + 25);
+            }
+
+            // Update displays
+            displayLayers.textContent = layers.length;
+            displayAge.textContent = Math.round(currentAge) + ' Ma';
+            const totalThickness = layers.reduce((sum, l) => sum + l.thickness, 0);
+            displayThickness.textContent = Math.round(totalThickness) + ' m';
+        }
+
+        // ===== ANIMATION LOOP =====
+        let lastTime = 0;
+        let autoTimer = 0;
+
+        function animate(time) {
+            const dt = (time - lastTime) / 1000;
+            lastTime = time;
+
+            // Auto deposit
+            if (CONFIG.autoDeposit && CONFIG.speed > 0) {
+                autoTimer += dt * CONFIG.speed;
+                if (autoTimer > 1.5) {
+                    autoTimer = 0;
+                    // Random sediment
+                    const types = Object.keys(SEDIMENTS);
+                    CONFIG.sedimentType = types[Math.floor(Math.random() * types.length)];
+                    sedimentBtns.forEach(btn => {
+                        btn.classList.toggle('active', btn.dataset.type === CONFIG.sedimentType);
+                    });
+                    depositLayer();
+                }
+            }
+
+            ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

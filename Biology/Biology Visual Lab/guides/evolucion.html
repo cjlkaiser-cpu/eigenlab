@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Evolución — Guía · Biology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border: 1px solid var(--accent); background: var(--accent-dim); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; position: relative; }
+        .experiment-number { position: absolute; top: -0.75rem; left: 1rem; background: var(--accent); color: var(--bg-primary); font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .steps { counter-reset: step; list-style: none; padding-left: 0; margin-top: 0.75rem; }
+        .steps li { counter-increment: step; padding-left: 2rem; position: relative; margin: 0.5rem 0; }
+        .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+
+        /* Connections */
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; display: block; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+        .connection-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem; }
+        .connection-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .icon-geology { background: rgba(217, 119, 6, 0.15); }
+
+        /* Limitations */
+        .limitations { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--accent); margin-bottom: 0.75rem; }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; flex-direction: column; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .guide-nav a:hover { border-color: var(--accent); text-decoration: none; }
+        .guide-nav .nav-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .guide-nav .nav-title { font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .guide-nav .next { text-align: right; margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Biology Visual Lab</a>
+                    <span> / </span>
+                    <span>Evolución</span>
+                </nav>
+                <h1>Evolución — Guía</h1>
+                <div class="subtitle">Algoritmos genéticos y selección natural simulada</div>
+            </div>
+            <a href="../evolucion.html" class="pill">
+                <span>▶</span>
+                <span>Abrir simulación</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es un algoritmo genético?</div>
+                <p class="lead">
+                    Un <span class="em">algoritmo genético</span> simula la evolución por selección natural.
+                    Poblaciones de "individuos" (soluciones) evolucionan hacia óptimos mediante
+                    <span class="em">selección</span>, <span class="em">cruce</span> y <span class="em">mutación</span>.
+                </p>
+                <div class="chips">
+                    <span class="chip">Fitness</span>
+                    <span class="chip">Selección</span>
+                    <span class="chip">Crossover</span>
+                    <span class="chip">Mutación</span>
+                    <span class="chip">Generaciones</span>
+                </div>
+                <div class="callout">
+                    <p><strong>John Holland (1975):</strong> Formalizó los algoritmos genéticos inspirándose
+                    en Darwin. Demostró que la evolución puede "programarse" para resolver problemas.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Ciclo evolutivo</div>
+                <ol style="margin-top: 0.5rem; padding-left: 1.25rem;">
+                    <li><strong>Evaluar:</strong> Calcular fitness de cada individuo</li>
+                    <li><strong>Seleccionar:</strong> Los más aptos se reproducen</li>
+                    <li><strong>Cruzar:</strong> Combinar genes de dos padres</li>
+                    <li><strong>Mutar:</strong> Introducir cambios aleatorios</li>
+                    <li><strong>Repetir:</strong> Nueva generación</li>
+                </ol>
+                <div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-panel); border-radius: 0.375rem; font-size: 0.8rem;">
+                    <strong>Analogía biológica:</strong> Genoma = vector de bits/números, Fitness = supervivencia
+                </div>
+            </aside>
+        </section>
+
+        <!-- Selection and Operators -->
+        <section class="two">
+            <div class="card">
+                <h2>Mecanismos de Selección</h2>
+                <p>Los individuos con mayor fitness tienen más probabilidad de reproducirse.</p>
+                <ul>
+                    <li><strong>Ruleta:</strong> P(selección) ∝ fitness</li>
+                    <li><strong>Torneo:</strong> Competencia entre k individuos</li>
+                    <li><strong>Ranking:</strong> Basado en posición, no valor absoluto</li>
+                    <li><strong>Elitismo:</strong> Los mejores pasan directamente</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Operadores Genéticos</h2>
+                <ul>
+                    <li><strong>Crossover (cruce):</strong> Combina genes de dos padres en punto(s) de corte</li>
+                    <li><strong>Mutación:</strong> Cambio aleatorio de un gen (tasa típica: 1-5%)</li>
+                    <li><strong>Inversión:</strong> Revierte segmento del cromosoma</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><span class="em">Balance:</span> Exploración (mutación alta) vs Explotación (selección fuerte).</p>
+            </div>
+        </section>
+
+        <!-- Fitness Landscape -->
+        <section class="card section">
+            <h2>Paisaje de Fitness</h2>
+            <div class="two" style="margin-top: 0;">
+                <div>
+                    <ul>
+                        <li><strong>Óptimo global:</strong> Mejor solución posible</li>
+                        <li><strong>Óptimos locales:</strong> Buenos pero no los mejores</li>
+                        <li><strong>Valle:</strong> Zona de bajo fitness</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Presión selectiva:</strong> Qué tan rápido converge</li>
+                        <li><strong>Diversidad:</strong> Explorar más del espacio</li>
+                        <li><strong>Convergencia prematura:</strong> Atascado en óptimo local</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout-accent" style="margin-top: 1rem;">
+                <strong>Problema:</strong> Sin mutación suficiente, la población puede quedar "atrapada" en un óptimo local. Con demasiada mutación, nunca converge.
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 1</div>
+                <h3 style="margin-top: 0.5rem;">Observar la evolución del fitness</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">El fitness promedio de la población aumentará con cada generación, siguiendo una curva que se desacelera al acercarse al óptimo.</p>
+                </div>
+                <ol class="steps">
+                    <li>Inicia con una población aleatoria (fitness bajo y diverso)</li>
+                    <li>Ejecuta 50 generaciones observando la gráfica de fitness</li>
+                    <li>Nota cómo el fitness promedio sube rápido al inicio</li>
+                    <li>Observa la desaceleración cuando se acerca al óptimo (rendimientos decrecientes)</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Esta curva de "mejora rápida → meseta" es universal en optimización y aprendizaje.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 2</div>
+                <h3 style="margin-top: 0.5rem;">Efecto de la tasa de mutación</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Existe una tasa de mutación óptima: muy baja causa convergencia prematura, muy alta impide convergencia.</p>
+                </div>
+                <ol class="steps">
+                    <li>Ejecuta evolución con mutación = 0% — observa convergencia prematura</li>
+                    <li>Aumenta a mutación = 1% — mejor exploración</li>
+                    <li>Prueba mutación = 50% — el sistema no converge (búsqueda aleatoria)</li>
+                    <li>Encuentra el valor óptimo para tu problema (generalmente 1-5%)</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> En biología real, las tasas de mutación están optimizadas por la evolución misma (meta-evolución).
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 3</div>
+                <h3 style="margin-top: 0.5rem;">Tamaño de población y diversidad</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Poblaciones más grandes mantienen más diversidad genética y escapan mejor de óptimos locales.</p>
+                </div>
+                <ol class="steps">
+                    <li>Ejecuta con población N = 10 — observa pérdida rápida de diversidad</li>
+                    <li>Aumenta a N = 100 — más variantes coexisten</li>
+                    <li>Compara cuál encuentra mejores soluciones después de 100 generaciones</li>
+                    <li>Relaciona con la deriva genética: poblaciones pequeñas son más "ruidosas"</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Esta es la razón por la cual la conservación de biodiversidad importa: poblaciones grandes son más resilientes.
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <h2>Conexiones interdisciplinarias</h2>
+            <div class="connections-grid">
+                <a href="genetica-poblacional.html" class="connection">
+                    <div class="connection-icon icon-biology">🧬</div>
+                    <div class="connection-title">Genética Poblacional</div>
+                    <div class="connection-desc">La base matemática: Hardy-Weinberg, deriva, selección.</div>
+                </a>
+                <a href="ecosistema.html" class="connection">
+                    <div class="connection-icon icon-biology">🌿</div>
+                    <div class="connection-title">Ecosistema</div>
+                    <div class="connection-desc">La evolución ocurre en contexto ecológico: depredación, competencia, coevolución.</div>
+                </a>
+                <a href="../../../Computation/Computation Lab/perceptron-playground.html" class="connection">
+                    <div class="connection-icon icon-computation">💻</div>
+                    <div class="connection-title">Perceptrón</div>
+                    <div class="connection-desc">Neuroevolución: redes neuronales evolucionadas en lugar de entrenadas.</div>
+                </a>
+                <a href="../../../Geology/Geology Visual Lab/guides/estratigrafia.html" class="connection">
+                    <div class="connection-icon icon-geology">🪨</div>
+                    <div class="connection-title">Estratigrafía</div>
+                    <div class="connection-desc">El registro fósil documenta la historia de la evolución en las rocas.</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="section">
+            <div class="limitations">
+                <h3>⚠️ Limitaciones de la simulación</h3>
+                <ul>
+                    <li><strong>Fitness definido:</strong> En la vida real, el fitness es emergente y cambiante</li>
+                    <li><strong>Genoma fijo:</strong> No modela duplicación de genes ni cambios estructurales</li>
+                    <li><strong>Sin coevolución:</strong> El ambiente (fitness landscape) no cambia con la población</li>
+                    <li><strong>Generaciones discretas:</strong> En realidad hay solapamiento y reproducción continua</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Reflection -->
+        <section class="section">
+            <div class="reflection">
+                <h3>🔬 Preguntas de reflexión</h3>
+                <ol>
+                    <li>¿Por qué los algoritmos genéticos funcionan bien en problemas donde no conocemos la estructura de la solución?</li>
+                    <li>¿Qué analogía hay entre "convergencia prematura" en AG y "pérdida de biodiversidad" en conservación?</li>
+                    <li>Si la mutación es dañina en la mayoría de los casos, ¿por qué la evolución la mantiene?</li>
+                    <li>¿Cómo cambiaría un algoritmo genético si el fitness dependiera de la interacción con otros individuos (coevolución)?</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="meiosis.html">
+                <span class="nav-label">← Anterior</span>
+                <span class="nav-title">Meiosis</span>
+            </a>
+            <a href="ecosistema.html" class="next">
+                <span class="nav-label">Siguiente →</span>
+                <span class="nav-title">Ecosistema</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biology Visual Lab — Evolución
+    </footer>
+</body>
+</html>

@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Potencial de Acción - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #8b5cf6;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #a78bfa;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(99, 102, 241, 0.05));
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .oscilloscope {
+            background: #030712;
+            border: 2px solid #1f2937;
+            border-radius: 8px;
+        }
+
+        .channel-na {
+            background: rgba(251, 191, 36, 0.2);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+        }
+
+        .channel-k {
+            background: rgba(34, 197, 94, 0.2);
+            border: 1px solid rgba(34, 197, 94, 0.5);
+        }
+
+        .ion-na { color: #fbbf24; }
+        .ion-k { color: #22c55e; }
+        .ion-cl { color: #06b6d4; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Potencial de Acción</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-violet-400 font-medium glow-text">Potencial de Acción</span>
+                            <span class="text-gray-600 text-sm ml-2">Hodgkin-Huxley</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">V<sub>m</sub>:</span>
+                        <span id="voltage-display" class="text-violet-400 mono">-70.0</span>
+                        <span class="text-gray-600">mV</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">t:</span>
+                        <span id="time-display" class="text-violet-400 mono">0.00</span>
+                        <span class="text-gray-600">ms</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main neuron visualization -->
+            <div class="flex-1 relative">
+                <canvas id="neuron-canvas" class="w-full h-full"></canvas>
+
+                <!-- Legend overlay -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Iones</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-yellow-400"></span>
+                            <span class="ion-na">Na⁺</span>
+                            <span class="text-gray-500">(sodio)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            <span class="ion-k">K⁺</span>
+                            <span class="text-gray-500">(potasio)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Phase indicator -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Fase actual</div>
+                    <div id="phase-display" class="text-violet-400 font-medium">Reposo</div>
+                </div>
+            </div>
+
+            <!-- Oscilloscope -->
+            <div class="h-48 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500">Potencial de membrana (mV)</span>
+                    <div class="flex gap-4 text-xs">
+                        <span class="text-violet-400">— V<sub>m</sub></span>
+                        <span class="text-yellow-400">— g<sub>Na</sub></span>
+                        <span class="text-green-400">— g<sub>K</sub></span>
+                    </div>
+                </div>
+                <canvas id="oscilloscope" class="oscilloscope w-full h-32"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El <span class="text-emerald-400">potencial de accion</span> ocurre cuando canales de Na+ y K+ se abren en secuencia, despolarizando y repolarizando la membrana neuronal.
+                </p>
+                <a href="guides/neurona.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: Hodgkin-Huxley, canales ionicos
+                </a>
+            </div>
+
+            <!-- Stimulus -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    Estímulo
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-violet-500/20 text-violet-400">I</span>
+                        Corriente: <span id="current-value" class="text-violet-400 mono">10</span> µA/cm²
+                    </label>
+                    <input type="range" id="current" min="0" max="50" step="1" value="10" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Duración: <span id="duration-value" class="text-violet-400 mono">1.0</span> ms
+                    </label>
+                    <input type="range" id="duration" min="0.1" max="5" step="0.1" value="1" class="w-full">
+                </div>
+
+                <button id="stimulate-btn" class="w-full py-2 px-4 bg-violet-500/20 hover:bg-violet-500/30 text-violet-400 rounded-lg text-sm transition font-medium">
+                    ⚡ Aplicar Estímulo
+                </button>
+            </div>
+
+            <!-- Conductances -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-yellow-500"></span>
+                    Conductancias Máximas
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight channel-na text-yellow-400">g̅<sub>Na</sub></span>
+                        <span id="gna-value" class="text-yellow-400 mono ml-1">120</span> mS/cm²
+                    </label>
+                    <input type="range" id="gna" min="0" max="200" step="5" value="120" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight channel-k text-green-400">g̅<sub>K</sub></span>
+                        <span id="gk-value" class="text-green-400 mono ml-1">36</span> mS/cm²
+                    </label>
+                    <input type="range" id="gk" min="0" max="100" step="2" value="36" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-gray-500/20 text-gray-400">g<sub>L</sub></span>
+                        <span id="gl-value" class="text-gray-400 mono ml-1">0.3</span> mS/cm²
+                    </label>
+                    <input type="range" id="gl" min="0" max="1" step="0.1" value="0.3" class="w-full">
+                </div>
+            </div>
+
+            <!-- Simulation -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-emerald-400 mono">1.0</span>x
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        <span id="pause-text">Pausar</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-ions" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                        <span class="text-sm text-gray-400">Mostrar iones</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-channels" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                        <span class="text-sm text-gray-400">Mostrar canales</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-propagation" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-violet-500">
+                        <span class="text-sm text-gray-400">Propagación del impulso</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-violet-400 mb-3">Modelo Hodgkin-Huxley</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>C<sub>m</sub> · dV/dt = I - I<sub>ion</sub></div>
+                    <div class="mt-2 text-gray-500">donde:</div>
+                    <div class="pl-2">I<sub>ion</sub> = g<sub>Na</sub>·m³·h·(V-E<sub>Na</sub>)</div>
+                    <div class="pl-2">+ g<sub>K</sub>·n⁴·(V-E<sub>K</sub>)</div>
+                    <div class="pl-2">+ g<sub>L</sub>·(V-E<sub>L</sub>)</div>
+                </div>
+            </div>
+
+            <!-- Reversal Potentials -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Potenciales de Reversión</h3>
+                <div class="grid grid-cols-3 gap-2 text-xs mono">
+                    <div class="text-center">
+                        <div class="text-gray-500 mb-1">E<sub>Na</sub></div>
+                        <div class="text-yellow-400">+50 mV</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-500 mb-1">E<sub>K</sub></div>
+                        <div class="text-green-400">-77 mV</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-gray-500 mb-1">E<sub>L</sub></div>
+                        <div class="text-gray-400">-54 mV</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const neuronCanvas = document.getElementById('neuron-canvas');
+        const neuronCtx = neuronCanvas.getContext('2d');
+        const oscCanvas = document.getElementById('oscilloscope');
+        const oscCtx = oscCanvas.getContext('2d');
+
+        // Hodgkin-Huxley parameters
+        const Cm = 1.0;      // membrane capacitance (µF/cm²)
+        const ENa = 50;      // Na reversal potential (mV)
+        const EK = -77;      // K reversal potential (mV)
+        const EL = -54.4;    // Leak reversal potential (mV)
+
+        let gNa = 120;       // Max Na conductance (mS/cm²)
+        let gK = 36;         // Max K conductance (mS/cm²)
+        let gL = 0.3;        // Leak conductance (mS/cm²)
+
+        // State variables
+        let V = -65;         // Membrane potential (mV)
+        let m = 0.05;        // Na activation
+        let h = 0.6;         // Na inactivation
+        let n = 0.32;        // K activation
+
+        // Simulation state
+        let time = 0;
+        let paused = false;
+        let speed = 1;
+        let stimulusCurrent = 10;
+        let stimulusDuration = 1;
+        let stimulusActive = false;
+        let stimulusEndTime = 0;
+
+        // Visualization options
+        let showIons = true;
+        let showChannels = true;
+        let showPropagation = true;
+
+        // Voltage history for oscilloscope
+        const maxHistory = 500;
+        let voltageHistory = [];
+        let gNaHistory = [];
+        let gKHistory = [];
+
+        // Ions for visualization
+        let ions = [];
+
+        // Action potential propagation along axon
+        let propagationPositions = [];
+
+        // Rate functions (Hodgkin-Huxley)
+        function alphaM(V) { return 0.1 * (V + 40) / (1 - Math.exp(-(V + 40) / 10)); }
+        function betaM(V) { return 4 * Math.exp(-(V + 65) / 18); }
+        function alphaH(V) { return 0.07 * Math.exp(-(V + 65) / 20); }
+        function betaH(V) { return 1 / (1 + Math.exp(-(V + 35) / 10)); }
+        function alphaN(V) { return 0.01 * (V + 55) / (1 - Math.exp(-(V + 55) / 10)); }
+        function betaN(V) { return 0.125 * Math.exp(-(V + 65) / 80); }
+
+        // Initialize
+        function init() {
+            resizeCanvases();
+            initIons();
+            reset();
+        }
+
+        function resizeCanvases() {
+            neuronCanvas.width = neuronCanvas.offsetWidth * window.devicePixelRatio;
+            neuronCanvas.height = neuronCanvas.offsetHeight * window.devicePixelRatio;
+            neuronCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            oscCanvas.width = oscCanvas.offsetWidth * window.devicePixelRatio;
+            oscCanvas.height = oscCanvas.offsetHeight * window.devicePixelRatio;
+            oscCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function initIons() {
+            ions = [];
+            const w = neuronCanvas.offsetWidth;
+            const h = neuronCanvas.offsetHeight;
+
+            // Sodium ions (outside membrane initially)
+            for (let i = 0; i < 30; i++) {
+                ions.push({
+                    type: 'Na',
+                    x: Math.random() * w,
+                    y: h * 0.2 + Math.random() * (h * 0.15),
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    entering: false
+                });
+            }
+
+            // Potassium ions (inside membrane initially)
+            for (let i = 0; i < 30; i++) {
+                ions.push({
+                    type: 'K',
+                    x: Math.random() * w,
+                    y: h * 0.65 + Math.random() * (h * 0.15),
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2,
+                    exiting: false
+                });
+            }
+        }
+
+        function reset() {
+            V = -65;
+            m = 0.05;
+            h = 0.6;
+            n = 0.32;
+            time = 0;
+            voltageHistory = [];
+            gNaHistory = [];
+            gKHistory = [];
+            propagationPositions = [];
+            stimulusActive = false;
+            initIons();
+        }
+
+        // Hodgkin-Huxley simulation step
+        function simulate(dt) {
+            if (paused) return;
+
+            const dtMs = dt * speed;
+            time += dtMs;
+
+            // External current
+            let Iext = 0;
+            if (stimulusActive && time < stimulusEndTime) {
+                Iext = stimulusCurrent;
+            } else {
+                stimulusActive = false;
+            }
+
+            // Ionic currents
+            const INa = gNa * Math.pow(m, 3) * h * (V - ENa);
+            const IK = gK * Math.pow(n, 4) * (V - EK);
+            const IL = gL * (V - EL);
+
+            // dV/dt
+            const dV = (Iext - INa - IK - IL) / Cm;
+
+            // Gating variables
+            const dm = alphaM(V) * (1 - m) - betaM(V) * m;
+            const dh = alphaH(V) * (1 - h) - betaH(V) * h;
+            const dn = alphaN(V) * (1 - n) - betaN(V) * n;
+
+            // Euler integration
+            V += dV * dtMs;
+            m += dm * dtMs;
+            h += dh * dtMs;
+            n += dn * dtMs;
+
+            // Clamp values
+            m = Math.max(0, Math.min(1, m));
+            h = Math.max(0, Math.min(1, h));
+            n = Math.max(0, Math.min(1, n));
+
+            // Record history
+            voltageHistory.push(V);
+            gNaHistory.push(gNa * Math.pow(m, 3) * h);
+            gKHistory.push(gK * Math.pow(n, 4));
+
+            if (voltageHistory.length > maxHistory) {
+                voltageHistory.shift();
+                gNaHistory.shift();
+                gKHistory.shift();
+            }
+
+            // Trigger propagation on spike
+            if (V > 0 && propagationPositions.length === 0) {
+                propagationPositions.push({ x: 0, intensity: 1 });
+            }
+
+            // Update propagation
+            propagationPositions = propagationPositions
+                .map(p => ({ x: p.x + dtMs * 0.5, intensity: p.intensity * 0.995 }))
+                .filter(p => p.intensity > 0.1);
+
+            // Update ions based on channel states
+            updateIons(dtMs);
+
+            // Update displays
+            document.getElementById('voltage-display').textContent = V.toFixed(1);
+            document.getElementById('time-display').textContent = time.toFixed(2);
+
+            // Phase detection
+            let phase = 'Reposo';
+            if (V > -55 && V < 0) phase = 'Despolarización';
+            else if (V >= 0) phase = 'Pico';
+            else if (V < -65 && V > -80) phase = 'Repolarización';
+            else if (V <= -80) phase = 'Hiperpolarización';
+            document.getElementById('phase-display').textContent = phase;
+        }
+
+        function updateIons(dt) {
+            const w = neuronCanvas.offsetWidth;
+            const h = neuronCanvas.offsetHeight;
+            const membraneY = h * 0.45;
+            const membraneThickness = h * 0.1;
+
+            // Na channel open probability
+            const naOpen = Math.pow(m, 3) * h;
+            // K channel open probability
+            const kOpen = Math.pow(n, 4);
+
+            ions.forEach(ion => {
+                // Random movement
+                ion.vx += (Math.random() - 0.5) * 0.5;
+                ion.vy += (Math.random() - 0.5) * 0.5;
+                ion.vx *= 0.95;
+                ion.vy *= 0.95;
+
+                if (ion.type === 'Na') {
+                    // Na flows in when depolarizing
+                    if (naOpen > 0.1 && ion.y < membraneY) {
+                        ion.vy += naOpen * 2;
+                        ion.entering = true;
+                    }
+                } else if (ion.type === 'K') {
+                    // K flows out when repolarizing
+                    if (kOpen > 0.1 && ion.y > membraneY + membraneThickness) {
+                        ion.vy -= kOpen * 1.5;
+                        ion.exiting = true;
+                    }
+                }
+
+                ion.x += ion.vx;
+                ion.y += ion.vy;
+
+                // Bounds
+                if (ion.x < 0) ion.x = w;
+                if (ion.x > w) ion.x = 0;
+                if (ion.y < h * 0.1) ion.y = h * 0.1;
+                if (ion.y > h * 0.9) ion.y = h * 0.9;
+            });
+        }
+
+        function applyStimulus() {
+            stimulusActive = true;
+            stimulusEndTime = time + stimulusDuration;
+        }
+
+        // Drawing
+        function draw() {
+            drawNeuron();
+            drawOscilloscope();
+        }
+
+        function drawNeuron() {
+            const w = neuronCanvas.offsetWidth;
+            const h = neuronCanvas.offsetHeight;
+
+            neuronCtx.fillStyle = '#030712';
+            neuronCtx.fillRect(0, 0, w, h);
+
+            const membraneY = h * 0.45;
+            const membraneThickness = h * 0.1;
+
+            // Extracellular label
+            neuronCtx.fillStyle = '#4b5563';
+            neuronCtx.font = '12px Inter';
+            neuronCtx.fillText('Extracelular (Na⁺ alto)', 20, 30);
+
+            // Intracellular label
+            neuronCtx.fillText('Intracelular (K⁺ alto)', 20, h - 20);
+
+            // Membrane
+            const gradient = neuronCtx.createLinearGradient(0, membraneY, 0, membraneY + membraneThickness);
+            gradient.addColorStop(0, '#1f2937');
+            gradient.addColorStop(0.5, '#374151');
+            gradient.addColorStop(1, '#1f2937');
+            neuronCtx.fillStyle = gradient;
+            neuronCtx.fillRect(0, membraneY, w, membraneThickness);
+
+            // Membrane potential color indicator
+            const vNorm = (V + 80) / 130; // normalize -80 to +50
+            const memColor = `hsl(${270 - vNorm * 60}, 70%, ${30 + vNorm * 30}%)`;
+            neuronCtx.fillStyle = memColor;
+            neuronCtx.globalAlpha = 0.3;
+            neuronCtx.fillRect(0, membraneY, w, membraneThickness);
+            neuronCtx.globalAlpha = 1;
+
+            // Draw channels
+            if (showChannels) {
+                drawChannels(w, h, membraneY, membraneThickness);
+            }
+
+            // Draw ions
+            if (showIons) {
+                ions.forEach(ion => {
+                    if (ion.type === 'Na') {
+                        neuronCtx.fillStyle = '#fbbf24';
+                    } else {
+                        neuronCtx.fillStyle = '#22c55e';
+                    }
+                    neuronCtx.beginPath();
+                    neuronCtx.arc(ion.x, ion.y, 4, 0, Math.PI * 2);
+                    neuronCtx.fill();
+
+                    // Label
+                    neuronCtx.fillStyle = ion.type === 'Na' ? '#fbbf24' : '#22c55e';
+                    neuronCtx.font = '8px JetBrains Mono';
+                    neuronCtx.fillText(ion.type === 'Na' ? '+' : '+', ion.x - 2, ion.y + 3);
+                });
+            }
+
+            // Draw propagation wave
+            if (showPropagation) {
+                propagationPositions.forEach(p => {
+                    const px = p.x * w;
+                    neuronCtx.fillStyle = `rgba(139, 92, 246, ${p.intensity * 0.5})`;
+                    neuronCtx.beginPath();
+                    neuronCtx.ellipse(px, membraneY + membraneThickness/2, 30, membraneThickness, 0, 0, Math.PI * 2);
+                    neuronCtx.fill();
+                });
+            }
+
+            // Voltage indicator bar
+            const barX = w - 60;
+            const barH = h * 0.6;
+            const barY = h * 0.2;
+
+            // Background
+            neuronCtx.fillStyle = '#1f2937';
+            neuronCtx.fillRect(barX, barY, 30, barH);
+
+            // Voltage level
+            const vLevel = ((V + 80) / 130) * barH;
+            const vGradient = neuronCtx.createLinearGradient(barX, barY + barH - vLevel, barX, barY + barH);
+            vGradient.addColorStop(0, '#8b5cf6');
+            vGradient.addColorStop(1, '#4c1d95');
+            neuronCtx.fillStyle = vGradient;
+            neuronCtx.fillRect(barX, barY + barH - vLevel, 30, vLevel);
+
+            // Labels
+            neuronCtx.fillStyle = '#9ca3af';
+            neuronCtx.font = '10px JetBrains Mono';
+            neuronCtx.fillText('+50', barX - 25, barY + 5);
+            neuronCtx.fillText('0', barX - 15, barY + barH * 0.38);
+            neuronCtx.fillText('-80', barX - 25, barY + barH);
+            neuronCtx.fillText('mV', barX + 5, barY + barH + 15);
+        }
+
+        function drawChannels(w, h, membraneY, thickness) {
+            const naOpen = Math.pow(m, 3) * h;
+            const kOpen = Math.pow(n, 4);
+
+            // Na channels
+            for (let i = 0; i < 8; i++) {
+                const x = w * 0.1 + i * w * 0.1;
+                const isOpen = naOpen > 0.3;
+
+                neuronCtx.fillStyle = isOpen ? '#fbbf24' : '#4b5563';
+                neuronCtx.fillRect(x - 8, membraneY - 5, 16, thickness + 10);
+
+                // Channel pore
+                if (isOpen) {
+                    neuronCtx.fillStyle = '#030712';
+                    neuronCtx.fillRect(x - 3, membraneY, 6, thickness);
+                }
+
+                // Label
+                neuronCtx.fillStyle = '#fbbf24';
+                neuronCtx.font = '8px JetBrains Mono';
+                neuronCtx.fillText('Na', x - 6, membraneY - 10);
+            }
+
+            // K channels
+            for (let i = 0; i < 8; i++) {
+                const x = w * 0.15 + i * w * 0.1;
+                const isOpen = kOpen > 0.3;
+
+                neuronCtx.fillStyle = isOpen ? '#22c55e' : '#4b5563';
+                neuronCtx.fillRect(x - 8, membraneY - 5, 16, thickness + 10);
+
+                // Channel pore
+                if (isOpen) {
+                    neuronCtx.fillStyle = '#030712';
+                    neuronCtx.fillRect(x - 3, membraneY, 6, thickness);
+                }
+
+                // Label
+                neuronCtx.fillStyle = '#22c55e';
+                neuronCtx.font = '8px JetBrains Mono';
+                neuronCtx.fillText('K', x - 4, membraneY - 10);
+            }
+        }
+
+        function drawOscilloscope() {
+            const w = oscCanvas.offsetWidth;
+            const h = oscCanvas.offsetHeight;
+
+            oscCtx.fillStyle = '#030712';
+            oscCtx.fillRect(0, 0, w, h);
+
+            // Grid
+            oscCtx.strokeStyle = '#1f2937';
+            oscCtx.lineWidth = 1;
+
+            // Horizontal lines
+            for (let i = 0; i <= 4; i++) {
+                const y = i * h / 4;
+                oscCtx.beginPath();
+                oscCtx.moveTo(0, y);
+                oscCtx.lineTo(w, y);
+                oscCtx.stroke();
+            }
+
+            // Zero line (0 mV)
+            const zeroY = h * 0.38; // roughly where 0mV is
+            oscCtx.strokeStyle = '#374151';
+            oscCtx.setLineDash([5, 5]);
+            oscCtx.beginPath();
+            oscCtx.moveTo(0, zeroY);
+            oscCtx.lineTo(w, zeroY);
+            oscCtx.stroke();
+            oscCtx.setLineDash([]);
+
+            // Y-axis labels
+            oscCtx.fillStyle = '#6b7280';
+            oscCtx.font = '10px JetBrains Mono';
+            oscCtx.fillText('+50', 5, 12);
+            oscCtx.fillText('0', 5, zeroY + 4);
+            oscCtx.fillText('-80', 5, h - 5);
+
+            if (voltageHistory.length < 2) return;
+
+            // Draw conductances (normalized)
+            const maxG = 120;
+
+            // gNa
+            oscCtx.strokeStyle = '#fbbf24';
+            oscCtx.lineWidth = 1;
+            oscCtx.beginPath();
+            gNaHistory.forEach((g, i) => {
+                const x = (i / maxHistory) * w;
+                const y = h - (g / maxG) * h * 0.8;
+                if (i === 0) oscCtx.moveTo(x, y);
+                else oscCtx.lineTo(x, y);
+            });
+            oscCtx.stroke();
+
+            // gK
+            oscCtx.strokeStyle = '#22c55e';
+            oscCtx.beginPath();
+            gKHistory.forEach((g, i) => {
+                const x = (i / maxHistory) * w;
+                const y = h - (g / maxG) * h * 0.8;
+                if (i === 0) oscCtx.moveTo(x, y);
+                else oscCtx.lineTo(x, y);
+            });
+            oscCtx.stroke();
+
+            // Voltage trace
+            oscCtx.strokeStyle = '#8b5cf6';
+            oscCtx.lineWidth = 2;
+            oscCtx.beginPath();
+            voltageHistory.forEach((v, i) => {
+                const x = (i / maxHistory) * w;
+                const y = h - ((v + 80) / 130) * h;
+                if (i === 0) oscCtx.moveTo(x, y);
+                else oscCtx.lineTo(x, y);
+            });
+            oscCtx.stroke();
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            simulate(dt * 10); // Scale time for biological relevance
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('current').addEventListener('input', (e) => {
+            stimulusCurrent = parseFloat(e.target.value);
+            document.getElementById('current-value').textContent = stimulusCurrent;
+        });
+
+        document.getElementById('duration').addEventListener('input', (e) => {
+            stimulusDuration = parseFloat(e.target.value);
+            document.getElementById('duration-value').textContent = stimulusDuration.toFixed(1);
+        });
+
+        document.getElementById('gna').addEventListener('input', (e) => {
+            gNa = parseFloat(e.target.value);
+            document.getElementById('gna-value').textContent = gNa;
+        });
+
+        document.getElementById('gk').addEventListener('input', (e) => {
+            gK = parseFloat(e.target.value);
+            document.getElementById('gk-value').textContent = gK;
+        });
+
+        document.getElementById('gl').addEventListener('input', (e) => {
+            gL = parseFloat(e.target.value);
+            document.getElementById('gl-value').textContent = gL.toFixed(1);
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('stimulate-btn').addEventListener('click', applyStimulus);
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            paused = !paused;
+            document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', reset);
+
+        document.getElementById('show-ions').addEventListener('change', (e) => {
+            showIons = e.target.checked;
+        });
+
+        document.getElementById('show-channels').addEventListener('change', (e) => {
+            showChannels = e.target.checked;
+        });
+
+        document.getElementById('show-propagation').addEventListener('change', (e) => {
+            showPropagation = e.target.checked;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                paused = !paused;
+                document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+            } else if (e.code === 'KeyR') {
+                reset();
+            } else if (e.code === 'KeyS') {
+                applyStimulus();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // Start
+        init();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

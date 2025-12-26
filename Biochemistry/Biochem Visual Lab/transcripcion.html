@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transcripción | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #06b6d4;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #06b6d4; font-size: 12px; font-weight: bold; }
+        .sequence-display {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        .sequence-label { color: #64748b; font-size: 9px; margin-bottom: 4px; }
+        .sequence-text { font-size: 11px; letter-spacing: 2px; word-break: break-all; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #06b6d4; color: #06b6d4; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #06b6d4; }
+        .phase-indicator {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .phase {
+            flex: 1;
+            padding: 6px;
+            text-align: center;
+            font-size: 9px;
+            border-radius: 4px;
+            background: #1e293b;
+            color: #64748b;
+        }
+        .phase.active { background: #06b6d4; color: #0f172a; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">📝 Transcripción</h2>
+        <p class="text-slate-500 text-xs mb-4">ADN → ARN · RNA Polimerasa II</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">transcripción</span> copia ADN a ARN. RNA polimerasa lee 3'→5' y sintetiza 5'→3'. Fases: inicio, elongación, terminación.
+            </p>
+            <a href="guides/transcripcion.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: promotores, factores, procesamiento
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Velocidad</span><span class="text-cyan-400" id="speed-val">1.0x</span></label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="phase-indicator">
+            <div class="phase active" id="phase-init">Inicio</div>
+            <div class="phase" id="phase-elong">Elongación</div>
+            <div class="phase" id="phase-term">Terminación</div>
+        </div>
+
+        <div class="sequence-display">
+            <div class="sequence-label">Cadena molde ADN (3'→5')</div>
+            <div class="sequence-text text-slate-400" id="template-seq">TAC...</div>
+        </div>
+
+        <div class="sequence-display">
+            <div class="sequence-label">ARNm sintetizado (5'→3')</div>
+            <div class="sequence-text text-cyan-400" id="mrna-seq">AUG...</div>
+        </div>
+
+        <div class="stat">
+            <span class="stat-label">Nucleótidos transcritos</span>
+            <span class="stat-value" id="nucleotide-count">0</span>
+        </div>
+        <div class="stat">
+            <span class="stat-label">Fase actual</span>
+            <span class="stat-value" id="current-phase">Iniciación</span>
+        </div>
+
+        <button class="btn" id="reset">↻ Nueva transcripción</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Componentes</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#3b82f6"></div>ADN cadena molde</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#64748b"></div>ADN cadena codificante</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#06b6d4"></div>ARNm naciente</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>RNA Polimerasa</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Bases</div>
+            <div class="legend-item"><span class="text-red-400">A</span> Adenina → <span class="text-cyan-400">U</span> Uracilo</div>
+            <div class="legend-item"><span class="text-yellow-400">G</span> Guanina → <span class="text-green-400">C</span> Citosina</div>
+            <div class="legend-item"><span class="text-green-400">C</span> Citosina → <span class="text-yellow-400">G</span> Guanina</div>
+            <div class="legend-item"><span class="text-cyan-400">T</span> Timina → <span class="text-red-400">A</span> Adenina</div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Colors
+        const dnaColors = { 'A': '#ef4444', 'T': '#06b6d4', 'G': '#fbbf24', 'C': '#22c55e' };
+        const rnaColors = { 'A': '#ef4444', 'U': '#06b6d4', 'G': '#fbbf24', 'C': '#22c55e' };
+
+        // State
+        let templateDNA = [];
+        let codingDNA = [];
+        let mRNA = [];
+        let transcriptionProgress = 0;
+        let phase = 'initiation';
+
+        const complement = { 'A': 'T', 'T': 'A', 'G': 'C', 'C': 'G' };
+        const transcribe = { 'A': 'U', 'T': 'A', 'G': 'C', 'C': 'G' };
+
+        function generateDNA() {
+            templateDNA = [];
+            codingDNA = [];
+            mRNA = [];
+
+            // Promoter region (TATA box area)
+            const promoter = ['T', 'A', 'T', 'A', 'A', 'A'];
+            templateDNA.push(...promoter);
+
+            // Gene sequence
+            const bases = ['A', 'T', 'G', 'C'];
+            const geneLength = 40 + Math.floor(Math.random() * 20);
+
+            for (let i = 0; i < geneLength; i++) {
+                templateDNA.push(bases[Math.floor(Math.random() * 4)]);
+            }
+
+            // Terminator sequence
+            const terminator = ['A', 'A', 'T', 'A', 'A', 'A'];
+            templateDNA.push(...terminator);
+
+            // Generate complementary coding strand
+            codingDNA = templateDNA.map(b => complement[b]);
+
+            transcriptionProgress = 0;
+            phase = 'initiation';
+        }
+
+        function drawDNAStrand(y, sequence, startX, isTemplate, openStart, openEnd) {
+            const baseWidth = 20;
+            const baseRadius = 8;
+
+            sequence.forEach((base, i) => {
+                const x = startX + i * baseWidth;
+
+                // Check if in transcription bubble
+                const bubbleStart = Math.floor(transcriptionProgress) - 5;
+                const bubbleEnd = Math.floor(transcriptionProgress) + 5;
+                const inBubble = i >= bubbleStart && i <= bubbleEnd;
+
+                // Calculate Y offset for bubble opening
+                let yOffset = 0;
+                if (inBubble) {
+                    const bubbleCenter = transcriptionProgress;
+                    const distFromCenter = Math.abs(i - bubbleCenter);
+                    yOffset = (isTemplate ? 1 : -1) * Math.max(0, 25 - distFromCenter * 5);
+                }
+
+                const drawY = y + yOffset;
+
+                // Draw base
+                ctx.beginPath();
+                ctx.arc(x, drawY, baseRadius, 0, Math.PI * 2);
+                ctx.fillStyle = dnaColors[base];
+
+                if (inBubble) {
+                    ctx.shadowColor = dnaColors[base];
+                    ctx.shadowBlur = 10;
+                }
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Base letter
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(base, x, drawY + 3);
+
+                // Backbone connection
+                if (i > 0) {
+                    const prevX = startX + (i - 1) * baseWidth;
+                    const prevInBubble = (i - 1) >= bubbleStart && (i - 1) <= bubbleEnd;
+                    let prevYOffset = 0;
+                    if (prevInBubble) {
+                        const distFromCenter = Math.abs((i - 1) - transcriptionProgress);
+                        prevYOffset = (isTemplate ? 1 : -1) * Math.max(0, 25 - distFromCenter * 5);
+                    }
+
+                    ctx.strokeStyle = isTemplate ? '#3b82f6' : '#64748b';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(prevX + baseRadius, y + prevYOffset);
+                    ctx.lineTo(x - baseRadius, drawY);
+                    ctx.stroke();
+                }
+            });
+
+            // Direction labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText(isTemplate ? "3'" : "5'", startX - 25, y + 4);
+            ctx.textAlign = 'right';
+            ctx.fillText(isTemplate ? "5'" : "3'", startX + sequence.length * baseWidth + 20, y + 4);
+        }
+
+        function drawHydrogenBonds(y1, y2, startX, sequence) {
+            const baseWidth = 20;
+            const bubbleStart = Math.floor(transcriptionProgress) - 5;
+            const bubbleEnd = Math.floor(transcriptionProgress) + 5;
+
+            sequence.forEach((base, i) => {
+                const inBubble = i >= bubbleStart && i <= bubbleEnd;
+                if (inBubble) return;
+
+                const x = startX + i * baseWidth;
+
+                ctx.strokeStyle = 'rgba(148, 163, 184, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(x, y1 + 10);
+                ctx.lineTo(x, y2 - 10);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            });
+        }
+
+        function drawRNAPolymerase(x, y) {
+            // Main body
+            ctx.fillStyle = '#d946ef';
+            ctx.shadowColor = '#d946ef';
+            ctx.shadowBlur = 20;
+
+            ctx.beginPath();
+            ctx.ellipse(x, y, 35, 25, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Clamp
+            ctx.beginPath();
+            ctx.ellipse(x - 20, y - 15, 15, 10, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.beginPath();
+            ctx.ellipse(x - 20, y + 15, 15, 10, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.shadowBlur = 0;
+
+            // Label
+            ctx.fillStyle = '#fff';
+            ctx.font = 'bold 9px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('RNA', x, y - 3);
+            ctx.fillText('Pol II', x, y + 8);
+        }
+
+        function drawNascentRNA(startX, y, length) {
+            if (length <= 6) return; // Skip promoter region
+
+            const baseWidth = 20;
+            const transcribedBases = templateDNA.slice(6, length).map(b => transcribe[b]);
+
+            // Draw RNA strand emerging from polymerase
+            ctx.strokeStyle = '#06b6d4';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            transcribedBases.forEach((base, i) => {
+                // RNA curves upward
+                const x = startX + (i + 6) * baseWidth;
+                const rnaY = y - 60 - Math.sin(i * 0.3) * 10 - i * 2;
+
+                if (i === 0) {
+                    ctx.moveTo(x, y - 30);
+                }
+                ctx.lineTo(x, rnaY);
+            });
+            ctx.stroke();
+
+            // Draw RNA bases
+            transcribedBases.forEach((base, i) => {
+                const x = startX + (i + 6) * baseWidth;
+                const rnaY = y - 60 - Math.sin(i * 0.3) * 10 - i * 2;
+
+                ctx.beginPath();
+                ctx.arc(x, rnaY, 6, 0, Math.PI * 2);
+                ctx.fillStyle = rnaColors[base];
+                ctx.shadowColor = rnaColors[base];
+                ctx.shadowBlur = 8;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                ctx.fillStyle = '#0f172a';
+                ctx.font = 'bold 6px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText(base, x, rnaY + 2);
+            });
+
+            // Update mRNA display
+            mRNA = transcribedBases;
+        }
+
+        function updatePhase() {
+            const progress = transcriptionProgress;
+            const total = templateDNA.length;
+
+            if (progress < 8) {
+                phase = 'initiation';
+            } else if (progress < total - 8) {
+                phase = 'elongation';
+            } else {
+                phase = 'termination';
+            }
+
+            // Update phase indicators
+            document.getElementById('phase-init').classList.toggle('active', phase === 'initiation');
+            document.getElementById('phase-elong').classList.toggle('active', phase === 'elongation');
+            document.getElementById('phase-term').classList.toggle('active', phase === 'termination');
+
+            const phaseNames = {
+                'initiation': 'Iniciación',
+                'elongation': 'Elongación',
+                'termination': 'Terminación'
+            };
+            document.getElementById('current-phase').textContent = phaseNames[phase];
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            // Update transcription progress
+            if (transcriptionProgress < templateDNA.length - 3) {
+                transcriptionProgress += 0.02 * speed;
+            }
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Transcripción — Síntesis de ARNm', W / 2, 40);
+
+            const centerY = H / 2 + 50;
+            const startX = 150;
+
+            // Draw coding strand (top)
+            drawDNAStrand(centerY - 40, codingDNA, startX, false);
+
+            // Draw hydrogen bonds
+            drawHydrogenBonds(centerY - 40, centerY + 40, startX, templateDNA);
+
+            // Draw template strand (bottom)
+            drawDNAStrand(centerY + 40, templateDNA, startX, true);
+
+            // Draw RNA Polymerase
+            const polyX = startX + transcriptionProgress * 20;
+            drawRNAPolymerase(polyX, centerY);
+
+            // Draw nascent mRNA
+            drawNascentRNA(startX, centerY, Math.floor(transcriptionProgress));
+
+            // Labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Cadena codificante', startX, centerY - 70);
+            ctx.fillText('Cadena molde', startX, centerY + 70);
+
+            // Promoter region indicator
+            if (transcriptionProgress < 10) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '9px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('TATA Box (Promotor)', startX + 60, centerY + 100);
+
+                ctx.strokeStyle = '#fbbf24';
+                ctx.lineWidth = 1;
+                ctx.setLineDash([3, 3]);
+                ctx.strokeRect(startX - 5, centerY + 30, 120, 25);
+                ctx.setLineDash([]);
+            }
+
+            // Update phase
+            updatePhase();
+
+            // Update UI sequences
+            const templateDisplay = templateDNA.slice(0, Math.min(15, templateDNA.length)).join('') + '...';
+            const mRNADisplay = mRNA.slice(0, Math.min(15, mRNA.length)).join('') + (mRNA.length > 0 ? '...' : '');
+
+            document.getElementById('template-seq').textContent = templateDisplay;
+            document.getElementById('mrna-seq').textContent = mRNADisplay || 'Iniciando...';
+            document.getElementById('nucleotide-count').textContent = Math.max(0, Math.floor(transcriptionProgress) - 6);
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', e => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('reset').addEventListener('click', generateDNA);
+
+        generateDNA();
+        draw();
+    </script>
+</body>
+</html>

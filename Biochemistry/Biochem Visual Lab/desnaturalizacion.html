@@ -1,0 +1,561 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Desnaturalización | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #f97316;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            text-align: center;
+        }
+        .stat-label { color: #64748b; font-size: 10px; }
+        .stat-value { color: #f97316; font-size: 18px; font-weight: bold; }
+        .indicator {
+            display: flex;
+            gap: 5px;
+            margin: 10px 0;
+        }
+        .indicator-segment {
+            flex: 1;
+            height: 8px;
+            border-radius: 4px;
+            background: #1e293b;
+            transition: background 0.3s;
+        }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #f97316; color: #f97316; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #f97316; }
+        .agent-btn {
+            padding: 8px 12px;
+            border: 1px solid #1e293b;
+            background: #0f172a;
+            color: #94a3b8;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 10px;
+            margin: 2px;
+        }
+        .agent-btn:hover { border-color: #f97316; color: #f97316; }
+        .agent-btn.active { border-color: #f97316; background: rgba(249, 115, 22, 0.2); color: #f97316; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🔥 Desnaturalización</h2>
+        <p class="text-slate-500 text-xs mb-4">Pérdida de estructura por agentes externos</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                <span class="text-pink-400">Desnaturalización</span>: pérdida de estructura 2°/3°/4° por calor, pH extremo o detergentes. Puede ser reversible (renaturalización).
+            </p>
+            <a href="guides/desnaturalizacion.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: agentes, Anfinsen, aplicaciones
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Temperatura</span><span class="text-orange-400" id="temp-val">37°C</span></label>
+            <input type="range" id="temp" min="20" max="100" value="37">
+        </div>
+
+        <div class="slider">
+            <label><span>pH</span><span class="text-orange-400" id="ph-val">7.0</span></label>
+            <input type="range" id="ph" min="1" max="14" step="0.5" value="7">
+        </div>
+
+        <div class="text-slate-500 text-xs mb-2">Agentes desnaturalizantes</div>
+        <div style="display: flex; flex-wrap: wrap;">
+            <button class="agent-btn" data-agent="none" data-active="true">Ninguno</button>
+            <button class="agent-btn" data-agent="urea">Urea</button>
+            <button class="agent-btn" data-agent="sds">SDS</button>
+            <button class="agent-btn" data-agent="bme">β-ME</button>
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Estado de la proteína</div>
+            <div class="stat-value" id="protein-state">Nativa</div>
+        </div>
+
+        <div class="text-slate-500 text-xs mt-2">Nivel de desnaturalización</div>
+        <div class="indicator" id="denat-indicator">
+            <div class="indicator-segment"></div>
+            <div class="indicator-segment"></div>
+            <div class="indicator-segment"></div>
+            <div class="indicator-segment"></div>
+            <div class="indicator-segment"></div>
+        </div>
+
+        <button class="btn" id="reset">↻ Renaturalizar</button>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Efectos</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#22c55e"></div>Estructura nativa</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Parcialmente desplegada</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#ef4444"></div>Completamente desnaturalizada</div>
+        </div>
+
+        <div class="legend">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Agentes</div>
+            <div class="legend-item"><span class="text-slate-400 text-xs"><strong>Urea:</strong> Rompe puentes de H</span></div>
+            <div class="legend-item"><span class="text-slate-400 text-xs"><strong>SDS:</strong> Detergente, rompe interacciones hidrofóbicas</span></div>
+            <div class="legend-item"><span class="text-slate-400 text-xs"><strong>β-ME:</strong> Reduce puentes disulfuro</span></div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-800 text-slate-500 text-xs">
+            <strong>Nota:</strong> La desnaturalización puede ser reversible o irreversible según las condiciones.
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // State
+        let denaturationLevel = 0;
+        let targetDenaturation = 0;
+        let currentAgent = 'none';
+        let aminoAcids = [];
+
+        class AminoAcid {
+            constructor(index, total) {
+                this.index = index;
+                this.total = total;
+                this.type = Math.random() > 0.5 ? 'hydrophobic' : 'hydrophilic';
+                this.x = 0;
+                this.y = 0;
+                this.nativeX = 0;
+                this.nativeY = 0;
+                this.denaturedX = 0;
+                this.denaturedY = 0;
+                this.vx = 0;
+                this.vy = 0;
+            }
+
+            setNativePosition(centerX, centerY) {
+                // Globular native structure
+                const angle = (this.index / this.total) * Math.PI * 2;
+                const radius = this.type === 'hydrophobic' ? 30 + Math.random() * 20 : 60 + Math.random() * 30;
+                this.nativeX = centerX + Math.cos(angle) * radius;
+                this.nativeY = centerY + Math.sin(angle) * radius;
+            }
+
+            setDenaturedPosition(centerX, centerY) {
+                // Random extended chain
+                const spread = 150 + Math.random() * 100;
+                this.denaturedX = centerX + (Math.random() - 0.5) * spread * 2;
+                this.denaturedY = centerY + (Math.random() - 0.5) * spread;
+            }
+
+            update(denatLevel, temp) {
+                // Interpolate between native and denatured
+                const targetX = this.nativeX + (this.denaturedX - this.nativeX) * denatLevel;
+                const targetY = this.nativeY + (this.denaturedY - this.nativeY) * denatLevel;
+
+                // Add thermal motion
+                const thermalNoise = (temp - 37) / 50;
+                this.vx += (targetX - this.x) * 0.05 + (Math.random() - 0.5) * thermalNoise;
+                this.vy += (targetY - this.y) * 0.05 + (Math.random() - 0.5) * thermalNoise;
+
+                this.vx *= 0.9;
+                this.vy *= 0.9;
+
+                this.x += this.vx;
+                this.y += this.vy;
+            }
+
+            draw(denatLevel) {
+                const baseColor = this.type === 'hydrophobic' ? [239, 68, 68] : [56, 189, 248];
+
+                // Color shifts toward yellow/red as denatured
+                const r = baseColor[0] + (255 - baseColor[0]) * denatLevel * 0.5;
+                const g = baseColor[1] * (1 - denatLevel * 0.5);
+                const b = baseColor[2] * (1 - denatLevel * 0.7);
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, 8 + denatLevel * 4, 0, Math.PI * 2);
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.shadowColor = `rgb(${r}, ${g}, ${b})`;
+                ctx.shadowBlur = 6;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function initProtein() {
+            aminoAcids = [];
+            const count = 40;
+            const centerX = W / 2 + 100;
+            const centerY = H / 2;
+
+            for (let i = 0; i < count; i++) {
+                const aa = new AminoAcid(i, count);
+                aa.setNativePosition(centerX, centerY);
+                aa.setDenaturedPosition(centerX, centerY);
+                aa.x = aa.nativeX;
+                aa.y = aa.nativeY;
+                aminoAcids.push(aa);
+            }
+
+            denaturationLevel = 0;
+            targetDenaturation = 0;
+        }
+
+        function calculateDenaturation() {
+            const temp = parseInt(document.getElementById('temp').value);
+            const ph = parseFloat(document.getElementById('ph').value);
+
+            let denat = 0;
+
+            // Temperature effect
+            if (temp > 60) {
+                denat += (temp - 60) / 40;
+            }
+            if (temp > 80) {
+                denat += (temp - 80) / 20;
+            }
+
+            // pH effect (optimal around 7)
+            const phDeviation = Math.abs(ph - 7);
+            if (phDeviation > 2) {
+                denat += (phDeviation - 2) / 5;
+            }
+            if (phDeviation > 4) {
+                denat += (phDeviation - 4) / 3;
+            }
+
+            // Agent effects
+            switch (currentAgent) {
+                case 'urea':
+                    denat += 0.5;
+                    break;
+                case 'sds':
+                    denat += 0.7;
+                    break;
+                case 'bme':
+                    denat += 0.4;
+                    break;
+            }
+
+            return Math.min(1, Math.max(0, denat));
+        }
+
+        function getProteinState(denat) {
+            if (denat < 0.1) return 'Nativa';
+            if (denat < 0.3) return 'Perturbada';
+            if (denat < 0.6) return 'Parcialmente desplegada';
+            if (denat < 0.9) return 'Desplegada';
+            return 'Desnaturalizada';
+        }
+
+        function getStateColor(denat) {
+            if (denat < 0.3) return '#22c55e';
+            if (denat < 0.7) return '#fbbf24';
+            return '#ef4444';
+        }
+
+        function drawBackbone() {
+            if (aminoAcids.length < 2) return;
+
+            ctx.strokeStyle = `rgba(71, 85, 105, ${1 - denaturationLevel * 0.5})`;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+
+            // Sort by index for proper backbone connection
+            const sorted = [...aminoAcids].sort((a, b) => a.index - b.index);
+
+            sorted.forEach((aa, i) => {
+                if (i === 0) ctx.moveTo(aa.x, aa.y);
+                else ctx.lineTo(aa.x, aa.y);
+            });
+            ctx.stroke();
+        }
+
+        function drawDisulfideBonds() {
+            if (denaturationLevel > 0.7 && currentAgent === 'bme') return;
+
+            const hydrophobics = aminoAcids.filter(aa => aa.type === 'hydrophobic');
+
+            ctx.strokeStyle = `rgba(249, 115, 22, ${(1 - denaturationLevel) * 0.8})`;
+            ctx.lineWidth = 2;
+
+            for (let i = 0; i < hydrophobics.length - 1; i += 4) {
+                if (hydrophobics[i + 2]) {
+                    ctx.beginPath();
+                    ctx.moveTo(hydrophobics[i].x, hydrophobics[i].y);
+                    ctx.lineTo(hydrophobics[i + 2].x, hydrophobics[i + 2].y);
+                    ctx.stroke();
+                }
+            }
+        }
+
+        function drawHydrogenBonds() {
+            if (denaturationLevel > 0.5 && currentAgent === 'urea') return;
+
+            const hydrophilics = aminoAcids.filter(aa => aa.type === 'hydrophilic');
+
+            ctx.strokeStyle = `rgba(34, 197, 94, ${(1 - denaturationLevel) * 0.5})`;
+            ctx.lineWidth = 1;
+            ctx.setLineDash([3, 3]);
+
+            for (let i = 0; i < hydrophilics.length - 1; i += 3) {
+                if (hydrophilics[i + 1]) {
+                    ctx.beginPath();
+                    ctx.moveTo(hydrophilics[i].x, hydrophilics[i].y);
+                    ctx.lineTo(hydrophilics[i + 1].x, hydrophilics[i + 1].y);
+                    ctx.stroke();
+                }
+            }
+            ctx.setLineDash([]);
+        }
+
+        function drawAgentParticles() {
+            if (currentAgent === 'none') return;
+
+            const colors = {
+                'urea': '#38bdf8',
+                'sds': '#d946ef',
+                'bme': '#fbbf24'
+            };
+
+            const time = Date.now() / 1000;
+            const centerX = W / 2 + 100;
+            const centerY = H / 2;
+
+            for (let i = 0; i < 20; i++) {
+                const angle = time + (i / 20) * Math.PI * 2;
+                const radius = 120 + Math.sin(time * 2 + i) * 30;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                ctx.beginPath();
+                ctx.arc(x, y, 4, 0, Math.PI * 2);
+                ctx.fillStyle = colors[currentAgent];
+                ctx.globalAlpha = 0.6;
+                ctx.fill();
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        function drawInfoPanel() {
+            const temp = parseInt(document.getElementById('temp').value);
+            const ph = parseFloat(document.getElementById('ph').value);
+
+            // Temperature indicator
+            const tempX = W - 280;
+            const tempY = 80;
+
+            ctx.fillStyle = 'rgba(30, 41, 59, 0.8)';
+            ctx.fillRect(tempX, tempY, 230, 180);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'left';
+            ctx.fillText('Condiciones', tempX + 15, tempY + 25);
+
+            // Temperature bar
+            ctx.fillStyle = '#64748b';
+            ctx.font = '10px monospace';
+            ctx.fillText(`Temperatura: ${temp}°C`, tempX + 15, tempY + 55);
+
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(tempX + 15, tempY + 65, 200, 10);
+
+            const tempWidth = ((temp - 20) / 80) * 200;
+            const tempColor = temp < 50 ? '#22c55e' : temp < 70 ? '#fbbf24' : '#ef4444';
+            ctx.fillStyle = tempColor;
+            ctx.fillRect(tempX + 15, tempY + 65, tempWidth, 10);
+
+            // pH bar
+            ctx.fillStyle = '#64748b';
+            ctx.fillText(`pH: ${ph}`, tempX + 15, tempY + 100);
+
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(tempX + 15, tempY + 110, 200, 10);
+
+            const phWidth = (ph / 14) * 200;
+            const phColor = ph > 5 && ph < 9 ? '#22c55e' : '#ef4444';
+            ctx.fillStyle = phColor;
+            ctx.fillRect(tempX + 15, tempY + 110, phWidth, 10);
+
+            // pH scale labels
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '8px monospace';
+            ctx.fillText('Ácido', tempX + 15, tempY + 135);
+            ctx.textAlign = 'center';
+            ctx.fillText('Neutro', tempX + 115, tempY + 135);
+            ctx.textAlign = 'right';
+            ctx.fillText('Básico', tempX + 215, tempY + 135);
+
+            // Agent info
+            if (currentAgent !== 'none') {
+                ctx.textAlign = 'left';
+                ctx.fillStyle = '#f97316';
+                ctx.font = '10px monospace';
+                const agentNames = { 'urea': 'Urea 8M', 'sds': 'SDS 1%', 'bme': 'β-Mercaptoetanol' };
+                ctx.fillText(`Agente: ${agentNames[currentAgent]}`, tempX + 15, tempY + 165);
+            }
+        }
+
+        function updateIndicator() {
+            const segments = document.querySelectorAll('.indicator-segment');
+            const activeCount = Math.ceil(denaturationLevel * 5);
+
+            segments.forEach((seg, i) => {
+                if (i < activeCount) {
+                    const colors = ['#22c55e', '#84cc16', '#fbbf24', '#f97316', '#ef4444'];
+                    seg.style.background = colors[i];
+                } else {
+                    seg.style.background = '#1e293b';
+                }
+            });
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            const temp = parseInt(document.getElementById('temp').value);
+
+            // Update denaturation
+            targetDenaturation = calculateDenaturation();
+            denaturationLevel += (targetDenaturation - denaturationLevel) * 0.02;
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Desnaturalización de Proteínas', W / 2, 40);
+
+            // Draw components
+            drawAgentParticles();
+            drawBackbone();
+            drawDisulfideBonds();
+            drawHydrogenBonds();
+
+            // Update and draw amino acids
+            aminoAcids.forEach(aa => {
+                aa.update(denaturationLevel, temp);
+                aa.draw(denaturationLevel);
+            });
+
+            drawInfoPanel();
+
+            // Update UI
+            const state = getProteinState(denaturationLevel);
+            const stateEl = document.getElementById('protein-state');
+            stateEl.textContent = state;
+            stateEl.style.color = getStateColor(denaturationLevel);
+
+            updateIndicator();
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('temp').addEventListener('input', e => {
+            document.getElementById('temp-val').textContent = e.target.value + '°C';
+        });
+
+        document.getElementById('ph').addEventListener('input', e => {
+            document.getElementById('ph-val').textContent = e.target.value;
+        });
+
+        document.querySelectorAll('.agent-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentAgent = btn.dataset.agent;
+            });
+        });
+
+        document.querySelector('.agent-btn[data-agent="none"]').classList.add('active');
+
+        document.getElementById('reset').addEventListener('click', () => {
+            document.getElementById('temp').value = 37;
+            document.getElementById('ph').value = 7;
+            document.getElementById('temp-val').textContent = '37°C';
+            document.getElementById('ph-val').textContent = '7.0';
+            currentAgent = 'none';
+            document.querySelectorAll('.agent-btn').forEach(b => b.classList.remove('active'));
+            document.querySelector('.agent-btn[data-agent="none"]').classList.add('active');
+
+            // Reset positions
+            aminoAcids.forEach(aa => {
+                aa.x = aa.nativeX;
+                aa.y = aa.nativeY;
+            });
+        });
+
+        initProtein();
+        draw();
+    </script>
+</body>
+</html>

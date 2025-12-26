@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermentación — Guía · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment:last-child { margin-bottom: 0; }
+        .experiment-number { display: inline-block; background: var(--accent); color: white; font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.5rem; border-radius: 4px; margin-bottom: 0.75rem; }
+        .experiment h3 { font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 700px) { .connections { grid-template-columns: 1fr; } }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; display: flex; gap: 0.75rem; align-items: flex-start; }
+        .connection-icon { width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .icon-physics { background: rgba(34, 197, 94, 0.15); }
+        .icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection h4 { font-size: 0.85rem; font-weight: 600; margin-bottom: 0.25rem; }
+        .connection p { margin: 0; font-size: 0.8rem; }
+        .connection a { font-size: 0.75rem; }
+
+        /* Limitations */
+        .limitations { background: linear-gradient(135deg, rgba(251, 191, 36, 0.1), transparent); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .limitations h2 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1.5rem; }
+        .reflection h2 { color: var(--accent); }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); flex-wrap: wrap; }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.75rem 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; font-size: 0.85rem; transition: all 0.2s; }
+        .guide-nav a:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        .nav-label { font-size: 0.7rem; color: var(--text-secondary); }
+        .nav-title { color: var(--text-primary); }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Fermentación</nav>
+                <h1>Fermentación — Guía</h1>
+                <div class="subtitle">Metabolismo anaerobio: energía sin oxígeno</div>
+            </div>
+            <a href="../fermentacion.html" class="pill"><span>&#9654;</span> Abrir simulación</a>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la fermentación?</div>
+                <p class="lead">La <span class="em">fermentación</span> es el proceso que regenera NAD⁺ en ausencia de oxígeno, permitiendo que la glucólisis continúe. Produce lactato (en músculos y bacterias) o etanol + CO₂ (en levaduras), pero solo rinde 2 ATP netos por glucosa.</p>
+                <div class="chips">
+                    <span class="chip">Sin O₂</span>
+                    <span class="chip">Regenera NAD⁺</span>
+                    <span class="chip">2 ATP neto</span>
+                    <span class="chip">Lactato o etanol</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Louis Pasteur (1857):</strong> Demostró que la fermentación es causada por microorganismos vivos, refutando la generación espontánea y fundando la microbiología moderna.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Tipos principales</div>
+                <ul>
+                    <li><strong>Láctica:</strong> Piruvato → Lactato (1 paso)</li>
+                    <li><strong>Alcohólica:</strong> Piruvato → Etanol + CO₂ (2 pasos)</li>
+                    <li><strong>Otras:</strong> Propiónica, butírica, acética...</li>
+                </ul>
+                <p style="margin-top: 0.75rem;"><strong>Propósito común:</strong> Todas regeneran NAD⁺ para que la glucólisis no se detenga.</p>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Fermentación Láctica</h2>
+                <ul>
+                    <li><strong>Reacción:</strong> Piruvato + NADH → Lactato + NAD⁺</li>
+                    <li><strong>Enzima:</strong> Lactato deshidrogenasa (LDH)</li>
+                    <li><strong>Ocurre en:</strong> Músculo en ejercicio intenso, eritrocitos, bacterias</li>
+                    <li><strong>Aplicaciones:</strong> Yogur, queso, chucrut</li>
+                </ul>
+                <p style="margin-top: 0.75rem;">El lactato muscular se transporta al hígado (ciclo de Cori) para reconvertirse en glucosa.</p>
+            </div>
+            <div class="card">
+                <h2>Fermentación Alcohólica</h2>
+                <ul>
+                    <li><strong>Paso 1:</strong> Piruvato → Acetaldehído + CO₂ (piruvato descarboxilasa)</li>
+                    <li><strong>Paso 2:</strong> Acetaldehído + NADH → Etanol + NAD⁺</li>
+                    <li><strong>Organismo:</strong> Levaduras (<em>Saccharomyces cerevisiae</em>)</li>
+                    <li><strong>Aplicaciones:</strong> Pan, cerveza, vino, biocombustibles</li>
+                </ul>
+                <p style="margin-top: 0.75rem;">El CO₂ hace subir el pan; el etanol le da alcohol a las bebidas.</p>
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="experiments">
+            <div class="card" style="margin-bottom: 1rem;">
+                <div class="kicker">Experimentos guiados</div>
+                <p>Compara las rutas fermentativas y comprende su importancia biológica e industrial.</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 1</span>
+                <h3>Comparación láctica vs. alcohólica</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Ambas fermentaciones regeneran la misma cantidad de NAD⁺, pero producen productos finales diferentes.</p>
+                </div>
+                <ol>
+                    <li>Inicia con piruvato proveniente de glucólisis</li>
+                    <li>Activa fermentación láctica — observa formación de lactato</li>
+                    <li>Cambia a fermentación alcohólica — observa CO₂ burbujeando</li>
+                    <li>Cuenta las moléculas de NAD⁺ regeneradas en cada caso</li>
+                    <li>Compara los productos finales y su valor energético residual</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Ambas regeneran 2 NAD⁺ por glucosa, pero el etanol aún contiene mucha energía (por eso es combustible).</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 2</span>
+                <h3>El efecto Pasteur</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>En presencia de O₂, las levaduras reducen la fermentación y activan la respiración aerobia.</p>
+                </div>
+                <ol>
+                    <li>Simula levaduras en condiciones anaerobias — observa alta producción de etanol</li>
+                    <li>Introduce O₂ gradualmente</li>
+                    <li>Observa cómo disminuye la producción de etanol</li>
+                    <li>Mide el aumento en producción de ATP</li>
+                    <li>Calcula la eficiencia energética en cada condición</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> Con O₂, las células prefieren respiración (36 ATP) sobre fermentación (2 ATP).</p>
+            </div>
+
+            <div class="experiment">
+                <span class="experiment-number">EXPERIMENTO 3</span>
+                <h3>El efecto Warburg</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p>Las células cancerosas fermentan glucosa incluso en presencia de oxígeno (glucólisis aeróbica).</p>
+                </div>
+                <ol>
+                    <li>Simula una célula normal con O₂ — observa respiración activa</li>
+                    <li>Simula una célula tumoral con el mismo O₂</li>
+                    <li>Observa la alta tasa de glucólisis y producción de lactato</li>
+                    <li>Compara el consumo de glucosa entre ambas células</li>
+                    <li>Reflexiona sobre las ventajas metabólicas para el tumor</li>
+                </ol>
+                <p><strong>Resultado esperado:</strong> El tumor consume más glucosa pero genera intermediarios para crecer rápido (efecto Warburg).</p>
+            </div>
+        </section>
+
+        <!-- Connections Section -->
+        <section class="section">
+            <div class="card">
+                <div class="kicker">Conexiones interdisciplinarias</div>
+                <h2 style="margin-top: 0.5rem;">Dónde más aparece este concepto</h2>
+            </div>
+            <div class="connections">
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🍬</div>
+                    <div>
+                        <h4>Glucólisis</h4>
+                        <p>La fermentación es la continuación de la glucólisis cuando no hay O₂.</p>
+                        <a href="glucolisis.html">Ver Glucólisis →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biochem">🔗</div>
+                    <div>
+                        <h4>Cadena respiratoria</h4>
+                        <p>Alternativa aerobia: regenera NAD⁺ produciendo mucho más ATP.</p>
+                        <a href="cadena-respiratoria.html">Ver Cadena Respiratoria →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-biology">🦠</div>
+                    <div>
+                        <h4>Ecosistemas microbianos</h4>
+                        <p>La fermentación sustenta comunidades anaerobias en suelos, intestinos y sedimentos.</p>
+                        <a href="../../../Biology/Biology Visual Lab/ecosistema.html">Ver Ecosistema →</a>
+                    </div>
+                </div>
+                <div class="connection">
+                    <div class="connection-icon icon-chemistry">⚗️</div>
+                    <div>
+                        <h4>Cinética enzimática</h4>
+                        <p>La velocidad de fermentación depende de [sustrato], [enzima] y condiciones.</p>
+                        <a href="michaelis-menten.html">Ver Michaelis-Menten →</a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Limitations Section -->
+        <section class="limitations">
+            <h2>Limitaciones de la simulación</h2>
+            <ul>
+                <li><strong>Organismos simplificados:</strong> No distingue entre las cientos de especies fermentadoras con rutas únicas.</li>
+                <li><strong>Productos secundarios:</strong> No muestra sabores, aromas ni compuestos minoritarios importantes en alimentos.</li>
+                <li><strong>Regulación alostérica:</strong> No representa la inhibición por producto ni otros controles finos.</li>
+                <li><strong>Contexto celular:</strong> No muestra cómo la fermentación afecta el pH intracelular.</li>
+            </ul>
+        </section>
+
+        <!-- Reflection Section -->
+        <section class="reflection">
+            <h2>Preguntas de reflexión</h2>
+            <ol>
+                <li>¿Por qué los músculos producen lactato en ejercicio intenso si ya tienen mitocondrias?</li>
+                <li>Si la fermentación es tan ineficiente (2 vs 36 ATP), ¿por qué las células cancerosas la prefieren?</li>
+                <li>¿Qué ventaja tiene para una levadura producir etanol tóxico para otras especies?</li>
+                <li>¿Cómo aprovecha la humanidad la fermentación desde hace miles de años?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="cadena-respiratoria.html">
+                <span>←</span>
+                <div>
+                    <div class="nav-label">Anterior</div>
+                    <div class="nav-title">Cadena Respiratoria</div>
+                </div>
+            </a>
+            <a href="michaelis-menten.html">
+                <div style="text-align: right;">
+                    <div class="nav-label">Siguiente</div>
+                    <div class="nav-title">Michaelis-Menten</div>
+                </div>
+                <span>→</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Fermentación
+    </footer>
+</body>
+</html>

@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Michaelis-Menten | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        canvas { display: block; }
+        #ui {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+        }
+        #graph {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #1e293b;
+            border-radius: 12px;
+            padding: 15px;
+        }
+        .slider { margin: 15px 0; }
+        .slider label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 11px;
+            margin-bottom: 5px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 4px;
+            border-radius: 2px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            background: #d946ef;
+            cursor: pointer;
+        }
+        .stat {
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 10px 0;
+        }
+        .stat-label { color: #64748b; font-size: 10px; text-transform: uppercase; }
+        .stat-value { font-size: 24px; font-weight: bold; }
+        .legend { margin-top: 15px; padding-top: 15px; border-top: 1px solid #1e293b; }
+        .legend-item { display: flex; align-items: center; gap: 8px; font-size: 10px; color: #94a3b8; margin: 5px 0; }
+        .legend-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .back { position: absolute; top: 20px; right: 20px; color: #64748b; text-decoration: none; font-size: 12px; padding: 8px 12px; border: 1px solid #1e293b; border-radius: 6px; }
+        .back:hover { border-color: #d946ef; color: #d946ef; }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back">← Volver</a>
+    <canvas id="sim"></canvas>
+
+    <div id="ui">
+        <h2 class="text-white text-lg font-bold mb-1">🧫 Michaelis-Menten</h2>
+        <p class="text-slate-500 text-xs mb-4">Cinética enzimática · E + S ⇌ ES → E + P</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                <span class="text-pink-400">Michaelis-Menten</span>: V = Vmax[S]/(Km+[S]). Km indica afinidad enzima-sustrato, Vmax la velocidad máxima de catálisis.
+            </p>
+            <a href="guides/michaelis-menten.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: parámetros, inhibición, Lineweaver-Burk
+            </a>
+        </div>
+
+        <div class="slider">
+            <label><span>Sustrato [S]</span><span class="text-fuchsia-400" id="s-val">50</span></label>
+            <input type="range" id="substrate" min="10" max="150" value="50">
+        </div>
+        <div class="slider">
+            <label><span>Enzimas [E]</span><span class="text-fuchsia-400" id="e-val">5</span></label>
+            <input type="range" id="enzyme" min="1" max="12" value="5">
+        </div>
+        <div class="slider">
+            <label><span>kcat (velocidad catalítica)</span><span class="text-fuchsia-400" id="k-val">1.0</span></label>
+            <input type="range" id="kcat" min="0.3" max="2.5" step="0.1" value="1">
+        </div>
+
+        <div class="stat">
+            <div class="stat-label">Velocidad (v)</div>
+            <div class="stat-value text-lime-400" id="velocity">0.00</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Productos [P]</div>
+            <div class="stat-value text-sky-400" id="products">0</div>
+        </div>
+
+        <div class="legend">
+            <div class="legend-item"><div class="legend-dot" style="background:#d946ef"></div>Enzima (Pac-Man)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#a3e635"></div>Sustrato (S)</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#fbbf24"></div>Complejo ES</div>
+            <div class="legend-item"><div class="legend-dot" style="background:#38bdf8"></div>Producto (P)</div>
+        </div>
+    </div>
+
+    <div id="graph">
+        <div class="text-slate-500 text-xs mb-2">v vs [S] — Curva en tiempo real</div>
+        <canvas id="chart" width="280" height="160"></canvas>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('sim');
+        const ctx = canvas.getContext('2d');
+        const chart = document.getElementById('chart');
+        const chartCtx = chart.getContext('2d');
+
+        let W, H;
+        function resize() {
+            W = canvas.width = window.innerWidth;
+            H = canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // State
+        let enzymes = [];
+        let substrates = [];
+        let products = [];
+        let productCount = 0;
+        let velocityHistory = [];
+        let lastCount = 0;
+        let dataPoints = [];
+
+        // Enzyme class
+        class Enzyme {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 2;
+                this.vy = (Math.random() - 0.5) * 2;
+                this.state = 'free'; // free, bound
+                this.bound = null;
+                this.timer = 0;
+                this.angle = Math.random() * Math.PI * 2;
+            }
+
+            update(kcat) {
+                // Brownian motion
+                this.vx += (Math.random() - 0.5) * 0.3;
+                this.vy += (Math.random() - 0.5) * 0.3;
+                this.vx *= 0.98;
+                this.vy *= 0.98;
+
+                if (this.state === 'free') {
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Boundaries (circular dish)
+                    const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.4;
+                    const dx = this.x - cx, dy = this.y - cy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > r - 25) {
+                        const angle = Math.atan2(dy, dx);
+                        this.x = cx + Math.cos(angle) * (r - 25);
+                        this.y = cy + Math.sin(angle) * (r - 25);
+                        this.vx *= -0.5;
+                        this.vy *= -0.5;
+                    }
+
+                    // Direction angle
+                    this.angle = Math.atan2(this.vy, this.vx);
+
+                    // Check for substrate collision
+                    for (let s of substrates) {
+                        if (s.state !== 'free') continue;
+                        const d = Math.sqrt((this.x - s.x) ** 2 + (this.y - s.y) ** 2);
+                        if (d < 30) {
+                            this.state = 'bound';
+                            this.bound = s;
+                            s.state = 'bound';
+                            this.timer = 60 / kcat;
+                            break;
+                        }
+                    }
+                } else {
+                    // Keep substrate attached
+                    if (this.bound) {
+                        this.bound.x = this.x + Math.cos(this.angle) * 15;
+                        this.bound.y = this.y + Math.sin(this.angle) * 15;
+                    }
+
+                    // Small jitter
+                    this.x += (Math.random() - 0.5) * 0.5;
+                    this.y += (Math.random() - 0.5) * 0.5;
+
+                    this.timer--;
+                    if (this.timer <= 0) {
+                        // Release product
+                        if (this.bound) {
+                            this.bound.state = 'product';
+                            products.push(this.bound);
+                            substrates = substrates.filter(s => s !== this.bound);
+                            productCount++;
+                        }
+                        this.state = 'free';
+                        this.bound = null;
+                    }
+                }
+            }
+
+            draw() {
+                const mouth = Math.abs(Math.sin(Date.now() / 150)) * 0.4;
+                const color = this.state === 'bound' ? '#fbbf24' : '#d946ef';
+
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.angle);
+
+                ctx.beginPath();
+                ctx.arc(0, 0, 22, mouth, Math.PI * 2 - mouth);
+                ctx.lineTo(0, 0);
+                ctx.closePath();
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Eye
+                ctx.beginPath();
+                ctx.arc(5, -10, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#020617';
+                ctx.fill();
+
+                ctx.restore();
+            }
+        }
+
+        // Substrate/Product class
+        class Molecule {
+            constructor(x, y) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 3;
+                this.vy = (Math.random() - 0.5) * 3;
+                this.state = 'free'; // free, bound, product
+            }
+
+            update() {
+                if (this.state === 'free' || this.state === 'product') {
+                    this.vx += (Math.random() - 0.5) * 0.4;
+                    this.vy += (Math.random() - 0.5) * 0.4;
+                    this.vx *= 0.97;
+                    this.vy *= 0.97;
+
+                    this.x += this.vx;
+                    this.y += this.vy;
+
+                    // Boundaries
+                    const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.4;
+                    const dx = this.x - cx, dy = this.y - cy;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist > r - 15) {
+                        const angle = Math.atan2(dy, dx);
+                        this.x = cx + Math.cos(angle) * (r - 15);
+                        this.y = cy + Math.sin(angle) * (r - 15);
+                        this.vx *= -0.5;
+                        this.vy *= -0.5;
+                    }
+                }
+            }
+
+            draw() {
+                const color = this.state === 'product' ? '#38bdf8' :
+                              this.state === 'bound' ? '#fbbf24' : '#a3e635';
+                const size = this.state === 'product' ? 10 : 8;
+
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, size, 0, Math.PI * 2);
+                ctx.fillStyle = color;
+                ctx.shadowColor = color;
+                ctx.shadowBlur = 10;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            }
+        }
+
+        function init() {
+            const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.35;
+
+            enzymes = [];
+            substrates = [];
+            products = [];
+            productCount = 0;
+            lastCount = 0;
+            dataPoints = [];
+
+            const eCount = parseInt(document.getElementById('enzyme').value);
+            const sCount = parseInt(document.getElementById('substrate').value);
+
+            for (let i = 0; i < eCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * r * 0.8;
+                enzymes.push(new Enzyme(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist));
+            }
+
+            for (let i = 0; i < sCount; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const dist = Math.random() * r * 0.9;
+                substrates.push(new Molecule(cx + Math.cos(angle) * dist, cy + Math.sin(angle) * dist));
+            }
+        }
+
+        function drawDish() {
+            const cx = W / 2, cy = H / 2, r = Math.min(W, H) * 0.4;
+
+            // Dish border
+            ctx.beginPath();
+            ctx.arc(cx, cy, r, 0, Math.PI * 2);
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 3;
+            ctx.stroke();
+
+            // Dish glow
+            const gradient = ctx.createRadialGradient(cx, cy, r * 0.8, cx, cy, r);
+            gradient.addColorStop(0, 'transparent');
+            gradient.addColorStop(1, 'rgba(217, 70, 239, 0.05)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function drawChart() {
+            chartCtx.fillStyle = '#020617';
+            chartCtx.fillRect(0, 0, 280, 160);
+
+            // Axes
+            chartCtx.strokeStyle = '#1e293b';
+            chartCtx.lineWidth = 1;
+            chartCtx.beginPath();
+            chartCtx.moveTo(35, 10);
+            chartCtx.lineTo(35, 140);
+            chartCtx.lineTo(270, 140);
+            chartCtx.stroke();
+
+            // Labels
+            chartCtx.fillStyle = '#64748b';
+            chartCtx.font = '9px monospace';
+            chartCtx.fillText('v', 15, 15);
+            chartCtx.fillText('[S]', 255, 155);
+
+            // Theoretical curve (dashed)
+            const Vmax = enzymes.length * 0.5;
+            const Km = 40;
+
+            chartCtx.strokeStyle = '#334155';
+            chartCtx.setLineDash([4, 4]);
+            chartCtx.beginPath();
+            for (let s = 0; s <= 150; s += 3) {
+                const v = (Vmax * s) / (Km + s);
+                const x = 35 + s * 1.5;
+                const y = 140 - v * 200;
+                if (s === 0) chartCtx.moveTo(x, y);
+                else chartCtx.lineTo(x, y);
+            }
+            chartCtx.stroke();
+            chartCtx.setLineDash([]);
+
+            // Vmax line
+            chartCtx.strokeStyle = '#1e293b';
+            chartCtx.beginPath();
+            chartCtx.moveTo(35, 140 - Vmax * 200);
+            chartCtx.lineTo(270, 140 - Vmax * 200);
+            chartCtx.stroke();
+            chartCtx.fillStyle = '#64748b';
+            chartCtx.fillText('Vmax', 240, 140 - Vmax * 200 - 5);
+
+            // Data points
+            chartCtx.fillStyle = '#d946ef';
+            dataPoints.forEach(p => {
+                const x = 35 + p.s * 1.5;
+                const y = Math.max(15, Math.min(140, 140 - p.v * 200));
+                chartCtx.beginPath();
+                chartCtx.arc(x, y, 3, 0, Math.PI * 2);
+                chartCtx.fill();
+            });
+        }
+
+        function update() {
+            const kcat = parseFloat(document.getElementById('kcat').value);
+
+            enzymes.forEach(e => e.update(kcat));
+            substrates.forEach(s => s.update());
+            products.forEach(p => p.update());
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, W, H);
+
+            drawDish();
+
+            substrates.forEach(s => s.draw());
+            products.forEach(p => p.draw());
+            enzymes.forEach(e => e.draw());
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 14px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Cinética Enzimática — Modelo Michaelis-Menten', W / 2, 40);
+        }
+
+        let frameCount = 0;
+        function loop() {
+            update();
+            draw();
+
+            frameCount++;
+            if (frameCount % 30 === 0) {
+                const velocity = (productCount - lastCount) / 0.5;
+                lastCount = productCount;
+
+                velocityHistory.push(velocity);
+                if (velocityHistory.length > 10) velocityHistory.shift();
+
+                const avgV = velocityHistory.reduce((a, b) => a + b, 0) / velocityHistory.length;
+                document.getElementById('velocity').textContent = avgV.toFixed(2);
+
+                const freeS = substrates.filter(s => s.state === 'free').length;
+                if (dataPoints.length < 80) {
+                    dataPoints.push({ s: freeS, v: avgV });
+                }
+            }
+
+            document.getElementById('products').textContent = productCount;
+            drawChart();
+
+            requestAnimationFrame(loop);
+        }
+
+        // Events
+        document.getElementById('substrate').addEventListener('input', e => {
+            document.getElementById('s-val').textContent = e.target.value;
+            init();
+        });
+        document.getElementById('enzyme').addEventListener('input', e => {
+            document.getElementById('e-val').textContent = e.target.value;
+            init();
+        });
+        document.getElementById('kcat').addEventListener('input', e => {
+            document.getElementById('k-val').textContent = e.target.value;
+        });
+
+        init();
+        loop();
+    </script>
+</body>
+</html>

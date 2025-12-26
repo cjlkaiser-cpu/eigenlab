@@ -1,0 +1,903 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Geology Visual Lab - Simulaciones Geológicas</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        .card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(217, 119, 6, 0.15);
+        }
+        .card-link {
+            text-decoration: none;
+            color: inherit;
+            display: block;
+        }
+        .card:hover .card-border {
+            opacity: 1;
+        }
+        .card-border {
+            position: absolute;
+            inset: 0;
+            border-radius: 1rem;
+            padding: 2px;
+            background: linear-gradient(135deg, #d97706, #ef4444, #92400e);
+            -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+            -webkit-mask-composite: xor;
+            mask-composite: exclude;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .preview-canvas {
+            border-radius: 0.5rem;
+        }
+        .equation {
+            font-family: 'JetBrains Mono', monospace;
+            font-style: normal;
+        }
+        .category-tag {
+            font-size: 0.65rem;
+            padding: 2px 8px;
+            border-radius: 9999px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(217, 119, 6, 0.5);
+        }
+        .geo-symbol {
+            font-size: 1.5rem;
+        }
+
+        /* Background animation */
+        #bg-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .content-wrapper {
+            position: relative;
+            z-index: 10;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Animated background -->
+    <canvas id="bg-canvas"></canvas>
+
+    <div class="content-wrapper">
+        <!-- Header -->
+        <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+            <div class="max-w-6xl mx-auto px-6 py-4">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-1">
+                            <a href="../../_portal/index.html" class="hover:text-amber-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Geology Visual Lab</span>
+                        </nav>
+                        <h1 class="text-2xl font-light">
+                            <span class="text-amber-500 font-medium glow-text">Geology</span> Visual Lab
+                        </h1>
+                        <p class="text-gray-600 text-sm mono">4.5 mil millones de años de historia</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <span class="geo-symbol text-red-500">🌋</span>
+                        <span class="geo-symbol text-amber-500">🪨</span>
+                        <span class="geo-symbol text-blue-400">🌊</span>
+                        <span class="geo-symbol text-emerald-400">🌍</span>
+                        <a href="https://github.com/cjlkaiser-cpu" target="_blank" class="text-gray-500 hover:text-white transition ml-2">
+                            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-6xl mx-auto px-6 py-12">
+            <!-- Hero -->
+            <section class="text-center mb-16">
+                <h2 class="text-4xl font-light mb-4">
+                    La Tierra <span class="text-amber-500 font-medium glow-text">viva</span>
+                </h2>
+                <p class="text-gray-500 max-w-2xl mx-auto">
+                    6 simulaciones interactivas de procesos geológicos.
+                    Terremotos, volcanes, tectónica de placas, ciclo de rocas, erosión y estratigrafía.
+                </p>
+                <div class="flex justify-center gap-8 mt-8">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-amber-500">6</div>
+                        <div class="text-xs text-gray-600 uppercase tracking-wide">Simulaciones</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-amber-500">4.5B</div>
+                        <div class="text-xs text-gray-600 uppercase tracking-wide">Años</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold text-amber-500">6371</div>
+                        <div class="text-xs text-gray-600 uppercase tracking-wide">km Radio</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Grid de Simulaciones -->
+            <section class="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-16">
+
+                <!-- Terremotos -->
+                <a href="terremotos.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-terremotos" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-blue-500/20 text-blue-400">Sismología</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Ondas Sísmicas</h3>
+                            <p class="text-gray-500 text-sm mb-3">Propagación de ondas P, S y superficiales a través de las capas terrestres. Sismograma en tiempo real y zona de sombra sísmica.</p>
+                            <div class="equation text-blue-400/70 text-sm mb-4">v<sub>P</sub> = √((K + ⁴⁄₃μ) / ρ)</div>
+                            <span class="block w-full text-center py-2 bg-blue-500/10 text-blue-400 rounded-lg hover:bg-blue-500/20 transition text-sm font-medium">
+                                Generar Sismo →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Volcanes -->
+                <a href="volcanes.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-volcanes" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-red-500/20 text-red-400">Vulcanología</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Erupciones Volcánicas</h3>
+                            <p class="text-gray-500 text-sm mb-3">Simulación de erupciones según viscosidad del magma y contenido de gases. Volcanes escudo, estratovolcanes y calderas con índice VEI.</p>
+                            <div class="equation text-red-400/70 text-sm mb-4">η = A · exp(E<sub>a</sub>/RT)</div>
+                            <span class="block w-full text-center py-2 bg-red-500/10 text-red-400 rounded-lg hover:bg-red-500/20 transition text-sm font-medium">
+                                Hacer Erupción →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Tectónica de Placas -->
+                <a href="tectonica-placas.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-tectonica" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-emerald-500/20 text-emerald-400">Tectónica</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Tectónica de Placas</h3>
+                            <p class="text-gray-500 text-sm mb-3">Deriva continental desde Pangea hasta hoy. Bordes divergentes, convergentes y transformantes con convección del manto visualizada.</p>
+                            <div class="equation text-emerald-400/70 text-sm mb-4">v = 2-10 cm/año</div>
+                            <span class="block w-full text-center py-2 bg-emerald-500/10 text-emerald-400 rounded-lg hover:bg-emerald-500/20 transition text-sm font-medium">
+                                Mover Placas →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Ciclo de Rocas -->
+                <a href="ciclo-rocas.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-ciclo" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-amber-500/20 text-amber-400">Petrología</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Ciclo de las Rocas</h3>
+                            <p class="text-gray-500 text-sm mb-3">Transformaciones entre rocas ígneas, sedimentarias y metamórficas. Procesos de enfriamiento, erosión, compactación y metamorfismo.</p>
+                            <div class="equation text-amber-400/70 text-sm mb-4">Ígnea ⟷ Sedim. ⟷ Metam.</div>
+                            <span class="block w-full text-center py-2 bg-amber-500/10 text-amber-400 rounded-lg hover:bg-amber-500/20 transition text-sm font-medium">
+                                Transformar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Erosión -->
+                <a href="erosion.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-erosion" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-cyan-500/20 text-cyan-400">Geomorfología</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Erosión y Deposición</h3>
+                            <p class="text-gray-500 text-sm mb-3">Simulación de erosión hídrica, eólica, glaciar y costera. Observa la formación de valles, cañones, dunas y deltas en tiempo acelerado.</p>
+                            <div class="equation text-cyan-400/70 text-sm mb-4">E = K · R · S · L · C</div>
+                            <span class="block w-full text-center py-2 bg-cyan-500/10 text-cyan-400 rounded-lg hover:bg-cyan-500/20 transition text-sm font-medium">
+                                Erosionar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- Estratigrafía -->
+                <a href="estratigrafia.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <canvas id="preview-estratigrafia" class="preview-canvas w-full h-40 bg-black mb-4"></canvas>
+                            <span class="category-tag bg-purple-500/20 text-purple-400">Estratigrafía</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Columna Estratigráfica</h3>
+                            <p class="text-gray-500 text-sm mb-3">Deposición de capas geológicas y principios de datación. Fósiles guía, discordancias, fallas e intrusiones ígneas interactivas.</p>
+                            <div class="equation text-purple-400/70 text-sm mb-4">N = N₀ · e<sup>-λt</sup></div>
+                            <span class="block w-full text-center py-2 bg-purple-500/10 text-purple-400 rounded-lg hover:bg-purple-500/20 transition text-sm font-medium">
+                                Depositar Capas →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+
+            </section>
+
+            <!-- Info Section -->
+            <section class="bg-gray-950 border border-gray-900 rounded-2xl p-8 mb-12">
+                <h3 class="text-xl font-medium mb-6 text-center">Escalas de Tiempo Geológico</h3>
+                <div class="grid md:grid-cols-4 gap-6 text-center">
+                    <div>
+                        <div class="text-2xl font-bold text-red-400 mb-1">Hadeico</div>
+                        <div class="text-xs text-gray-500 mono">4500 - 4000 Ma</div>
+                        <div class="text-xs text-gray-600 mt-1">Formación de la Tierra</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-amber-400 mb-1">Arcaico</div>
+                        <div class="text-xs text-gray-500 mono">4000 - 2500 Ma</div>
+                        <div class="text-xs text-gray-600 mt-1">Primera vida</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-emerald-400 mb-1">Proterozoico</div>
+                        <div class="text-xs text-gray-500 mono">2500 - 541 Ma</div>
+                        <div class="text-xs text-gray-600 mt-1">Oxígeno atmosférico</div>
+                    </div>
+                    <div>
+                        <div class="text-2xl font-bold text-blue-400 mb-1">Fanerozoico</div>
+                        <div class="text-xs text-gray-500 mono">541 Ma - Presente</div>
+                        <div class="text-xs text-gray-600 mt-1">Vida compleja</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Footer -->
+            <footer class="text-center text-gray-600 text-sm py-8 border-t border-gray-900">
+                <p>
+                    Geology Visual Lab — Parte de
+                    <a href="../../_portal/index.html" class="text-amber-500 hover:text-amber-400 transition">EigenLab</a>
+                </p>
+                <p class="mt-2 text-gray-700">
+                    Simulaciones educativas de código abierto
+                </p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // Background animation - tectonic plates and seismic waves
+        const bgCanvas = document.getElementById('bg-canvas');
+        const bgCtx = bgCanvas.getContext('2d');
+
+        function resizeBg() {
+            bgCanvas.width = window.innerWidth;
+            bgCanvas.height = window.innerHeight;
+        }
+        resizeBg();
+        window.addEventListener('resize', resizeBg);
+
+        // Floating particles (rocks, magma bubbles)
+        const bgParticles = [];
+        for (let i = 0; i < 40; i++) {
+            bgParticles.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                size: Math.random() * 15 + 5,
+                vx: (Math.random() - 0.5) * 0.5,
+                vy: (Math.random() - 0.5) * 0.5,
+                rotation: Math.random() * Math.PI * 2,
+                rotationSpeed: (Math.random() - 0.5) * 0.02,
+                type: Math.random() > 0.7 ? 'magma' : 'rock',
+                opacity: Math.random() * 0.3 + 0.2
+            });
+        }
+
+        // Seismic wave rings
+        const seismicWaves = [];
+        function addSeismicWave() {
+            seismicWaves.push({
+                x: Math.random() * window.innerWidth,
+                y: Math.random() * window.innerHeight,
+                radius: 0,
+                maxRadius: 200 + Math.random() * 200,
+                speed: 1 + Math.random()
+            });
+        }
+        setInterval(addSeismicWave, 3000);
+
+        function drawBg(time) {
+            bgCtx.clearRect(0, 0, bgCanvas.width, bgCanvas.height);
+            const t = time / 1000;
+
+            // Draw seismic waves
+            seismicWaves.forEach((wave, i) => {
+                wave.radius += wave.speed;
+                const alpha = Math.max(0, 1 - wave.radius / wave.maxRadius) * 0.3;
+
+                if (wave.radius < wave.maxRadius) {
+                    bgCtx.strokeStyle = `rgba(217, 119, 6, ${alpha})`;
+                    bgCtx.lineWidth = 2;
+                    bgCtx.beginPath();
+                    bgCtx.arc(wave.x, wave.y, wave.radius, 0, Math.PI * 2);
+                    bgCtx.stroke();
+                } else {
+                    seismicWaves.splice(i, 1);
+                }
+            });
+
+            // Draw particles
+            bgParticles.forEach(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.rotation += p.rotationSpeed;
+
+                // Wrap around
+                if (p.x < -50) p.x = bgCanvas.width + 50;
+                if (p.x > bgCanvas.width + 50) p.x = -50;
+                if (p.y < -50) p.y = bgCanvas.height + 50;
+                if (p.y > bgCanvas.height + 50) p.y = -50;
+
+                bgCtx.save();
+                bgCtx.translate(p.x, p.y);
+                bgCtx.rotate(p.rotation);
+                bgCtx.globalAlpha = p.opacity;
+
+                if (p.type === 'magma') {
+                    // Glowing magma particle
+                    const gradient = bgCtx.createRadialGradient(0, 0, 0, 0, 0, p.size);
+                    gradient.addColorStop(0, '#ef4444');
+                    gradient.addColorStop(0.5, '#dc2626');
+                    gradient.addColorStop(1, 'transparent');
+                    bgCtx.fillStyle = gradient;
+                    bgCtx.beginPath();
+                    bgCtx.arc(0, 0, p.size, 0, Math.PI * 2);
+                    bgCtx.fill();
+                } else {
+                    // Rock polygon
+                    bgCtx.fillStyle = '#78350f';
+                    bgCtx.beginPath();
+                    const sides = 5 + Math.floor(p.size / 5);
+                    for (let i = 0; i < sides; i++) {
+                        const angle = (i / sides) * Math.PI * 2;
+                        const r = p.size * (0.7 + Math.sin(i * 2.7) * 0.3);
+                        const x = Math.cos(angle) * r;
+                        const y = Math.sin(angle) * r;
+                        if (i === 0) bgCtx.moveTo(x, y);
+                        else bgCtx.lineTo(x, y);
+                    }
+                    bgCtx.closePath();
+                    bgCtx.fill();
+                }
+
+                bgCtx.restore();
+            });
+
+            requestAnimationFrame(drawBg);
+        }
+        requestAnimationFrame(drawBg);
+
+        // Preview animations
+        const previews = {
+            'preview-terremotos': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h + 10;
+                const earthR = h * 0.85;
+
+                // Earth layers
+                const layers = [
+                    { r: 1.0, color: '#1e3a5f' },
+                    { r: 0.85, color: '#7c2d12' },
+                    { r: 0.55, color: '#dc2626' },
+                    { r: 0.3, color: '#fbbf24' }
+                ];
+
+                layers.forEach(layer => {
+                    ctx.fillStyle = layer.color;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, earthR * layer.r, Math.PI, 0);
+                    ctx.fill();
+                });
+
+                // Epicenter
+                const epicX = cx - 30;
+                const epicY = cy - earthR * 0.92;
+
+                // P waves (blue, fast)
+                ctx.strokeStyle = 'rgba(59, 130, 246, 0.6)';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 4; i++) {
+                    const phase = (t * 2.5 + i * 0.4) % 2;
+                    const r = phase * 70;
+                    ctx.globalAlpha = Math.max(0, 1 - phase / 2);
+                    ctx.beginPath();
+                    ctx.arc(epicX, epicY, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // S waves (green, slower)
+                ctx.strokeStyle = 'rgba(34, 197, 94, 0.5)';
+                for (let i = 0; i < 3; i++) {
+                    const phase = (t * 1.5 + i * 0.5) % 2;
+                    const r = phase * 50;
+                    ctx.globalAlpha = Math.max(0, 1 - phase / 2);
+                    ctx.beginPath();
+                    ctx.arc(epicX, epicY, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // Epicenter marker
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.arc(epicX, epicY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Seismogram trace at bottom
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                for (let x = 0; x < w; x++) {
+                    const noise = Math.sin(x * 0.3 + t * 10) * Math.exp(-Math.pow((x/w - 0.5 - (t % 1) * 0.3) * 5, 2)) * 8;
+                    const y = h - 15 + noise;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            },
+
+            'preview-volcanes': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+
+                // Sky gradient
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.5);
+                skyGrad.addColorStop(0, '#0f172a');
+                skyGrad.addColorStop(1, '#1e293b');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, w, h * 0.5);
+
+                // Volcano cone
+                const volcGrad = ctx.createLinearGradient(cx - 80, 0, cx + 80, 0);
+                volcGrad.addColorStop(0, '#292524');
+                volcGrad.addColorStop(0.5, '#44403c');
+                volcGrad.addColorStop(1, '#292524');
+                ctx.fillStyle = volcGrad;
+                ctx.beginPath();
+                ctx.moveTo(cx - 90, h);
+                ctx.lineTo(cx - 25, h * 0.3);
+                ctx.lineTo(cx + 25, h * 0.3);
+                ctx.lineTo(cx + 90, h);
+                ctx.closePath();
+                ctx.fill();
+
+                // Crater
+                ctx.fillStyle = '#1c1917';
+                ctx.beginPath();
+                ctx.ellipse(cx, h * 0.32, 25, 10, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Lava glow in crater
+                const glowIntensity = 0.6 + Math.sin(t * 4) * 0.3;
+                ctx.fillStyle = `rgba(239, 68, 68, ${glowIntensity})`;
+                ctx.beginPath();
+                ctx.ellipse(cx, h * 0.34, 15, 5, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Eruption particles
+                for (let i = 0; i < 20; i++) {
+                    const age = (t * 2.5 + i * 0.25) % 2;
+                    const angle = -Math.PI/2 + Math.sin(i * 5.7) * 0.6;
+                    const speed = 50 + (i % 7) * 8;
+                    const gravity = age * age * 40;
+                    const x = cx + Math.cos(angle) * age * speed + Math.sin(i * 3.1) * age * 20;
+                    const y = h * 0.3 + Math.sin(angle) * age * speed + gravity;
+
+                    if (y < h && age < 1.8) {
+                        const size = Math.max(1, 4 - age * 2);
+                        const hue = 15 + (i % 4) * 10;
+                        ctx.fillStyle = `hsl(${hue}, 90%, ${60 - age * 15}%)`;
+                        ctx.beginPath();
+                        ctx.arc(x, y, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Ash cloud
+                ctx.globalAlpha = 0.4;
+                for (let i = 0; i < 10; i++) {
+                    const cloudAge = (t * 0.8 + i * 0.15) % 2;
+                    const x = cx + Math.sin(t * 1.5 + i * 1.2) * cloudAge * 30;
+                    const y = h * 0.3 - 20 - cloudAge * 50;
+                    const size = 15 + cloudAge * 30;
+                    ctx.fillStyle = '#57534e';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            },
+
+            'preview-tectonica': (ctx, w, h, t) => {
+                ctx.fillStyle = '#0c4a6e';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Continental plates
+                ctx.fillStyle = '#365314';
+
+                // Left plate moving left
+                ctx.save();
+                ctx.translate(-Math.sin(t * 0.5) * 8, 0);
+                ctx.beginPath();
+                ctx.ellipse(w * 0.25, cy, 45, 35, 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Right plate moving right
+                ctx.save();
+                ctx.translate(Math.sin(t * 0.5) * 8, 0);
+                ctx.beginPath();
+                ctx.ellipse(w * 0.75, cy, 40, 30, -0.15, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+
+                // Mid-ocean ridge (divergent boundary)
+                ctx.strokeStyle = '#ef4444';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([6, 4]);
+                ctx.beginPath();
+                ctx.moveTo(cx, 15);
+                ctx.lineTo(cx, h - 15);
+                ctx.stroke();
+                ctx.setLineDash([]);
+
+                // Convection arrows
+                ctx.strokeStyle = '#d97706';
+                ctx.fillStyle = '#d97706';
+                ctx.lineWidth = 2;
+
+                // Left arrows
+                for (let i = 0; i < 3; i++) {
+                    const y = h * 0.25 + i * h * 0.25;
+                    const offset = Math.sin(t * 2 + i) * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 8 + offset, y);
+                    ctx.lineTo(cx - 35 + offset, y);
+                    ctx.stroke();
+                    // Arrow head
+                    ctx.beginPath();
+                    ctx.moveTo(cx - 35 + offset, y);
+                    ctx.lineTo(cx - 28 + offset, y - 4);
+                    ctx.lineTo(cx - 28 + offset, y + 4);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Right arrows
+                for (let i = 0; i < 3; i++) {
+                    const y = h * 0.25 + i * h * 0.25;
+                    const offset = Math.sin(t * 2 + i) * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(cx + 8 - offset, y);
+                    ctx.lineTo(cx + 35 - offset, y);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.moveTo(cx + 35 - offset, y);
+                    ctx.lineTo(cx + 28 - offset, y - 4);
+                    ctx.lineTo(cx + 28 - offset, y + 4);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+                // Rising magma
+                ctx.fillStyle = '#ef4444';
+                for (let i = 0; i < 6; i++) {
+                    const y = h - ((t * 40 + i * 25) % h);
+                    const x = cx + Math.sin(i * 1.7) * 4;
+                    ctx.globalAlpha = 0.7;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            },
+
+            'preview-ciclo': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+                const radius = Math.min(w, h) * 0.32;
+
+                // Rock types positions (triangle)
+                const rocks = [
+                    { angle: -Math.PI/2, label: 'Ígnea', color: '#ef4444', emoji: '🔥' },
+                    { angle: Math.PI/6, label: 'Sedim.', color: '#f59e0b', emoji: '🏜️' },
+                    { angle: 5*Math.PI/6, label: 'Metam.', color: '#8b5cf6', emoji: '💎' }
+                ];
+
+                // Draw curved arrows between rocks
+                ctx.strokeStyle = '#d97706';
+                ctx.lineWidth = 2;
+                rocks.forEach((rock, i) => {
+                    const next = rocks[(i + 1) % 3];
+                    const x1 = cx + Math.cos(rock.angle) * radius * 0.65;
+                    const y1 = cy + Math.sin(rock.angle) * radius * 0.65;
+                    const x2 = cx + Math.cos(next.angle) * radius * 0.65;
+                    const y2 = cy + Math.sin(next.angle) * radius * 0.65;
+                    const midAngle = (rock.angle + next.angle) / 2;
+                    const midX = cx + Math.cos(midAngle) * radius * 0.25;
+                    const midY = cy + Math.sin(midAngle) * radius * 0.25;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y1);
+                    ctx.quadraticCurveTo(midX, midY, x2, y2);
+                    ctx.stroke();
+                });
+
+                // Draw rock nodes
+                rocks.forEach((rock, i) => {
+                    const x = cx + Math.cos(rock.angle) * radius;
+                    const y = cy + Math.sin(rock.angle) * radius;
+                    const pulse = 1 + Math.sin(t * 2 + i * 2.1) * 0.1;
+
+                    // Glow
+                    const glow = ctx.createRadialGradient(x, y, 0, x, y, 25 * pulse);
+                    glow.addColorStop(0, rock.color);
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 25 * pulse, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Node
+                    ctx.fillStyle = rock.color;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 18 * pulse, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Label
+                    ctx.fillStyle = '#f8fafc';
+                    ctx.font = '10px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(rock.label, x, y + 32);
+                });
+
+                // Animated particle
+                const cycleT = (t * 0.4) % 3;
+                const segment = Math.floor(cycleT);
+                const progress = cycleT - segment;
+                const r1 = rocks[segment];
+                const r2 = rocks[(segment + 1) % 3];
+
+                const x1 = cx + Math.cos(r1.angle) * radius * 0.65;
+                const y1 = cy + Math.sin(r1.angle) * radius * 0.65;
+                const x2 = cx + Math.cos(r2.angle) * radius * 0.65;
+                const y2 = cy + Math.sin(r2.angle) * radius * 0.65;
+                const midAngle = (r1.angle + r2.angle) / 2;
+                const midX = cx + Math.cos(midAngle) * radius * 0.25;
+                const midY = cy + Math.sin(midAngle) * radius * 0.25;
+
+                const px = (1-progress)*(1-progress)*x1 + 2*(1-progress)*progress*midX + progress*progress*x2;
+                const py = (1-progress)*(1-progress)*y1 + 2*(1-progress)*progress*midY + progress*progress*y2;
+
+                ctx.fillStyle = '#fbbf24';
+                ctx.shadowColor = '#fbbf24';
+                ctx.shadowBlur = 10;
+                ctx.beginPath();
+                ctx.arc(px, py, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            },
+
+            'preview-erosion': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Sky
+                const skyGrad = ctx.createLinearGradient(0, 0, 0, h * 0.4);
+                skyGrad.addColorStop(0, '#0c4a6e');
+                skyGrad.addColorStop(1, '#1e3a5f');
+                ctx.fillStyle = skyGrad;
+                ctx.fillRect(0, 0, w, h * 0.4);
+
+                // Terrain that erodes over time
+                const erosionPhase = (t * 0.3) % 3;
+                const terrainPoints = [];
+
+                for (let x = 0; x <= w; x += 2) {
+                    const nx = x / w;
+                    // Mountain shape
+                    let baseY = Math.sin(nx * Math.PI) * 50 + Math.sin(nx * Math.PI * 3) * 15;
+                    // Erosion effect
+                    const erosion = erosionPhase * 10 * (0.5 + Math.sin(nx * Math.PI * 2) * 0.5);
+                    baseY = Math.max(baseY - erosion, baseY * 0.3);
+                    terrainPoints.push({ x, y: h - 30 - baseY });
+                }
+
+                // Draw terrain
+                ctx.fillStyle = '#78350f';
+                ctx.beginPath();
+                ctx.moveTo(0, h);
+                terrainPoints.forEach(p => ctx.lineTo(p.x, p.y));
+                ctx.lineTo(w, h);
+                ctx.closePath();
+                ctx.fill();
+
+                // Grass
+                ctx.strokeStyle = '#365314';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < terrainPoints.length; i += 4) {
+                    const p = terrainPoints[i];
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + Math.sin(t * 2 + i) * 2, p.y - 4);
+                    ctx.stroke();
+                }
+
+                // Rain
+                ctx.fillStyle = '#60a5fa';
+                for (let i = 0; i < 25; i++) {
+                    const x = (i * 31 + t * 150) % w;
+                    const y = (t * 300 + i * 43) % (h * 0.7);
+                    ctx.fillRect(x, y, 1, 5);
+                }
+
+                // Water flow
+                ctx.fillStyle = '#3b82f6';
+                for (let i = 0; i < 8; i++) {
+                    const startX = w * 0.35 + i * 4;
+                    const flowPhase = (t * 3.5 + i * 0.4) % 2.5;
+                    const x = startX + flowPhase * 50;
+                    const idx = Math.min(Math.floor(x / 2), terrainPoints.length - 1);
+                    const baseY = terrainPoints[idx]?.y || h - 30;
+
+                    if (x < w - 30) {
+                        ctx.beginPath();
+                        ctx.arc(x, baseY - 1, 2.5, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+
+                // Sediment deposit
+                ctx.fillStyle = '#92400e';
+                const sedimentHeight = 8 + erosionPhase * 4;
+                ctx.beginPath();
+                ctx.moveTo(w - 50, h);
+                ctx.quadraticCurveTo(w - 30, h - sedimentHeight, w, h - 5);
+                ctx.lineTo(w, h);
+                ctx.closePath();
+                ctx.fill();
+            },
+
+            'preview-estratigrafia': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Stratigraphic column
+                const layers = [
+                    { color: '#fef3c7', height: 18, age: '0' },
+                    { color: '#a16207', height: 22, age: '10' },
+                    { color: '#64748b', height: 16, age: '50' },
+                    { color: '#fde68a', height: 20, age: '100' },
+                    { color: '#78350f', height: 18, age: '200' },
+                    { color: '#292524', height: 24, age: '500' }
+                ];
+
+                const colX = w * 0.25;
+                const colW = w * 0.5;
+                let y = h - 10;
+
+                layers.forEach((layer, i) => {
+                    // Animated deposition
+                    const depositPhase = Math.max(0, Math.min(1, t * 0.25 - i * 0.2));
+                    const currentH = layer.height * depositPhase;
+                    y -= currentH;
+
+                    if (depositPhase > 0) {
+                        ctx.fillStyle = layer.color;
+                        ctx.fillRect(colX, y, colW, currentH);
+
+                        // Layer boundary
+                        ctx.strokeStyle = 'rgba(0,0,0,0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(colX, y);
+                        ctx.lineTo(colX + colW, y);
+                        ctx.stroke();
+                    }
+                });
+
+                // Fossils
+                ctx.fillStyle = 'rgba(255,255,255,0.5)';
+
+                // Shell
+                const shellY = h - 55;
+                ctx.beginPath();
+                ctx.arc(w * 0.4, shellY, 5, 0, Math.PI, true);
+                ctx.fill();
+                ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(w * 0.4, shellY, 3, 0, Math.PI, true);
+                ctx.stroke();
+
+                // Bone
+                ctx.fillRect(w * 0.55, h - 95, 12, 2);
+                ctx.fillRect(w * 0.55, h - 95, 2, 6);
+                ctx.fillRect(w * 0.65, h - 95, 2, 6);
+
+                // Age scale
+                ctx.fillStyle = '#d97706';
+                ctx.font = '9px JetBrains Mono';
+                ctx.textAlign = 'right';
+                ctx.fillText('0 Ma', colX - 5, h - 15);
+                ctx.fillText('500 Ma', colX - 5, h - 108);
+
+                // Column label
+                ctx.fillStyle = '#94a3b8';
+                ctx.font = '8px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Columna', w / 2, 12);
+            }
+        };
+
+        // Initialize preview canvases
+        Object.keys(previews).forEach(id => {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+
+            function resize() {
+                const rect = canvas.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function animate(time) {
+                const t = time / 1000;
+                const w = canvas.width / dpr;
+                const h = canvas.height / dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                previews[id](ctx, w, h, t);
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tectónica de Placas - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #10b981;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(217, 119, 6, 0.05));
+            border: 1px solid rgba(16, 185, 129, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+        }
+
+        .boundary-type {
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .boundary-type:hover {
+            background: rgba(16, 185, 129, 0.1);
+        }
+
+        .boundary-type.active {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: rgba(16, 185, 129, 0.5);
+        }
+
+        .divergent { color: #ef4444; }
+        .convergent { color: #3b82f6; }
+        .transform { color: #a855f7; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div>
+                    <nav class="text-xs text-gray-600 mb-0.5">
+                        <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                        <span class="mx-1">/</span>
+                        <a href="index.html" class="hover:text-emerald-400 transition">Geology Visual Lab</a>
+                        <span class="mx-1">/</span>
+                        <span class="text-gray-500">Tectónica de Placas</span>
+                    </nav>
+                    <h1 class="text-lg font-light">
+                        <span class="text-emerald-500 font-medium glow-text">Tectónica de Placas</span>
+                        <span class="text-gray-600 text-sm ml-2">Deriva Continental</span>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Tiempo:</span>
+                        <span id="time-display" class="text-emerald-500 mono font-medium">0</span>
+                        <span class="text-gray-600">Ma</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Velocidad:</span>
+                        <span id="speed-display" class="text-emerald-500 mono">5</span>
+                        <span class="text-gray-600">cm/año</span>
+                    </div>
+                    <div id="status-indicator" class="flex items-center gap-2">
+                        <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                        <span class="text-gray-500 text-xs">Simulando</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <div class="flex-1 relative flex flex-col">
+            <div class="flex-1 relative">
+                <canvas id="map-canvas" class="w-full h-full"></canvas>
+
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-emerald-400 mb-2">Placas Principales</div>
+                    <div class="space-y-1 text-gray-400">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-sm bg-[#365314]"></span>
+                            <span>Norteamericana</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-sm bg-[#3f6212]"></span>
+                            <span>Sudamericana</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-sm bg-[#4d7c0f]"></span>
+                            <span>Euroasiática</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-sm bg-[#65a30d]"></span>
+                            <span>Africana</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-sm bg-[#84cc16]"></span>
+                            <span>Pacífica</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Borde seleccionado</div>
+                    <div id="boundary-display" class="text-emerald-500 font-medium">Divergente</div>
+                </div>
+
+                <div class="absolute bottom-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-amber-500 mb-2">Tipos de Bordes</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-0.5 bg-red-500"></span>
+                            <span class="divergent">Divergente</span>
+                            <span class="text-gray-600">(dorsales)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-0.5 bg-blue-500"></span>
+                            <span class="convergent">Convergente</span>
+                            <span class="text-gray-600">(subducción)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-0.5 bg-purple-500"></span>
+                            <span class="transform">Transformante</span>
+                            <span class="text-gray-600">(fallas)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-48 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500 uppercase tracking-wider font-medium">Corte Transversal del Borde</span>
+                </div>
+                <canvas id="cross-section" class="w-full h-32 bg-black rounded-lg border border-gray-800"></canvas>
+            </div>
+        </div>
+
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Las placas tectonicas se mueven sobre el manto. En los bordes <span class="text-amber-400">divergentes</span> crean corteza nueva; en los <span class="text-amber-400">convergentes</span> se destruye por subduccion.
+                </p>
+                <a href="guides/tectonica-placas.html" class="mt-3 flex items-center gap-2 text-xs text-amber-400 hover:text-amber-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-amber-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: bordes, Pangea, conveccion
+                </a>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Tipo de Borde
+                </h3>
+
+                <div class="space-y-2">
+                    <div class="boundary-type active p-3 border border-gray-800 rounded-lg" data-type="divergent">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="divergent font-medium">Divergente</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Dorsales oceánicas. Placas se alejan.</div>
+                    </div>
+                    <div class="boundary-type p-3 border border-gray-800 rounded-lg" data-type="convergent">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="convergent font-medium">Convergente</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Subducción, colisión continental.</div>
+                    </div>
+                    <div class="boundary-type p-3 border border-gray-800 rounded-lg" data-type="transform">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="transform font-medium">Transformante</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Fallas laterales. San Andrés.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Tiempo Geológico
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Época: <span id="epoch-value" class="text-amber-400 mono">Presente</span>
+                    </label>
+                    <input type="range" id="time-slider" min="0" max="250" step="1" value="0" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>Presente</span>
+                        <span>250 Ma (Pangea)</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad de placas: <span id="plate-speed" class="text-emerald-400 mono">5</span> cm/año
+                    </label>
+                    <input type="range" id="speed-slider" min="1" max="15" step="0.5" value="5" class="w-full">
+                </div>
+            </div>
+
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-boundaries" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700">
+                        <span class="text-sm text-gray-400">Bordes de placas</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-arrows" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700">
+                        <span class="text-sm text-gray-400">Vectores de movimiento</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-convection" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700">
+                        <span class="text-sm text-gray-400">Convección del manto</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-hotspots" class="w-4 h-4 rounded bg-gray-900 border-gray-700">
+                        <span class="text-sm text-gray-400">Puntos calientes</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="flex gap-2 mb-6">
+                <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                    Pausar
+                </button>
+                <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                    Reset
+                </button>
+            </div>
+
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-emerald-400 mb-3">Velocidad de Placas</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>v = 2 - 10 cm/año</div>
+                    <div class="mt-2 text-gray-500">
+                        Pacífica: ~10 cm/año<br>
+                        Atlántica: ~2.5 cm/año<br>
+                        Euroasiática: ~2 cm/año
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Épocas Geológicas</h3>
+                <div class="space-y-1 text-xs">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">0 Ma</span>
+                        <span class="text-gray-400">Presente</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">66 Ma</span>
+                        <span class="text-gray-400">Fin dinosaurios</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">200 Ma</span>
+                        <span class="text-gray-400">Pangea se divide</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">250 Ma</span>
+                        <span class="text-gray-400">Pangea completa</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="text-xs text-gray-600 border-t border-gray-800 pt-4">
+                <div class="font-medium text-gray-500 mb-2">Atajos de teclado</div>
+                <div class="grid grid-cols-2 gap-1">
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">Space</kbd> Pausar</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">R</kbd> Reset</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">1-3</kbd> Borde</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const mapCanvas = document.getElementById('map-canvas');
+        const mapCtx = mapCanvas.getContext('2d');
+        const crossCanvas = document.getElementById('cross-section');
+        const crossCtx = crossCanvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        const state = {
+            boundaryType: 'divergent',
+            time: 0,
+            speed: 5,
+            paused: false,
+            showBoundaries: true,
+            showArrows: true,
+            showConvection: true,
+            showHotspots: false
+        };
+
+        const plates = [
+            { name: 'North America', color: '#365314', x: 0.2, y: 0.3, vx: -0.5, vy: 0 },
+            { name: 'South America', color: '#3f6212', x: 0.25, y: 0.6, vx: -0.3, vy: 0.1 },
+            { name: 'Eurasia', color: '#4d7c0f', x: 0.55, y: 0.25, vx: 0.2, vy: 0 },
+            { name: 'Africa', color: '#65a30d', x: 0.45, y: 0.55, vx: 0.3, vy: -0.1 },
+            { name: 'Pacific', color: '#84cc16', x: 0.85, y: 0.5, vx: -0.8, vy: 0 },
+            { name: 'Australia', color: '#a3e635', x: 0.75, y: 0.7, vx: 0.5, vy: -0.3 }
+        ];
+
+        function resize() {
+            const mapRect = mapCanvas.parentElement.getBoundingClientRect();
+            mapCanvas.width = mapRect.width * dpr;
+            mapCanvas.height = mapRect.height * dpr;
+            mapCanvas.style.width = mapRect.width + 'px';
+            mapCanvas.style.height = mapRect.height + 'px';
+
+            const crossRect = crossCanvas.parentElement.getBoundingClientRect();
+            crossCanvas.width = crossRect.width * dpr;
+            crossCanvas.height = 128 * dpr;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        function setBoundaryType(type) {
+            state.boundaryType = type;
+            document.getElementById('boundary-display').textContent =
+                type === 'divergent' ? 'Divergente' :
+                type === 'convergent' ? 'Convergente' : 'Transformante';
+
+            document.querySelectorAll('.boundary-type').forEach(el => {
+                el.classList.toggle('active', el.dataset.type === type);
+            });
+        }
+
+        function drawMap() {
+            const w = mapCanvas.width / dpr;
+            const h = mapCanvas.height / dpr;
+
+            mapCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+            // Ocean
+            mapCtx.fillStyle = '#0c4a6e';
+            mapCtx.fillRect(0, 0, w, h);
+
+            // Grid
+            mapCtx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+            mapCtx.lineWidth = 1;
+            for (let i = 0; i <= 18; i++) {
+                const x = (i / 18) * w;
+                mapCtx.beginPath();
+                mapCtx.moveTo(x, 0);
+                mapCtx.lineTo(x, h);
+                mapCtx.stroke();
+            }
+            for (let i = 0; i <= 9; i++) {
+                const y = (i / 9) * h;
+                mapCtx.beginPath();
+                mapCtx.moveTo(0, y);
+                mapCtx.lineTo(w, y);
+                mapCtx.stroke();
+            }
+
+            // Pangea interpolation based on time
+            const pangeaFactor = state.time / 250;
+
+            // Draw plates
+            plates.forEach(plate => {
+                const baseX = plate.x * w;
+                const baseY = plate.y * h;
+                const offsetX = plate.vx * pangeaFactor * w * 0.3;
+                const offsetY = plate.vy * pangeaFactor * h * 0.3;
+                const x = baseX - offsetX;
+                const y = baseY - offsetY;
+
+                mapCtx.fillStyle = plate.color;
+                mapCtx.beginPath();
+                mapCtx.ellipse(x, y, 80 + pangeaFactor * 20, 60 + pangeaFactor * 15, 0.2, 0, Math.PI * 2);
+                mapCtx.fill();
+
+                // Movement arrows
+                if (state.showArrows && !state.paused) {
+                    mapCtx.strokeStyle = '#d97706';
+                    mapCtx.fillStyle = '#d97706';
+                    mapCtx.lineWidth = 2;
+
+                    const arrowLen = 30;
+                    const endX = x + plate.vx * arrowLen * 2;
+                    const endY = y + plate.vy * arrowLen * 2;
+
+                    mapCtx.beginPath();
+                    mapCtx.moveTo(x, y);
+                    mapCtx.lineTo(endX, endY);
+                    mapCtx.stroke();
+
+                    const angle = Math.atan2(plate.vy, plate.vx);
+                    mapCtx.beginPath();
+                    mapCtx.moveTo(endX, endY);
+                    mapCtx.lineTo(endX - 8 * Math.cos(angle - 0.4), endY - 8 * Math.sin(angle - 0.4));
+                    mapCtx.lineTo(endX - 8 * Math.cos(angle + 0.4), endY - 8 * Math.sin(angle + 0.4));
+                    mapCtx.closePath();
+                    mapCtx.fill();
+                }
+            });
+
+            // Plate boundaries
+            if (state.showBoundaries) {
+                // Mid-Atlantic Ridge (divergent)
+                mapCtx.strokeStyle = '#ef4444';
+                mapCtx.lineWidth = 3;
+                mapCtx.setLineDash([8, 4]);
+                mapCtx.beginPath();
+                mapCtx.moveTo(w * 0.35, 0);
+                mapCtx.bezierCurveTo(w * 0.33, h * 0.3, w * 0.37, h * 0.7, w * 0.35, h);
+                mapCtx.stroke();
+
+                // Pacific Ring of Fire (convergent)
+                mapCtx.strokeStyle = '#3b82f6';
+                mapCtx.beginPath();
+                mapCtx.arc(w * 0.85, h * 0.5, w * 0.25, -Math.PI * 0.8, Math.PI * 0.8);
+                mapCtx.stroke();
+
+                // San Andreas (transform)
+                mapCtx.strokeStyle = '#a855f7';
+                mapCtx.beginPath();
+                mapCtx.moveTo(w * 0.12, h * 0.25);
+                mapCtx.lineTo(w * 0.08, h * 0.45);
+                mapCtx.stroke();
+
+                mapCtx.setLineDash([]);
+            }
+
+            // Hotspots
+            if (state.showHotspots) {
+                const hotspots = [
+                    { x: 0.9, y: 0.45, name: 'Hawaii' },
+                    { x: 0.43, y: 0.65, name: 'Reunión' },
+                    { x: 0.15, y: 0.6, name: 'Galápagos' }
+                ];
+
+                hotspots.forEach(hs => {
+                    mapCtx.fillStyle = '#ef4444';
+                    mapCtx.shadowColor = '#ef4444';
+                    mapCtx.shadowBlur = 15;
+                    mapCtx.beginPath();
+                    mapCtx.arc(hs.x * w, hs.y * h, 8, 0, Math.PI * 2);
+                    mapCtx.fill();
+                });
+                mapCtx.shadowBlur = 0;
+            }
+
+            // Convection indicators
+            if (state.showConvection) {
+                mapCtx.strokeStyle = 'rgba(239, 68, 68, 0.3)';
+                mapCtx.lineWidth = 2;
+                const t = Date.now() / 1000;
+
+                for (let i = 0; i < 5; i++) {
+                    const phase = (t + i * 0.5) % 2;
+                    const alpha = phase < 1 ? phase : 2 - phase;
+                    mapCtx.globalAlpha = alpha * 0.4;
+
+                    const x = w * 0.35;
+                    const y = h * 0.2 + i * h * 0.15;
+
+                    mapCtx.beginPath();
+                    mapCtx.arc(x, y, 5 + phase * 10, 0, Math.PI * 2);
+                    mapCtx.stroke();
+                }
+                mapCtx.globalAlpha = 1;
+            }
+        }
+
+        function drawCrossSection() {
+            const w = crossCanvas.width / dpr;
+            const h = crossCanvas.height / dpr;
+
+            crossCtx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            crossCtx.fillStyle = '#030712';
+            crossCtx.fillRect(0, 0, w, h);
+
+            const cx = w / 2;
+            const surfaceY = 20;
+
+            // Mantle
+            const mantleGrad = crossCtx.createLinearGradient(0, surfaceY, 0, h);
+            mantleGrad.addColorStop(0, '#7c2d12');
+            mantleGrad.addColorStop(1, '#dc2626');
+            crossCtx.fillStyle = mantleGrad;
+            crossCtx.fillRect(0, surfaceY, w, h - surfaceY);
+
+            if (state.boundaryType === 'divergent') {
+                // Plates separating
+                crossCtx.fillStyle = '#1e3a5f';
+                crossCtx.fillRect(0, surfaceY, cx - 30, 25);
+                crossCtx.fillRect(cx + 30, surfaceY, cx - 30, 25);
+
+                // Rising magma
+                crossCtx.fillStyle = '#ef4444';
+                crossCtx.beginPath();
+                crossCtx.moveTo(cx - 20, surfaceY + 25);
+                crossCtx.lineTo(cx, h * 0.8);
+                crossCtx.lineTo(cx + 20, surfaceY + 25);
+                crossCtx.closePath();
+                crossCtx.fill();
+
+                // New crust
+                crossCtx.fillStyle = '#1e3a5f';
+                crossCtx.fillRect(cx - 30, surfaceY, 60, 15);
+
+                // Arrows
+                crossCtx.strokeStyle = '#d97706';
+                crossCtx.fillStyle = '#d97706';
+                drawArrow(crossCtx, cx - 60, surfaceY + 12, cx - 100, surfaceY + 12);
+                drawArrow(crossCtx, cx + 60, surfaceY + 12, cx + 100, surfaceY + 12);
+
+                crossCtx.fillStyle = '#94a3b8';
+                crossCtx.font = '10px Inter';
+                crossCtx.fillText('Dorsal Oceánica', cx - 35, 12);
+
+            } else if (state.boundaryType === 'convergent') {
+                // Subducting plate
+                crossCtx.fillStyle = '#1e3a5f';
+                crossCtx.fillRect(0, surfaceY, cx, 25);
+
+                // Overriding plate
+                crossCtx.fillStyle = '#365314';
+                crossCtx.fillRect(cx, surfaceY - 10, w - cx, 35);
+
+                // Subduction zone
+                crossCtx.beginPath();
+                crossCtx.moveTo(cx, surfaceY + 25);
+                crossCtx.quadraticCurveTo(cx + 50, surfaceY + 60, cx + 30, h);
+                crossCtx.lineTo(cx - 20, h);
+                crossCtx.quadraticCurveTo(cx, surfaceY + 60, cx, surfaceY + 25);
+                crossCtx.fillStyle = '#1e3a5f';
+                crossCtx.fill();
+
+                // Volcanic arc
+                crossCtx.fillStyle = '#57534e';
+                crossCtx.beginPath();
+                crossCtx.moveTo(cx + 80, surfaceY - 10);
+                crossCtx.lineTo(cx + 100, surfaceY - 35);
+                crossCtx.lineTo(cx + 120, surfaceY - 10);
+                crossCtx.fill();
+
+                // Arrows
+                crossCtx.strokeStyle = '#d97706';
+                crossCtx.fillStyle = '#d97706';
+                drawArrow(crossCtx, cx - 80, surfaceY + 12, cx - 20, surfaceY + 12);
+                drawArrow(crossCtx, cx + 150, surfaceY + 12, cx + 90, surfaceY + 12);
+
+                crossCtx.fillStyle = '#94a3b8';
+                crossCtx.font = '10px Inter';
+                crossCtx.fillText('Zona de Subducción', cx - 40, 12);
+
+            } else {
+                // Transform plates
+                crossCtx.fillStyle = '#1e3a5f';
+                crossCtx.fillRect(0, surfaceY, cx - 5, 25);
+                crossCtx.fillStyle = '#365314';
+                crossCtx.fillRect(cx + 5, surfaceY, w - cx - 5, 25);
+
+                // Fault line
+                crossCtx.strokeStyle = '#a855f7';
+                crossCtx.lineWidth = 3;
+                crossCtx.setLineDash([5, 5]);
+                crossCtx.beginPath();
+                crossCtx.moveTo(cx, surfaceY);
+                crossCtx.lineTo(cx, h);
+                crossCtx.stroke();
+                crossCtx.setLineDash([]);
+
+                // Arrows (opposite horizontal)
+                crossCtx.strokeStyle = '#d97706';
+                crossCtx.fillStyle = '#d97706';
+                drawArrowVert(crossCtx, cx - 50, surfaceY + 12, true);
+                drawArrowVert(crossCtx, cx + 50, surfaceY + 12, false);
+
+                crossCtx.fillStyle = '#94a3b8';
+                crossCtx.font = '10px Inter';
+                crossCtx.fillText('Falla Transformante', cx - 45, 12);
+            }
+
+            // Convection cells
+            if (state.showConvection) {
+                crossCtx.strokeStyle = 'rgba(251, 191, 36, 0.4)';
+                crossCtx.lineWidth = 2;
+                const t = Date.now() / 1000;
+
+                // Left cell
+                for (let i = 0; i < 4; i++) {
+                    const phase = (t * 0.5 + i * 0.3) % 1;
+                    const x = cx * 0.4 + Math.cos(phase * Math.PI * 2) * 30;
+                    const y = h * 0.5 + Math.sin(phase * Math.PI * 2) * 25;
+                    crossCtx.globalAlpha = 0.3 + Math.sin(phase * Math.PI) * 0.3;
+                    crossCtx.beginPath();
+                    crossCtx.arc(x, y, 4, 0, Math.PI * 2);
+                    crossCtx.stroke();
+                }
+
+                // Right cell
+                for (let i = 0; i < 4; i++) {
+                    const phase = (t * 0.5 + i * 0.3) % 1;
+                    const x = cx * 1.6 + Math.cos(-phase * Math.PI * 2) * 30;
+                    const y = h * 0.5 + Math.sin(-phase * Math.PI * 2) * 25;
+                    crossCtx.globalAlpha = 0.3 + Math.sin(phase * Math.PI) * 0.3;
+                    crossCtx.beginPath();
+                    crossCtx.arc(x, y, 4, 0, Math.PI * 2);
+                    crossCtx.stroke();
+                }
+                crossCtx.globalAlpha = 1;
+            }
+        }
+
+        function drawArrow(ctx, x1, y1, x2, y2) {
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(x2 - 8 * Math.cos(angle - 0.4), y2 - 8 * Math.sin(angle - 0.4));
+            ctx.lineTo(x2 - 8 * Math.cos(angle + 0.4), y2 - 8 * Math.sin(angle + 0.4));
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        function drawArrowVert(ctx, x, y, up) {
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 15);
+            ctx.lineTo(x, y + 15);
+            ctx.stroke();
+
+            if (up) {
+                ctx.beginPath();
+                ctx.moveTo(x, y - 15);
+                ctx.lineTo(x - 5, y - 8);
+                ctx.lineTo(x + 5, y - 8);
+                ctx.closePath();
+                ctx.fill();
+            } else {
+                ctx.beginPath();
+                ctx.moveTo(x, y + 15);
+                ctx.lineTo(x - 5, y + 8);
+                ctx.lineTo(x + 5, y + 8);
+                ctx.closePath();
+                ctx.fill();
+            }
+        }
+
+        function updateDisplays() {
+            document.getElementById('time-display').textContent = state.time;
+            document.getElementById('speed-display').textContent = state.speed;
+
+            const epochs = [
+                { max: 2, name: 'Holoceno' },
+                { max: 12, name: 'Pleistoceno' },
+                { max: 66, name: 'Paleógeno' },
+                { max: 145, name: 'Cretácico' },
+                { max: 200, name: 'Jurásico' },
+                { max: 250, name: 'Triásico (Pangea)' }
+            ];
+            const epoch = epochs.find(e => state.time <= e.max) || epochs[epochs.length - 1];
+            document.getElementById('epoch-value').textContent = epoch.name;
+        }
+
+        function animate() {
+            drawMap();
+            drawCrossSection();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.boundary-type').forEach(el => {
+            el.addEventListener('click', () => setBoundaryType(el.dataset.type));
+        });
+
+        document.getElementById('time-slider').addEventListener('input', (e) => {
+            state.time = parseInt(e.target.value);
+            updateDisplays();
+        });
+
+        document.getElementById('speed-slider').addEventListener('input', (e) => {
+            state.speed = parseFloat(e.target.value);
+            document.getElementById('plate-speed').textContent = state.speed;
+            updateDisplays();
+        });
+
+        document.getElementById('show-boundaries').addEventListener('change', (e) => state.showBoundaries = e.target.checked);
+        document.getElementById('show-arrows').addEventListener('change', (e) => state.showArrows = e.target.checked);
+        document.getElementById('show-convection').addEventListener('change', (e) => state.showConvection = e.target.checked);
+        document.getElementById('show-hotspots').addEventListener('change', (e) => state.showHotspots = e.target.checked);
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            state.paused = !state.paused;
+            document.getElementById('pause-btn').textContent = state.paused ? 'Reanudar' : 'Pausar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            state.time = 0;
+            document.getElementById('time-slider').value = 0;
+            updateDisplays();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                state.paused = !state.paused;
+                document.getElementById('pause-btn').textContent = state.paused ? 'Reanudar' : 'Pausar';
+            } else if (e.code === 'KeyR') {
+                state.time = 0;
+                document.getElementById('time-slider').value = 0;
+                updateDisplays();
+            } else if (e.code === 'Digit1') {
+                setBoundaryType('divergent');
+            } else if (e.code === 'Digit2') {
+                setBoundaryType('convergent');
+            } else if (e.code === 'Digit3') {
+                setBoundaryType('transform');
+            }
+        });
+
+        updateDisplays();
+        animate();
+    </script>
+</body>
+</html>

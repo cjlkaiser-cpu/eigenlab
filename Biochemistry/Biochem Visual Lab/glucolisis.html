@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Glucólisis | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            z-index: 100;
+            max-height: calc(100vh - 40px);
+            overflow-y: auto;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            z-index: 100;
+            transition: all 0.2s;
+        }
+        .back-btn:hover { border-color: #a3e635; color: #a3e635; }
+        .stat-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 8px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .stat-label { color: #64748b; font-size: 11px; }
+        .stat-value { font-size: 18px; font-weight: bold; }
+        .atp { color: #fbbf24; }
+        .nadh { color: #a855f7; }
+        .pyruvate { color: #ef4444; }
+        .slider-container { margin: 12px 0; }
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #a3e635;
+            cursor: pointer;
+        }
+        .phase-indicator {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin: 2px;
+            display: inline-block;
+        }
+        .phase-investment { background: #ef444433; color: #ef4444; }
+        .phase-payoff { background: #22c55e33; color: #22c55e; }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #a3e635; background: #a3e63520; }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 10px;
+            color: #94a3b8;
+            margin: 4px 0;
+        }
+        .legend-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Volver</a>
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-panel">
+        <h2 class="text-white text-lg font-bold mb-2">⚡ Glucólisis</h2>
+        <p class="text-slate-500 text-xs mb-4">Glucosa → 2 Piruvato (10 pasos)</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">glucólisis</span> convierte glucosa en piruvato, generando 2 ATP y 2 NADH netos. Ocurre en el citoplasma en 10 pasos enzimáticos.
+            </p>
+            <a href="guides/glucolisis.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: fases, enzimas, balance energético
+            </a>
+        </div>
+
+        <div class="flex gap-2 mb-4">
+            <span class="phase-indicator phase-investment">Fase de Inversión</span>
+            <span class="phase-indicator phase-payoff">Fase de Beneficio</span>
+        </div>
+
+        <div class="stat-box">
+            <div>
+                <div class="stat-label">ATP Neto</div>
+                <div class="stat-value atp" id="atp-net">0</div>
+            </div>
+            <div class="text-right">
+                <div class="stat-label text-xs">Gastado: <span id="atp-spent">0</span></div>
+                <div class="stat-label text-xs">Producido: <span id="atp-made">0</span></div>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-label">NADH Producido</div>
+            <div class="stat-value nadh" id="nadh">0</div>
+        </div>
+
+        <div class="stat-box">
+            <div class="stat-label">Piruvato</div>
+            <div class="stat-value pyruvate" id="pyruvate">0</div>
+        </div>
+
+        <div class="slider-container">
+            <label>
+                <span>Velocidad</span>
+                <span id="speed-val" class="text-lime-400">1.0x</span>
+            </label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <div class="slider-container">
+            <label>
+                <span>Glucosa Inicial</span>
+                <span id="glucose-val" class="text-lime-400">1</span>
+            </label>
+            <input type="range" id="glucose" min="1" max="5" value="1">
+        </div>
+
+        <button class="btn" id="restart">↻ Reiniciar</button>
+        <button class="btn" id="step-mode">▶ Modo Paso a Paso</button>
+
+        <div class="mt-4 pt-4 border-t border-slate-700">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Leyenda</div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #38bdf8;"></div>
+                <span>Glucosa (C6)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #a3e635;"></div>
+                <span>Intermediarios</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #ef4444;"></div>
+                <span>Piruvato (C3)</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #fbbf24;"></div>
+                <span>ATP</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-dot" style="background: #a855f7;"></div>
+                <span>NADH</span>
+            </div>
+        </div>
+
+        <div class="mt-4 pt-4 border-t border-slate-700 text-slate-500 text-xs">
+            <strong>Balance:</strong><br>
+            Glucosa + 2 NAD⁺ + 2 ADP + 2 Pᵢ →<br>
+            2 Piruvato + 2 NADH + 2 ATP + 2 H₂O
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // Glycolysis steps
+        const steps = [
+            { name: 'Glucosa', formula: 'C₆H₁₂O₆', enzyme: 'Hexoquinasa', atp: -1, nadh: 0, phase: 'investment' },
+            { name: 'Glucosa-6-P', formula: 'G6P', enzyme: 'Fosfoglucosa isomerasa', atp: 0, nadh: 0, phase: 'investment' },
+            { name: 'Fructosa-6-P', formula: 'F6P', enzyme: 'Fosfofructoquinasa-1', atp: -1, nadh: 0, phase: 'investment' },
+            { name: 'Fructosa-1,6-BP', formula: 'F1,6BP', enzyme: 'Aldolasa', atp: 0, nadh: 0, phase: 'investment' },
+            { name: 'G3P + DHAP', formula: '2×C₃', enzyme: 'Triosa-P isomerasa', atp: 0, nadh: 0, phase: 'investment' },
+            { name: '2× G3P', formula: '2×G3P', enzyme: 'G3P deshidrogenasa', atp: 0, nadh: 2, phase: 'payoff' },
+            { name: '2× 1,3-BPG', formula: '2×1,3BPG', enzyme: 'Fosfoglicerato quinasa', atp: 2, nadh: 0, phase: 'payoff' },
+            { name: '2× 3-PG', formula: '2×3PG', enzyme: 'Fosfoglicerato mutasa', atp: 0, nadh: 0, phase: 'payoff' },
+            { name: '2× 2-PG', formula: '2×2PG', enzyme: 'Enolasa', atp: 0, nadh: 0, phase: 'payoff' },
+            { name: '2× PEP', formula: '2×PEP', enzyme: 'Piruvato quinasa', atp: 2, nadh: 0, phase: 'payoff' },
+            { name: '2× Piruvato', formula: '2×C₃H₄O₃', enzyme: '—', atp: 0, nadh: 0, phase: 'payoff' }
+        ];
+
+        // State
+        let currentStep = 0;
+        let progress = 0;
+        let atpSpent = 0;
+        let atpMade = 0;
+        let nadh = 0;
+        let pyruvate = 0;
+        let stepMode = false;
+        let paused = false;
+
+        // Particles
+        let particles = [];
+        let atpParticles = [];
+        let nadhParticles = [];
+
+        // Layout
+        const stepWidth = 100;
+        const pathY = window.innerHeight / 2;
+
+        function getStepX(i) {
+            const startX = 350;
+            const totalWidth = window.innerWidth - 400;
+            return startX + (i / (steps.length - 1)) * totalWidth;
+        }
+
+        function createParticle(type, x, y) {
+            const colors = {
+                glucose: '#38bdf8',
+                intermediate: '#a3e635',
+                pyruvate: '#ef4444',
+                atp: '#fbbf24',
+                nadh: '#a855f7'
+            };
+            return {
+                x, y,
+                targetX: x,
+                targetY: y,
+                vx: 0,
+                vy: 0,
+                type,
+                color: colors[type],
+                size: type === 'atp' || type === 'nadh' ? 8 : 15,
+                alpha: 1,
+                age: 0
+            };
+        }
+
+        function init() {
+            currentStep = 0;
+            progress = 0;
+            atpSpent = 0;
+            atpMade = 0;
+            nadh = 0;
+            pyruvate = 0;
+            particles = [];
+            atpParticles = [];
+            nadhParticles = [];
+
+            // Create initial glucose
+            const glucoseCount = parseInt(document.getElementById('glucose').value);
+            for (let i = 0; i < glucoseCount; i++) {
+                particles.push(createParticle('glucose', getStepX(0), pathY + (Math.random() - 0.5) * 30));
+            }
+        }
+
+        function drawStep(step, index, isActive) {
+            const x = getStepX(index);
+            const y = pathY;
+
+            // Box
+            ctx.fillStyle = isActive ? '#1e293b' : '#0f172a';
+            ctx.strokeStyle = step.phase === 'investment' ? '#ef4444' : '#22c55e';
+            ctx.lineWidth = isActive ? 3 : 1;
+
+            const boxWidth = 80;
+            const boxHeight = 100;
+
+            ctx.beginPath();
+            ctx.roundRect(x - boxWidth/2, y - boxHeight/2, boxWidth, boxHeight, 8);
+            ctx.fill();
+            ctx.stroke();
+
+            // Step number
+            ctx.fillStyle = step.phase === 'investment' ? '#ef4444' : '#22c55e';
+            ctx.font = 'bold 10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(`Paso ${index + 1}`, x, y - boxHeight/2 - 8);
+
+            // Name
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 11px monospace';
+            ctx.fillText(step.name, x, y - 25);
+
+            // Formula
+            ctx.fillStyle = '#94a3b8';
+            ctx.font = '10px monospace';
+            ctx.fillText(step.formula, x, y - 10);
+
+            // ATP/NADH indicators
+            if (step.atp !== 0) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = 'bold 12px monospace';
+                const atpText = step.atp > 0 ? `+${step.atp} ATP` : `${step.atp} ATP`;
+                ctx.fillText(atpText, x, y + 15);
+            }
+
+            if (step.nadh > 0) {
+                ctx.fillStyle = '#a855f7';
+                ctx.font = 'bold 12px monospace';
+                ctx.fillText(`+${step.nadh} NADH`, x, y + 30);
+            }
+
+            // Enzyme (below box)
+            ctx.fillStyle = '#64748b';
+            ctx.font = '8px monospace';
+            const enzyme = step.enzyme.length > 15 ? step.enzyme.substring(0, 15) + '...' : step.enzyme;
+            ctx.fillText(enzyme, x, y + boxHeight/2 + 15);
+
+            // Arrow to next
+            if (index < steps.length - 1) {
+                const nextX = getStepX(index + 1);
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(x + boxWidth/2 + 5, y);
+                ctx.lineTo(nextX - boxWidth/2 - 15, y);
+                ctx.stroke();
+
+                // Arrow head
+                ctx.beginPath();
+                ctx.moveTo(nextX - boxWidth/2 - 5, y);
+                ctx.lineTo(nextX - boxWidth/2 - 15, y - 5);
+                ctx.lineTo(nextX - boxWidth/2 - 15, y + 5);
+                ctx.closePath();
+                ctx.fillStyle = '#334155';
+                ctx.fill();
+            }
+        }
+
+        function updateParticles() {
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            particles.forEach(p => {
+                // Move towards target
+                const dx = p.targetX - p.x;
+                const dy = p.targetY - p.y;
+                p.x += dx * 0.05 * speed;
+                p.y += dy * 0.05 * speed;
+
+                // Brownian motion
+                p.x += (Math.random() - 0.5) * 2;
+                p.y += (Math.random() - 0.5) * 2;
+            });
+
+            // Update ATP particles
+            atpParticles.forEach(p => {
+                p.y -= 2 * speed;
+                p.alpha -= 0.02;
+                p.age++;
+            });
+            atpParticles = atpParticles.filter(p => p.alpha > 0);
+
+            // Update NADH particles
+            nadhParticles.forEach(p => {
+                p.y -= 1.5 * speed;
+                p.x += Math.sin(p.age * 0.1) * 2;
+                p.alpha -= 0.015;
+                p.age++;
+            });
+            nadhParticles = nadhParticles.filter(p => p.alpha > 0);
+        }
+
+        function drawParticles() {
+            // Main particles
+            particles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+            });
+
+            // ATP particles
+            atpParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(251, 191, 36, ${p.alpha})`;
+                ctx.fill();
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.font = 'bold 8px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('ATP', p.x, p.y + 3);
+            });
+
+            // NADH particles
+            nadhParticles.forEach(p => {
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = `rgba(168, 85, 247, ${p.alpha})`;
+                ctx.fill();
+                ctx.fillStyle = `rgba(255, 255, 255, ${p.alpha})`;
+                ctx.font = 'bold 7px monospace';
+                ctx.textAlign = 'center';
+                ctx.fillText('NADH', p.x, p.y + 3);
+            });
+        }
+
+        function advanceStep() {
+            if (currentStep >= steps.length - 1) return;
+
+            const step = steps[currentStep];
+
+            // Handle ATP
+            if (step.atp < 0) {
+                atpSpent += Math.abs(step.atp);
+                // Visual: ATP consumed
+                for (let i = 0; i < Math.abs(step.atp); i++) {
+                    const p = createParticle('atp', getStepX(currentStep), pathY + 60);
+                    p.alpha = 1;
+                    atpParticles.push(p);
+                }
+            } else if (step.atp > 0) {
+                atpMade += step.atp * 2; // x2 because of 2 molecules
+                for (let i = 0; i < step.atp * 2; i++) {
+                    const p = createParticle('atp', getStepX(currentStep) + (Math.random() - 0.5) * 40, pathY - 60);
+                    p.alpha = 1;
+                    atpParticles.push(p);
+                }
+            }
+
+            // Handle NADH
+            if (step.nadh > 0) {
+                nadh += step.nadh;
+                for (let i = 0; i < step.nadh; i++) {
+                    const p = createParticle('nadh', getStepX(currentStep) + (Math.random() - 0.5) * 30, pathY - 80);
+                    p.alpha = 1;
+                    nadhParticles.push(p);
+                }
+            }
+
+            currentStep++;
+
+            // Update particle targets
+            const nextX = getStepX(currentStep);
+
+            // After step 4, split into 2 molecules
+            if (currentStep === 5) {
+                const newParticles = [];
+                particles.forEach(p => {
+                    p.type = 'intermediate';
+                    p.color = '#a3e635';
+                    p.targetX = nextX;
+                    p.targetY = pathY - 20;
+
+                    // Create second molecule
+                    const p2 = createParticle('intermediate', p.x, p.y);
+                    p2.targetX = nextX;
+                    p2.targetY = pathY + 20;
+                    newParticles.push(p2);
+                });
+                particles = particles.concat(newParticles);
+            } else if (currentStep === steps.length - 1) {
+                // Final step - pyruvate
+                particles.forEach(p => {
+                    p.type = 'pyruvate';
+                    p.color = '#ef4444';
+                    p.targetX = nextX + (Math.random() - 0.5) * 30;
+                });
+                pyruvate = particles.length;
+            } else {
+                particles.forEach((p, i) => {
+                    p.type = 'intermediate';
+                    p.color = '#a3e635';
+                    p.targetX = nextX;
+                    p.targetY = pathY + (i % 2 === 0 ? -15 : 15);
+                });
+            }
+
+            updateUI();
+        }
+
+        function updateUI() {
+            document.getElementById('atp-spent').textContent = atpSpent;
+            document.getElementById('atp-made').textContent = atpMade;
+            document.getElementById('atp-net').textContent = atpMade - atpSpent;
+            document.getElementById('nadh').textContent = nadh;
+            document.getElementById('pyruvate').textContent = pyruvate;
+        }
+
+        function drawTitle() {
+            // Phase labels at top
+            const investEnd = getStepX(4);
+            const payoffStart = getStepX(5);
+
+            ctx.fillStyle = '#ef444440';
+            ctx.fillRect(getStepX(0) - 50, 50, investEnd - getStepX(0) + 100, 30);
+            ctx.fillStyle = '#ef4444';
+            ctx.font = 'bold 12px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('FASE DE INVERSIÓN (-2 ATP)', (getStepX(0) + investEnd) / 2, 70);
+
+            ctx.fillStyle = '#22c55e40';
+            ctx.fillRect(payoffStart - 50, 50, getStepX(10) - payoffStart + 100, 30);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText('FASE DE BENEFICIO (+4 ATP, +2 NADH)', (payoffStart + getStepX(10)) / 2, 70);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawTitle();
+
+            // Draw all steps
+            steps.forEach((step, i) => {
+                drawStep(step, i, i === currentStep);
+            });
+
+            updateParticles();
+            drawParticles();
+
+            // Auto-advance
+            if (!paused && !stepMode) {
+                progress += parseFloat(document.getElementById('speed').value) * 0.5;
+                if (progress > 100) {
+                    progress = 0;
+                    advanceStep();
+                }
+            }
+
+            // Progress bar for current step
+            if (currentStep < steps.length - 1) {
+                const x = getStepX(currentStep);
+                ctx.fillStyle = '#334155';
+                ctx.fillRect(x - 35, pathY + 55, 70, 4);
+                ctx.fillStyle = '#a3e635';
+                ctx.fillRect(x - 35, pathY + 55, 70 * (progress / 100), 4);
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        // UI Events
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('glucose').addEventListener('input', (e) => {
+            document.getElementById('glucose-val').textContent = e.target.value;
+        });
+
+        document.getElementById('restart').addEventListener('click', init);
+
+        document.getElementById('step-mode').addEventListener('click', () => {
+            stepMode = !stepMode;
+            document.getElementById('step-mode').textContent = stepMode ? '▶ Avanzar Paso' : '▶ Modo Paso a Paso';
+            if (stepMode) {
+                document.getElementById('step-mode').addEventListener('click', advanceStep);
+            }
+        });
+
+        init();
+        draw();
+    </script>
+</body>
+</html>

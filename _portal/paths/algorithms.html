@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Algoritmos y Optimizacion - Caminos - EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #f97316;
+            --accent-glow: rgba(249, 115, 22, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+        }
+
+        .header-content { max-width: 900px; margin: 0 auto; }
+
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--text-secondary); }
+        .breadcrumb a:hover { color: var(--text-primary); text-decoration: none; }
+
+        .path-label {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .header .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 650px; }
+
+        .main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+        .intro {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .intro h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+        .intro p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .intro p:last-child { margin-bottom: 0; }
+
+        .key-concepts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+        .concept {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid rgba(249, 115, 22, 0.3);
+            color: var(--text-primary);
+        }
+
+        .journey { position: relative; }
+
+        .journey::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+        }
+
+        .stop { position: relative; padding-left: 60px; margin-bottom: 2rem; }
+        .stop:last-child { margin-bottom: 0; }
+
+        .stop-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .stop-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .stop-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+
+        .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .stop-title { font-size: 1.125rem; font-weight: 600; }
+
+        .stop-lab {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.25rem;
+        }
+
+        .stop-description { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+
+        .stop-connection {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .stop-connection strong { color: var(--accent); }
+
+        .stop-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .stop-link:hover { text-decoration: none; filter: brightness(1.1); transform: translateX(4px); }
+
+        .summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .summary h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .summary p { color: var(--text-secondary); font-size: 0.9rem; font-style: italic; }
+
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer a { color: var(--text-secondary); font-size: 0.875rem; }
+        .footer a:hover { color: var(--text-primary); }
+
+        @media (max-width: 640px) {
+            .stop { padding-left: 50px; }
+            .journey::before { left: 15px; }
+            .stop-number { width: 32px; height: 32px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <nav class="breadcrumb">
+                <a href="../index.html">EigenLab</a> /
+                <a href="index.html">Caminos</a> /
+                Algoritmos
+            </nav>
+            <span class="path-label">Camino 4</span>
+            <h1>Algoritmos y Optimizacion</h1>
+            <p class="subtitle">
+                Procesos paso a paso que resuelven problemas.
+                Desde ordenar numeros hasta evolucionar soluciones.
+            </p>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="intro">
+            <h2>La idea central</h2>
+            <p>
+                Un algoritmo es una receta: pasos finitos que transforman un input en un output.
+                Pero la naturaleza tambien tiene "algoritmos": la evolucion optimiza fitness,
+                las redes neuronales minimizan error, los ecosistemas alcanzan equilibrios.
+            </p>
+            <p>
+                En este camino veras como las ideas de ordenamiento, busqueda y aprendizaje
+                aparecen tanto en codigo como en biologia. La computacion y la vida comparten
+                estrategias de optimizacion.
+            </p>
+            <div class="key-concepts">
+                <span class="concept">Complejidad O(n)</span>
+                <span class="concept">Busqueda</span>
+                <span class="concept">Optimizacion</span>
+                <span class="concept">Aprendizaje</span>
+                <span class="concept">Evolucion</span>
+            </div>
+        </section>
+
+        <div class="journey">
+            <!-- Stop 1: Bubble Sort -->
+            <div class="stop">
+                <div class="stop-number">1</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Bubble Sort</h3>
+                        <span class="stop-lab">Computation Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        El algoritmo de ordenamiento mas simple: comparar pares adyacentes e intercambiar
+                        si estan desordenados. Lento (O(n²)), pero su simplicidad lo hace perfecto para
+                        entender que significa "algoritmo".
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Patron clave:</strong> Iteracion + comparacion + intercambio.
+                        Cada pasada "burbujea" el elemento mas grande hacia su posicion final.
+                        Visualizar el proceso revela la estructura del algoritmo.
+                    </div>
+                    <a href="../../Computation/Computation Lab/bubble-sort-race.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 2: BST -->
+            <div class="stop">
+                <div class="stop-number">2</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Arbol de Busqueda Binaria</h3>
+                        <span class="stop-lab">Computation Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Estructura que mantiene orden mientras permite insercion y busqueda eficientes.
+                        En cada nodo: menores a la izquierda, mayores a la derecha.
+                        Busqueda en O(log n) — mucho mejor que O(n).
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con Bubble Sort:</strong> Ambos resuelven el problema de
+                        organizar datos. Bubble Sort ordena una lista; el BST mantiene orden dinamico.
+                        Diferentes estructuras para diferentes necesidades.
+                    </div>
+                    <a href="../../Computation/Computation Lab/binary-search-tree.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 3: Perceptron -->
+            <div class="stop">
+                <div class="stop-number">3</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Perceptron</h3>
+                        <span class="stop-lab">Computation Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        La neurona artificial mas simple. Toma inputs, los multiplica por pesos,
+                        suma, y aplica un umbral. Aprende ajustando pesos segun errores.
+                        Puede clasificar datos linealmente separables.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con BST:</strong> El BST organiza datos en el espacio;
+                        el perceptron divide el espacio con un hiperplano. Ambos son formas
+                        de estructurar informacion, pero el perceptron aprende la estructura
+                        de los datos en lugar de imponerla.
+                    </div>
+                    <a href="../../Computation/Computation Lab/perceptron-playground.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 4: Algoritmo genetico -->
+            <div class="stop">
+                <div class="stop-number">4</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Algoritmo Genetico</h3>
+                        <span class="stop-lab">Biology Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Optimizacion inspirada en la evolucion. Poblacion de soluciones, seleccion
+                        de las mejores, cruce y mutacion para generar descendencia.
+                        Encuentra soluciones a problemas donde no hay formula directa.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con el perceptron:</strong> Ambos son algoritmos de
+                        aprendizaje/optimizacion. El perceptron usa gradiente descendente;
+                        el algoritmo genetico usa seleccion natural. Diferentes estrategias
+                        para navegar espacios de soluciones.
+                    </div>
+                    <a href="../../Biology/Biology Visual Lab/genetic-algorithm.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 5: Lotka-Volterra -->
+            <div class="stop">
+                <div class="stop-number">5</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Lotka-Volterra (Depredador-Presa)</h3>
+                        <span class="stop-lab">Biology Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Modelo de dinamica poblacional. Las presas crecen exponencialmente,
+                        los depredadores las comen, luego los depredadores mueren por falta
+                        de presas. Oscilaciones perpetuas — un "algoritmo" ecologico de regulacion.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Sintesis final:</strong> Lotka-Volterra es un "algoritmo" que la
+                        naturaleza ejecuta continuamente. No hay programador, pero el sistema
+                        "computa" un equilibrio dinamico. La evolucion, el aprendizaje neuronal
+                        y la ecologia son formas de computacion natural.
+                    </div>
+                    <a href="../../Biology/Biology Visual Lab/lotka-volterra.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <section class="summary">
+            <h2>Lo que conecta estas simulaciones</h2>
+            <p>
+                "Ordenar, buscar, aprender, evolucionar, equilibrar — son estrategias
+                para resolver problemas. La computacion y la biologia convergen:
+                ambas optimizan, ambas procesan informacion, ambas encuentran soluciones."
+            </p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <a href="states.html">← Anterior: Estados</a>
+        <a href="emergence.html">Siguiente: Emergencia →</a>
+    </footer>
+</body>
+</html>

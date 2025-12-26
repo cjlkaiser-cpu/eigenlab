@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Regulacion Genica — Guia · Biochem Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(236, 72, 153, 0.1); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); } .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; } .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .section { margin-top: 1rem; }
+
+        /* Experiments */
+        .experiments { margin-top: 1.5rem; }
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-bottom: 1rem; }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { background: var(--accent); color: white; width: 1.5rem; height: 1.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 600; }
+        .experiment-title { font-weight: 600; font-size: 0.95rem; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypothesis p { margin: 0.25rem 0 0; color: var(--text-primary); }
+
+        /* Connections */
+        .connections { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 1rem; }
+        .connection { display: flex; align-items: flex-start; gap: 0.75rem; padding: 0.875rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); text-decoration: none; transition: all 0.2s; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); }
+        .connection-icon { width: 2rem; height: 2rem; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 0.875rem; flex-shrink: 0; }
+        .connection-icon.icon-biochem { background: rgba(236, 72, 153, 0.15); }
+        .connection-icon.icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .connection-icon.icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .connection-icon.icon-chemistry { background: rgba(6, 182, 212, 0.15); }
+        .connection-text { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); }
+        .connection-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Limitations */
+        .limitations { background: var(--bg-panel); border: 1px dashed var(--border); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { margin-top: 0; font-size: 0.85rem; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(168, 85, 247, 0.1)); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { margin-top: 0; }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.75rem; border-radius: 0.375rem; font-size: 0.8rem; color: var(--text-secondary); text-decoration: none; transition: all 0.2s; }
+        .guide-nav a:hover { color: var(--accent); background: var(--accent-dim); }
+        .guide-nav .next { margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Biochem Visual Lab</a> / Regulacion Genica</nav>
+                <h1>Regulacion Genica — Guia</h1>
+                <div class="subtitle">Control de la expresion de genes</div>
+            </div>
+            <a href="../regulacion-genica.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es la regulacion genica?</div>
+                <p class="lead">La <span class="em">regulacion genica</span> controla cuando, donde y cuanto se expresa cada gen. Permite que celulas con el mismo DNA tengan funciones completamente distintas — una neurona y un hepatocito comparten genoma pero expresan programas diferentes.</p>
+                <div class="chips"><span class="chip">Activadores</span><span class="chip">Represores</span><span class="chip">Operones</span><span class="chip">Enhancers</span></div>
+                <div class="callout"><p><strong>Operon lac (Jacob & Monod, 1961):</strong> Modelo clasico de regulacion en E. coli. Premio Nobel 1965. Demostro que los genes pueden encenderse y apagarse en respuesta al ambiente.</p></div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Niveles de control</div>
+                <ul>
+                    <li><strong>Cromatina:</strong> Acetilacion (activa), metilacion (silencia)</li>
+                    <li><strong>Transcripcion:</strong> Factores de transcripcion, enhancers</li>
+                    <li><strong>Post-transcripcion:</strong> miRNA, splicing alternativo</li>
+                    <li><strong>Traduccion:</strong> uORFs, IRES, riboswitches</li>
+                    <li><strong>Post-traduccion:</strong> Fosforilacion, ubiquitinacion</li>
+                </ul>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Regulacion en Procariotas</h2>
+                <ul>
+                    <li><strong>Operones:</strong> Genes co-regulados bajo un promotor</li>
+                    <li><strong>lac operon:</strong> Inducible por lactosa (catabolico)</li>
+                    <li><strong>trp operon:</strong> Reprimible por triptofano (biosintetico)</li>
+                    <li><strong>Ventaja:</strong> Respuesta rapida (~minutos) a cambios ambientales</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Regulacion en Eucariotas</h2>
+                <ul>
+                    <li><strong>Enhancers:</strong> Actuan a distancia (hasta 1 Mb)</li>
+                    <li><strong>Silencers:</strong> Reprimen transcripcion</li>
+                    <li><strong>Epigenetica:</strong> Cambios heredables sin alterar secuencia</li>
+                    <li><strong>Combinatoria:</strong> Multiples factores = control fino</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="experiments">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">1</span>
+                    <span class="experiment-title">Logica del operon lac</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>El operon lac funciona como una compuerta logica AND: solo se expresa cuando hay lactosa presente Y la glucosa esta ausente (bajo cAMP).</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Condicion basal: sin lactosa, sin glucosa — observa represion por LacI</li>
+                    <li>Anade lactosa: observa que alolactosa libera al represor</li>
+                    <li>Anade glucosa (con lactosa presente): observa represion catabolitica (bajo cAMP)</li>
+                    <li>Construye tabla de verdad: Glucosa/Lactosa → Expresion (Si/No)</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Verifica que el operon solo alcanza maxima expresion con lactosa y sin glucosa. Esto demuestra la jerarquia metabolica: la bacteria prefiere glucosa sobre lactosa por ser energeticamente mas eficiente.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">2</span>
+                    <span class="experiment-title">Dinamica de induccion</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>El tiempo de respuesta a la adicion de inductor (lactosa) depende de la concentracion inicial de represor: mas represor = respuesta mas lenta pero mas estricta.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>Simula con nivel basal de represor LacI — mide tiempo hasta 50% de expresion maxima</li>
+                    <li>Aumenta la expresion de LacI (mutante constitutivo del gen lacI)</li>
+                    <li>Disminuye LacI (delecion parcial) — observa expresion basal "leaky"</li>
+                    <li>Grafica tiempo de respuesta vs. concentracion de represor</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Relaciona con el concepto de "ruido" en expresion genica. Un control mas estricto (mas represor) reduce expresion basal pero enlentece la respuesta — hay un trade-off entre precision y velocidad.</p>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-header">
+                    <span class="experiment-number">3</span>
+                    <span class="experiment-title">Feedback positivo y biestabilidad</span>
+                </div>
+                <div class="hypothesis">
+                    <span class="hypothesis-label">Hipotesis</span>
+                    <p>Un circuito con feedback positivo (donde el producto del gen aumenta su propia transcripcion) puede generar dos estados estables: completamente ON o completamente OFF.</p>
+                </div>
+                <h3>Procedimiento</h3>
+                <ol>
+                    <li>En el operon lac, la permeasa LacY importa mas lactosa → mas induccion</li>
+                    <li>Comienza con baja concentracion de lactosa externa — ve si el sistema se enciende</li>
+                    <li>Aumenta gradualmente lactosa — encuentra el umbral de activacion</li>
+                    <li>Ahora reduce lactosa desde estado activo — encuentra umbral de apagado</li>
+                </ol>
+                <h3>Analisis</h3>
+                <p>Si los umbrales de encendido y apagado son diferentes, hay histeresis — el sistema "recuerda" su estado previo. Esto es una forma de memoria celular sin epigenetica.</p>
+            </div>
+        </section>
+
+        <section class="card section">
+            <div class="kicker">Conexiones interdisciplinarias</div>
+            <h2 style="margin-top: 0.5rem;">Este concepto aparece en otras simulaciones</h2>
+            <div class="connections">
+                <a href="transcripcion.html" class="connection">
+                    <span class="connection-icon icon-biochem">📝</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Transcripcion</div>
+                        <div class="connection-desc">El promotor y factores de transcripcion son el punto de control primario</div>
+                    </div>
+                </a>
+                <a href="../../../Computation/Computation Lab/logic-gates-sandbox.html" class="connection">
+                    <span class="connection-icon icon-computation">⚡</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Compuertas Logicas</div>
+                        <div class="connection-desc">Operones como circuitos booleanos biologicos (AND, OR, NOT)</div>
+                    </div>
+                </a>
+                <a href="../../../Computation/Computation Lab/finite-automata.html" class="connection">
+                    <span class="connection-icon icon-computation">⚙️</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Automatas Finitos</div>
+                        <div class="connection-desc">Estados ON/OFF como maquina de estados biologica</div>
+                    </div>
+                </a>
+                <a href="../../../Biology/Biology Visual Lab/neurona.html" class="connection">
+                    <span class="connection-icon icon-biology">🧠</span>
+                    <div class="connection-text">
+                        <div class="connection-title">Hodgkin-Huxley</div>
+                        <div class="connection-desc">Feedback y biestabilidad en potenciales de accion</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <div class="limitations">
+            <h3>Limitaciones del modelo</h3>
+            <ul>
+                <li><strong>Simplicidad:</strong> El modelo lac es ideal; regulacion eucariota es ordenes de magnitud mas compleja</li>
+                <li><strong>Estocasticidad:</strong> No modela el ruido intrinseco de expresion a nivel de molecula individual</li>
+                <li><strong>Cromatina:</strong> Omite estructura 3D del genoma y compartimentalizacion nuclear</li>
+                <li><strong>Tiempo:</strong> No simula la dinamica real (minutos en procariotas, horas en eucariotas)</li>
+            </ul>
+        </div>
+
+        <div class="reflection">
+            <h3>Preguntas de reflexion</h3>
+            <ul>
+                <li>Por que crees que E. coli desarrolló un sistema tan sofisticado solo para decidir si usar lactosa?</li>
+                <li>Si todas tus celulas tienen el mismo DNA, como puede tu cuerpo tener ~200 tipos celulares diferentes?</li>
+                <li>Que ventajas y desventajas tiene un sistema de regulacion combinatoria vs. uno simple?</li>
+                <li>Como podria un circuito genetico sintetico con feedback positivo ser util en biotecnologia? Piensa en biosensores.</li>
+            </ul>
+        </div>
+
+        <nav class="guide-nav">
+            <a href="mutaciones.html" class="prev">← Mutaciones</a>
+            <a href="sintesis-proteinas.html" class="next">Sintesis de Proteinas →</a>
+        </nav>
+    </main>
+    <footer><a href="../../../_portal/index.html">EigenLab</a> — Biochem Visual Lab — Regulacion Genica</footer>
+</body>
+</html>

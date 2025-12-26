@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Genética Poblacional - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #06b6d4;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #22d3ee;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(34, 211, 238, 0.05));
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(6, 182, 212, 0.5);
+        }
+
+        .allele-A { color: #06b6d4; }
+        .allele-a { color: #f472b6; }
+        .genotype-AA { background: #06b6d4; }
+        .genotype-Aa { background: #8b5cf6; }
+        .genotype-aa { background: #f472b6; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Genética Poblacional</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-cyan-400 font-medium glow-text">Genética Poblacional</span>
+                            <span class="text-gray-600 text-sm ml-2">Hardy-Weinberg</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">p(<span class="allele-A">A</span>):</span>
+                        <span id="p-display" class="allele-A mono">0.50</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">q(<span class="allele-a">a</span>):</span>
+                        <span id="q-display" class="allele-a mono">0.50</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Gen:</span>
+                        <span id="gen-display" class="text-cyan-400 mono">0</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main population visualization -->
+            <div class="flex-1 relative">
+                <canvas id="population-canvas" class="w-full h-full"></canvas>
+
+                <!-- Legend overlay -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Genotipos</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full genotype-AA"></span>
+                            <span class="allele-A">AA</span>
+                            <span class="text-gray-500">homocigoto dominante</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full genotype-Aa"></span>
+                            <span class="text-violet-400">Aa</span>
+                            <span class="text-gray-500">heterocigoto</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full genotype-aa"></span>
+                            <span class="allele-a">aa</span>
+                            <span class="text-gray-500">homocigoto recesivo</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Equilibrium indicator -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Estado</div>
+                    <div id="state-display" class="text-cyan-400 font-medium">Equilibrio H-W</div>
+                    <div class="text-xs text-gray-600 mt-1" id="deviation-display">Desviación: 0%</div>
+                </div>
+            </div>
+
+            <!-- Frequency graph -->
+            <div class="h-48 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500">Frecuencias Alélicas vs Generaciones</span>
+                    <div class="flex gap-4 text-xs">
+                        <span class="allele-A">— p (A)</span>
+                        <span class="allele-a">— q (a)</span>
+                    </div>
+                </div>
+                <canvas id="graph-canvas" class="w-full h-32 bg-gray-900/50 rounded-lg"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El equilibrio de <span class="text-emerald-400">Hardy-Weinberg</span> (p² + 2pq + q² = 1) se mantiene sin seleccion, mutacion ni deriva. Poblaciones pequenas derivan al azar.
+                </p>
+                <a href="guides/genetica-poblacional.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: frecuencias, deriva, seleccion
+                </a>
+            </div>
+
+            <!-- Initial Frequency -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Frecuencia Alélica Inicial
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-cyan-500/20 allele-A">p</span>
+                        Frecuencia de A: <span id="p0-value" class="allele-A mono">0.50</span>
+                    </label>
+                    <input type="range" id="p0" min="0.01" max="0.99" step="0.01" value="0.5" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">q = 1 - p = <span id="q0-value" class="allele-a">0.50</span></div>
+                </div>
+            </div>
+
+            <!-- Population -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    Población
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Tamaño (N): <span id="n-value" class="text-violet-400 mono">100</span>
+                    </label>
+                    <input type="range" id="pop-size" min="10" max="500" step="10" value="100" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">N pequeño = más deriva genética</div>
+                </div>
+            </div>
+
+            <!-- Evolutionary Forces -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Fuerzas Evolutivas
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Coef. Selección (s): <span id="s-value" class="text-amber-400 mono">0.00</span>
+                    </label>
+                    <input type="range" id="selection" min="-0.5" max="0.5" step="0.01" value="0" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">s > 0: A favorecido | s < 0: a favorecido</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Dominancia (h): <span id="h-value" class="text-amber-400 mono">0.50</span>
+                    </label>
+                    <input type="range" id="dominance" min="0" max="1" step="0.1" value="0.5" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">h=0: A dominante | h=1: a dominante</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Tasa mutación (µ): <span id="mu-value" class="text-amber-400 mono">0.000</span>
+                    </label>
+                    <input type="range" id="mutation" min="0" max="0.01" step="0.001" value="0" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">A → a y a → A</div>
+                </div>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="drift-enabled" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-cyan-500">
+                        <span class="text-sm text-gray-400">Deriva genética</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Simulation -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-emerald-400 mono">1.0</span> gen/s
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="10" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2 mb-3">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        <span id="pause-text">Pausar</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+
+                <button id="next-gen-btn" class="w-full py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition">
+                    Siguiente Generación →
+                </button>
+            </div>
+
+            <!-- Presets -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Escenarios
+                </h3>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPreset('hw')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        H-W Puro
+                    </button>
+                    <button onclick="setPreset('drift')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Deriva Fuerte
+                    </button>
+                    <button onclick="setPreset('selection')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Selección
+                    </button>
+                    <button onclick="setPreset('balance')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Equilibrio
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-cyan-400 mb-3">Equilibrio Hardy-Weinberg</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>p + q = 1</div>
+                    <div class="mt-2">Frecuencias genotípicas:</div>
+                    <div class="pl-2"><span class="allele-A">AA</span>: p² = <span id="hw-AA">0.25</span></div>
+                    <div class="pl-2"><span class="text-violet-400">Aa</span>: 2pq = <span id="hw-Aa">0.50</span></div>
+                    <div class="pl-2"><span class="allele-a">aa</span>: q² = <span id="hw-aa">0.25</span></div>
+                </div>
+            </div>
+
+            <!-- Current Frequencies -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Frecuencias Actuales</h3>
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs allele-A">AA</span>
+                        <div class="flex-1 mx-3 h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-AA" class="h-full genotype-AA transition-all" style="width: 25%"></div>
+                        </div>
+                        <span id="freq-AA" class="text-xs mono text-gray-400">25%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs text-violet-400">Aa</span>
+                        <div class="flex-1 mx-3 h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-Aa" class="h-full genotype-Aa transition-all" style="width: 50%"></div>
+                        </div>
+                        <span id="freq-Aa" class="text-xs mono text-gray-400">50%</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-xs allele-a">aa</span>
+                        <div class="flex-1 mx-3 h-3 bg-gray-800 rounded-full overflow-hidden">
+                            <div id="bar-aa" class="h-full genotype-aa transition-all" style="width: 25%"></div>
+                        </div>
+                        <span id="freq-aa" class="text-xs mono text-gray-400">25%</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const popCanvas = document.getElementById('population-canvas');
+        const popCtx = popCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+
+        // Parameters
+        let p0 = 0.5;           // Initial frequency of A
+        let N = 100;            // Population size
+        let s = 0;              // Selection coefficient
+        let h = 0.5;            // Dominance coefficient
+        let mu = 0;             // Mutation rate
+        let driftEnabled = true;
+
+        // State
+        let p = 0.5;            // Current frequency of A
+        let generation = 0;
+        let paused = false;
+        let speed = 1;
+        let timeAccum = 0;
+
+        // Population of individuals
+        let individuals = [];
+
+        // History
+        const maxHistory = 300;
+        let pHistory = [];
+        let qHistory = [];
+
+        // Colors
+        const colorAA = '#06b6d4';
+        const colorAa = '#8b5cf6';
+        const coloraa = '#f472b6';
+
+        // Initialize
+        function init() {
+            resizeCanvases();
+            reset();
+        }
+
+        function resizeCanvases() {
+            popCanvas.width = popCanvas.offsetWidth * window.devicePixelRatio;
+            popCanvas.height = popCanvas.offsetHeight * window.devicePixelRatio;
+            popCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            graphCanvas.width = graphCanvas.offsetWidth * window.devicePixelRatio;
+            graphCanvas.height = graphCanvas.offsetHeight * window.devicePixelRatio;
+            graphCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function reset() {
+            p = p0;
+            generation = 0;
+            pHistory = [p];
+            qHistory = [1 - p];
+            timeAccum = 0;
+            generatePopulation();
+            updateDisplays();
+        }
+
+        function generatePopulation() {
+            individuals = [];
+            const w = popCanvas.offsetWidth;
+            const h = popCanvas.offsetHeight;
+
+            const q = 1 - p;
+            const freqAA = p * p;
+            const freqAa = 2 * p * q;
+            // freqaa = q * q
+
+            for (let i = 0; i < N; i++) {
+                const rand = Math.random();
+                let genotype;
+                if (rand < freqAA) genotype = 'AA';
+                else if (rand < freqAA + freqAa) genotype = 'Aa';
+                else genotype = 'aa';
+
+                individuals.push({
+                    genotype,
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 1,
+                    vy: (Math.random() - 0.5) * 1,
+                    size: 6 + Math.random() * 4
+                });
+            }
+        }
+
+        function nextGeneration() {
+            generation++;
+
+            // Calculate fitness values
+            const wAA = 1;
+            const wAa = 1 - h * s;
+            const waa = 1 - s;
+
+            // Current genotype frequencies
+            const q = 1 - p;
+            let freqAA = p * p;
+            let freqAa = 2 * p * q;
+            let freqaa = q * q;
+
+            // Apply selection
+            if (s !== 0) {
+                const meanFitness = freqAA * wAA + freqAa * wAa + freqaa * waa;
+                freqAA = (freqAA * wAA) / meanFitness;
+                freqAa = (freqAa * wAa) / meanFitness;
+                freqaa = (freqaa * waa) / meanFitness;
+            }
+
+            // Calculate new allele frequency
+            let newP = freqAA + freqAa / 2;
+
+            // Apply mutation
+            if (mu > 0) {
+                newP = newP * (1 - mu) + (1 - newP) * mu;
+            }
+
+            // Apply genetic drift (binomial sampling)
+            if (driftEnabled && N < 10000) {
+                // Binomial sampling: count of A alleles in 2N draws
+                let countA = 0;
+                for (let i = 0; i < 2 * N; i++) {
+                    if (Math.random() < newP) countA++;
+                }
+                newP = countA / (2 * N);
+            }
+
+            // Clamp
+            p = Math.max(0.001, Math.min(0.999, newP));
+
+            // Record history
+            pHistory.push(p);
+            qHistory.push(1 - p);
+            if (pHistory.length > maxHistory) {
+                pHistory.shift();
+                qHistory.shift();
+            }
+
+            // Regenerate population visualization
+            generatePopulation();
+            updateDisplays();
+        }
+
+        function updateDisplays() {
+            const q = 1 - p;
+
+            document.getElementById('p-display').textContent = p.toFixed(2);
+            document.getElementById('q-display').textContent = q.toFixed(2);
+            document.getElementById('gen-display').textContent = generation;
+
+            // Hardy-Weinberg expected
+            const hwAA = p * p;
+            const hwAa = 2 * p * q;
+            const hwaa = q * q;
+
+            document.getElementById('hw-AA').textContent = hwAA.toFixed(3);
+            document.getElementById('hw-Aa').textContent = hwAa.toFixed(3);
+            document.getElementById('hw-aa').textContent = hwaa.toFixed(3);
+
+            // Actual frequencies
+            const countAA = individuals.filter(i => i.genotype === 'AA').length;
+            const countAa = individuals.filter(i => i.genotype === 'Aa').length;
+            const countaa = individuals.filter(i => i.genotype === 'aa').length;
+
+            const freqAA = countAA / N;
+            const freqAa = countAa / N;
+            const freqaa = countaa / N;
+
+            document.getElementById('bar-AA').style.width = (freqAA * 100) + '%';
+            document.getElementById('bar-Aa').style.width = (freqAa * 100) + '%';
+            document.getElementById('bar-aa').style.width = (freqaa * 100) + '%';
+
+            document.getElementById('freq-AA').textContent = (freqAA * 100).toFixed(0) + '%';
+            document.getElementById('freq-Aa').textContent = (freqAa * 100).toFixed(0) + '%';
+            document.getElementById('freq-aa').textContent = (freqaa * 100).toFixed(0) + '%';
+
+            // State and deviation
+            const deviation = Math.abs(freqAA - hwAA) + Math.abs(freqAa - hwAa) + Math.abs(freqaa - hwaa);
+            document.getElementById('deviation-display').textContent = `Desviación: ${(deviation * 100).toFixed(1)}%`;
+
+            let state = 'Equilibrio H-W';
+            if (p < 0.05 || p > 0.95) state = 'Cerca de fijación';
+            if (p < 0.01) state = 'Alelo A casi perdido';
+            if (p > 0.99) state = 'Alelo A fijado';
+            if (s !== 0) state = 'Bajo selección';
+            if (driftEnabled && N < 50) state = 'Deriva fuerte';
+            document.getElementById('state-display').textContent = state;
+        }
+
+        function setPreset(name) {
+            switch (name) {
+                case 'hw':
+                    p0 = 0.5; N = 10000; s = 0; h = 0.5; mu = 0; driftEnabled = false;
+                    break;
+                case 'drift':
+                    p0 = 0.5; N = 20; s = 0; h = 0.5; mu = 0; driftEnabled = true;
+                    break;
+                case 'selection':
+                    p0 = 0.1; N = 100; s = 0.2; h = 0.5; mu = 0; driftEnabled = true;
+                    break;
+                case 'balance':
+                    p0 = 0.5; N = 100; s = 0.1; h = 0; mu = 0.001; driftEnabled = true;
+                    break;
+            }
+            updateSliders();
+            reset();
+        }
+
+        function updateSliders() {
+            document.getElementById('p0').value = p0;
+            document.getElementById('p0-value').textContent = p0.toFixed(2);
+            document.getElementById('q0-value').textContent = (1 - p0).toFixed(2);
+            document.getElementById('pop-size').value = N;
+            document.getElementById('n-value').textContent = N;
+            document.getElementById('selection').value = s;
+            document.getElementById('s-value').textContent = s.toFixed(2);
+            document.getElementById('dominance').value = h;
+            document.getElementById('h-value').textContent = h.toFixed(2);
+            document.getElementById('mutation').value = mu;
+            document.getElementById('mu-value').textContent = mu.toFixed(3);
+            document.getElementById('drift-enabled').checked = driftEnabled;
+        }
+
+        // Drawing
+        function draw() {
+            drawPopulation();
+            drawGraph();
+        }
+
+        function drawPopulation() {
+            const w = popCanvas.offsetWidth;
+            const h = popCanvas.offsetHeight;
+
+            popCtx.fillStyle = '#030712';
+            popCtx.fillRect(0, 0, w, h);
+
+            // Move individuals
+            individuals.forEach(ind => {
+                ind.vx += (Math.random() - 0.5) * 0.2;
+                ind.vy += (Math.random() - 0.5) * 0.2;
+                ind.vx *= 0.98;
+                ind.vy *= 0.98;
+                ind.x += ind.vx;
+                ind.y += ind.vy;
+
+                // Bounce off edges
+                if (ind.x < ind.size) { ind.x = ind.size; ind.vx *= -1; }
+                if (ind.x > w - ind.size) { ind.x = w - ind.size; ind.vx *= -1; }
+                if (ind.y < ind.size) { ind.y = ind.size; ind.vy *= -1; }
+                if (ind.y > h - ind.size) { ind.y = h - ind.size; ind.vy *= -1; }
+            });
+
+            // Draw individuals
+            individuals.forEach(ind => {
+                let color;
+                switch (ind.genotype) {
+                    case 'AA': color = colorAA; break;
+                    case 'Aa': color = colorAa; break;
+                    case 'aa': color = coloraa; break;
+                }
+
+                popCtx.fillStyle = color;
+                popCtx.beginPath();
+                popCtx.arc(ind.x, ind.y, ind.size, 0, Math.PI * 2);
+                popCtx.fill();
+
+                // Genotype label
+                popCtx.fillStyle = '#000';
+                popCtx.font = `${ind.size * 0.8}px JetBrains Mono`;
+                popCtx.textAlign = 'center';
+                popCtx.textBaseline = 'middle';
+                popCtx.fillText(ind.genotype.charAt(0), ind.x, ind.y);
+            });
+
+            // Punnett square preview
+            drawPunnettSquare(w - 120, 20, 100);
+        }
+
+        function drawPunnettSquare(x, y, size) {
+            const q = 1 - p;
+            const cellSize = size / 3;
+
+            popCtx.fillStyle = '#1f2937';
+            popCtx.fillRect(x, y, size, size);
+
+            // Grid lines
+            popCtx.strokeStyle = '#374151';
+            popCtx.lineWidth = 1;
+            for (let i = 1; i <= 2; i++) {
+                popCtx.beginPath();
+                popCtx.moveTo(x + i * cellSize, y);
+                popCtx.lineTo(x + i * cellSize, y + size);
+                popCtx.stroke();
+                popCtx.beginPath();
+                popCtx.moveTo(x, y + i * cellSize);
+                popCtx.lineTo(x + size, y + i * cellSize);
+                popCtx.stroke();
+            }
+
+            // Headers
+            popCtx.font = '10px JetBrains Mono';
+            popCtx.textAlign = 'center';
+            popCtx.textBaseline = 'middle';
+
+            popCtx.fillStyle = colorAA;
+            popCtx.fillText('A', x + cellSize * 1.5, y + cellSize * 0.5);
+            popCtx.fillStyle = coloraa;
+            popCtx.fillText('a', x + cellSize * 2.5, y + cellSize * 0.5);
+            popCtx.fillStyle = colorAA;
+            popCtx.fillText('A', x + cellSize * 0.5, y + cellSize * 1.5);
+            popCtx.fillStyle = coloraa;
+            popCtx.fillText('a', x + cellSize * 0.5, y + cellSize * 2.5);
+
+            // Cells with probabilities
+            const probs = [
+                [p * p, p * q],
+                [p * q, q * q]
+            ];
+            const labels = [['AA', 'Aa'], ['Aa', 'aa']];
+            const colors = [[colorAA, colorAa], [colorAa, coloraa]];
+
+            for (let i = 0; i < 2; i++) {
+                for (let j = 0; j < 2; j++) {
+                    const cx = x + (j + 1.5) * cellSize;
+                    const cy = y + (i + 1.5) * cellSize;
+
+                    popCtx.fillStyle = colors[i][j];
+                    popCtx.globalAlpha = 0.3;
+                    popCtx.fillRect(x + (j + 1) * cellSize + 1, y + (i + 1) * cellSize + 1, cellSize - 2, cellSize - 2);
+                    popCtx.globalAlpha = 1;
+
+                    popCtx.fillStyle = '#fff';
+                    popCtx.fillText(probs[i][j].toFixed(2), cx, cy);
+                }
+            }
+        }
+
+        function drawGraph() {
+            const w = graphCanvas.offsetWidth;
+            const h = graphCanvas.offsetHeight;
+
+            graphCtx.fillStyle = '#0a0a0a';
+            graphCtx.fillRect(0, 0, w, h);
+
+            // Grid
+            graphCtx.strokeStyle = '#1f2937';
+            graphCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = i * h / 4;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, y);
+                graphCtx.lineTo(w, y);
+                graphCtx.stroke();
+            }
+
+            // 0.5 line
+            graphCtx.strokeStyle = '#374151';
+            graphCtx.setLineDash([5, 5]);
+            graphCtx.beginPath();
+            graphCtx.moveTo(0, h / 2);
+            graphCtx.lineTo(w, h / 2);
+            graphCtx.stroke();
+            graphCtx.setLineDash([]);
+
+            if (pHistory.length < 2) return;
+
+            // Draw p (A)
+            graphCtx.strokeStyle = colorAA;
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            pHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - val * h;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Draw q (a)
+            graphCtx.strokeStyle = coloraa;
+            graphCtx.beginPath();
+            qHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - val * h;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Y-axis labels
+            graphCtx.fillStyle = '#6b7280';
+            graphCtx.font = '10px JetBrains Mono';
+            graphCtx.fillText('1.0', 5, 12);
+            graphCtx.fillText('0.5', 5, h / 2 + 4);
+            graphCtx.fillText('0.0', 5, h - 5);
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            if (!paused) {
+                timeAccum += dt * speed;
+                while (timeAccum >= 1) {
+                    nextGeneration();
+                    timeAccum -= 1;
+                }
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('p0').addEventListener('input', (e) => {
+            p0 = parseFloat(e.target.value);
+            document.getElementById('p0-value').textContent = p0.toFixed(2);
+            document.getElementById('q0-value').textContent = (1 - p0).toFixed(2);
+        });
+
+        document.getElementById('pop-size').addEventListener('input', (e) => {
+            N = parseInt(e.target.value);
+            document.getElementById('n-value').textContent = N;
+        });
+
+        document.getElementById('selection').addEventListener('input', (e) => {
+            s = parseFloat(e.target.value);
+            document.getElementById('s-value').textContent = s.toFixed(2);
+        });
+
+        document.getElementById('dominance').addEventListener('input', (e) => {
+            h = parseFloat(e.target.value);
+            document.getElementById('h-value').textContent = h.toFixed(2);
+        });
+
+        document.getElementById('mutation').addEventListener('input', (e) => {
+            mu = parseFloat(e.target.value);
+            document.getElementById('mu-value').textContent = mu.toFixed(3);
+        });
+
+        document.getElementById('drift-enabled').addEventListener('change', (e) => {
+            driftEnabled = e.target.checked;
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            paused = !paused;
+            document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', reset);
+
+        document.getElementById('next-gen-btn').addEventListener('click', () => {
+            nextGeneration();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                paused = !paused;
+                document.getElementById('pause-text').textContent = paused ? 'Reanudar' : 'Pausar';
+            } else if (e.code === 'KeyR') {
+                reset();
+            } else if (e.code === 'KeyN' || e.code === 'ArrowRight') {
+                nextGeneration();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // Start
+        init();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

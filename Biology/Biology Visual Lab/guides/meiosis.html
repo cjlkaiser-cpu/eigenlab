@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Meiosis — Guía · Biology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.15);
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: var(--accent-dim); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.75rem; }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 0 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border: 1px solid var(--accent); background: var(--accent-dim); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; position: relative; }
+        .experiment-number { position: absolute; top: -0.75rem; left: 1rem; background: var(--accent); color: var(--bg-primary); font-size: 0.7rem; font-weight: 600; padding: 0.25rem 0.75rem; border-radius: 9999px; }
+        .hypothesis { background: var(--accent-dim); border-left: 3px solid var(--accent); padding: 0.75rem 1rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .steps { counter-reset: step; list-style: none; padding-left: 0; margin-top: 0.75rem; }
+        .steps li { counter-increment: step; padding-left: 2rem; position: relative; margin: 0.5rem 0; }
+        .steps li::before { content: counter(step); position: absolute; left: 0; top: 0; width: 1.5rem; height: 1.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 50%; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; color: var(--accent); }
+
+        /* Connections */
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
+        .connection { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; transition: all 0.2s; display: block; }
+        .connection:hover { border-color: var(--accent); transform: translateY(-2px); text-decoration: none; }
+        .connection-icon { width: 2.5rem; height: 2.5rem; border-radius: 0.5rem; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; margin-bottom: 0.75rem; }
+        .connection-title { font-weight: 600; font-size: 0.85rem; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); }
+        .icon-biology { background: rgba(16, 185, 129, 0.15); }
+        .icon-math { background: rgba(249, 115, 22, 0.15); }
+        .icon-computation { background: rgba(59, 130, 246, 0.15); }
+        .icon-biochem { background: rgba(236, 72, 153, 0.15); }
+
+        /* Limitations */
+        .limitations { background: rgba(251, 191, 36, 0.1); border: 1px solid rgba(251, 191, 36, 0.3); border-radius: 0.5rem; padding: 1rem; margin-top: 1rem; }
+        .limitations h3 { color: #fbbf24; }
+        .limitations ul { margin-bottom: 0; }
+
+        /* Reflection */
+        .reflection { background: linear-gradient(135deg, var(--accent-dim), transparent); border: 1px solid var(--accent); border-radius: 0.5rem; padding: 1.25rem; margin-top: 1rem; }
+        .reflection h3 { color: var(--accent); margin-bottom: 0.75rem; }
+        .reflection ol { margin-bottom: 0; }
+        .reflection li { color: var(--text-primary); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; gap: 1rem; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; flex-direction: column; padding: 1rem; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; transition: all 0.2s; min-width: 150px; }
+        .guide-nav a:hover { border-color: var(--accent); text-decoration: none; }
+        .guide-nav .nav-label { font-size: 0.7rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; }
+        .guide-nav .nav-title { font-weight: 600; color: var(--text-primary); margin-top: 0.25rem; }
+        .guide-nav .next { text-align: right; margin-left: auto; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Biology Visual Lab</a>
+                    <span> / </span>
+                    <span>Meiosis</span>
+                </nav>
+                <h1>Meiosis — Guía</h1>
+                <div class="subtitle">División celular para gametos y variabilidad genética</div>
+            </div>
+            <a href="../meiosis.html" class="pill">
+                <span>▶</span>
+                <span>Abrir simulación</span>
+            </a>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">¿Qué es la meiosis?</div>
+                <p class="lead">
+                    La <span class="em">meiosis</span> produce cuatro células haploides (gametos)
+                    a partir de una célula diploide. Incluye <span class="em">dos divisiones</span> y genera
+                    variabilidad genética mediante crossing-over y segregación independiente.
+                </p>
+                <div class="chips">
+                    <span class="chip">Meiosis I</span>
+                    <span class="chip">Meiosis II</span>
+                    <span class="chip">Crossing-over</span>
+                    <span class="chip">Recombinación</span>
+                    <span class="chip">Gametos</span>
+                </div>
+                <div class="callout">
+                    <p><strong>Resultado:</strong> 1 célula (2n) → 4 células (n). Reduce la ploidía
+                    a la mitad y genera combinaciones genéticas únicas en cada gameto.</p>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Mitosis vs Meiosis</div>
+                <table style="width: 100%; font-size: 0.8rem; margin-top: 0.5rem;">
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.5rem 0; color: var(--text-secondary);"></td>
+                        <td style="padding: 0.5rem; font-weight: 600;">Mitosis</td>
+                        <td style="padding: 0.5rem; font-weight: 600; color: var(--accent);">Meiosis</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.5rem 0; color: var(--text-secondary);">Divisiones</td>
+                        <td style="padding: 0.5rem;">1</td>
+                        <td style="padding: 0.5rem;">2</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.5rem 0; color: var(--text-secondary);">Células hijas</td>
+                        <td style="padding: 0.5rem;">2 (2n)</td>
+                        <td style="padding: 0.5rem;">4 (n)</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid var(--border);">
+                        <td style="padding: 0.5rem 0; color: var(--text-secondary);">Genética</td>
+                        <td style="padding: 0.5rem;">Idénticas</td>
+                        <td style="padding: 0.5rem;">Diversas</td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 0.5rem 0; color: var(--text-secondary);">Función</td>
+                        <td style="padding: 0.5rem;">Crecimiento</td>
+                        <td style="padding: 0.5rem;">Reproducción</td>
+                    </tr>
+                </table>
+            </aside>
+        </section>
+
+        <!-- Meiosis I and II -->
+        <section class="two">
+            <div class="card">
+                <h2>Meiosis I (Reduccional)</h2>
+                <p>Separa <span class="em">cromosomas homólogos</span>. Reduce la ploidía de 2n a n.</p>
+                <ul>
+                    <li><strong>Profase I:</strong> Sinapsis, crossing-over, quiasmas</li>
+                    <li><strong>Metafase I:</strong> Bivalentes alineados en ecuador</li>
+                    <li><strong>Anafase I:</strong> Homólogos a polos opuestos</li>
+                    <li><strong>Telofase I:</strong> Dos células haploides (n)</li>
+                </ul>
+                <div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-panel); border-radius: 0.375rem; font-size: 0.8rem;">
+                    <strong>Clave:</strong> Cromátidas hermanas permanecen unidas
+                </div>
+            </div>
+            <div class="card">
+                <h2>Meiosis II (Ecuacional)</h2>
+                <p>Similar a mitosis. Separa <span class="em">cromátidas hermanas</span>.</p>
+                <ul>
+                    <li><strong>Profase II:</strong> Cromosomas se condensan</li>
+                    <li><strong>Metafase II:</strong> Alineación en ecuador</li>
+                    <li><strong>Anafase II:</strong> Cromátidas a polos opuestos</li>
+                    <li><strong>Telofase II:</strong> Cuatro gametos (n)</li>
+                </ul>
+                <div style="margin-top: 0.75rem; padding: 0.5rem; background: var(--bg-panel); border-radius: 0.375rem; font-size: 0.8rem;">
+                    <strong>Sin replicación:</strong> No hay fase S entre meiosis I y II
+                </div>
+            </div>
+        </section>
+
+        <!-- Variability Sources -->
+        <section class="card section">
+            <h2>Fuentes de Variabilidad Genética</h2>
+            <div class="two" style="margin-top: 0;">
+                <div>
+                    <ul>
+                        <li><strong>Crossing-over:</strong> Intercambio físico de segmentos entre cromátidas no hermanas</li>
+                        <li><strong>Segregación independiente:</strong> Distribución aleatoria de homólogos maternos/paternos</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Combinatoria:</strong> 2²³ = 8.4 millones de combinaciones (en humanos)</li>
+                        <li><strong>Fecundación:</strong> Unión de dos gametos únicos multiplica la variabilidad</li>
+                    </ul>
+                </div>
+            </div>
+            <div class="callout-accent" style="margin-top: 1rem;">
+                <strong>¿Por qué importa?</strong> La variabilidad genética es la materia prima de la evolución. Sin meiosis, no habría selección natural efectiva.
+            </div>
+        </section>
+
+        <!-- Experiments Section -->
+        <section class="section">
+            <h2>Experimentos guiados</h2>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 1</div>
+                <h3 style="margin-top: 0.5rem;">Identificar crossing-over</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Durante la profase I, los cromosomas homólogos intercambian segmentos físicos en puntos llamados quiasmas.</p>
+                </div>
+                <ol class="steps">
+                    <li>Observa la profase I — los homólogos se aparean (sinapsis)</li>
+                    <li>Identifica los puntos de cruce (quiasmas) donde las cromátidas intercambian</li>
+                    <li>Sigue un cromosoma a través de las divisiones</li>
+                    <li>Nota que el gameto final tiene partes de ambos homólogos originales</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> El crossing-over crea cromosomas "quimera" que nunca existieron en los padres — combinaciones genéticas completamente nuevas.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 2</div>
+                <h3 style="margin-top: 0.5rem;">Segregación independiente</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">La distribución de cada par de homólogos en anafase I es aleatoria e independiente de los demás pares.</p>
+                </div>
+                <ol class="steps">
+                    <li>Observa una célula con al menos 2 pares de cromosomas de diferentes colores</li>
+                    <li>Ejecuta meiosis múltiples veces con las mismas condiciones iniciales</li>
+                    <li>Anota cómo se distribuyen los cromosomas materno/paterno a cada polo</li>
+                    <li>Verifica que hay 2ⁿ combinaciones posibles (n = número de pares)</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> Esta es la base de la Segunda Ley de Mendel. Genes en cromosomas diferentes se heredan independientemente.
+                </div>
+            </div>
+
+            <div class="experiment">
+                <div class="experiment-number">Experimento 3</div>
+                <h3 style="margin-top: 0.5rem;">Simular no disyunción</h3>
+                <div class="hypothesis">
+                    <div class="hypothesis-label">Hipótesis</div>
+                    <p style="margin: 0.25rem 0 0; color: var(--text-primary);">Si los homólogos no se separan correctamente en anafase I, se producen gametos con número anormal de cromosomas.</p>
+                </div>
+                <ol class="steps">
+                    <li>Activa el modo de error (si disponible) o imagina qué pasaría</li>
+                    <li>Observa que un polo recibe ambos homólogos, el otro ninguno</li>
+                    <li>Sigue hasta el final: algunos gametos tienen n+1, otros n-1</li>
+                    <li>Reflexiona: ¿qué pasa si un gameto n+1 se fecunda?</li>
+                </ol>
+                <div class="callout-accent">
+                    <strong>¿Por qué importa?</strong> La trisomía 21 (síndrome de Down) ocurre cuando un gameto con 24 cromosomas (n+1) se une a uno normal (n=23).
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <h2>Conexiones interdisciplinarias</h2>
+            <div class="connections-grid">
+                <a href="mitosis.html" class="connection">
+                    <div class="connection-icon icon-biology">🧬</div>
+                    <div class="connection-title">Mitosis</div>
+                    <div class="connection-desc">División ecuacional sin reducción de ploidía ni recombinación.</div>
+                </a>
+                <a href="genetica-poblacional.html" class="connection">
+                    <div class="connection-icon icon-biology">🔬</div>
+                    <div class="connection-title">Genética Poblacional</div>
+                    <div class="connection-desc">La segregación meiótica determina las proporciones de Hardy-Weinberg.</div>
+                </a>
+                <a href="../../../Mathematics/Math Visual Lab/combinatoria.html" class="connection">
+                    <div class="connection-icon icon-math">📐</div>
+                    <div class="connection-title">Combinatoria</div>
+                    <div class="connection-desc">2ⁿ combinaciones posibles por segregación + crossing-over = variabilidad inmensa.</div>
+                </a>
+                <a href="evolucion.html" class="connection">
+                    <div class="connection-icon icon-biology">🌿</div>
+                    <div class="connection-title">Evolución</div>
+                    <div class="connection-desc">La variabilidad meiótica es la materia prima sobre la que actúa la selección natural.</div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Limitations -->
+        <section class="section">
+            <div class="limitations">
+                <h3>⚠️ Limitaciones de la simulación</h3>
+                <ul>
+                    <li><strong>Pocos cromosomas:</strong> Humanos tienen 23 pares; la simulación muestra solo algunos</li>
+                    <li><strong>Crossing-over simplificado:</strong> En realidad ocurren múltiples cruces por cromosoma</li>
+                    <li><strong>Sin ligamiento:</strong> No muestra que genes cercanos en el mismo cromosoma tienden a heredarse juntos</li>
+                    <li><strong>Espermatogénesis vs oogénesis:</strong> No muestra las diferencias entre formación de espermatozoides y óvulos</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Reflection -->
+        <section class="section">
+            <div class="reflection">
+                <h3>🔬 Preguntas de reflexión</h3>
+                <ol>
+                    <li>¿Por qué es esencial que los gametos sean haploides (n) en lugar de diploides (2n)?</li>
+                    <li>Si no hubiera crossing-over, ¿cuántas combinaciones genéticas diferentes podría producir un humano?</li>
+                    <li>¿Por qué la meiosis II no tiene crossing-over ni segregación independiente de homólogos?</li>
+                    <li>En la oogénesis, solo 1 de los 4 productos de meiosis se convierte en óvulo. ¿Por qué crees que es así?</li>
+                </ol>
+            </div>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="mitosis.html">
+                <span class="nav-label">← Anterior</span>
+                <span class="nav-title">Mitosis</span>
+            </a>
+            <a href="evolucion.html" class="next">
+                <span class="nav-label">Siguiente →</span>
+                <span class="nav-title">Evolución</span>
+            </a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Biology Visual Lab — Meiosis
+    </footer>
+</body>
+</html>

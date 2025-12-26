@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Música de las Esferas - Astronomy Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas { cursor: crosshair; }
+        .glow-text { text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #6366f1;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.05));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .planet-active {
+            box-shadow: 0 0 15px currentColor;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-indigo-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-indigo-400 font-medium">Música de las Esferas</span> - Exoplanetas Cantando
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Sistema: <span id="system-name" class="text-indigo-400">TRAPPIST-1</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Click en un planeta para silenciarlo · Espacio para pausar
+            </div>
+            <!-- Piano Roll -->
+            <div class="absolute bottom-4 right-96 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                <div class="text-xs text-gray-500 mb-2">Piano Roll</div>
+                <canvas id="piano-canvas" width="300" height="100"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-indigo-400 glow-text">Sistema Planetario</h2>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    La <span class="text-indigo-400">música de las esferas</span> asocia órbitas con armonía musical. Kepler (1619) asignó notas a planetas según velocidades orbitales.
+                </p>
+                <a href="guides/musica-esferas-moderna.html" class="mt-2 flex items-center gap-2 text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center">?</span>
+                    Guía: sonificación, Kepler, TRAPPIST-1
+                </a>
+            </div>
+
+            <!-- System Selection -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Sistema estelar:</label>
+                <select id="system-select" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <option value="trappist">TRAPPIST-1 (7 planetas)</option>
+                    <option value="solar">Sistema Solar</option>
+                    <option value="kepler">Kepler-90 (8 planetas)</option>
+                    <option value="custom">Personalizado</option>
+                </select>
+            </div>
+
+            <!-- Scale Selection -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Escala musical:</label>
+                <select id="scale-select" class="w-full bg-gray-900 border border-gray-700 rounded-lg px-3 py-2 text-sm">
+                    <option value="major">Mayor (alegre)</option>
+                    <option value="minor">Menor (melancólica)</option>
+                    <option value="pentatonic">Pentatónica</option>
+                    <option value="lydian">Lidia (Kepler original)</option>
+                    <option value="chromatic">Cromática</option>
+                    <option value="harmonic">Armónicos naturales</option>
+                </select>
+            </div>
+
+            <!-- Base Note -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Nota base:
+                    <span id="base-note-value" class="text-indigo-400 mono">C3</span>
+                </label>
+                <input type="range" id="base-note" min="36" max="72" step="1" value="48" class="w-full">
+            </div>
+
+            <!-- Time Scale -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad orbital:
+                    <span id="speed-value" class="text-cyan-400 mono">1.0</span>x
+                </label>
+                <input type="range" id="speed" min="0.1" max="5" step="0.1" value="1" class="w-full">
+            </div>
+
+            <!-- Volume -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen:
+                    <span id="volume-value" class="text-violet-400 mono">50</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" step="1" value="50" class="w-full">
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- Planet Controls -->
+            <h3 class="text-sm font-medium text-gray-300 mb-4">Planetas</h3>
+            <div id="planet-controls" class="space-y-2 mb-6">
+                <!-- Generated dynamically -->
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- Actions -->
+            <div class="space-y-2">
+                <button id="start-btn" class="w-full py-2 px-4 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="start-text">Iniciar Música</span>
+                </button>
+                <button id="reset-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                    Reiniciar Órbitas
+                </button>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4 mt-6">
+                <h3 class="text-sm font-medium text-indigo-400 mb-3">Harmonices Mundi</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        T² = a³ (Tercera Ley de Kepler)
+                    </div>
+                    <div class="text-gray-400">
+                        f<sub>n</sub> = f<sub>0</sub> · 2^(n/12)
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Johannes Kepler (1619) imaginó que los planetas producían música al orbitar el Sol.
+                    Aquí usamos datos reales de exoplanetas: los períodos orbitales determinan el ritmo,
+                    y las distancias determinan las notas.
+                </p>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <p class="text-xs text-gray-500">
+                        <strong>TRAPPIST-1</strong>: Sistema con 7 planetas rocosos en resonancia orbital casi perfecta - naturalmente armónico.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Current Chord -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Acorde Actual</h3>
+                <div id="current-chord" class="mono text-lg text-indigo-400">
+                    -
+                </div>
+                <div id="playing-notes" class="text-xs text-gray-500 mt-1">
+                    Notas activas: ninguna
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const pianoCanvas = document.getElementById('piano-canvas');
+        const pianoCtx = pianoCanvas.getContext('2d');
+
+        // Audio
+        let audioCtx = null;
+        let isPlaying = false;
+        const activeOscillators = new Map();
+
+        // Parameters
+        let speed = 1;
+        let volume = 0.5;
+        let baseNote = 48; // C3
+        let currentScale = 'major';
+
+        // Scales (semitones from root)
+        const scales = {
+            major: [0, 2, 4, 5, 7, 9, 11, 12],
+            minor: [0, 2, 3, 5, 7, 8, 10, 12],
+            pentatonic: [0, 2, 4, 7, 9, 12, 14, 16],
+            lydian: [0, 2, 4, 6, 7, 9, 11, 12], // Kepler's favorite
+            chromatic: [0, 1, 2, 3, 4, 5, 6, 7],
+            harmonic: [0, 12, 19, 24, 28, 31, 34, 36] // Natural harmonics
+        };
+
+        // Planetary systems data
+        const systems = {
+            trappist: {
+                name: 'TRAPPIST-1',
+                star: { radius: 0.12, color: '#ff6b6b' }, // Red dwarf
+                planets: [
+                    { name: 'b', period: 1.51, distance: 0.011, radius: 1.12, color: '#a78bfa' },
+                    { name: 'c', period: 2.42, distance: 0.015, radius: 1.10, color: '#818cf8' },
+                    { name: 'd', period: 4.05, distance: 0.021, radius: 0.77, color: '#6366f1' },
+                    { name: 'e', period: 6.10, distance: 0.028, radius: 0.92, color: '#4f46e5' },
+                    { name: 'f', period: 9.21, distance: 0.037, radius: 1.04, color: '#4338ca' },
+                    { name: 'g', period: 12.35, distance: 0.045, radius: 1.13, color: '#3730a3' },
+                    { name: 'h', period: 18.77, distance: 0.062, radius: 0.77, color: '#312e81' }
+                ]
+            },
+            solar: {
+                name: 'Sistema Solar',
+                star: { radius: 1, color: '#fbbf24' },
+                planets: [
+                    { name: 'Mercurio', period: 88, distance: 0.39, radius: 0.38, color: '#9ca3af' },
+                    { name: 'Venus', period: 225, distance: 0.72, radius: 0.95, color: '#fcd34d' },
+                    { name: 'Tierra', period: 365, distance: 1.0, radius: 1.0, color: '#3b82f6' },
+                    { name: 'Marte', period: 687, distance: 1.52, radius: 0.53, color: '#ef4444' },
+                    { name: 'Júpiter', period: 4333, distance: 5.2, radius: 11.2, color: '#f97316' },
+                    { name: 'Saturno', period: 10759, distance: 9.5, radius: 9.4, color: '#eab308' },
+                    { name: 'Urano', period: 30687, distance: 19.2, radius: 4.0, color: '#06b6d4' },
+                    { name: 'Neptuno', period: 60190, distance: 30.1, radius: 3.9, color: '#3b82f6' }
+                ]
+            },
+            kepler: {
+                name: 'Kepler-90',
+                star: { radius: 1.2, color: '#fef3c7' },
+                planets: [
+                    { name: 'b', period: 7.0, distance: 0.07, radius: 1.31, color: '#c4b5fd' },
+                    { name: 'c', period: 8.7, distance: 0.09, radius: 1.18, color: '#a78bfa' },
+                    { name: 'i', period: 14.4, distance: 0.12, radius: 1.32, color: '#8b5cf6' },
+                    { name: 'd', period: 59.7, distance: 0.32, radius: 2.88, color: '#7c3aed' },
+                    { name: 'e', period: 91.9, distance: 0.42, radius: 2.67, color: '#6d28d9' },
+                    { name: 'f', period: 124.9, distance: 0.48, radius: 2.89, color: '#5b21b6' },
+                    { name: 'g', period: 210.6, distance: 0.71, radius: 8.13, color: '#4c1d95' },
+                    { name: 'h', period: 331.6, distance: 1.01, radius: 11.32, color: '#3b0764' }
+                ]
+            }
+        };
+
+        let currentSystem = systems.trappist;
+        let planets = [];
+        let noteHistory = [];
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function initAudio() {
+            if (audioCtx) return;
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+
+        function midiToFreq(midi) {
+            return 440 * Math.pow(2, (midi - 69) / 12);
+        }
+
+        function midiToNote(midi) {
+            const notes = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const note = notes[midi % 12];
+            const octave = Math.floor(midi / 12) - 1;
+            return note + octave;
+        }
+
+        function getPlanetNote(planetIndex) {
+            const scale = scales[currentScale];
+            const noteIndex = planetIndex % scale.length;
+            const octaveOffset = Math.floor(planetIndex / scale.length) * 12;
+            return baseNote + scale[noteIndex] + octaveOffset;
+        }
+
+        function playNote(planetIndex) {
+            if (!audioCtx || !isPlaying) return;
+
+            const planet = planets[planetIndex];
+            if (!planet.active) return;
+
+            const midi = getPlanetNote(planetIndex);
+            const freq = midiToFreq(midi);
+
+            // Stop existing oscillator for this planet
+            if (activeOscillators.has(planetIndex)) {
+                const old = activeOscillators.get(planetIndex);
+                old.gain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.1);
+                setTimeout(() => {
+                    old.osc.stop();
+                    old.osc.disconnect();
+                }, 200);
+            }
+
+            // Create new oscillator
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+
+            // Add slight detune based on planet
+            osc.detune.value = (planetIndex - planets.length / 2) * 5;
+
+            gain.gain.setValueAtTime(0, audioCtx.currentTime);
+            gain.gain.linearRampToValueAtTime(volume * 0.3, audioCtx.currentTime + 0.05);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+
+            activeOscillators.set(planetIndex, { osc, gain });
+
+            // Add to note history
+            noteHistory.push({
+                time: Date.now(),
+                note: midi,
+                planet: planetIndex
+            });
+            if (noteHistory.length > 200) noteHistory.shift();
+
+            // Update display
+            updateChordDisplay();
+        }
+
+        function stopNote(planetIndex) {
+            if (!activeOscillators.has(planetIndex)) return;
+
+            const { osc, gain } = activeOscillators.get(planetIndex);
+            gain.gain.setTargetAtTime(0, audioCtx.currentTime, 0.2);
+            setTimeout(() => {
+                osc.stop();
+                osc.disconnect();
+                activeOscillators.delete(planetIndex);
+            }, 300);
+        }
+
+        function updateChordDisplay() {
+            const activeNotes = [];
+            activeOscillators.forEach((_, idx) => {
+                activeNotes.push(midiToNote(getPlanetNote(idx)));
+            });
+
+            document.getElementById('current-chord').textContent =
+                activeNotes.length > 0 ? activeNotes.join(' + ') : '-';
+            document.getElementById('playing-notes').textContent =
+                `Notas activas: ${activeNotes.length}`;
+        }
+
+        function initPlanets() {
+            planets = currentSystem.planets.map((p, i) => ({
+                ...p,
+                angle: Math.random() * Math.PI * 2,
+                active: true,
+                noteIndex: i,
+                wasInTriggerZone: false
+            }));
+
+            // Update planet controls
+            const container = document.getElementById('planet-controls');
+            container.innerHTML = '';
+
+            planets.forEach((planet, i) => {
+                const div = document.createElement('div');
+                div.className = 'flex items-center gap-2';
+                div.innerHTML = `
+                    <input type="checkbox" id="planet-${i}" checked
+                           class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-indigo-500">
+                    <div class="w-3 h-3 rounded-full" style="background: ${planet.color}"></div>
+                    <span class="text-xs text-gray-400">${planet.name}</span>
+                    <span class="text-xs mono text-gray-600 ml-auto">${midiToNote(getPlanetNote(i))}</span>
+                `;
+                container.appendChild(div);
+
+                div.querySelector('input').addEventListener('change', (e) => {
+                    planet.active = e.target.checked;
+                    if (!e.target.checked) {
+                        stopNote(i);
+                    }
+                });
+            });
+
+            document.getElementById('system-name').textContent = currentSystem.name;
+        }
+
+        function drawStar() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            const starRadius = 20 + currentSystem.star.radius * 15;
+
+            // Star glow
+            const glowGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, starRadius * 3);
+            glowGradient.addColorStop(0, currentSystem.star.color);
+            glowGradient.addColorStop(0.3, currentSystem.star.color + '80');
+            glowGradient.addColorStop(1, 'transparent');
+
+            ctx.fillStyle = glowGradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, starRadius * 3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Star body
+            ctx.fillStyle = currentSystem.star.color;
+            ctx.beginPath();
+            ctx.arc(cx, cy, starRadius, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawPlanets() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Calculate scale based on system
+            const maxDistance = Math.max(...currentSystem.planets.map(p => p.distance));
+            const orbitScale = Math.min(w, h) * 0.35 / maxDistance;
+
+            planets.forEach((planet, i) => {
+                const orbitRadius = planet.distance * orbitScale + 50;
+                const planetX = cx + Math.cos(planet.angle) * orbitRadius;
+                const planetY = cy + Math.sin(planet.angle) * orbitRadius;
+                const planetRadius = 4 + planet.radius * 2;
+
+                // Orbit path
+                ctx.strokeStyle = planet.active ? 'rgba(99, 102, 241, 0.2)' : 'rgba(99, 102, 241, 0.05)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, orbitRadius, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Trigger zone indicator (top of orbit)
+                const triggerAngle = -Math.PI / 2;
+                const triggerX = cx + Math.cos(triggerAngle) * orbitRadius;
+                const triggerY = cy + Math.sin(triggerAngle) * orbitRadius;
+
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.3)';
+                ctx.beginPath();
+                ctx.arc(triggerX, triggerY, 5, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Planet glow when active
+                if (activeOscillators.has(i)) {
+                    const glowGrad = ctx.createRadialGradient(planetX, planetY, 0, planetX, planetY, planetRadius * 3);
+                    glowGrad.addColorStop(0, planet.color + 'ff');
+                    glowGrad.addColorStop(0.5, planet.color + '40');
+                    glowGrad.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glowGrad;
+                    ctx.beginPath();
+                    ctx.arc(planetX, planetY, planetRadius * 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Planet body
+                ctx.fillStyle = planet.active ? planet.color : '#4b5563';
+                ctx.beginPath();
+                ctx.arc(planetX, planetY, planetRadius, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Planet label
+                if (planet.active) {
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.font = '10px Inter';
+                    ctx.fillText(planet.name, planetX + planetRadius + 5, planetY + 3);
+                }
+            });
+        }
+
+        function drawPianoRoll() {
+            const w = pianoCanvas.width;
+            const h = pianoCanvas.height;
+
+            pianoCtx.fillStyle = '#030712';
+            pianoCtx.fillRect(0, 0, w, h);
+
+            // Draw piano keys reference
+            const keyHeight = h / 12;
+            for (let i = 0; i < 12; i++) {
+                const isBlack = [1, 3, 6, 8, 10].includes(i);
+                pianoCtx.fillStyle = isBlack ? '#1f2937' : '#374151';
+                pianoCtx.fillRect(0, i * keyHeight, 20, keyHeight - 1);
+            }
+
+            // Draw note history
+            const now = Date.now();
+            noteHistory.forEach(note => {
+                const age = (now - note.time) / 1000;
+                if (age > 5) return;
+
+                const x = 25 + (1 - age / 5) * (w - 30);
+                const noteInOctave = note.note % 12;
+                const y = noteInOctave * keyHeight + keyHeight / 2;
+
+                const planet = planets[note.planet];
+                const alpha = Math.max(0, 1 - age / 2);
+
+                pianoCtx.fillStyle = planet ? planet.color + Math.round(alpha * 255).toString(16).padStart(2, '0') : '#6366f1';
+                pianoCtx.beginPath();
+                pianoCtx.arc(x, y, 4, 0, Math.PI * 2);
+                pianoCtx.fill();
+            });
+        }
+
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Stars background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 200; i++) {
+                const x = (i * 137.5) % w;
+                const y = (i * 97.3) % h;
+                ctx.beginPath();
+                ctx.arc(x, y, 0.5 + (i % 3) * 0.3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            drawStar();
+            drawPlanets();
+            drawPianoRoll();
+        }
+
+        function update(dt) {
+            if (!isPlaying) return;
+
+            const minPeriod = Math.min(...currentSystem.planets.map(p => p.period));
+
+            planets.forEach((planet, i) => {
+                // Update angle based on period
+                const angularVelocity = (2 * Math.PI) / (planet.period / minPeriod * 5);
+                planet.angle += angularVelocity * dt * speed;
+
+                // Normalize angle
+                planet.angle = planet.angle % (Math.PI * 2);
+
+                // Check if crossing trigger zone (top of orbit)
+                const triggerZone = Math.PI * 0.1;
+                const isInTriggerZone = Math.abs(planet.angle - (-Math.PI / 2 + Math.PI * 2) % (Math.PI * 2)) < triggerZone ||
+                                        Math.abs(planet.angle - (-Math.PI / 2)) < triggerZone;
+
+                if (isInTriggerZone && !planet.wasInTriggerZone) {
+                    playNote(i);
+
+                    // Schedule note off
+                    setTimeout(() => stopNote(i), 500 / speed);
+                }
+
+                planet.wasInTriggerZone = isInTriggerZone;
+            });
+        }
+
+        // Event listeners
+        document.getElementById('system-select').addEventListener('change', (e) => {
+            if (systems[e.target.value]) {
+                currentSystem = systems[e.target.value];
+                initPlanets();
+
+                // Stop all notes
+                activeOscillators.forEach((_, idx) => stopNote(idx));
+            }
+        });
+
+        document.getElementById('scale-select').addEventListener('change', (e) => {
+            currentScale = e.target.value;
+            initPlanets(); // Refresh note assignments
+        });
+
+        document.getElementById('base-note').addEventListener('input', (e) => {
+            baseNote = parseInt(e.target.value);
+            document.getElementById('base-note-value').textContent = midiToNote(baseNote);
+            initPlanets();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            volume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value;
+        });
+
+        document.getElementById('start-btn').addEventListener('click', () => {
+            initAudio();
+            isPlaying = !isPlaying;
+            document.getElementById('start-text').textContent = isPlaying ? 'Pausar' : 'Iniciar Música';
+
+            if (!isPlaying) {
+                // Stop all notes
+                activeOscillators.forEach((_, idx) => stopNote(idx));
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            planets.forEach(p => {
+                p.angle = Math.random() * Math.PI * 2;
+                p.wasInTriggerZone = false;
+            });
+            noteHistory = [];
+            activeOscillators.forEach((_, idx) => stopNote(idx));
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Check if clicked on a planet
+            const maxDistance = Math.max(...currentSystem.planets.map(p => p.distance));
+            const orbitScale = Math.min(w, h) * 0.35 / maxDistance;
+
+            planets.forEach((planet, i) => {
+                const orbitRadius = planet.distance * orbitScale + 50;
+                const planetX = cx + Math.cos(planet.angle) * orbitRadius;
+                const planetY = cy + Math.sin(planet.angle) * orbitRadius;
+
+                const dist = Math.sqrt((x - planetX) ** 2 + (y - planetY) ** 2);
+                if (dist < 20) {
+                    planet.active = !planet.active;
+                    document.getElementById(`planet-${i}`).checked = planet.active;
+                    if (!planet.active) stopNote(i);
+                }
+            });
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                initAudio();
+                isPlaying = !isPlaying;
+                document.getElementById('start-text').textContent = isPlaying ? 'Pausar' : 'Iniciar Música';
+
+                if (!isPlaying) {
+                    activeOscillators.forEach((_, idx) => stopNote(idx));
+                }
+            }
+        });
+
+        window.addEventListener('resize', initCanvas);
+
+        // Animation loop
+        let lastTime = 0;
+
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            update(dt);
+            draw();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        initCanvas();
+        initPlanets();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

@@ -1,0 +1,1883 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EigenLab - Donde las ecuaciones cobran vida</title>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-dark: #030712;
+            --bg-section: #0a0a0f;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-dim: #475569;
+
+            /* Paleta de disciplinas */
+            --physics-visual: #22c55e;
+            --physics-sound: #a855f7;
+            --chemistry: #06b6d4;
+            --biochemistry: #ec4899;
+            --biology: #10b981;
+            --geology: #d97706;
+            --mathematics: #f97316;
+            --astronomy: #6366f1;
+            --computation: #3b82f6;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            line-height: 1.7;
+            overflow-x: hidden;
+        }
+
+        .serif {
+            font-family: 'Playfair Display', serif;
+        }
+
+        .mono {
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           HERO SECTION
+           ═══════════════════════════════════════════════════════════════ */
+        .hero {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 10;
+            text-align: center;
+            padding: 0 20px;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 10vw, 7rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease forwards;
+        }
+
+        .hero-title span {
+            display: block;
+            font-size: 0.4em;
+            font-weight: 600;
+            letter-spacing: 0.3em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, var(--physics-visual), var(--chemistry), var(--astronomy), var(--mathematics));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5em;
+        }
+
+        .hero-subtitle {
+            font-size: clamp(1rem, 3vw, 1.5rem);
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.3s forwards;
+        }
+
+        .hero-stats {
+            display: flex;
+            justify-content: center;
+            gap: 3rem;
+            margin-top: 2rem;
+            opacity: 0;
+            animation: fadeInUp 1s ease 0.6s forwards;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-value {
+            font-size: 2.5rem;
+            font-weight: 300;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .hero-stat-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--text-dim);
+        }
+
+        .scroll-indicator {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-dim);
+            font-size: 0.75rem;
+            opacity: 0;
+            animation: fadeIn 1s ease 1.5s forwards, bounce 2s ease-in-out 2s infinite;
+        }
+
+        .scroll-indicator::after {
+            content: '↓';
+            font-size: 1.5rem;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(10px); }
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           DISCIPLINE SECTIONS
+           ═══════════════════════════════════════════════════════════════ */
+        .discipline-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .discipline-section:nth-child(even) {
+            flex-direction: row-reverse;
+        }
+
+        .discipline-visual {
+            flex: 1;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .discipline-visual canvas {
+            width: 100%;
+            height: 100%;
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .discipline-content {
+            flex: 1;
+            padding: 60px 80px;
+            max-width: 650px;
+        }
+
+        .discipline-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+
+        .discipline-name {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 300;
+            margin-bottom: 0.5rem;
+            line-height: 1.1;
+        }
+
+        .discipline-count {
+            font-size: 0.85rem;
+            color: var(--accent);
+            margin-bottom: 1.5rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .discipline-description {
+            color: var(--text-secondary);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .discipline-highlights {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-bottom: 2rem;
+        }
+
+        .discipline-highlights span {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 0.5rem 1rem;
+            border-radius: 9999px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .discipline-highlights span:hover {
+            background: var(--accent);
+            color: var(--bg-dark);
+            border-color: var(--accent);
+        }
+
+        .discipline-equation {
+            background: rgba(255,255,255,0.03);
+            border-left: 3px solid var(--accent);
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .discipline-equation .equation {
+            font-size: 1.3rem;
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .discipline-equation .explanation {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+        }
+
+        .discipline-cta {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 12px 32px;
+            background: var(--accent);
+            color: var(--bg-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .discipline-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 40px rgba(var(--accent-rgb), 0.3);
+        }
+
+        /* Section-specific colors */
+        .section-physics-visual { --accent: var(--physics-visual); --accent-rgb: 34, 197, 94; }
+        .section-physics-sound { --accent: var(--physics-sound); --accent-rgb: 168, 85, 247; }
+        .section-chemistry { --accent: var(--chemistry); --accent-rgb: 6, 182, 212; }
+        .section-biochemistry { --accent: var(--biochemistry); --accent-rgb: 236, 72, 153; }
+        .section-biology { --accent: var(--biology); --accent-rgb: 16, 185, 129; }
+        .section-geology { --accent: var(--geology); --accent-rgb: 217, 119, 6; }
+        .section-mathematics { --accent: var(--mathematics); --accent-rgb: 249, 115, 22; }
+        .section-astronomy { --accent: var(--astronomy); --accent-rgb: 99, 102, 241; }
+        .section-computation { --accent: var(--computation); --accent-rgb: 59, 130, 246; }
+
+        /* ═══════════════════════════════════════════════════════════════
+           BRIDGE SECTIONS (Conceptos transversales)
+           ═══════════════════════════════════════════════════════════════ */
+        .bridge-section {
+            min-height: 60vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            background: linear-gradient(180deg, rgba(3,7,18,0) 0%, rgba(15,15,30,1) 50%, rgba(3,7,18,0) 100%);
+            padding: 80px 40px;
+        }
+
+        .bridge-content {
+            max-width: 800px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .bridge-icon {
+            font-size: 1rem;
+            letter-spacing: 8px;
+            margin-bottom: 1.5rem;
+            opacity: 0.6;
+        }
+
+        .bridge-title {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 300;
+            margin-bottom: 1.5rem;
+            background: linear-gradient(135deg, var(--color-from), var(--color-to));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .bridge-description {
+            color: var(--text-secondary);
+            font-size: 1.15rem;
+            line-height: 1.8;
+            margin-bottom: 2rem;
+        }
+
+        .bridge-connections {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .bridge-connection {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-secondary);
+            transition: all 0.3s;
+        }
+
+        .bridge-connection:hover {
+            background: rgba(255,255,255,0.08);
+            transform: translateY(-3px);
+        }
+
+        .bridge-connection .from {
+            font-size: 0.75rem;
+            opacity: 0.6;
+        }
+
+        .bridge-connection .sim {
+            font-weight: 500;
+            color: var(--text-primary);
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           NAVIGATION DOTS
+           ═══════════════════════════════════════════════════════════════ */
+        .nav-dots {
+            position: fixed;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .nav-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.2);
+            cursor: pointer;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .nav-dot:hover,
+        .nav-dot.active {
+            transform: scale(1.5);
+        }
+
+        .nav-dot.active {
+            background: var(--dot-color, #fff);
+        }
+
+        .nav-dot::after {
+            content: attr(data-label);
+            position: absolute;
+            right: 20px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 0.65rem;
+            white-space: nowrap;
+            opacity: 0;
+            transition: opacity 0.3s;
+            color: var(--text-secondary);
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           FOOTER
+           ═══════════════════════════════════════════════════════════════ */
+        .footer {
+            padding: 100px 40px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.3;
+        }
+
+        .footer-content {
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-title {
+            font-size: clamp(2rem, 5vw, 3rem);
+            font-weight: 300;
+            margin-bottom: 1rem;
+        }
+
+        .footer-subtitle {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+            margin-bottom: 3rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin-bottom: 3rem;
+        }
+
+        .footer-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 12px 24px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+
+        .footer-links a:hover {
+            background: rgba(255,255,255,0.05);
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .footer-credits {
+            color: var(--text-dim);
+            font-size: 0.85rem;
+        }
+
+        /* ═══════════════════════════════════════════════════════════════
+           RESPONSIVE
+           ═══════════════════════════════════════════════════════════════ */
+        @media (max-width: 1024px) {
+            .discipline-section {
+                flex-direction: column !important;
+                min-height: auto;
+            }
+
+            .discipline-visual {
+                height: 50vh;
+                width: 100%;
+            }
+
+            .discipline-content {
+                padding: 40px 30px;
+                max-width: 100%;
+            }
+
+            .nav-dots {
+                display: none;
+            }
+
+            .hero-stats {
+                gap: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation Dots -->
+    <nav class="nav-dots" id="nav-dots">
+        <!-- Generated by JavaScript -->
+    </nav>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         HERO SECTION
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="hero" id="section-hero">
+        <canvas id="hero-canvas" class="hero-canvas"></canvas>
+        <div class="hero-content">
+            <h1 class="hero-title serif">
+                <span>EigenLab</span>
+                Donde las ecuaciones cobran vida
+            </h1>
+            <p class="hero-subtitle">
+                Un ecosistema de laboratorios virtuales. Cada simulación transforma conceptos científicos en experiencias interactivas.
+            </p>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-value serif">110+</div>
+                    <div class="hero-stat-label">Simulaciones</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value serif">9</div>
+                    <div class="hero-stat-label">Disciplinas</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-value serif">230+</div>
+                    <div class="hero-stat-label">Conexiones</div>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">Explora</div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         1. PHYSICS VISUAL LAB
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-physics-visual" id="section-physics-visual">
+        <div class="discipline-visual">
+            <canvas id="canvas-physics-visual"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">⚛</div>
+            <h2 class="discipline-name serif">Physics<br>Visual Lab</h2>
+            <div class="discipline-count">19 simulaciones</div>
+
+            <p class="discipline-description">
+                Desde péndulos hasta relatividad especial. Mecánica clásica, ondas, termodinámica
+                y los fundamentos que sostienen el universo. Visualiza lo que los libros
+                solo pueden describir.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Péndulo Doble</span>
+                <span>Interferencia</span>
+                <span>Gas Ideal</span>
+                <span>Relatividad</span>
+                <span>Difracción</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">d²θ/dt² = -(g/L)·sin(θ)</div>
+                <p class="explanation">
+                    La ecuación del péndulo simple. Parece inocente, pero para ángulos grandes
+                    el sin(θ) la hace no lineal. El péndulo doble va más allá: caos determinista.
+                </p>
+            </div>
+
+            <a href="../Physics/Physics Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         2. PHYSICS SOUND LAB
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-physics-sound" id="section-physics-sound">
+        <div class="discipline-visual">
+            <canvas id="canvas-physics-sound"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">♪</div>
+            <h2 class="discipline-name serif">Physics<br>Sound Lab</h2>
+            <div class="discipline-count">7+ experiencias generativas</div>
+
+            <p class="discipline-description">
+                La física hecha música. Síntesis de audio basada en modelos físicos reales:
+                cuerdas vibrantes, membranas, fluidos. Algoritmos que convierten ecuaciones
+                diferenciales en sonido.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Karplus-Strong</span>
+                <span>Síntesis Modal</span>
+                <span>Tonnetz</span>
+                <span>Granular</span>
+                <span>Navier-Stokes</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">y[n] = ½(y[n-L] + y[n-L-1])</div>
+                <p class="explanation">
+                    Karplus-Strong: un delay line con filtro paso-bajo. La física de la cuerda
+                    pulsada reducida a su esencia matemática. Simple, elegante, musical.
+                </p>
+            </div>
+
+            <a href="../Physics/Physics Sound Lab/generativos/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BRIDGE: Todo Vibra
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="bridge-section" style="--color-from: var(--physics-visual); --color-to: var(--biology);">
+        <div class="bridge-content">
+            <div class="bridge-icon">〰 〰 〰</div>
+            <h3 class="bridge-title serif">Todo vibra</h3>
+            <p class="bridge-description">
+                Las ondas son universales. Un péndulo oscila con la misma matemática que una neurona
+                dispara potenciales de acción. La ecuación de onda aparece en física, biología,
+                química, geología. El universo es vibración.
+            </p>
+            <div class="bridge-connections">
+                <a href="../Physics/Physics Visual Lab/pendulo-simple.html" class="bridge-connection">
+                    <div class="from">Physics</div>
+                    <div class="sim">Péndulo Simple</div>
+                </a>
+                <a href="../Biology/Biology Visual Lab/potencial-accion.html" class="bridge-connection">
+                    <div class="from">Biology</div>
+                    <div class="sim">Potencial de Acción</div>
+                </a>
+                <a href="../Geology/Geology Visual Lab/ondas-sismicas.html" class="bridge-connection">
+                    <div class="from">Geology</div>
+                    <div class="sim">Ondas Sísmicas</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         3. CHEMISTRY
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-chemistry" id="section-chemistry">
+        <div class="discipline-visual">
+            <canvas id="canvas-chemistry"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">⬡</div>
+            <h2 class="discipline-name serif">Chemistry<br>Visual Lab</h2>
+            <div class="discipline-count">17 simulaciones</div>
+
+            <p class="discipline-description">
+                Átomos, moléculas y reacciones. Desde orbitales atómicos hasta cinética química.
+                Visualiza la danza de electrones y comprende por qué los enlaces se forman
+                y se rompen.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Orbitales</span>
+                <span>VSEPR</span>
+                <span>Cinética</span>
+                <span>Equilibrio</span>
+                <span>pH</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">ψ(r,θ,φ) = R(r)·Y(θ,φ)</div>
+                <p class="explanation">
+                    La función de onda del átomo de hidrógeno. Producto de una parte radial
+                    y los armónicos esféricos. De aquí emergen los orbitales s, p, d, f.
+                </p>
+            </div>
+
+            <a href="../Chemistry/Chemistry Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         4. BIOCHEMISTRY
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-biochemistry" id="section-biochemistry">
+        <div class="discipline-visual">
+            <canvas id="canvas-biochemistry"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">🧬</div>
+            <h2 class="discipline-name serif">Biochemistry<br>Visual Lab</h2>
+            <div class="discipline-count">16 simulaciones</div>
+
+            <p class="discipline-description">
+                La química de la vida. ADN, proteínas, enzimas, metabolismo. Desde la doble hélice
+                hasta las rutas metabólicas que mantienen vivas las células. El dogma central
+                en movimiento.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>ADN</span>
+                <span>Transcripción</span>
+                <span>Traducción</span>
+                <span>Michaelis-Menten</span>
+                <span>Glucólisis</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">v = Vmax·[S] / (Km + [S])</div>
+                <p class="explanation">
+                    Michaelis-Menten: la cinética enzimática. Km es la afinidad, Vmax la velocidad
+                    máxima. Esta ecuación describe cómo las enzimas catalizan la vida.
+                </p>
+            </div>
+
+            <a href="../Biochemistry/Biochem Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         5. BIOLOGY
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-biology" id="section-biology">
+        <div class="discipline-visual">
+            <canvas id="canvas-biology"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">🦠</div>
+            <h2 class="discipline-name serif">Biology<br>Visual Lab</h2>
+            <div class="discipline-count">6 simulaciones</div>
+
+            <p class="discipline-description">
+                Vida en movimiento. Neuronas que disparan, poblaciones que evolucionan,
+                células que se dividen. Modelos matemáticos que capturan la esencia
+                de los sistemas vivos.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Hodgkin-Huxley</span>
+                <span>Lotka-Volterra</span>
+                <span>Hardy-Weinberg</span>
+                <span>Mitosis</span>
+                <span>Algoritmo Genético</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">C·dV/dt = I - gNa·m³h(V-ENa) - ...</div>
+                <p class="explanation">
+                    Hodgkin-Huxley: el modelo que les valió el Nobel. Describe cómo los canales
+                    iónicos generan el potencial de acción. Biología convertida en circuito eléctrico.
+                </p>
+            </div>
+
+            <a href="../Biology/Biology Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BRIDGE: Caos y Orden
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="bridge-section" style="--color-from: var(--physics-visual); --color-to: var(--mathematics);">
+        <div class="bridge-content">
+            <div class="bridge-icon">◈ ◇ ◈</div>
+            <h3 class="bridge-title serif">Caos y orden</h3>
+            <p class="bridge-description">
+                Sistemas deterministas con comportamiento impredecible. El péndulo doble es caótico.
+                El atractor de Lorenz también. Pequeñas diferencias iniciales, destinos completamente
+                distintos. El efecto mariposa es real, y es hermoso.
+            </p>
+            <div class="bridge-connections">
+                <a href="../Physics/Physics Visual Lab/pendulo-doble.html" class="bridge-connection">
+                    <div class="from">Physics</div>
+                    <div class="sim">Péndulo Doble</div>
+                </a>
+                <a href="../Mathematics/Math Visual Lab/atractor-lorenz.html" class="bridge-connection">
+                    <div class="from">Mathematics</div>
+                    <div class="sim">Atractor de Lorenz</div>
+                </a>
+                <a href="../Biology/Biology Visual Lab/lotka-volterra.html" class="bridge-connection">
+                    <div class="from">Biology</div>
+                    <div class="sim">Lotka-Volterra</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         6. GEOLOGY
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-geology" id="section-geology">
+        <div class="discipline-visual">
+            <canvas id="canvas-geology"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">🌋</div>
+            <h2 class="discipline-name serif">Geology<br>Visual Lab</h2>
+            <div class="discipline-count">6 simulaciones</div>
+
+            <p class="discipline-description">
+                El planeta como sistema dinámico. Placas tectónicas, volcanes, erosión,
+                estratigrafía. Procesos que ocurren en millones de años, comprimidos
+                en segundos de simulación.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Ondas Sísmicas</span>
+                <span>Volcanes</span>
+                <span>Tectónica</span>
+                <span>Erosión</span>
+                <span>Estratigrafía</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">∂²u/∂t² = c²·∂²u/∂x²</div>
+                <p class="explanation">
+                    La ecuación de onda. Las ondas P viajan más rápido que las S.
+                    Por eso en un terremoto primero sientes un temblor, luego el sacudón.
+                </p>
+            </div>
+
+            <a href="../Geology/Geology Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         7. MATHEMATICS
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-mathematics" id="section-mathematics">
+        <div class="discipline-visual">
+            <canvas id="canvas-mathematics"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">∞</div>
+            <h2 class="discipline-name serif">Mathematics<br>Visual Lab</h2>
+            <div class="discipline-count">34 simulaciones</div>
+
+            <p class="discipline-description">
+                El lenguaje del universo. Fractales, topología, atractores extraños,
+                arte generativo. Donde la abstracción se vuelve visual y la belleza
+                emerge de la estructura.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Mandelbrot</span>
+                <span>Lorenz</span>
+                <span>Julia</span>
+                <span>Möbius</span>
+                <span>Gray-Scott</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">zₙ₊₁ = zₙ² + c</div>
+                <p class="explanation">
+                    El conjunto de Mandelbrot. Una iteración simple que genera complejidad
+                    infinita. Zoom infinito, detalle infinito. Matemáticas puras.
+                </p>
+            </div>
+
+            <a href="../Mathematics/Math Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         BRIDGE: Gravedad Universal
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="bridge-section" style="--color-from: var(--physics-visual); --color-to: var(--astronomy);">
+        <div class="bridge-content">
+            <div class="bridge-icon">☉ ○ ●</div>
+            <h3 class="bridge-title serif">Gravedad universal</h3>
+            <p class="bridge-description">
+                La misma fuerza que te mantiene en el suelo gobierna las órbitas planetarias.
+                Newton lo unificó todo con una ecuación. Einstein lo reinterpretó como
+                curvatura del espacio-tiempo. La gravedad conecta escalas.
+            </p>
+            <div class="bridge-connections">
+                <a href="../Physics/Physics Visual Lab/caida-libre.html" class="bridge-connection">
+                    <div class="from">Physics</div>
+                    <div class="sim">Caída Libre</div>
+                </a>
+                <a href="../Astronomy/Astronomy Visual Lab/orbitas-kepler.html" class="bridge-connection">
+                    <div class="from">Astronomy</div>
+                    <div class="sim">Órbitas de Kepler</div>
+                </a>
+                <a href="../Astronomy/Astronomy Visual Lab/orbita-schwarzschild.html" class="bridge-connection">
+                    <div class="from">Astronomy</div>
+                    <div class="sim">Schwarzschild</div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         8. ASTRONOMY
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-astronomy" id="section-astronomy">
+        <div class="discipline-visual">
+            <canvas id="canvas-astronomy"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">✧</div>
+            <h2 class="discipline-name serif">Astronomy<br>Labs</h2>
+            <div class="discipline-count">9 simulaciones</div>
+
+            <p class="discipline-description">
+                El cosmos a tu alcance. Órbitas, estrellas, expansión del universo,
+                agujeros negros. Desde Kepler hasta la relatividad general.
+                La física en su escala más grandiosa.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Kepler</span>
+                <span>Hubble</span>
+                <span>Diagrama H-R</span>
+                <span>Schwarzschild</span>
+                <span>Redshift</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">T² = (4π²/GM)·a³</div>
+                <p class="explanation">
+                    Tercera ley de Kepler. El período orbital al cuadrado es proporcional
+                    al cubo del semieje mayor. De aquí se derivan las masas de estrellas y planetas.
+                </p>
+            </div>
+
+            <a href="../Astronomy/Astronomy Visual Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         9. COMPUTATION
+         ═══════════════════════════════════════════════════════════════ -->
+    <section class="discipline-section section-computation" id="section-computation">
+        <div class="discipline-visual">
+            <canvas id="canvas-computation"></canvas>
+        </div>
+        <div class="discipline-content">
+            <div class="discipline-icon">⟨⟩</div>
+            <h2 class="discipline-name serif">Computation<br>Lab</h2>
+            <div class="discipline-count">6 simulaciones</div>
+
+            <p class="discipline-description">
+                Algoritmos en acción. Estructuras de datos, ordenamiento, búsqueda,
+                autómatas finitos, redes neuronales. La ciencia de la computación
+                visualizada paso a paso.
+            </p>
+
+            <div class="discipline-highlights">
+                <span>Bubble Sort</span>
+                <span>BST</span>
+                <span>Logic Gates</span>
+                <span>Perceptrón</span>
+                <span>Autómatas</span>
+            </div>
+
+            <div class="discipline-equation">
+                <div class="equation mono">O(n log n) vs O(n²)</div>
+                <p class="explanation">
+                    La diferencia entre un buen algoritmo y uno malo. Con millones de datos,
+                    la complejidad algorítmica es la diferencia entre segundos y años.
+                </p>
+            </div>
+
+            <a href="../Computation/Computation Lab/index.html" class="discipline-cta">Explorar laboratorio →</a>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════════════════════
+         FOOTER
+         ═══════════════════════════════════════════════════════════════ -->
+    <footer class="footer" id="section-footer">
+        <canvas id="footer-canvas" class="footer-canvas"></canvas>
+        <div class="footer-content">
+            <h3 class="footer-title serif">El conocimiento es una red</h3>
+            <p class="footer-subtitle">
+                Todo está conectado. Explora el mapa de conexiones y descubre cómo
+                las disciplinas se entrelazan.
+            </p>
+            <div class="footer-links">
+                <a href="index.html">Portal Principal</a>
+                <a href="knowledge-graph.html">Mapa de Conexiones</a>
+                <a href="paths/index.html">Caminos de Aprendizaje</a>
+                <a href="../../eigenlab-instruments/showcase.html">Instrumentos Nativos</a>
+            </div>
+            <p class="footer-credits">
+                EigenLab · 110+ simulaciones · 9 disciplinas · HTML5 + Canvas + Web Audio<br>
+                <span class="mono" style="font-size: 0.75rem; opacity: 0.5;">Generado: 26 dic 2025</span>
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // CONFIGURATION
+        // ═══════════════════════════════════════════════════════════════
+        const COLORS = {
+            physicsVisual: '#22c55e',
+            physicsSound: '#a855f7',
+            chemistry: '#06b6d4',
+            biochemistry: '#ec4899',
+            biology: '#10b981',
+            geology: '#d97706',
+            mathematics: '#f97316',
+            astronomy: '#6366f1',
+            computation: '#3b82f6'
+        };
+
+        const sections = [
+            { id: 'section-hero', label: 'Inicio', color: '#fff' },
+            { id: 'section-physics-visual', label: 'Physics Visual', color: COLORS.physicsVisual },
+            { id: 'section-physics-sound', label: 'Physics Sound', color: COLORS.physicsSound },
+            { id: 'section-chemistry', label: 'Chemistry', color: COLORS.chemistry },
+            { id: 'section-biochemistry', label: 'Biochemistry', color: COLORS.biochemistry },
+            { id: 'section-biology', label: 'Biology', color: COLORS.biology },
+            { id: 'section-geology', label: 'Geology', color: COLORS.geology },
+            { id: 'section-mathematics', label: 'Mathematics', color: COLORS.mathematics },
+            { id: 'section-astronomy', label: 'Astronomy', color: COLORS.astronomy },
+            { id: 'section-computation', label: 'Computation', color: COLORS.computation }
+        ];
+
+        // ═══════════════════════════════════════════════════════════════
+        // NAVIGATION DOTS
+        // ═══════════════════════════════════════════════════════════════
+        const navDotsContainer = document.getElementById('nav-dots');
+        sections.forEach((section, index) => {
+            const dot = document.createElement('div');
+            dot.className = 'nav-dot' + (index === 0 ? ' active' : '');
+            dot.setAttribute('data-label', section.label);
+            dot.style.setProperty('--dot-color', section.color);
+            dot.onclick = () => {
+                document.getElementById(section.id).scrollIntoView({ behavior: 'smooth' });
+            };
+            navDotsContainer.appendChild(dot);
+        });
+
+        // Update active dot on scroll
+        const navDots = document.querySelectorAll('.nav-dot');
+        window.addEventListener('scroll', () => {
+            let current = 0;
+            sections.forEach((section, index) => {
+                const el = document.getElementById(section.id);
+                if (el) {
+                    const rect = el.getBoundingClientRect();
+                    if (rect.top <= window.innerHeight / 2) {
+                        current = index;
+                    }
+                }
+            });
+            navDots.forEach((dot, index) => {
+                dot.classList.toggle('active', index === current);
+            });
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // CANVAS SETUP
+        // ═══════════════════════════════════════════════════════════════
+        const canvases = {
+            hero: document.getElementById('hero-canvas'),
+            physicsVisual: document.getElementById('canvas-physics-visual'),
+            physicsSound: document.getElementById('canvas-physics-sound'),
+            chemistry: document.getElementById('canvas-chemistry'),
+            biochemistry: document.getElementById('canvas-biochemistry'),
+            biology: document.getElementById('canvas-biology'),
+            geology: document.getElementById('canvas-geology'),
+            mathematics: document.getElementById('canvas-mathematics'),
+            astronomy: document.getElementById('canvas-astronomy'),
+            computation: document.getElementById('canvas-computation'),
+            footer: document.getElementById('footer-canvas')
+        };
+
+        function resizeCanvases() {
+            Object.values(canvases).forEach(canvas => {
+                if (canvas && canvas.parentElement) {
+                    canvas.width = canvas.parentElement.offsetWidth * 2;
+                    canvas.height = canvas.parentElement.offsetHeight * 2;
+                }
+            });
+        }
+        resizeCanvases();
+        window.addEventListener('resize', resizeCanvases);
+
+        // ═══════════════════════════════════════════════════════════════
+        // HERO - Partículas multidisciplina
+        // ═══════════════════════════════════════════════════════════════
+        const heroParticles = [];
+        const colorArray = Object.values(COLORS);
+        for (let i = 0; i < 150; i++) {
+            heroParticles.push({
+                x: Math.random(),
+                y: Math.random(),
+                size: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 0.0003,
+                speedY: (Math.random() - 0.5) * 0.0003,
+                color: colorArray[Math.floor(Math.random() * colorArray.length)]
+            });
+        }
+
+        function drawHero() {
+            const canvas = canvases.hero;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Update and draw particles
+            heroParticles.forEach(p => {
+                p.x += p.speedX;
+                p.y += p.speedY;
+                if (p.x < 0) p.x = 1;
+                if (p.x > 1) p.x = 0;
+                if (p.y < 0) p.y = 1;
+                if (p.y > 1) p.y = 0;
+
+                ctx.fillStyle = p.color + '80';
+                ctx.beginPath();
+                ctx.arc(p.x * w, p.y * h, p.size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Connect nearby particles
+            ctx.lineWidth = 1;
+            for (let i = 0; i < heroParticles.length; i++) {
+                for (let j = i + 1; j < heroParticles.length; j++) {
+                    const dx = heroParticles[i].x - heroParticles[j].x;
+                    const dy = heroParticles[i].y - heroParticles[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 0.08) {
+                        ctx.strokeStyle = heroParticles[i].color + '20';
+                        ctx.beginPath();
+                        ctx.moveTo(heroParticles[i].x * w, heroParticles[i].y * h);
+                        ctx.lineTo(heroParticles[j].x * w, heroParticles[j].y * h);
+                        ctx.stroke();
+                    }
+                }
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // PHYSICS VISUAL - Péndulo doble caótico
+        // ═══════════════════════════════════════════════════════════════
+        let pendulum = {
+            a1: Math.PI / 2, a2: Math.PI / 2,
+            v1: 0, v2: 0,
+            l1: 0.35, l2: 0.35,
+            m1: 1, m2: 1,
+            trail: []
+        };
+
+        function drawPhysicsVisual() {
+            const canvas = canvases.physicsVisual;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const g = 9.81;
+            const dt = 0.05;
+
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.3)';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w * 0.5, cy = h * 0.35;
+            const scale = Math.min(w, h) * 0.8;
+
+            // Physics (simplified)
+            const { a1, a2, v1, v2, l1, l2, m1, m2 } = pendulum;
+            const num1 = -g * (2 * m1 + m2) * Math.sin(a1);
+            const num2 = -m2 * g * Math.sin(a1 - 2 * a2);
+            const num3 = -2 * Math.sin(a1 - a2) * m2;
+            const num4 = v2 * v2 * l2 + v1 * v1 * l1 * Math.cos(a1 - a2);
+            const den = l1 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+            const acc1 = (num1 + num2 + num3 * num4) / den;
+
+            const num5 = 2 * Math.sin(a1 - a2);
+            const num6 = v1 * v1 * l1 * (m1 + m2);
+            const num7 = g * (m1 + m2) * Math.cos(a1);
+            const num8 = v2 * v2 * l2 * m2 * Math.cos(a1 - a2);
+            const den2 = l2 * (2 * m1 + m2 - m2 * Math.cos(2 * a1 - 2 * a2));
+            const acc2 = (num5 * (num6 + num7 + num8)) / den2;
+
+            pendulum.v1 += acc1 * dt;
+            pendulum.v2 += acc2 * dt;
+            pendulum.a1 += pendulum.v1 * dt;
+            pendulum.a2 += pendulum.v2 * dt;
+
+            // Damping
+            pendulum.v1 *= 0.9995;
+            pendulum.v2 *= 0.9995;
+
+            // Positions
+            const x1 = cx + Math.sin(pendulum.a1) * l1 * scale;
+            const y1 = cy + Math.cos(pendulum.a1) * l1 * scale;
+            const x2 = x1 + Math.sin(pendulum.a2) * l2 * scale;
+            const y2 = y1 + Math.cos(pendulum.a2) * l2 * scale;
+
+            pendulum.trail.push({ x: x2, y: y2 });
+            if (pendulum.trail.length > 500) pendulum.trail.shift();
+
+            // Draw trail
+            if (pendulum.trail.length > 1) {
+                ctx.strokeStyle = COLORS.physicsVisual + '60';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                pendulum.trail.forEach((p, i) => {
+                    if (i === 0) ctx.moveTo(p.x, p.y);
+                    else ctx.lineTo(p.x, p.y);
+                });
+                ctx.stroke();
+            }
+
+            // Draw rods
+            ctx.strokeStyle = '#ffffff40';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(cx, cy);
+            ctx.lineTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+
+            // Draw masses
+            ctx.fillStyle = COLORS.physicsVisual;
+            ctx.beginPath();
+            ctx.arc(x1, y1, 15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(x2, y2, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Pivot
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // PHYSICS SOUND - Ondas de audio
+        // ═══════════════════════════════════════════════════════════════
+        function drawPhysicsSound() {
+            const canvas = canvases.physicsSound;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+
+            // Multiple waves
+            for (let wave = 0; wave < 5; wave++) {
+                const freq = 1 + wave * 0.7;
+                const amp = (5 - wave) / 5;
+
+                ctx.strokeStyle = `rgba(168, 85, 247, ${0.2 + amp * 0.3})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+
+                for (let x = 0; x < w; x += 3) {
+                    const y = cy + Math.sin((x / w) * Math.PI * 4 * freq + time * (2 + wave)) * h * 0.15 * amp;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            }
+
+            // Central pulse
+            const pulseR = (Math.sin(time * 3) * 0.5 + 0.5) * 100 + 50;
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, pulseR);
+            gradient.addColorStop(0, COLORS.physicsSound + '40');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, pulseR, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // CHEMISTRY - Orbitales atómicos
+        // ═══════════════════════════════════════════════════════════════
+        function drawChemistry() {
+            const canvas = canvases.chemistry;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+
+            // Nucleus
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+            gradient.addColorStop(0, COLORS.chemistry);
+            gradient.addColorStop(1, COLORS.chemistry + '00');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Electron orbits (p orbitals style)
+            const orbits = [
+                { rx: 150, ry: 60, rotation: 0, speed: 2 },
+                { rx: 150, ry: 60, rotation: Math.PI / 3, speed: 2.5 },
+                { rx: 150, ry: 60, rotation: -Math.PI / 3, speed: 1.8 },
+                { rx: 220, ry: 90, rotation: Math.PI / 6, speed: 1.5 }
+            ];
+
+            orbits.forEach((orbit, i) => {
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(orbit.rotation);
+
+                // Orbital path
+                ctx.strokeStyle = COLORS.chemistry + '30';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(0, 0, orbit.rx, orbit.ry, 0, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Electron
+                const angle = time * orbit.speed + i * Math.PI / 2;
+                const ex = Math.cos(angle) * orbit.rx;
+                const ey = Math.sin(angle) * orbit.ry;
+
+                ctx.fillStyle = COLORS.chemistry;
+                ctx.beginPath();
+                ctx.arc(ex, ey, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow
+                const glow = ctx.createRadialGradient(ex, ey, 0, ex, ey, 25);
+                glow.addColorStop(0, COLORS.chemistry + '60');
+                glow.addColorStop(1, 'transparent');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(ex, ey, 25, 0, Math.PI * 2);
+                ctx.fill();
+
+                ctx.restore();
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // BIOCHEMISTRY - ADN helix
+        // ═══════════════════════════════════════════════════════════════
+        function drawBiochemistry() {
+            const canvas = canvases.biochemistry;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2;
+            const helixWidth = 120;
+            const basePairs = 20;
+
+            for (let i = 0; i < basePairs; i++) {
+                const y = (i / basePairs) * h;
+                const phase = time + i * 0.3;
+
+                // Strand positions
+                const x1 = cx + Math.sin(phase) * helixWidth;
+                const x2 = cx + Math.sin(phase + Math.PI) * helixWidth;
+                const depth1 = Math.cos(phase);
+                const depth2 = Math.cos(phase + Math.PI);
+
+                // Base pair connection
+                if (depth1 > 0 || depth2 > 0) {
+                    ctx.strokeStyle = COLORS.biochemistry + '40';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x1, y);
+                    ctx.lineTo(x2, y);
+                    ctx.stroke();
+                }
+
+                // Nucleotides
+                const colors = ['#22c55e', '#ef4444', '#3b82f6', '#eab308'];
+
+                if (depth1 > -0.3) {
+                    ctx.fillStyle = colors[i % 4];
+                    ctx.globalAlpha = 0.5 + depth1 * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(x1, y, 12 + depth1 * 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                if (depth2 > -0.3) {
+                    ctx.fillStyle = colors[(i + 2) % 4];
+                    ctx.globalAlpha = 0.5 + depth2 * 0.5;
+                    ctx.beginPath();
+                    ctx.arc(x2, y, 12 + depth2 * 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+            }
+
+            // Backbone lines
+            ctx.strokeStyle = COLORS.biochemistry;
+            ctx.lineWidth = 4;
+            ctx.beginPath();
+            for (let i = 0; i < basePairs; i++) {
+                const y = (i / basePairs) * h;
+                const phase = time + i * 0.3;
+                const x = cx + Math.sin(phase) * helixWidth;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+
+            ctx.beginPath();
+            for (let i = 0; i < basePairs; i++) {
+                const y = (i / basePairs) * h;
+                const phase = time + i * 0.3 + Math.PI;
+                const x = cx + Math.sin(phase) * helixWidth;
+                if (i === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            }
+            ctx.stroke();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // BIOLOGY - Neurona con potencial de acción
+        // ═══════════════════════════════════════════════════════════════
+        function drawBiology() {
+            const canvas = canvases.biology;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cy = h / 2;
+
+            // Axon
+            ctx.strokeStyle = COLORS.biology + '60';
+            ctx.lineWidth = 40;
+            ctx.beginPath();
+            ctx.moveTo(w * 0.1, cy);
+            ctx.lineTo(w * 0.9, cy);
+            ctx.stroke();
+
+            // Action potential wave
+            const waveSpeed = 0.3;
+            const wavePos = ((time * waveSpeed) % 1);
+
+            for (let x = 0; x < w; x += 5) {
+                const xNorm = x / w;
+                const dist = xNorm - wavePos;
+
+                if (dist > -0.15 && dist < 0.15) {
+                    // Action potential spike
+                    const spike = Math.exp(-dist * dist * 200) * 150;
+                    const gradient = ctx.createRadialGradient(x, cy - spike / 2, 0, x, cy, spike);
+                    gradient.addColorStop(0, COLORS.biology);
+                    gradient.addColorStop(1, 'transparent');
+                    ctx.fillStyle = gradient;
+                    ctx.beginPath();
+                    ctx.arc(x, cy, spike / 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Soma (cell body)
+            const somaGradient = ctx.createRadialGradient(w * 0.1, cy, 0, w * 0.1, cy, 80);
+            somaGradient.addColorStop(0, COLORS.biology);
+            somaGradient.addColorStop(1, COLORS.biology + '40');
+            ctx.fillStyle = somaGradient;
+            ctx.beginPath();
+            ctx.arc(w * 0.1, cy, 60, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Dendrites
+            ctx.strokeStyle = COLORS.biology + '80';
+            ctx.lineWidth = 4;
+            for (let i = 0; i < 5; i++) {
+                const angle = -Math.PI / 2 + (i - 2) * 0.4;
+                ctx.beginPath();
+                ctx.moveTo(w * 0.1 + Math.cos(angle) * 60, cy + Math.sin(angle) * 60);
+                ctx.lineTo(w * 0.1 + Math.cos(angle) * 120, cy + Math.sin(angle) * 100);
+                ctx.stroke();
+            }
+
+            // Synaptic terminal
+            ctx.fillStyle = COLORS.biology;
+            ctx.beginPath();
+            ctx.arc(w * 0.9, cy, 30, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // GEOLOGY - Capas terrestres y ondas sísmicas
+        // ═══════════════════════════════════════════════════════════════
+        function drawGeology() {
+            const canvas = canvases.geology;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+            const maxR = Math.min(w, h) * 0.4;
+
+            // Earth layers
+            const layers = [
+                { r: 1.0, color: '#422006', name: 'Corteza' },
+                { r: 0.85, color: '#92400e', name: 'Manto superior' },
+                { r: 0.55, color: '#dc2626', name: 'Manto inferior' },
+                { r: 0.35, color: '#f97316', name: 'Núcleo externo' },
+                { r: 0.15, color: '#fbbf24', name: 'Núcleo interno' }
+            ];
+
+            layers.forEach(layer => {
+                ctx.fillStyle = layer.color;
+                ctx.beginPath();
+                ctx.arc(cx, cy, layer.r * maxR, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Seismic waves
+            const waveCount = 3;
+            for (let i = 0; i < waveCount; i++) {
+                const phase = (time * 0.5 + i / waveCount) % 1;
+                const r = phase * maxR * 1.5;
+
+                ctx.strokeStyle = `rgba(217, 119, 6, ${1 - phase})`;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(cx, cy, r, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Epicenter
+            const pulse = Math.sin(time * 5) * 0.3 + 0.7;
+            ctx.fillStyle = COLORS.geology;
+            ctx.beginPath();
+            ctx.arc(cx, cy * 0.5, 10 * pulse, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Wave paths (P and S)
+            ctx.strokeStyle = '#ef444480';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 5]);
+            ctx.beginPath();
+            ctx.moveTo(cx, cy * 0.5);
+            ctx.quadraticCurveTo(cx + maxR * 0.5, cy, cx + maxR, cy + maxR * 0.5);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // MATHEMATICS - Atractor de Lorenz
+        // ═══════════════════════════════════════════════════════════════
+        const lorenz = { x: 0.1, y: 0, z: 0, trail: [] };
+        const sigma = 10, rho = 28, beta = 8/3;
+
+        function drawMathematics() {
+            const canvas = canvases.mathematics;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = 'rgba(10, 10, 15, 0.1)';
+            ctx.fillRect(0, 0, w, h);
+
+            const dt = 0.005;
+            const steps = 5;
+
+            for (let i = 0; i < steps; i++) {
+                const dx = sigma * (lorenz.y - lorenz.x);
+                const dy = lorenz.x * (rho - lorenz.z) - lorenz.y;
+                const dz = lorenz.x * lorenz.y - beta * lorenz.z;
+
+                lorenz.x += dx * dt;
+                lorenz.y += dy * dt;
+                lorenz.z += dz * dt;
+
+                lorenz.trail.push({
+                    x: w / 2 + lorenz.x * 12,
+                    y: h / 2 + (lorenz.z - 25) * 12
+                });
+            }
+
+            if (lorenz.trail.length > 2000) {
+                lorenz.trail = lorenz.trail.slice(-2000);
+            }
+
+            // Draw trail with gradient
+            if (lorenz.trail.length > 1) {
+                ctx.lineWidth = 2;
+                for (let i = 1; i < lorenz.trail.length; i++) {
+                    const alpha = i / lorenz.trail.length;
+                    ctx.strokeStyle = `rgba(249, 115, 22, ${alpha * 0.8})`;
+                    ctx.beginPath();
+                    ctx.moveTo(lorenz.trail[i-1].x, lorenz.trail[i-1].y);
+                    ctx.lineTo(lorenz.trail[i].x, lorenz.trail[i].y);
+                    ctx.stroke();
+                }
+            }
+
+            // Current point
+            const last = lorenz.trail[lorenz.trail.length - 1];
+            if (last) {
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(last.x, last.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ASTRONOMY - Sistema solar simplificado
+        // ═══════════════════════════════════════════════════════════════
+        function drawAstronomy() {
+            const canvas = canvases.astronomy;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2, cy = h / 2;
+
+            // Stars background
+            for (let i = 0; i < 100; i++) {
+                const sx = (Math.sin(i * 127.1) * 0.5 + 0.5) * w;
+                const sy = (Math.cos(i * 311.7) * 0.5 + 0.5) * h;
+                const brightness = Math.sin(time + i) * 0.3 + 0.7;
+                ctx.fillStyle = `rgba(255, 255, 255, ${brightness * 0.5})`;
+                ctx.beginPath();
+                ctx.arc(sx, sy, 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Sun
+            const sunGradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 50);
+            sunGradient.addColorStop(0, '#fbbf24');
+            sunGradient.addColorStop(0.7, '#f97316');
+            sunGradient.addColorStop(1, '#f9731600');
+            ctx.fillStyle = sunGradient;
+            ctx.beginPath();
+            ctx.arc(cx, cy, 50, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Planets
+            const planets = [
+                { r: 100, size: 8, color: '#94a3b8', speed: 4 },
+                { r: 150, size: 12, color: '#fbbf24', speed: 2.5 },
+                { r: 210, size: 10, color: '#3b82f6', speed: 1.5 },
+                { r: 280, size: 15, color: '#ef4444', speed: 1 },
+                { r: 360, size: 25, color: '#d97706', speed: 0.4 }
+            ];
+
+            planets.forEach((planet, i) => {
+                // Orbit
+                ctx.strokeStyle = COLORS.astronomy + '20';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.arc(cx, cy, planet.r, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Planet position (elliptical)
+                const angle = time * planet.speed + i * 1.5;
+                const px = cx + Math.cos(angle) * planet.r;
+                const py = cy + Math.sin(angle) * planet.r * 0.4;
+
+                // Planet
+                ctx.fillStyle = planet.color;
+                ctx.beginPath();
+                ctx.arc(px, py, planet.size, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow
+                const glow = ctx.createRadialGradient(px, py, 0, px, py, planet.size * 2);
+                glow.addColorStop(0, planet.color + '40');
+                glow.addColorStop(1, 'transparent');
+                ctx.fillStyle = glow;
+                ctx.beginPath();
+                ctx.arc(px, py, planet.size * 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // COMPUTATION - Árbol binario de búsqueda
+        // ═══════════════════════════════════════════════════════════════
+        function drawComputation() {
+            const canvas = canvases.computation;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#0a0a0f';
+            ctx.fillRect(0, 0, w, h);
+
+            // BST structure
+            const nodes = [
+                { x: 0.5, y: 0.15, val: 50, left: 1, right: 2 },
+                { x: 0.25, y: 0.35, val: 25, left: 3, right: 4 },
+                { x: 0.75, y: 0.35, val: 75, left: 5, right: 6 },
+                { x: 0.125, y: 0.55, val: 12 },
+                { x: 0.375, y: 0.55, val: 37 },
+                { x: 0.625, y: 0.55, val: 62 },
+                { x: 0.875, y: 0.55, val: 87 }
+            ];
+
+            // Highlight search path
+            const searchPath = [0, 2, 5]; // Searching for ~60
+            const pathProgress = (time % 3) / 3;
+            const currentNode = Math.floor(pathProgress * searchPath.length);
+
+            // Draw edges
+            ctx.strokeStyle = COLORS.computation + '40';
+            ctx.lineWidth = 3;
+            nodes.forEach((node, i) => {
+                if (node.left !== undefined) {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x * w, node.y * h);
+                    ctx.lineTo(nodes[node.left].x * w, nodes[node.left].y * h);
+                    ctx.stroke();
+                }
+                if (node.right !== undefined) {
+                    ctx.beginPath();
+                    ctx.moveTo(node.x * w, node.y * h);
+                    ctx.lineTo(nodes[node.right].x * w, nodes[node.right].y * h);
+                    ctx.stroke();
+                }
+            });
+
+            // Draw nodes
+            nodes.forEach((node, i) => {
+                const isInPath = searchPath.slice(0, currentNode + 1).includes(i);
+                const isCurrent = searchPath[currentNode] === i;
+
+                // Glow for path
+                if (isInPath) {
+                    const glow = ctx.createRadialGradient(node.x * w, node.y * h, 0, node.x * w, node.y * h, 50);
+                    glow.addColorStop(0, COLORS.computation + '40');
+                    glow.addColorStop(1, 'transparent');
+                    ctx.fillStyle = glow;
+                    ctx.beginPath();
+                    ctx.arc(node.x * w, node.y * h, 50, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Node circle
+                ctx.fillStyle = isCurrent ? '#fff' : (isInPath ? COLORS.computation : '#1e293b');
+                ctx.strokeStyle = COLORS.computation;
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(node.x * w, node.y * h, 30, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Value
+                ctx.fillStyle = isCurrent ? COLORS.computation : '#fff';
+                ctx.font = 'bold 24px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(node.val.toString(), node.x * w, node.y * h);
+            });
+
+            // Search indicator
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Buscando: 62', w / 2, h * 0.85);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // FOOTER - Knowledge graph preview
+        // ═══════════════════════════════════════════════════════════════
+        function drawFooter() {
+            const canvas = canvases.footer;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const time = Date.now() / 1000;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Random nodes representing the knowledge graph
+            const nodes = [];
+            for (let i = 0; i < 30; i++) {
+                nodes.push({
+                    x: (Math.sin(i * 73.1 + time * 0.1) * 0.3 + 0.5),
+                    y: (Math.cos(i * 127.3 + time * 0.1) * 0.3 + 0.5),
+                    color: colorArray[i % colorArray.length]
+                });
+            }
+
+            // Connections
+            ctx.lineWidth = 1;
+            for (let i = 0; i < nodes.length; i++) {
+                for (let j = i + 1; j < nodes.length; j++) {
+                    const dx = nodes[i].x - nodes[j].x;
+                    const dy = nodes[i].y - nodes[j].y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < 0.2) {
+                        ctx.strokeStyle = nodes[i].color + '20';
+                        ctx.beginPath();
+                        ctx.moveTo(nodes[i].x * w, nodes[i].y * h);
+                        ctx.lineTo(nodes[j].x * w, nodes[j].y * h);
+                        ctx.stroke();
+                    }
+                }
+            }
+
+            // Nodes
+            nodes.forEach(node => {
+                ctx.fillStyle = node.color + '60';
+                ctx.beginPath();
+                ctx.arc(node.x * w, node.y * h, 4, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // ANIMATION LOOP
+        // ═══════════════════════════════════════════════════════════════
+        function animate() {
+            drawHero();
+            drawPhysicsVisual();
+            drawPhysicsSound();
+            drawChemistry();
+            drawBiochemistry();
+            drawBiology();
+            drawGeology();
+            drawMathematics();
+            drawAstronomy();
+            drawComputation();
+            drawFooter();
+            requestAnimationFrame(animate);
+        }
+
+        animate();
+    </script>
+</body>
+</html>

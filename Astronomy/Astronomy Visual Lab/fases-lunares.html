@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fases Lunares - Astronomy Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        .glow-text { text-shadow: 0 0 20px rgba(250, 204, 21, 0.5); }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #fbbf24;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(250, 204, 21, 0.1), rgba(251, 191, 36, 0.05));
+            border: 1px solid rgba(250, 204, 21, 0.3);
+        }
+        .phase-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: inline-block;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-yellow-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-yellow-400 font-medium">Fases</span> Lunares
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Día: <span id="day-display" class="text-yellow-400">0</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Arrastra la Luna · Rueda para velocidad
+            </div>
+            <!-- Moon View -->
+            <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-4">
+                <div class="text-xs text-gray-500 mb-2 text-center">Vista desde la Tierra</div>
+                <canvas id="moon-view" width="120" height="120"></canvas>
+                <div class="text-center mt-2">
+                    <div id="phase-name" class="text-yellow-400 font-medium">Luna Nueva</div>
+                    <div id="illumination" class="text-xs text-gray-500 mono">0%</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-yellow-400 glow-text">Ciclo Lunar</h2>
+
+            <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-5">
+                <p class="text-[11px] text-gray-400 leading-relaxed">
+                    Las <span class="text-indigo-400">fases lunares</span> resultan de la posición Sol-Tierra-Luna. El ciclo sinódico dura ~29.5 días, de luna nueva a luna nueva.
+                </p>
+                <a href="guides/fases-lunares.html" class="mt-2 flex items-center gap-2 text-[10px] text-indigo-400 hover:text-indigo-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-indigo-500/20 flex items-center justify-center">?</span>
+                    Guía: 8 fases, eclipses, rotación síncrona
+                </a>
+            </div>
+
+            <!-- Day Slider -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Día del Ciclo:
+                    <span id="day-value" class="text-yellow-400 mono">0</span> / 29.53
+                </label>
+                <input type="range" id="day" min="0" max="29.53" step="0.1" value="0" class="w-full">
+            </div>
+
+            <!-- Animation Speed -->
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad:
+                    <span id="speed-value" class="text-cyan-400 mono">1 día/s</span>
+                </label>
+                <input type="range" id="speed" min="0" max="10" step="0.5" value="1" class="w-full">
+            </div>
+
+            <hr class="border-gray-800 my-6">
+
+            <!-- Phases Quick Select -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-3">Fases Principales</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPhase(0)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left flex items-center gap-2">
+                        <span class="phase-icon bg-gray-900 border border-gray-700"></span>
+                        Luna Nueva
+                    </button>
+                    <button onclick="setPhase(7.38)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left flex items-center gap-2">
+                        <span class="phase-icon bg-gradient-to-r from-gray-900 to-gray-300"></span>
+                        Cuarto Creciente
+                    </button>
+                    <button onclick="setPhase(14.76)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left flex items-center gap-2">
+                        <span class="phase-icon bg-gray-200"></span>
+                        Luna Llena
+                    </button>
+                    <button onclick="setPhase(22.14)" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition text-left flex items-center gap-2">
+                        <span class="phase-icon bg-gradient-to-l from-gray-900 to-gray-300"></span>
+                        Cuarto Menguante
+                    </button>
+                </div>
+            </div>
+
+            <!-- View Options -->
+            <div class="mb-6 space-y-3">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-orbit" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Mostrar órbita</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-sunlight" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Rayos solares</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-labels" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Etiquetas</span>
+                </label>
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-terminator" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-yellow-500">
+                    <span class="text-sm text-gray-400">Línea terminador</span>
+                </label>
+            </div>
+
+            <!-- Actions -->
+            <div class="mb-6 space-y-2">
+                <button id="play-btn" class="w-full py-2 px-4 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <span id="play-text">▶ Animar</span>
+                </button>
+                <button id="reset-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                    Reiniciar
+                </button>
+            </div>
+
+            <!-- Math Section -->
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-yellow-400 mb-3">Período Sinódico</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        P<sub>syn</sub> = 29.53 días
+                    </div>
+                    <div class="text-gray-400 mt-2">
+                        1/P<sub>syn</sub> = 1/P<sub>sid</sub> - 1/P<sub>⊕</sub>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El <span class="text-yellow-400">período sinódico</span> es el tiempo entre dos fases iguales consecutivas (ej: de Luna llena a Luna llena).
+                </p>
+                <div class="mt-3 pt-3 border-t border-gray-800">
+                    <p class="text-xs text-gray-500">
+                        El período sidéreo (órbita real) es 27.32 días, pero como la Tierra también orbita al Sol, vemos el ciclo de fases en 29.53 días.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Phase Strip -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Ciclo Completo</h3>
+                <div class="flex justify-between">
+                    <canvas id="phase-strip" width="240" height="40"></canvas>
+                </div>
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>0</span>
+                    <span>7.4</span>
+                    <span>14.8</span>
+                    <span>22.1</span>
+                    <span>29.5</span>
+                </div>
+            </div>
+
+            <!-- Current Info -->
+            <div class="mt-6 p-4 bg-gray-900 rounded-lg">
+                <h3 class="text-sm font-medium text-gray-300 mb-2">Estado Actual</h3>
+                <div class="grid grid-cols-2 gap-2 text-xs mono">
+                    <div>
+                        <div class="text-gray-500 mb-1">Elongación</div>
+                        <div id="info-elongation" class="text-yellow-400">0°</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Ángulo de Fase</div>
+                        <div id="info-phase-angle" class="text-cyan-400">180°</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Distancia</div>
+                        <div id="info-distance" class="text-violet-400">384,400 km</div>
+                    </div>
+                    <div>
+                        <div class="text-gray-500 mb-1">Edad</div>
+                        <div id="info-age" class="text-pink-400">0.0 días</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const moonViewCanvas = document.getElementById('moon-view');
+        const moonViewCtx = moonViewCanvas.getContext('2d');
+        const phaseStripCanvas = document.getElementById('phase-strip');
+        const phaseStripCtx = phaseStripCanvas.getContext('2d');
+
+        // Constants
+        const SYNODIC_PERIOD = 29.53; // days
+        const MOON_DISTANCE = 384400; // km average
+
+        // State
+        let day = 0; // 0 to 29.53
+        let speed = 1; // days per second
+        let isPlaying = false;
+
+        // Options
+        let showOrbit = true;
+        let showSunlight = true;
+        let showLabels = true;
+        let showTerminator = false;
+
+        // View
+        let centerX, centerY;
+        let orbitRadius;
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            centerX = canvas.offsetWidth / 2;
+            centerY = canvas.offsetHeight / 2;
+            orbitRadius = Math.min(centerX, centerY) * 0.6;
+        }
+
+        function getMoonAngle() {
+            // Moon angle from Sun direction (0 = new moon, π = full moon)
+            return (day / SYNODIC_PERIOD) * 2 * Math.PI;
+        }
+
+        function getPhaseAngle() {
+            // Phase angle: angle Sun-Moon-Earth
+            const moonAngle = getMoonAngle();
+            return Math.PI - moonAngle;
+        }
+
+        function getIllumination() {
+            // Fraction illuminated (0 to 1)
+            const phaseAngle = getPhaseAngle();
+            return (1 + Math.cos(phaseAngle)) / 2;
+        }
+
+        function getPhaseName() {
+            const illumination = getIllumination();
+            const moonAngle = getMoonAngle();
+            const isWaxing = moonAngle < Math.PI;
+
+            if (illumination < 0.02) return 'Luna Nueva';
+            if (illumination < 0.25) return isWaxing ? 'Creciente' : 'Menguante';
+            if (illumination < 0.52) return isWaxing ? 'Cuarto Creciente' : 'Cuarto Menguante';
+            if (illumination < 0.75) return isWaxing ? 'Gibosa Creciente' : 'Gibosa Menguante';
+            if (illumination < 0.98) return isWaxing ? 'Gibosa Creciente' : 'Gibosa Menguante';
+            return 'Luna Llena';
+        }
+
+        function drawSun() {
+            // Sun is to the right (positive X)
+            const sunX = centerX + canvas.offsetWidth * 0.4;
+            const sunY = centerY;
+
+            // Sun glow
+            const gradient = ctx.createRadialGradient(sunX, sunY, 0, sunX, sunY, 100);
+            gradient.addColorStop(0, 'rgba(251, 191, 36, 0.8)');
+            gradient.addColorStop(0.3, 'rgba(251, 191, 36, 0.3)');
+            gradient.addColorStop(1, 'transparent');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 100, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sun body
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(sunX, sunY, 30, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Sunlight rays
+            if (showSunlight) {
+                ctx.strokeStyle = 'rgba(251, 191, 36, 0.1)';
+                ctx.lineWidth = 1;
+
+                for (let i = -10; i <= 10; i++) {
+                    const y = centerY + i * 30;
+                    ctx.beginPath();
+                    ctx.moveTo(sunX - 50, y);
+                    ctx.lineTo(centerX - orbitRadius - 50, y);
+                    ctx.stroke();
+                }
+            }
+
+            if (showLabels) {
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Sol', sunX, sunY + 50);
+            }
+        }
+
+        function drawEarth() {
+            // Earth at center
+            const gradient = ctx.createRadialGradient(centerX, centerY, 0, centerX, centerY, 25);
+            gradient.addColorStop(0, '#3b82f6');
+            gradient.addColorStop(0.7, '#1e40af');
+            gradient.addColorStop(1, '#1e3a8a');
+            ctx.fillStyle = gradient;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Night side
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, 25, -Math.PI / 2, Math.PI / 2);
+            ctx.fill();
+
+            if (showLabels) {
+                ctx.fillStyle = '#60a5fa';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Tierra', centerX, centerY + 45);
+            }
+        }
+
+        function drawOrbit() {
+            if (!showOrbit) return;
+
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+            ctx.setLineDash([5, 5]);
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, orbitRadius, 0, Math.PI * 2);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+
+        function drawMoon() {
+            const moonAngle = getMoonAngle();
+
+            // Moon position (orbiting counterclockwise from right)
+            // New moon is between Earth and Sun, so at angle 0 it's on the Sun side
+            const moonX = centerX - Math.cos(moonAngle) * orbitRadius;
+            const moonY = centerY - Math.sin(moonAngle) * orbitRadius;
+            const moonRadius = 15;
+
+            // Moon illumination calculation
+            // Light comes from the right (Sun direction)
+            // We need to show which part of the Moon is lit as seen from Earth
+
+            // Draw lit portion
+            ctx.save();
+            ctx.translate(moonX, moonY);
+
+            // Base moon (dark side)
+            ctx.fillStyle = '#1a1a2e';
+            ctx.beginPath();
+            ctx.arc(0, 0, moonRadius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Lit portion
+            // The terminator position depends on the phase
+            const illumination = getIllumination();
+            const isWaxing = moonAngle < Math.PI;
+
+            ctx.fillStyle = '#d1d5db';
+            ctx.beginPath();
+
+            if (illumination < 0.5) {
+                // Less than half lit - draw crescent
+                const terminatorX = moonRadius * (1 - 2 * illumination);
+                if (isWaxing) {
+                    // Waxing crescent: lit on right
+                    ctx.arc(0, 0, moonRadius, -Math.PI / 2, Math.PI / 2);
+                    ctx.ellipse(0, 0, terminatorX, moonRadius, 0, Math.PI / 2, -Math.PI / 2, true);
+                } else {
+                    // Waning crescent: lit on left
+                    ctx.arc(0, 0, moonRadius, Math.PI / 2, -Math.PI / 2);
+                    ctx.ellipse(0, 0, terminatorX, moonRadius, 0, -Math.PI / 2, Math.PI / 2, true);
+                }
+            } else {
+                // More than half lit - draw gibbous
+                const terminatorX = moonRadius * (2 * illumination - 1);
+                if (isWaxing) {
+                    // Waxing gibbous: lit on right
+                    ctx.arc(0, 0, moonRadius, -Math.PI / 2, Math.PI / 2);
+                    ctx.ellipse(0, 0, terminatorX, moonRadius, 0, Math.PI / 2, -Math.PI / 2, false);
+                } else {
+                    // Waning gibbous: lit on left
+                    ctx.arc(0, 0, moonRadius, Math.PI / 2, -Math.PI / 2);
+                    ctx.ellipse(0, 0, terminatorX, moonRadius, 0, -Math.PI / 2, Math.PI / 2, false);
+                }
+            }
+
+            ctx.fill();
+
+            // Terminator line
+            if (showTerminator) {
+                ctx.strokeStyle = 'rgba(255, 255, 0, 0.5)';
+                ctx.lineWidth = 1;
+                const terminatorX = moonRadius * Math.cos(moonAngle);
+                ctx.beginPath();
+                ctx.ellipse(0, 0, Math.abs(terminatorX), moonRadius, 0, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            ctx.restore();
+
+            // Moon label
+            if (showLabels) {
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Luna', moonX, moonY + moonRadius + 15);
+            }
+
+            // Draw line from Earth to Moon
+            ctx.strokeStyle = 'rgba(100, 100, 100, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(centerX, centerY);
+            ctx.lineTo(moonX, moonY);
+            ctx.stroke();
+        }
+
+        function drawMoonView() {
+            const w = moonViewCanvas.width;
+            const h = moonViewCanvas.height;
+            const cx = w / 2;
+            const cy = h / 2;
+            const r = 50;
+
+            moonViewCtx.fillStyle = '#030712';
+            moonViewCtx.fillRect(0, 0, w, h);
+
+            // Dark side
+            moonViewCtx.fillStyle = '#1a1a2e';
+            moonViewCtx.beginPath();
+            moonViewCtx.arc(cx, cy, r, 0, Math.PI * 2);
+            moonViewCtx.fill();
+
+            // Lit portion (as seen from Earth)
+            const moonAngle = getMoonAngle();
+            const illumination = getIllumination();
+            const isWaxing = moonAngle < Math.PI;
+
+            moonViewCtx.fillStyle = '#e5e7eb';
+            moonViewCtx.beginPath();
+
+            if (illumination < 0.5) {
+                const terminatorX = r * (1 - 2 * illumination);
+                if (isWaxing) {
+                    moonViewCtx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
+                    moonViewCtx.ellipse(cx, cy, terminatorX, r, 0, Math.PI / 2, -Math.PI / 2, true);
+                } else {
+                    moonViewCtx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2);
+                    moonViewCtx.ellipse(cx, cy, terminatorX, r, 0, -Math.PI / 2, Math.PI / 2, true);
+                }
+            } else {
+                const terminatorX = r * (2 * illumination - 1);
+                if (isWaxing) {
+                    moonViewCtx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
+                    moonViewCtx.ellipse(cx, cy, terminatorX, r, 0, Math.PI / 2, -Math.PI / 2, false);
+                } else {
+                    moonViewCtx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2);
+                    moonViewCtx.ellipse(cx, cy, terminatorX, r, 0, -Math.PI / 2, Math.PI / 2, false);
+                }
+            }
+
+            moonViewCtx.fill();
+
+            // Add some lunar texture
+            moonViewCtx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+            const craters = [[0.2, -0.3, 0.15], [-0.3, 0.1, 0.2], [0.1, 0.3, 0.1], [-0.2, -0.2, 0.12]];
+            craters.forEach(([x, y, size]) => {
+                moonViewCtx.beginPath();
+                moonViewCtx.arc(cx + x * r, cy + y * r, size * r, 0, Math.PI * 2);
+                moonViewCtx.fill();
+            });
+        }
+
+        function drawPhaseStrip() {
+            const w = phaseStripCanvas.width;
+            const h = phaseStripCanvas.height;
+
+            phaseStripCtx.fillStyle = '#111';
+            phaseStripCtx.fillRect(0, 0, w, h);
+
+            // Draw phases
+            const numPhases = 15;
+            const phaseWidth = w / numPhases;
+
+            for (let i = 0; i < numPhases; i++) {
+                const phaseDay = (i / numPhases) * SYNODIC_PERIOD;
+                const cx = phaseWidth * (i + 0.5);
+                const cy = h / 2;
+                const r = 12;
+
+                const moonAngle = (phaseDay / SYNODIC_PERIOD) * 2 * Math.PI;
+                const phaseAngle = Math.PI - moonAngle;
+                const illumination = (1 + Math.cos(phaseAngle)) / 2;
+                const isWaxing = moonAngle < Math.PI;
+
+                // Dark base
+                phaseStripCtx.fillStyle = '#1a1a2e';
+                phaseStripCtx.beginPath();
+                phaseStripCtx.arc(cx, cy, r, 0, Math.PI * 2);
+                phaseStripCtx.fill();
+
+                // Lit portion
+                phaseStripCtx.fillStyle = '#d1d5db';
+                phaseStripCtx.beginPath();
+
+                if (illumination < 0.5) {
+                    const terminatorX = r * (1 - 2 * illumination);
+                    if (isWaxing) {
+                        phaseStripCtx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
+                        phaseStripCtx.ellipse(cx, cy, Math.abs(terminatorX), r, 0, Math.PI / 2, -Math.PI / 2, true);
+                    } else {
+                        phaseStripCtx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2);
+                        phaseStripCtx.ellipse(cx, cy, Math.abs(terminatorX), r, 0, -Math.PI / 2, Math.PI / 2, true);
+                    }
+                } else {
+                    const terminatorX = r * (2 * illumination - 1);
+                    if (isWaxing) {
+                        phaseStripCtx.arc(cx, cy, r, -Math.PI / 2, Math.PI / 2);
+                        phaseStripCtx.ellipse(cx, cy, terminatorX, r, 0, Math.PI / 2, -Math.PI / 2, false);
+                    } else {
+                        phaseStripCtx.arc(cx, cy, r, Math.PI / 2, -Math.PI / 2);
+                        phaseStripCtx.ellipse(cx, cy, terminatorX, r, 0, -Math.PI / 2, Math.PI / 2, false);
+                    }
+                }
+
+                phaseStripCtx.fill();
+            }
+
+            // Current day marker
+            const markerX = (day / SYNODIC_PERIOD) * w;
+            phaseStripCtx.strokeStyle = '#fbbf24';
+            phaseStripCtx.lineWidth = 2;
+            phaseStripCtx.beginPath();
+            phaseStripCtx.moveTo(markerX, 0);
+            phaseStripCtx.lineTo(markerX, h);
+            phaseStripCtx.stroke();
+        }
+
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Background stars
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137) % w;
+                const y = (i * 97) % h;
+                ctx.beginPath();
+                ctx.arc(x, y, Math.random() * 1, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw components
+            drawSun();
+            drawOrbit();
+            drawEarth();
+            drawMoon();
+
+            // Draw moon view
+            drawMoonView();
+            drawPhaseStrip();
+
+            // Update info
+            const moonAngle = getMoonAngle();
+            const elongation = (moonAngle * 180 / Math.PI) % 360;
+            const phaseAngle = ((Math.PI - moonAngle) * 180 / Math.PI + 360) % 360;
+
+            document.getElementById('day-display').textContent = day.toFixed(1);
+            document.getElementById('day-value').textContent = day.toFixed(1);
+            document.getElementById('phase-name').textContent = getPhaseName();
+            document.getElementById('illumination').textContent = (getIllumination() * 100).toFixed(1) + '%';
+            document.getElementById('info-elongation').textContent = elongation.toFixed(1) + '°';
+            document.getElementById('info-phase-angle').textContent = phaseAngle.toFixed(1) + '°';
+            document.getElementById('info-distance').textContent = MOON_DISTANCE.toLocaleString() + ' km';
+            document.getElementById('info-age').textContent = day.toFixed(1) + ' días';
+        }
+
+        function setPhase(phaseDay) {
+            day = phaseDay;
+            document.getElementById('day').value = day;
+            draw();
+        }
+
+        // Event listeners
+        document.getElementById('day').addEventListener('input', (e) => {
+            day = parseFloat(e.target.value);
+            draw();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1) + ' día/s';
+        });
+
+        document.getElementById('show-orbit').addEventListener('change', (e) => {
+            showOrbit = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-sunlight').addEventListener('change', (e) => {
+            showSunlight = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-labels').addEventListener('change', (e) => {
+            showLabels = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-terminator').addEventListener('change', (e) => {
+            showTerminator = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            isPlaying = !isPlaying;
+            document.getElementById('play-text').textContent = isPlaying ? '⏸ Pausar' : '▶ Animar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            day = 0;
+            document.getElementById('day').value = 0;
+            draw();
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            draw();
+        });
+
+        // Animation loop
+        let lastTime = 0;
+
+        function animate(currentTime) {
+            const dt = (currentTime - lastTime) / 1000;
+            lastTime = currentTime;
+
+            if (isPlaying) {
+                day = (day + speed * dt) % SYNODIC_PERIOD;
+                document.getElementById('day').value = day;
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Initialize
+        initCanvas();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

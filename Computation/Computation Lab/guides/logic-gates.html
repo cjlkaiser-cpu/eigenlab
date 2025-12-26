@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logic Gates — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+        .pill:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .pill-muted:hover { border-color: var(--border); background: var(--bg-panel); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-warn); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--color-warn); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--color-warn); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+
+        .truth-table { width: 100%; border-collapse: collapse; margin-top: 0.75rem; font-size: 0.75rem; }
+        .truth-table th, .truth-table td { border: 1px solid var(--border); padding: 0.5rem; text-align: center; }
+        .truth-table th { background: var(--bg-panel); color: var(--text-secondary); font-weight: 500; }
+        .truth-table td { font-family: 'JetBrains Mono', monospace; }
+        .truth-table .out { color: var(--color-warn); font-weight: 600; }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: var(--color-warn);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(251, 191, 36, 0.1);
+            border-left: 3px solid var(--color-warn);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-warn);
+        }
+
+        .reflection ol { margin: 0; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Logic Gates</span>
+                </nav>
+                <h1>Logic Gates — Guia</h1>
+                <div class="subtitle">Los atomos de la computacion: de transistores a procesadores</div>
+            </div>
+            <div class="header-actions">
+                <a href="../logic-gates-sandbox.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Todo es NAND (o NOR)</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que son las compuertas logicas?</div>
+                <p class="lead">
+                    Las <span class="em">compuertas logicas</span> son la capa mas baja de abstraccion
+                    en computacion digital. Cada compuerta implementa una funcion booleana: toma
+                    bits de entrada y produce un bit de salida segun una regla matematica inmutable.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Algebra de Boole</span>
+                    <span class="chip">Universalidad</span>
+                    <span class="chip">Composicion</span>
+                    <span class="chip">Determinismo</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <h2>La intuicion profunda</h2>
+                        <p class="mini">
+                            Una compuerta es una <strong>decision automatizada</strong>.
+                            AND pregunta "ambos?", OR pregunta "alguno?", NOT invierte.
+                            Tu CPU ejecuta miles de millones de estas preguntas por segundo.
+                            Pensamiento reducido a electricidad.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Que observar</h2>
+                        <ul class="mini">
+                            <li>El color indica el valor: 0=azul, 1=amarillo</li>
+                            <li>Los cambios se <strong>propagan</strong> por el circuito</li>
+                            <li>La tabla de verdad define <em>completamente</em> cada compuerta</li>
+                            <li>Circuitos complejos = composicion de simples</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Algebra de Boole</div>
+                <pre>AND:  A ∧ B = 1 solo si A=1 y B=1
+OR:   A ∨ B = 0 solo si A=0 y B=0
+NOT:  ¬A    = lo opuesto de A
+XOR:  A ⊕ B = 1 si A ≠ B
+
+Leyes de De Morgan:
+¬(A ∧ B) = ¬A ∨ ¬B
+¬(A ∨ B) = ¬A ∧ ¬B</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Cables en la simulacion</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #3b82f6"></span>Valor 0 (falso)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #fbbf24"></span>Valor 1 (verdadero)</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="three">
+            <div class="card">
+                <h2>AND — Conjuncion</h2>
+                <p class="mini">Salida 1 <strong>solo si ambas</strong> entradas son 1</p>
+                <table class="truth-table">
+                    <tr><th>A</th><th>B</th><th>Out</th></tr>
+                    <tr><td>0</td><td>0</td><td class="out">0</td></tr>
+                    <tr><td>0</td><td>1</td><td class="out">0</td></tr>
+                    <tr><td>1</td><td>0</td><td class="out">0</td></tr>
+                    <tr><td>1</td><td>1</td><td class="out">1</td></tr>
+                </table>
+                <p class="mini" style="margin-top:0.5rem">
+                    Uso: verificar multiples condiciones, mascaras de bits.
+                </p>
+            </div>
+            <div class="card">
+                <h2>OR — Disyuncion</h2>
+                <p class="mini">Salida 1 si <strong>al menos una</strong> entrada es 1</p>
+                <table class="truth-table">
+                    <tr><th>A</th><th>B</th><th>Out</th></tr>
+                    <tr><td>0</td><td>0</td><td class="out">0</td></tr>
+                    <tr><td>0</td><td>1</td><td class="out">1</td></tr>
+                    <tr><td>1</td><td>0</td><td class="out">1</td></tr>
+                    <tr><td>1</td><td>1</td><td class="out">1</td></tr>
+                </table>
+                <p class="mini" style="margin-top:0.5rem">
+                    Uso: combinar senales, set de bits.
+                </p>
+            </div>
+            <div class="card">
+                <h2>XOR — Exclusivo</h2>
+                <p class="mini">Salida 1 si las entradas son <strong>diferentes</strong></p>
+                <table class="truth-table">
+                    <tr><th>A</th><th>B</th><th>Out</th></tr>
+                    <tr><td>0</td><td>0</td><td class="out">0</td></tr>
+                    <tr><td>0</td><td>1</td><td class="out">1</td></tr>
+                    <tr><td>1</td><td>0</td><td class="out">1</td></tr>
+                    <tr><td>1</td><td>1</td><td class="out">0</td></tr>
+                </table>
+                <p class="mini" style="margin-top:0.5rem">
+                    Uso: suma sin acarreo, toggle, criptografia.
+                </p>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>NAND: La compuerta universal</h2>
+                <p>
+                    NAND = NOT(AND). Su salida es 0 <strong>solo</strong> cuando ambas entradas son 1.
+                </p>
+                <div class="callout callout-accent">
+                    <p>
+                        <strong>Teorema de universalidad:</strong><br>
+                        Cualquier funcion booleana se puede expresar solo con NANDs:<br><br>
+                        <code>NOT(A) = NAND(A, A)</code><br>
+                        <code>AND(A,B) = NOT(NAND(A,B))</code><br>
+                        <code>OR(A,B) = NAND(NOT(A), NOT(B))</code>
+                    </p>
+                </div>
+                <p class="mini">
+                    Los procesadores reales se construyen principalmente con transistores NAND
+                    porque son mas eficientes de fabricar. NAND es "computacionalmente completo".
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Half Adder: Tu primer circuito util</h2>
+                <p>
+                    Suma dos bits y produce dos salidas:
+                </p>
+                <ul>
+                    <li><strong>Sum</strong> = A XOR B (resultado de la suma)</li>
+                    <li><strong>Carry</strong> = A AND B (acarreo al siguiente bit)</li>
+                </ul>
+                <div class="callout">
+                    <p>
+                        En binario: 1 + 1 = 10<br>
+                        Sum = 0, Carry = 1<br><br>
+                        Encadenando half adders → full adders → sumadores de n bits.
+                    </p>
+                </div>
+                <div class="badge b-good" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-good)"></span>
+                    Base de la ALU (Unidad Aritmetico-Logica)
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento demuestra un principio fundamental del diseno digital.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">Construir XOR solo con NANDs</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Cualquier compuerta puede construirse usando
+                solo NANDs, demostrando la universalidad de NAND.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Abre el sandbox con solo compuertas NAND disponibles</li>
+                        <li>Intenta construir XOR: necesitas 4 NANDs</li>
+                        <li>Pista: primero haz NAND(A,B), luego NAND(A, NAND(A,B))...</li>
+                        <li>Verifica con todas las combinaciones de entrada</li>
+                        <li>Compara el resultado con la tabla de XOR</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        Esta construccion demuestra que NAND es "funcionalmente completa".
+                        El curso Nand2Tetris construye un computador completo partiendo
+                        solo de NANDs.
+                    </p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        XOR = 4 NANDs
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Construir un Half Adder</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> La suma binaria se puede implementar
+                combinando XOR (para el resultado) y AND (para el acarreo).</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Conecta dos inputs A y B</li>
+                        <li>Crea una rama XOR(A,B) → output "Sum"</li>
+                        <li>Crea una rama AND(A,B) → output "Carry"</li>
+                        <li>Prueba: 0+0, 0+1, 1+0, 1+1</li>
+                        <li>Verifica: 1+1 debe dar Sum=0, Carry=1 (binario 10)</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El half adder es la base de todos los sumadores. Encadenando
+                        full adders (que tambien reciben carry de entrada), puedes
+                        construir sumadores de 8, 16, 32, 64 bits.
+                    </p>
+                    <div class="callout">
+                        <p class="mini">
+                            <strong>Full Adder:</strong> Tiene 3 entradas (A, B, Carry_in)
+                            y 2 salidas (Sum, Carry_out). Se construye con 2 half adders + 1 OR.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Leyes de De Morgan en accion</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> NOT(A AND B) es equivalente a (NOT A) OR (NOT B).
+                Dos circuitos diferentes, misma tabla de verdad.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Construye el circuito 1: NAND(A,B)</li>
+                        <li>Construye el circuito 2: OR(NOT(A), NOT(B))</li>
+                        <li>Conecta ambos a las mismas entradas A y B</li>
+                        <li>Prueba las 4 combinaciones de entrada</li>
+                        <li>Verifica que ambos dan la misma salida siempre</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        Las leyes de De Morgan permiten <strong>transformar</strong> circuitos.
+                        Esto es util para optimizar: a veces una forma usa menos compuertas
+                        o es mas facil de fabricar.
+                    </p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        Equivalencia logica demostrada
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../logic-gates-sandbox.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">Logica booleana en otros sistemas</h2>
+            <p>La logica binaria aparece mucho mas alla de los circuitos electronicos.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #3b82f6"></span>
+                <span class="connection-title">Perceptron: pesos como compuertas adaptativas</span>
+            </div>
+            <p>
+                Un perceptron con pesos binarios puede implementar AND, OR y NOT.
+                Pero a diferencia de las compuertas fijas, el perceptron <em>aprende</em>
+                sus pesos de los datos. Es una compuerta logica que se auto-programa.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../perceptron-playground.html">Perceptron Playground</a> —
+                la limitacion clasica: un perceptron no puede aprender XOR.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">La neurona como compuerta biologica</span>
+            </div>
+            <p>
+                Una neurona integra senales de multiples sinapsis. Si la suma supera
+                el umbral, dispara. Esto es aproximadamente un AND con umbral variable:
+                "dispara si suficientes entradas estan activas". La biologia invento
+                las compuertas logicas antes que nosotros.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/neurona.html">Neurona</a> —
+                integracion de senales y disparo.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #ec4899"></span>
+                <span class="connection-title">Regulacion genica: AND y OR moleculares</span>
+            </div>
+            <p>
+                El operon lac en E. coli es una compuerta AND biologica: el gen se expresa
+                solo si hay lactosa Y no hay glucosa. Los promotores con multiples sitios
+                de union implementan logica combinatoria. La celula computa.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biochemistry/Biochem Visual Lab/regulacion-genica.html">Regulacion Genica</a> —
+                represores e inductores como entradas logicas.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Game of Life: reglas como funciones booleanas</span>
+            </div>
+            <p>
+                Las reglas del Game of Life son funciones booleanas de 9 variables
+                (la celda y sus 8 vecinas). "Nace si exactamente 3 vecinas vivas"
+                es una funcion logica compleja. El Game of Life es Turing-completo:
+                puede simular cualquier circuito logico.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Mathematics/Math Visual Lab/game-of-life.html">Game of Life</a> —
+                computacion emergente de reglas simples.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Los circuitos combinacionales no son suficientes</h2>
+            <ul>
+                <li>
+                    <strong>Sin memoria:</strong> Las compuertas simples no recuerdan.
+                    Para almacenar datos necesitas flip-flops (realimentacion).
+                </li>
+                <li>
+                    <strong>Sin tiempo:</strong> Los circuitos combinacionales son "instantaneos".
+                    Los circuitos secuenciales (con clock) pueden procesar secuencias.
+                </li>
+                <li>
+                    <strong>Retardos:</strong> En la realidad, las senales tardan en propagarse.
+                    Esto causa glitches y limita la velocidad maxima del circuito.
+                </li>
+                <li>
+                    <strong>Consumo:</strong> Cada transistor consume energia. Millones de
+                    compuertas generan calor significativo.
+                </li>
+            </ul>
+            <div class="callout callout-accent">
+                <p>
+                    <strong>Siguiente nivel:</strong> Los flip-flops usan realimentacion
+                    para "recordar" un bit. Con flip-flops + compuertas puedes construir
+                    registros, contadores, y eventualmente CPUs completas.
+                </p>
+            </div>
+        </section>
+
+        <!-- JERARQUIA -->
+        <section class="card section">
+            <div class="kicker">De compuertas a CPUs</div>
+            <h2 style="margin-top:0.5rem">La jerarquia de abstraccion</h2>
+            <ul>
+                <li><strong>Transistores</strong> → implementan NANDs/NORs</li>
+                <li><strong>Compuertas</strong> → AND, OR, NOT, XOR, NAND, NOR</li>
+                <li><strong>Circuitos combinacionales</strong> → sumadores, multiplexores, decodificadores</li>
+                <li><strong>Circuitos secuenciales</strong> → flip-flops, registros, contadores</li>
+                <li><strong>Componentes</strong> → ALU, unidad de control, memoria</li>
+                <li><strong>CPU</strong> → fetch-decode-execute</li>
+            </ul>
+            <p class="mini">
+                Cada nivel oculta la complejidad del anterior. El curso Nand2Tetris
+                recorre toda esta jerarquia partiendo solo de NANDs.
+            </p>
+        </section>
+
+        <!-- PREGUNTAS DE REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ol>
+                <li>
+                    Si NAND es universal (puede construir cualquier circuito),
+                    por que existen otras compuertas como AND, OR, XOR?
+                </li>
+                <li>
+                    Un perceptron puede aprender AND y OR pero no XOR.
+                    Que tiene de especial XOR que lo hace "no linealmente separable"?
+                </li>
+                <li>
+                    Las compuertas cuanticas (como la puerta de Hadamard) operan
+                    sobre qubits en superposicion. Que gana la computacion cuantica
+                    sobre la logica clasica?
+                </li>
+                <li>
+                    El cerebro tiene ~86 mil millones de neuronas conectadas.
+                    Un procesador moderno tiene ~50 mil millones de transistores.
+                    Por que el cerebro sigue siendo mejor en muchas tareas?
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Logic Gates Guide
+    </footer>
+</body>
+</html>

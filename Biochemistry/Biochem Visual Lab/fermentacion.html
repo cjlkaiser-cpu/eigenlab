@@ -1,0 +1,651 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fermentación | Biochem Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+        * { font-family: 'JetBrains Mono', monospace; }
+        body { background: #0f172a; margin: 0; overflow: hidden; }
+        #ui-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 20px;
+            width: 280px;
+            z-index: 100;
+        }
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #1e293b;
+            border: 1px solid #334155;
+            color: #94a3b8;
+            padding: 8px 16px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-size: 12px;
+            z-index: 100;
+        }
+        .back-btn:hover { border-color: #fbbf24; color: #fbbf24; }
+        .comparison-header {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .type-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #334155;
+            background: #1e293b;
+            color: #94a3b8;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+        .type-btn.active {
+            border-color: var(--active-color);
+            background: var(--active-bg);
+            color: var(--active-color);
+        }
+        .type-btn.lactic { --active-color: #ef4444; --active-bg: #ef444420; }
+        .type-btn.alcoholic { --active-color: #fbbf24; --active-bg: #fbbf2420; }
+        .stat-box {
+            background: #1e293b;
+            border-radius: 8px;
+            padding: 10px;
+            margin: 6px 0;
+        }
+        .stat-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 11px;
+            margin: 4px 0;
+        }
+        .stat-label { color: #64748b; }
+        .stat-value { font-weight: bold; }
+        .slider-container { margin: 12px 0; }
+        .slider-container label {
+            display: flex;
+            justify-content: space-between;
+            color: #94a3b8;
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #1e293b;
+            -webkit-appearance: none;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #fbbf24;
+            cursor: pointer;
+        }
+        .btn {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: #f8fafc;
+            font-size: 12px;
+            cursor: pointer;
+            margin-top: 8px;
+        }
+        .btn:hover { border-color: #fbbf24; background: #fbbf2420; }
+        .organism-tag {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 9px;
+            margin: 2px;
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-btn">← Volver</a>
+    <canvas id="canvas"></canvas>
+
+    <div id="ui-panel">
+        <h2 class="text-white text-lg font-bold mb-2">🍺 Fermentación</h2>
+        <p class="text-slate-500 text-xs mb-4">Comparación: Láctica vs Alcohólica</p>
+
+        <div class="bg-gray-900/50 rounded-xl p-3 border border-gray-800 mb-4">
+            <p class="text-[11px] text-gray-400 leading-relaxed">
+                La <span class="text-pink-400">fermentación</span> regenera NAD⁺ sin oxígeno. Láctica en músculos (produce lactato), alcohólica en levaduras (produce etanol + CO₂).
+            </p>
+            <a href="guides/fermentacion.html" class="mt-2 flex items-center gap-2 text-[10px] text-pink-400 hover:text-pink-300 transition">
+                <span class="w-4 h-4 rounded-full bg-pink-500/20 flex items-center justify-center">?</span>
+                Guía: tipos, enzimas, aplicaciones
+            </a>
+        </div>
+
+        <div class="comparison-header">
+            <button class="type-btn lactic active" id="btn-lactic">
+                🥛 Láctica
+            </button>
+            <button class="type-btn alcoholic" id="btn-alcoholic">
+                🍷 Alcohólica
+            </button>
+        </div>
+
+        <div class="stat-box">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Fermentación Láctica</div>
+            <div class="stat-row">
+                <span class="stat-label">Piruvato consumido</span>
+                <span class="stat-value" style="color: #ef4444;" id="lactic-pyruvate">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Lactato producido</span>
+                <span class="stat-value" style="color: #f87171;" id="lactic-lactate">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">NAD⁺ regenerado</span>
+                <span class="stat-value" style="color: #a855f7;" id="lactic-nad">0</span>
+            </div>
+            <div class="mt-2">
+                <span class="organism-tag" style="background: #ef444430; color: #ef4444;">Músculo</span>
+                <span class="organism-tag" style="background: #ef444430; color: #ef4444;">Bacterias</span>
+                <span class="organism-tag" style="background: #ef444430; color: #ef4444;">Yogur</span>
+            </div>
+        </div>
+
+        <div class="stat-box">
+            <div class="text-slate-400 text-xs mb-2 font-bold">Fermentación Alcohólica</div>
+            <div class="stat-row">
+                <span class="stat-label">Piruvato consumido</span>
+                <span class="stat-value" style="color: #fbbf24;" id="alc-pyruvate">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">Etanol producido</span>
+                <span class="stat-value" style="color: #facc15;" id="alc-ethanol">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">CO₂ liberado</span>
+                <span class="stat-value" style="color: #94a3b8;" id="alc-co2">0</span>
+            </div>
+            <div class="stat-row">
+                <span class="stat-label">NAD⁺ regenerado</span>
+                <span class="stat-value" style="color: #a855f7;" id="alc-nad">0</span>
+            </div>
+            <div class="mt-2">
+                <span class="organism-tag" style="background: #fbbf2430; color: #fbbf24;">Levadura</span>
+                <span class="organism-tag" style="background: #fbbf2430; color: #fbbf24;">Pan</span>
+                <span class="organism-tag" style="background: #fbbf2430; color: #fbbf24;">Cerveza</span>
+            </div>
+        </div>
+
+        <div class="slider-container">
+            <label>
+                <span>Velocidad</span>
+                <span id="speed-val" class="text-amber-400">1.0x</span>
+            </label>
+            <input type="range" id="speed" min="0.2" max="3" step="0.1" value="1">
+        </div>
+
+        <button class="btn" id="add-pyruvate">+ Añadir Piruvato</button>
+        <button class="btn" id="restart">↻ Reiniciar</button>
+
+        <div class="mt-4 pt-4 border-t border-slate-700 text-slate-500 text-xs">
+            <strong>¿Por qué fermentar?</strong><br>
+            Sin O₂, la glucólisis se detiene por falta de NAD⁺. La fermentación regenera NAD⁺ para que la glucólisis continúe.
+            <br><br>
+            <strong>Rendimiento:</strong> Solo 2 ATP/glucosa (vs 36-38 con respiración)
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resize() {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        }
+        resize();
+        window.addEventListener('resize', resize);
+
+        // State
+        let activeType = 'both'; // 'lactic', 'alcoholic', or 'both'
+        let lacticStats = { pyruvate: 0, lactate: 0, nad: 0 };
+        let alcoholicStats = { pyruvate: 0, ethanol: 0, co2: 0, nad: 0 };
+
+        // Particles
+        let particles = [];
+
+        // Layout
+        const lacticX = () => canvas.width * 0.35;
+        const alcoholicX = () => canvas.width * 0.70;
+        const centerY = () => canvas.height / 2;
+
+        function createPyruvate(type) {
+            const x = type === 'lactic' ? lacticX() : alcoholicX();
+            return {
+                x: x,
+                y: centerY() - 150,
+                targetY: centerY(),
+                type: 'pyruvate',
+                fermentationType: type,
+                color: '#ef4444',
+                phase: 'entering',
+                progress: 0,
+                size: 20
+            };
+        }
+
+        function createProduct(type, x, y, productType) {
+            const colors = {
+                lactate: '#f87171',
+                ethanol: '#facc15',
+                co2: '#94a3b8',
+                nad: '#a855f7'
+            };
+            return {
+                x: x + (Math.random() - 0.5) * 30,
+                y,
+                vx: (Math.random() - 0.5) * 2,
+                vy: productType === 'co2' ? -3 : 2,
+                type: productType,
+                color: colors[productType],
+                alpha: 1,
+                size: productType === 'co2' ? 15 : 18
+            };
+        }
+
+        function init() {
+            particles = [];
+            lacticStats = { pyruvate: 0, lactate: 0, nad: 0 };
+            alcoholicStats = { pyruvate: 0, ethanol: 0, co2: 0, nad: 0 };
+            updateUI();
+        }
+
+        function addPyruvate() {
+            if (activeType === 'lactic' || activeType === 'both') {
+                particles.push(createPyruvate('lactic'));
+            }
+            if (activeType === 'alcoholic' || activeType === 'both') {
+                particles.push(createPyruvate('alcoholic'));
+            }
+        }
+
+        function updateUI() {
+            document.getElementById('lactic-pyruvate').textContent = lacticStats.pyruvate;
+            document.getElementById('lactic-lactate').textContent = lacticStats.lactate;
+            document.getElementById('lactic-nad').textContent = lacticStats.nad;
+
+            document.getElementById('alc-pyruvate').textContent = alcoholicStats.pyruvate;
+            document.getElementById('alc-ethanol').textContent = alcoholicStats.ethanol;
+            document.getElementById('alc-co2').textContent = alcoholicStats.co2;
+            document.getElementById('alc-nad').textContent = alcoholicStats.nad;
+        }
+
+        function drawPathway(type) {
+            const x = type === 'lactic' ? lacticX() : alcoholicX();
+            const y = centerY();
+            const color = type === 'lactic' ? '#ef4444' : '#fbbf24';
+
+            // Title
+            ctx.fillStyle = color;
+            ctx.font = 'bold 18px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText(type === 'lactic' ? 'FERMENTACIÓN LÁCTICA' : 'FERMENTACIÓN ALCOHÓLICA', x, y - 220);
+
+            // Enzyme box
+            ctx.fillStyle = '#1e293b';
+            ctx.strokeStyle = color;
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.roundRect(x - 80, y - 50, 160, 100, 10);
+            ctx.fill();
+            ctx.stroke();
+
+            // Enzyme name
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 12px monospace';
+            if (type === 'lactic') {
+                ctx.fillText('Lactato', x, y - 20);
+                ctx.fillText('Deshidrogenasa', x, y);
+            } else {
+                ctx.fillText('Piruvato', x, y - 30);
+                ctx.fillText('Descarboxilasa', x, y - 10);
+                ctx.fillText('+', x, y + 10);
+                ctx.fillText('Alcohol', x, y + 25);
+                ctx.fillText('Deshidrogenasa', x, y + 40);
+            }
+
+            // Input arrow (pyruvate)
+            ctx.strokeStyle = '#ef4444';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.moveTo(x, y - 150);
+            ctx.lineTo(x, y - 60);
+            ctx.stroke();
+            drawArrowHead(x, y - 60, Math.PI / 2, '#ef4444');
+
+            ctx.fillStyle = '#ef4444';
+            ctx.font = '12px monospace';
+            ctx.fillText('Piruvato (C3)', x, y - 160);
+
+            // NADH input
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x - 100, y);
+            ctx.lineTo(x - 85, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillStyle = '#a855f7';
+            ctx.font = '10px monospace';
+            ctx.fillText('NADH', x - 130, y + 4);
+
+            // NAD+ output
+            ctx.strokeStyle = '#a855f7';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(x + 85, y);
+            ctx.lineTo(x + 100, y);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            ctx.fillText('NAD⁺', x + 130, y + 4);
+
+            // Output arrows
+            if (type === 'lactic') {
+                // Single output: Lactate
+                ctx.strokeStyle = '#f87171';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(x, y + 60);
+                ctx.lineTo(x, y + 150);
+                ctx.stroke();
+                drawArrowHead(x, y + 150, Math.PI / 2, '#f87171');
+
+                ctx.fillStyle = '#f87171';
+                ctx.font = '12px monospace';
+                ctx.fillText('Lactato (C3)', x, y + 170);
+
+                // Reaction
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('C₃H₄O₃ + NADH → C₃H₆O₃ + NAD⁺', x, y + 200);
+
+            } else {
+                // Two outputs: Ethanol + CO2
+                ctx.strokeStyle = '#facc15';
+                ctx.lineWidth = 3;
+                ctx.setLineDash([]);
+                ctx.beginPath();
+                ctx.moveTo(x - 30, y + 60);
+                ctx.lineTo(x - 50, y + 150);
+                ctx.stroke();
+                drawArrowHead(x - 50, y + 150, Math.PI / 2 + 0.3, '#facc15');
+
+                ctx.fillStyle = '#facc15';
+                ctx.font = '12px monospace';
+                ctx.fillText('Etanol (C2)', x - 50, y + 170);
+
+                // CO2
+                ctx.strokeStyle = '#94a3b8';
+                ctx.beginPath();
+                ctx.moveTo(x + 30, y + 60);
+                ctx.lineTo(x + 50, y + 120);
+                ctx.stroke();
+                drawArrowHead(x + 50, y + 120, Math.PI / 2 - 0.3, '#94a3b8');
+
+                ctx.fillStyle = '#94a3b8';
+                ctx.fillText('CO₂ ↑', x + 70, y + 130);
+
+                // Reaction
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10px monospace';
+                ctx.fillText('C₃H₄O₃ → C₂H₅OH + CO₂', x, y + 200);
+            }
+
+            // Applications
+            ctx.fillStyle = color + '40';
+            ctx.beginPath();
+            ctx.roundRect(x - 90, y + 220, 180, 60, 8);
+            ctx.fill();
+
+            ctx.fillStyle = color;
+            ctx.font = 'bold 10px monospace';
+            ctx.fillText('Aplicaciones:', x, y + 240);
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = '9px monospace';
+            if (type === 'lactic') {
+                ctx.fillText('• Yogur, queso', x, y + 255);
+                ctx.fillText('• Músculo (ejercicio intenso)', x, y + 268);
+            } else {
+                ctx.fillText('• Cerveza, vino', x, y + 255);
+                ctx.fillText('• Pan (CO₂ levanta la masa)', x, y + 268);
+            }
+        }
+
+        function drawArrowHead(x, y, angle, color) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.rotate(angle);
+            ctx.beginPath();
+            ctx.moveTo(0, 0);
+            ctx.lineTo(-10, -6);
+            ctx.lineTo(-10, 6);
+            ctx.closePath();
+            ctx.fillStyle = color;
+            ctx.fill();
+            ctx.restore();
+        }
+
+        function updateParticles() {
+            const speed = parseFloat(document.getElementById('speed').value);
+
+            particles.forEach(p => {
+                if (p.type === 'pyruvate') {
+                    if (p.phase === 'entering') {
+                        p.y += (p.targetY - p.y) * 0.03 * speed;
+
+                        if (Math.abs(p.y - p.targetY) < 20) {
+                            p.phase = 'reacting';
+                            p.progress = 0;
+
+                            // Update stats
+                            if (p.fermentationType === 'lactic') {
+                                lacticStats.pyruvate++;
+                            } else {
+                                alcoholicStats.pyruvate++;
+                            }
+                        }
+                    } else if (p.phase === 'reacting') {
+                        p.progress += 0.02 * speed;
+                        p.alpha = 1 - p.progress;
+
+                        if (p.progress >= 1) {
+                            p.phase = 'done';
+
+                            // Create products
+                            const x = p.fermentationType === 'lactic' ? lacticX() : alcoholicX();
+                            const y = centerY() + 60;
+
+                            if (p.fermentationType === 'lactic') {
+                                particles.push(createProduct('lactic', x, y, 'lactate'));
+                                particles.push(createProduct('lactic', x + 80, centerY(), 'nad'));
+                                lacticStats.lactate++;
+                                lacticStats.nad++;
+                            } else {
+                                particles.push(createProduct('alcoholic', x - 30, y, 'ethanol'));
+                                particles.push(createProduct('alcoholic', x + 30, y - 20, 'co2'));
+                                particles.push(createProduct('alcoholic', x + 80, centerY(), 'nad'));
+                                alcoholicStats.ethanol++;
+                                alcoholicStats.co2++;
+                                alcoholicStats.nad++;
+                            }
+                        }
+                    }
+                } else {
+                    // Product particles
+                    p.x += p.vx;
+                    p.y += p.vy;
+                    p.alpha -= 0.01;
+
+                    if (p.type === 'co2') {
+                        p.x += Math.sin(p.y * 0.1) * 0.5;
+                    }
+                }
+            });
+
+            particles = particles.filter(p => p.phase !== 'done' && p.alpha > 0);
+        }
+
+        function drawParticles() {
+            particles.forEach(p => {
+                ctx.globalAlpha = p.alpha || 1;
+
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fillStyle = p.color;
+                ctx.shadowColor = p.color;
+                ctx.shadowBlur = 15;
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Label
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 9px monospace';
+                ctx.textAlign = 'center';
+
+                const labels = {
+                    pyruvate: 'Pyr',
+                    lactate: 'Lac',
+                    ethanol: 'EtOH',
+                    co2: 'CO₂',
+                    nad: 'NAD⁺'
+                };
+                ctx.fillText(labels[p.type], p.x, p.y + 3);
+
+                ctx.globalAlpha = 1;
+            });
+        }
+
+        function drawComparison() {
+            // Center divider
+            ctx.strokeStyle = '#334155';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 50);
+            ctx.lineTo(canvas.width / 2, canvas.height - 50);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // "VS" label
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2, canvas.height / 2, 30, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#475569';
+            ctx.stroke();
+
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 16px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('VS', canvas.width / 2, canvas.height / 2 + 6);
+        }
+
+        function draw() {
+            ctx.fillStyle = '#0f172a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            // Title
+            ctx.fillStyle = '#f8fafc';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Fermentación: Láctica vs Alcohólica', canvas.width / 2, 40);
+
+            ctx.fillStyle = '#64748b';
+            ctx.font = '12px monospace';
+            ctx.fillText('Respiración anaeróbica · Regeneración de NAD⁺', canvas.width / 2, 65);
+
+            // Draw both pathways
+            if (activeType === 'both' || activeType === 'lactic') {
+                drawPathway('lactic');
+            }
+            if (activeType === 'both' || activeType === 'alcoholic') {
+                drawPathway('alcoholic');
+            }
+
+            if (activeType === 'both') {
+                drawComparison();
+            }
+
+            updateParticles();
+            drawParticles();
+            updateUI();
+
+            requestAnimationFrame(draw);
+        }
+
+        // Events
+        document.getElementById('speed').addEventListener('input', (e) => {
+            document.getElementById('speed-val').textContent = e.target.value + 'x';
+        });
+
+        document.getElementById('btn-lactic').addEventListener('click', () => {
+            document.getElementById('btn-lactic').classList.add('active');
+            document.getElementById('btn-alcoholic').classList.remove('active');
+            activeType = document.getElementById('btn-alcoholic').classList.contains('active') ? 'both' : 'lactic';
+            if (document.getElementById('btn-lactic').classList.contains('active') &&
+                document.getElementById('btn-alcoholic').classList.contains('active')) {
+                activeType = 'both';
+            }
+        });
+
+        document.getElementById('btn-alcoholic').addEventListener('click', () => {
+            document.getElementById('btn-alcoholic').classList.add('active');
+            document.getElementById('btn-lactic').classList.remove('active');
+            activeType = document.getElementById('btn-lactic').classList.contains('active') ? 'both' : 'alcoholic';
+            if (document.getElementById('btn-lactic').classList.contains('active') &&
+                document.getElementById('btn-alcoholic').classList.contains('active')) {
+                activeType = 'both';
+            }
+        });
+
+        // Toggle both on double click
+        document.getElementById('btn-lactic').addEventListener('dblclick', () => {
+            document.getElementById('btn-lactic').classList.add('active');
+            document.getElementById('btn-alcoholic').classList.add('active');
+            activeType = 'both';
+        });
+
+        document.getElementById('btn-alcoholic').addEventListener('dblclick', () => {
+            document.getElementById('btn-lactic').classList.add('active');
+            document.getElementById('btn-alcoholic').classList.add('active');
+            activeType = 'both';
+        });
+
+        document.getElementById('add-pyruvate').addEventListener('click', addPyruvate);
+        document.getElementById('restart').addEventListener('click', init);
+
+        init();
+        // Auto-add some pyruvate
+        setTimeout(addPyruvate, 500);
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fases Lunares — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #6366f1;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.6; }
+        a { color: var(--accent); text-decoration: none; } a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; } .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.35rem; font-weight: 600; } .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; text-decoration: none; }
+        .pill:hover { border-color: var(--accent); background: rgba(99, 102, 241, 0.15); }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.5rem; }
+        .lead { color: var(--text-primary); font-size: 0.95rem; line-height: 1.65; }
+        h2 { font-size: 1.05rem; font-weight: 600; margin: 0 0 0.625rem; color: var(--text-primary); }
+        h3 { font-size: 0.9rem; font-weight: 600; margin: 1rem 0 0.5rem; color: var(--text-primary); }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; line-height: 1.6; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; } li { margin: 0.4rem 0; }
+        strong { color: var(--text-primary); font-weight: 500; } .em { color: var(--accent); font-weight: 600; }
+
+        /* Layout */
+        .hero { display: grid; grid-template-columns: 1.1fr 0.9fr; gap: 1rem; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three { grid-template-columns: 1fr; } }
+
+        /* Chips & Badges */
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.7rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .badge { display: inline-block; font-size: 0.65rem; padding: 0.25rem 0.5rem; border-radius: 0.25rem; font-weight: 500; margin-left: 0.5rem; vertical-align: middle; }
+        .b-good { background: rgba(34,197,94,0.15); color: #22c55e; border: 1px solid rgba(34,197,94,0.3); }
+        .b-warn { background: rgba(234,179,8,0.15); color: #eab308; border: 1px solid rgba(234,179,8,0.3); }
+        .b-info { background: rgba(99,102,241,0.15); color: #818cf8; border: 1px solid rgba(99,102,241,0.3); }
+
+        /* Callouts */
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(99,102,241,0.08); }
+
+        /* Equation box */
+        .equation-box { background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1rem; margin: 0.75rem 0; font-family: 'JetBrains Mono', monospace; }
+        .equation-box .label { font-size: 0.65rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 0.5rem; }
+        .equation-box .eq { font-size: 1rem; color: var(--accent); }
+        .equation-box .eq-small { font-size: 0.85rem; color: var(--text-primary); margin-top: 0.5rem; }
+
+        /* Moon phases visual */
+        .phases-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.75rem; margin: 0.75rem 0; }
+        .phase-item { text-align: center; padding: 0.75rem 0.5rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; }
+        .phase-icon { font-size: 1.75rem; margin-bottom: 0.375rem; filter: grayscale(0.2); }
+        .phase-name { font-size: 0.7rem; color: var(--text-secondary); font-weight: 500; }
+        .phase-day { font-size: 0.6rem; color: var(--text-secondary); opacity: 0.7; margin-top: 0.25rem; }
+        @media (max-width: 500px) { .phases-grid { grid-template-columns: repeat(2, 1fr); } }
+
+        /* Experiments */
+        .exp-card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.625rem; padding: 1.25rem; }
+        .exp-num { display: inline-flex; align-items: center; justify-content: center; width: 1.5rem; height: 1.5rem; background: var(--accent); color: #fff; font-size: 0.75rem; font-weight: 600; border-radius: 50%; margin-right: 0.5rem; }
+        .exp-title { font-size: 0.95rem; font-weight: 600; color: var(--text-primary); display: inline; }
+        .hypo { background: rgba(99,102,241,0.1); border-left: 3px solid var(--accent); padding: 0.625rem 0.875rem; margin: 0.75rem 0; border-radius: 0 0.375rem 0.375rem 0; }
+        .hypo-label { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; }
+        .hypo p { margin: 0.25rem 0 0; color: var(--text-primary); font-size: 0.8rem; }
+
+        /* Section spacing */
+        .section { margin-top: 1.25rem; }
+        .section-title { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+
+        /* Timeline */
+        .timeline { position: relative; padding-left: 1.5rem; margin: 0.75rem 0; }
+        .timeline::before { content: ''; position: absolute; left: 0.35rem; top: 0.5rem; bottom: 0.5rem; width: 2px; background: var(--border); }
+        .tl-item { position: relative; margin: 0.875rem 0; }
+        .tl-item::before { content: ''; position: absolute; left: -1.15rem; top: 0.4rem; width: 8px; height: 8px; background: var(--accent); border-radius: 50%; }
+        .tl-year { font-size: 0.7rem; color: var(--accent); font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+        .tl-text { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Connections */
+        .conn-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+        .conn-item { display: flex; align-items: flex-start; gap: 0.625rem; padding: 0.75rem; background: var(--bg-panel); border: 1px solid var(--border); border-radius: 0.5rem; transition: border-color 0.2s; }
+        .conn-item:hover { border-color: var(--accent); }
+        .conn-icon { font-size: 1.25rem; flex-shrink: 0; }
+        .conn-info { flex: 1; }
+        .conn-title { font-size: 0.8rem; font-weight: 500; color: var(--text-primary); }
+        .conn-desc { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.125rem; }
+
+        /* Reflection */
+        .reflection-list { list-style: none; padding: 0; margin: 0.75rem 0; }
+        .reflection-list li { position: relative; padding: 0.625rem 0 0.625rem 1.75rem; border-bottom: 1px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); }
+        .reflection-list li:last-child { border-bottom: none; }
+        .reflection-list li::before { content: '?'; position: absolute; left: 0; top: 0.625rem; width: 1.25rem; height: 1.25rem; background: rgba(99,102,241,0.15); color: var(--accent); font-size: 0.75rem; font-weight: 600; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        /* Summary */
+        .summary-box { background: linear-gradient(135deg, rgba(99,102,241,0.1) 0%, rgba(99,102,241,0.05) 100%); border: 1px solid rgba(99,102,241,0.3); border-radius: 0.625rem; padding: 1.25rem; }
+        .summary-box h2 { color: var(--accent); }
+
+        footer { max-width: 980px; margin: 2.5rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb"><a href="../../../_portal/index.html">EigenLab</a> / <a href="../index.html">Astronomy Visual Lab</a> / Fases Lunares</nav>
+                <h1>Fases Lunares — Guia</h1>
+                <div class="subtitle">Por que la Luna cambia de forma cada noche</div>
+            </div>
+            <a href="../fases-lunares.html" class="pill"><span>&#9654;</span> Abrir simulacion</a>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    Las <span class="em">fases lunares</span> son el cambio aparente en la forma iluminada de la Luna vista desde la Tierra. Este fenomeno geometrico — resultado de la posicion relativa Sol-Tierra-Luna — ha gobernado calendarios, mareas, rituales y observaciones astronomicas durante milenios. Comprender las fases es la puerta de entrada a la mecanica orbital.
+                </p>
+                <div class="chips">
+                    <span class="chip">Periodo Sinodico</span>
+                    <span class="chip">Rotacion Sincrona</span>
+                    <span class="chip">Eclipses</span>
+                    <span class="chip">Mareas</span>
+                    <span class="chip">Geometria Orbital</span>
+                </div>
+
+                <div class="equation-box">
+                    <div class="label">Angulo de fase (iluminacion)</div>
+                    <div class="eq">cos(i) = cos(elongacion)</div>
+                    <div class="eq-small">i = angulo de incidencia de luz solar en la Luna</div>
+                    <div class="eq-small" style="margin-top: 0.75rem;">Elongacion = angulo Sol-Tierra-Luna (0° a 180°)</div>
+                </div>
+
+                <div class="callout callout-accent">
+                    <p><strong>Periodo sinodico vs sideral:</strong> El mes sinodico (29.53 dias) es mas largo que el sideral (27.32 dias) porque mientras la Luna orbita, la Tierra avanza en su orbita solar, requiriendo ~2 dias extra para la misma configuracion Sol-Tierra-Luna.</p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Las 8 fases principales</div>
+                <div class="phases-grid">
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127761;</div>
+                        <div class="phase-name">Luna Nueva</div>
+                        <div class="phase-day">Dia 0</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127762;</div>
+                        <div class="phase-name">Creciente</div>
+                        <div class="phase-day">Dia ~4</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127763;</div>
+                        <div class="phase-name">Cuarto Crec.</div>
+                        <div class="phase-day">Dia ~7</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127764;</div>
+                        <div class="phase-name">Gibosa Crec.</div>
+                        <div class="phase-day">Dia ~11</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127765;</div>
+                        <div class="phase-name">Luna Llena</div>
+                        <div class="phase-day">Dia ~15</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127766;</div>
+                        <div class="phase-name">Gibosa Meng.</div>
+                        <div class="phase-day">Dia ~18</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127767;</div>
+                        <div class="phase-name">Cuarto Meng.</div>
+                        <div class="phase-day">Dia ~22</div>
+                    </div>
+                    <div class="phase-item">
+                        <div class="phase-icon">&#127768;</div>
+                        <div class="phase-name">Menguante</div>
+                        <div class="phase-day">Dia ~26</div>
+                    </div>
+                </div>
+                <p style="margin-top: 0.75rem; font-size: 0.75rem; text-align: center; color: var(--text-secondary);">
+                    Hemisferio Norte — en el Sur, las fases aparecen invertidas horizontalmente
+                </p>
+            </aside>
+        </section>
+
+        <!-- CONCEPTOS -->
+        <section class="two">
+            <div class="card">
+                <h2>Rotacion sincrona (bloqueo de marea)</h2>
+                <p>La Luna rota sobre su eje en exactamente el mismo tiempo que tarda en orbitar la Tierra (~27.3 dias). Por eso <strong>siempre vemos la misma cara</strong>.</p>
+                <ul>
+                    <li><strong>Causa:</strong> Friccion de marea durante miles de millones de anos</li>
+                    <li><strong>Libracion:</strong> Vemos ~59% de la superficie total debido a oscilaciones orbitales</li>
+                    <li><strong>Cara oculta:</strong> Fotografiada por primera vez en 1959 (Luna 3, URSS)</li>
+                    <li><strong>Fenomeno comun:</strong> Muchas lunas del sistema solar estan bloqueadas</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Eclipses: cuando las fases se alinean</h2>
+                <p>Los eclipses requieren alineacion casi perfecta del plano orbital lunar (inclinado ~5°) con la ecliptica.</p>
+                <ul>
+                    <li><strong>Eclipse solar:</strong> Luna nueva + alineacion → Luna tapa al Sol</li>
+                    <li><strong>Eclipse lunar:</strong> Luna llena + alineacion → sombra terrestre cubre la Luna</li>
+                    <li><strong>Nodos:</strong> Puntos donde la orbita lunar cruza la ecliptica</li>
+                    <li><strong>Ciclo Saros:</strong> 18 anos, 11 dias — eclipses similares se repiten</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Mareas: la Luna mueve oceanos</h2>
+                <p>La gravedad lunar (junto con la solar) crea mareas mediante fuerzas diferenciales.</p>
+                <ul>
+                    <li><strong>Marea viva:</strong> Luna nueva/llena — Sol y Luna alineados, mareas extremas</li>
+                    <li><strong>Marea muerta:</strong> Cuartos — Sol y Luna en cuadratura, mareas moderadas</li>
+                    <li><strong>Dos protuberancias:</strong> Una hacia la Luna, otra opuesta (inercia)</li>
+                    <li><strong>Desfase:</strong> La marea alta no coincide exactamente con el paso lunar</li>
+                </ul>
+            </div>
+            <div class="card">
+                <h2>Observacion practica</h2>
+                <p>Cada fase tiene implicaciones para astronomos amateur y profesionales.</p>
+                <ul>
+                    <li><strong>Luna nueva:</strong> Cielo oscuro ideal para observar galaxias y nebulosas</li>
+                    <li><strong>Creciente/menguante:</strong> Terminador bien definido, crateres con sombras</li>
+                    <li><strong>Luna llena:</strong> Superficie brillante pero plana, sin sombras</li>
+                    <li><strong>Hora de salida:</strong> Luna nueva sale con el Sol; llena al atardecer</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ESTADOS VISUALES -->
+        <section class="card section">
+            <div class="kicker">Estados visuales en la simulacion</div>
+            <h2>Que observar en cada elemento</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <h3>Vista orbital (superior)</h3>
+                    <ul>
+                        <li><strong>Sol:</strong> Fuente de luz a la izquierda (rayos paralelos)</li>
+                        <li><strong>Tierra:</strong> Centro del sistema, rota diariamente</li>
+                        <li><strong>Luna:</strong> Orbita antihorario, mitad siempre iluminada</li>
+                        <li><strong>Linea de vision:</strong> Conecta Tierra con posicion lunar actual</li>
+                    </ul>
+                </div>
+                <div>
+                    <h3>Vista desde la Tierra</h3>
+                    <ul>
+                        <li><strong>Disco lunar:</strong> Porcion visible iluminada cambia con la fase</li>
+                        <li><strong>Terminador:</strong> Linea que separa luz de sombra</li>
+                        <li><strong>Orientacion:</strong> Depende del hemisferio del observador</li>
+                        <li><strong>Nombre de fase:</strong> Actualizado en tiempo real</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS -->
+        <section class="section">
+            <div class="section-title">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="exp-card">
+                    <div><span class="exp-num">1</span><span class="exp-title">Ciclo completo de fases</span></div>
+                    <span class="badge b-good">Fundamental</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>La fraccion iluminada visible depende del angulo Sol-Tierra-Luna.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Inicia la simulacion y observa la posicion inicial</li>
+                        <li>Avanza el tiempo lentamente (1 dia a la vez si es posible)</li>
+                        <li>Para cada fase nombrada, anota:
+                            <ul>
+                                <li>Posicion angular de la Luna respecto al Sol</li>
+                                <li>Que fraccion del disco esta iluminada</li>
+                            </ul>
+                        </li>
+                        <li>Completa un ciclo sinodico completo (~29.5 dias)</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>Luna nueva: Luna entre Sol y Tierra (0°), cara visible oscura</li>
+                        <li>Cuarto creciente: Luna a 90° del Sol, mitad derecha iluminada</li>
+                        <li>Luna llena: Luna opuesta al Sol (180°), disco completo brillante</li>
+                        <li>Cuarto menguante: Luna a 270°, mitad izquierda iluminada</li>
+                    </ul>
+                </div>
+
+                <div class="exp-card">
+                    <div><span class="exp-num">2</span><span class="exp-title">Horas de visibilidad</span></div>
+                    <span class="badge b-info">Practico</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>La hora de salida y puesta de la Luna depende de su fase.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Para cada fase principal, determina la posicion de la Luna respecto al Sol</li>
+                        <li>Considera que la Tierra rota: cuando el Sol esta en el horizonte oeste, es atardecer</li>
+                        <li>Calcula aproximadamente cuando sale y se pone la Luna:
+                            <ul>
+                                <li>Luna nueva: sale y se pone con el Sol</li>
+                                <li>Luna llena: sale al atardecer, se pone al amanecer</li>
+                            </ul>
+                        </li>
+                        <li>Verifica con observaciones reales esta noche</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>Cuarto creciente: sale al mediodia, visible en tarde/noche</li>
+                        <li>Cuarto menguante: sale a medianoche, visible en madrugada/manana</li>
+                        <li>Creciente vespertino: visible tras puesta de Sol en el oeste</li>
+                        <li>Menguante matutino: visible antes del amanecer en el este</li>
+                    </ul>
+                </div>
+
+                <div class="exp-card">
+                    <div><span class="exp-num">3</span><span class="exp-title">Por que no hay eclipses cada mes?</span></div>
+                    <span class="badge b-warn">Avanzado</span>
+
+                    <div class="hypo">
+                        <div class="hypo-label">Hipotesis</div>
+                        <p>La inclinacion orbital de ~5° evita eclipses en la mayoria de lunas nuevas/llenas.</p>
+                    </div>
+
+                    <h3>Procedimiento</h3>
+                    <ol>
+                        <li>Observa que la simulacion muestra una vista simplificada (2D)</li>
+                        <li>Imagina que la orbita lunar esta inclinada 5.14° respecto a la ecliptica</li>
+                        <li>En luna nueva, la Luna puede pasar por encima o por debajo del Sol</li>
+                        <li>Solo cuando la Luna esta cerca de un "nodo" (cruce orbital) hay eclipse</li>
+                        <li>Investiga: cuantos eclipses hay por ano?</li>
+                    </ol>
+
+                    <h3>Observaciones esperadas</h3>
+                    <ul>
+                        <li>Eclipses solares: 2-5 por ano (parciales comunes, totales raros)</li>
+                        <li>Eclipses lunares: 0-3 por ano, visibles desde todo el hemisferio nocturno</li>
+                        <li>Temporadas de eclipses: ~2 por ano, separadas ~6 meses</li>
+                        <li>Ciclo Saros: eclipses similares cada 18 anos 11 dias</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- CONEXIONES -->
+        <section class="section">
+            <div class="section-title">Conexiones interdisciplinarias</div>
+            <div class="conn-grid">
+                <a href="estaciones.html" class="conn-item">
+                    <span class="conn-icon">&#127758;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Estaciones</div>
+                        <div class="conn-desc">Orbita terrestre y geometria Sol-Tierra — misma mecanica angular</div>
+                    </div>
+                </a>
+                <a href="../../../Physics/Physics Sound Lab/metronomos/onda/index.html" class="conn-item">
+                    <span class="conn-icon">&#127754;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Ondas y Mareas</div>
+                        <div class="conn-desc">Fuerzas de marea como ondas gravitacionales en oceanos</div>
+                    </div>
+                </a>
+                <a href="../../../Physics/Physics Visual Lab/guides/pendulo-simple.html" class="conn-item">
+                    <span class="conn-icon">&#9203;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Pendulo y Periodos</div>
+                        <div class="conn-desc">Movimiento periodico y resonancias orbitales</div>
+                    </div>
+                </a>
+                <a href="../../../Mathematics/Math Visual Lab/guides/trigonometria.html" class="conn-item">
+                    <span class="conn-icon">&#128208;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Trigonometria</div>
+                        <div class="conn-desc">Angulos, coseno de la elongacion, geometria esferica</div>
+                    </div>
+                </a>
+                <a href="agujero-negro.html" class="conn-item">
+                    <span class="conn-icon">&#9899;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Orbitas y Gravedad</div>
+                        <div class="conn-desc">Mecanica orbital, velocidad angular, fuerzas centrales</div>
+                    </div>
+                </a>
+                <a href="../../../Biology/Biology Visual Lab/guides/ritmos-circadianos.html" class="conn-item">
+                    <span class="conn-icon">&#128337;</span>
+                    <div class="conn-info">
+                        <div class="conn-title">Ritmos Biologicos</div>
+                        <div class="conn-desc">Ciclos lunares afectan reproduccion marina y comportamiento</div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2>Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <ul>
+                    <li><strong>Orbita circular:</strong> La orbita lunar real es eliptica (e ≈ 0.055)</li>
+                    <li><strong>Plano 2D:</strong> No muestra la inclinacion orbital de 5.14°</li>
+                    <li><strong>Sin libracion:</strong> El bamboleo real permite ver 59% de la superficie</li>
+                    <li><strong>Tamanos no a escala:</strong> Distancia real ≈ 30 diametros terrestres</li>
+                </ul>
+                <ul>
+                    <li><strong>Sin luz cenicienta:</strong> El brillo terrestre ilumina la parte oscura</li>
+                    <li><strong>Luna uniforme:</strong> No muestra mares, crateres ni albedo variable</li>
+                    <li><strong>Sin perturbaciones:</strong> Gravedad solar afecta la orbita lunar</li>
+                    <li><strong>Tiempo uniforme:</strong> La velocidad orbital varia (Kepler)</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Contexto historico</div>
+            <h2>Hitos en la comprension de la Luna</h2>
+            <div class="timeline">
+                <div class="tl-item">
+                    <div class="tl-year">~3000 a.C.</div>
+                    <div class="tl-text">Calendarios lunares en Mesopotamia y Egipto — meses basados en ciclo sinodico</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">~500 a.C.</div>
+                    <div class="tl-text">Anaximandro y Anaxagoras explican las fases como iluminacion solar reflejada</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">~150 a.C.</div>
+                    <div class="tl-text">Hiparco calcula la distancia Tierra-Luna usando paralaje y eclipses</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1609</div>
+                    <div class="tl-text">Galileo observa crateres y montanas lunares con telescopio — no es esfera perfecta</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1687</div>
+                    <div class="tl-text">Newton explica mareas y orbita lunar con gravedad universal</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1959</div>
+                    <div class="tl-text">Luna 3 fotografía la cara oculta — confirmacion visual de rotacion sincrona</div>
+                </div>
+                <div class="tl-item">
+                    <div class="tl-year">1969</div>
+                    <div class="tl-text">Apollo 11 — primeros humanos en la Luna, reflectores laser para medir distancia exacta</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="card section">
+            <div class="kicker">Para reflexionar</div>
+            <h2>Preguntas que van mas alla</h2>
+            <ul class="reflection-list">
+                <li>Si la Luna no tuviera rotacion sincrona, como veriamos las fases? Cambiaria algo?</li>
+                <li>Por que los calendarios islamico y hebreo siguen usando meses lunares?</li>
+                <li>Si la Luna estuviera al doble de distancia, como cambiarian las mareas?</li>
+                <li>Por que la Luna llena parece mas grande en el horizonte que en el cenit?</li>
+                <li>Como afectaria a la vida en la Tierra si la Luna no existiera?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="summary-box section">
+            <div class="kicker">En resumen</div>
+            <h2>Las fases lunares en una frase</h2>
+            <p class="lead" style="margin-top: 0.5rem;">
+                Las fases lunares son un fenomeno <strong>puramente geometrico</strong>: siempre vemos la misma cara de la Luna, pero la porcion iluminada visible cambia segun la posicion Sol-Tierra-Luna. Este ciclo de ~29.5 dias ha sido el reloj natural de la humanidad y sigue siendo la clave para entender <strong>mareas, eclipses y calendarios</strong>.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Fases Lunares
+    </footer>
+</body>
+</html>

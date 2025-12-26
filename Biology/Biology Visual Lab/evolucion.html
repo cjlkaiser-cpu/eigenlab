@@ -1,0 +1,778 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Selección Natural - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f59e0b;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.1), rgba(251, 191, 36, 0.05));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Selección Natural</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-amber-400 font-medium glow-text">Selección Natural</span>
+                            <span class="text-gray-600 text-sm ml-2">Algoritmo Genético</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Generación:</span>
+                        <span id="gen-display" class="text-amber-400 mono">0</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Población:</span>
+                        <span id="pop-display" class="text-amber-400 mono">50</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Fitness promedio:</span>
+                        <span id="fitness-display" class="text-emerald-400 mono">0.50</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main population visualization -->
+            <div class="flex-1 relative">
+                <canvas id="population-canvas" class="w-full h-full"></canvas>
+
+                <!-- Environment indicator -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Ambiente</div>
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-gray-500">Color óptimo:</span>
+                        <div id="optimal-color" class="w-6 h-6 rounded-full border border-gray-600"></div>
+                    </div>
+                    <div class="text-gray-500">
+                        Presión selectiva: <span id="pressure-display" class="text-amber-400">camuflaje</span>
+                    </div>
+                </div>
+
+                <!-- Stats overlay -->
+                <div class="absolute top-4 right-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Mejor fitness</div>
+                    <div id="best-fitness" class="text-emerald-400 font-medium text-lg">0.00</div>
+                    <div class="text-xs text-gray-600 mt-1">Diversidad: <span id="diversity-display">100%</span></div>
+                </div>
+            </div>
+
+            <!-- Fitness graph -->
+            <div class="h-48 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs text-gray-500">Fitness vs Generaciones</span>
+                    <div class="flex gap-4 text-xs">
+                        <span class="text-emerald-400">— Promedio</span>
+                        <span class="text-amber-400">— Mejor</span>
+                        <span class="text-gray-500">— Peor</span>
+                    </div>
+                </div>
+                <canvas id="graph-canvas" class="w-full h-32 bg-gray-900/50 rounded-lg"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Un <span class="text-emerald-400">algoritmo genetico</span> simula evolucion: seleccion de los mas aptos, cruce de genes (crossover), y mutacion aleatoria.
+                </p>
+                <a href="guides/evolucion.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: fitness, seleccion, operadores
+                </a>
+            </div>
+
+            <!-- Environment -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-amber-500"></span>
+                    Presión Selectiva
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Color ambiente (H): <span id="env-hue-value" class="text-amber-400 mono">120</span>°
+                    </label>
+                    <input type="range" id="env-hue" min="0" max="360" step="1" value="120" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">El color óptimo para sobrevivir</div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Intensidad selección: <span id="selection-value" class="text-amber-400 mono">0.5</span>
+                    </label>
+                    <input type="range" id="selection" min="0" max="1" step="0.05" value="0.5" class="w-full">
+                    <div class="text-xs text-gray-600 mt-1">Mayor = selección más fuerte</div>
+                </div>
+
+                <button id="change-env-btn" class="w-full py-2 px-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg text-sm transition mb-2">
+                    🔄 Cambiar Ambiente
+                </button>
+            </div>
+
+            <!-- Population Parameters -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Parámetros Genéticos
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        <span class="param-highlight bg-rose-500/20 text-rose-400">µ</span>
+                        Tasa mutación: <span id="mutation-value" class="text-rose-400 mono">0.05</span>
+                    </label>
+                    <input type="range" id="mutation" min="0" max="0.3" step="0.01" value="0.05" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Tamaño población: <span id="pop-size-value" class="text-emerald-400 mono">50</span>
+                    </label>
+                    <input type="range" id="pop-size" min="10" max="200" step="10" value="50" class="w-full">
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Supervivientes (%): <span id="survival-value" class="text-emerald-400 mono">50</span>%
+                    </label>
+                    <input type="range" id="survival" min="10" max="90" step="5" value="50" class="w-full">
+                </div>
+            </div>
+
+            <!-- Simulation -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-violet-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-violet-400 mono">1.0</span> gen/s
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="10" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2 mb-3">
+                    <button id="play-btn" class="flex-1 py-2 px-4 bg-amber-500/20 hover:bg-amber-500/30 text-amber-400 rounded-lg text-sm transition">
+                        <span id="play-text">▶ Evolucionar</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+
+                <button id="next-gen-btn" class="w-full py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                    Siguiente Generación →
+                </button>
+            </div>
+
+            <!-- Presets -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Escenarios
+                </h3>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setPreset('gradual')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Gradual
+                    </button>
+                    <button onclick="setPreset('strong')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Fuerte
+                    </button>
+                    <button onclick="setPreset('drift')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Deriva
+                    </button>
+                    <button onclick="setPreset('mutation')" class="py-2 px-3 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Alta mutación
+                    </button>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-amber-400 mb-3">Selección Natural</h3>
+                <div class="text-xs space-y-2 text-gray-400">
+                    <div>Los individuos mejor adaptados tienen <span class="text-emerald-400">mayor probabilidad de reproducirse</span>.</div>
+                    <div class="mt-2">Ecuación de selección:</div>
+                    <div class="mono text-xs">Δp = p·s·(1-p)</div>
+                    <div class="text-gray-500 mt-2">donde s = coeficiente de selección</div>
+                </div>
+            </div>
+
+            <!-- Genotype distribution -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Distribución de Fenotipos</h3>
+                <canvas id="distribution-canvas" class="w-full h-24 bg-gray-950 rounded-lg"></canvas>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const popCanvas = document.getElementById('population-canvas');
+        const popCtx = popCanvas.getContext('2d');
+        const graphCanvas = document.getElementById('graph-canvas');
+        const graphCtx = graphCanvas.getContext('2d');
+        const distCanvas = document.getElementById('distribution-canvas');
+        const distCtx = distCanvas.getContext('2d');
+
+        // Parameters
+        let envHue = 120;           // Environment optimal color (green)
+        let selectionStrength = 0.5;
+        let mutationRate = 0.05;
+        let popSize = 50;
+        let survivalRate = 0.5;
+        let speed = 1;
+
+        // State
+        let generation = 0;
+        let playing = false;
+        let timeAccum = 0;
+        let population = [];
+
+        // History for graphs
+        const maxHistory = 200;
+        let avgFitnessHistory = [];
+        let bestFitnessHistory = [];
+        let worstFitnessHistory = [];
+
+        // Initialize
+        function init() {
+            resizeCanvases();
+            reset();
+        }
+
+        function resizeCanvases() {
+            popCanvas.width = popCanvas.offsetWidth * window.devicePixelRatio;
+            popCanvas.height = popCanvas.offsetHeight * window.devicePixelRatio;
+            popCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            graphCanvas.width = graphCanvas.offsetWidth * window.devicePixelRatio;
+            graphCanvas.height = graphCanvas.offsetHeight * window.devicePixelRatio;
+            graphCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            distCanvas.width = distCanvas.offsetWidth * window.devicePixelRatio;
+            distCanvas.height = distCanvas.offsetHeight * window.devicePixelRatio;
+            distCtx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function reset() {
+            generation = 0;
+            avgFitnessHistory = [];
+            bestFitnessHistory = [];
+            worstFitnessHistory = [];
+            initPopulation();
+            updateDisplays();
+        }
+
+        function initPopulation() {
+            population = [];
+            const w = popCanvas.offsetWidth;
+            const h = popCanvas.offsetHeight;
+
+            for (let i = 0; i < popSize; i++) {
+                population.push(createIndividual(w, h));
+            }
+        }
+
+        function createIndividual(w, h, parentHue = null) {
+            let hue;
+            if (parentHue !== null) {
+                // Inherit with mutation
+                hue = parentHue + (Math.random() - 0.5) * mutationRate * 360;
+            } else {
+                // Random initial color
+                hue = Math.random() * 360;
+            }
+            // Normalize hue to 0-360
+            hue = ((hue % 360) + 360) % 360;
+
+            return {
+                hue: hue,
+                saturation: 70 + Math.random() * 30,
+                lightness: 40 + Math.random() * 20,
+                x: Math.random() * w,
+                y: Math.random() * h,
+                vx: (Math.random() - 0.5) * 2,
+                vy: (Math.random() - 0.5) * 2,
+                size: 8 + Math.random() * 8,
+                fitness: 0
+            };
+        }
+
+        function calculateFitness(individual) {
+            // Fitness based on how close the color is to the environment
+            const hueDiff = Math.abs(individual.hue - envHue);
+            const normalizedDiff = Math.min(hueDiff, 360 - hueDiff) / 180;
+
+            // Fitness is 1 when perfect match, 0 when opposite
+            const baseFitness = 1 - normalizedDiff;
+
+            // Apply selection strength
+            return Math.pow(baseFitness, 1 + selectionStrength * 3);
+        }
+
+        function nextGeneration() {
+            generation++;
+
+            // Calculate fitness for all
+            population.forEach(ind => {
+                ind.fitness = calculateFitness(ind);
+            });
+
+            // Sort by fitness
+            population.sort((a, b) => b.fitness - a.fitness);
+
+            // Record statistics
+            const fitnesses = population.map(i => i.fitness);
+            const avgFitness = fitnesses.reduce((a, b) => a + b, 0) / fitnesses.length;
+            const bestFitness = fitnesses[0];
+            const worstFitness = fitnesses[fitnesses.length - 1];
+
+            avgFitnessHistory.push(avgFitness);
+            bestFitnessHistory.push(bestFitness);
+            worstFitnessHistory.push(worstFitness);
+
+            if (avgFitnessHistory.length > maxHistory) {
+                avgFitnessHistory.shift();
+                bestFitnessHistory.shift();
+                worstFitnessHistory.shift();
+            }
+
+            // Selection: keep top survivors
+            const numSurvivors = Math.floor(popSize * survivalRate);
+            const survivors = population.slice(0, numSurvivors);
+
+            // Reproduction: create new generation
+            const w = popCanvas.offsetWidth;
+            const h = popCanvas.offsetHeight;
+            const newPopulation = [];
+
+            // Keep some survivors
+            survivors.forEach(survivor => {
+                newPopulation.push({
+                    ...survivor,
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    vx: (Math.random() - 0.5) * 2,
+                    vy: (Math.random() - 0.5) * 2
+                });
+            });
+
+            // Fill rest with offspring
+            while (newPopulation.length < popSize) {
+                // Tournament selection
+                const parent1 = survivors[Math.floor(Math.random() * survivors.length)];
+                const parent2 = survivors[Math.floor(Math.random() * survivors.length)];
+
+                // Crossover (average hue with variation)
+                let childHue = (parent1.hue + parent2.hue) / 2;
+                if (Math.abs(parent1.hue - parent2.hue) > 180) {
+                    childHue = (childHue + 180) % 360;
+                }
+
+                // Mutation
+                if (Math.random() < mutationRate) {
+                    childHue += (Math.random() - 0.5) * 60;
+                }
+                childHue = ((childHue % 360) + 360) % 360;
+
+                newPopulation.push(createIndividual(w, h, childHue));
+            }
+
+            population = newPopulation;
+            updateDisplays();
+        }
+
+        function updateDisplays() {
+            document.getElementById('gen-display').textContent = generation;
+            document.getElementById('pop-display').textContent = population.length;
+
+            // Calculate current stats
+            if (population.length > 0) {
+                population.forEach(ind => {
+                    ind.fitness = calculateFitness(ind);
+                });
+
+                const fitnesses = population.map(i => i.fitness);
+                const avgFitness = fitnesses.reduce((a, b) => a + b, 0) / fitnesses.length;
+                const bestFitness = Math.max(...fitnesses);
+
+                document.getElementById('fitness-display').textContent = avgFitness.toFixed(2);
+                document.getElementById('best-fitness').textContent = bestFitness.toFixed(2);
+
+                // Diversity (standard deviation of hues)
+                const hues = population.map(i => i.hue);
+                const meanHue = hues.reduce((a, b) => a + b, 0) / hues.length;
+                const variance = hues.reduce((sum, h) => {
+                    let diff = Math.abs(h - meanHue);
+                    diff = Math.min(diff, 360 - diff);
+                    return sum + diff * diff;
+                }, 0) / hues.length;
+                const diversity = Math.min(100, Math.sqrt(variance) / 1.8);
+                document.getElementById('diversity-display').textContent = diversity.toFixed(0) + '%';
+            }
+
+            // Update optimal color display
+            document.getElementById('optimal-color').style.backgroundColor = `hsl(${envHue}, 70%, 50%)`;
+        }
+
+        function setPreset(name) {
+            switch (name) {
+                case 'gradual':
+                    selectionStrength = 0.3;
+                    mutationRate = 0.02;
+                    popSize = 50;
+                    survivalRate = 0.6;
+                    break;
+                case 'strong':
+                    selectionStrength = 0.9;
+                    mutationRate = 0.05;
+                    popSize = 50;
+                    survivalRate = 0.3;
+                    break;
+                case 'drift':
+                    selectionStrength = 0.1;
+                    mutationRate = 0.01;
+                    popSize = 20;
+                    survivalRate = 0.5;
+                    break;
+                case 'mutation':
+                    selectionStrength = 0.5;
+                    mutationRate = 0.2;
+                    popSize = 100;
+                    survivalRate = 0.5;
+                    break;
+            }
+            updateSliders();
+            reset();
+        }
+
+        function updateSliders() {
+            document.getElementById('selection').value = selectionStrength;
+            document.getElementById('selection-value').textContent = selectionStrength.toFixed(1);
+            document.getElementById('mutation').value = mutationRate;
+            document.getElementById('mutation-value').textContent = mutationRate.toFixed(2);
+            document.getElementById('pop-size').value = popSize;
+            document.getElementById('pop-size-value').textContent = popSize;
+            document.getElementById('survival').value = survivalRate * 100;
+            document.getElementById('survival-value').textContent = Math.round(survivalRate * 100);
+        }
+
+        function changeEnvironment() {
+            envHue = Math.random() * 360;
+            document.getElementById('env-hue').value = envHue;
+            document.getElementById('env-hue-value').textContent = Math.round(envHue);
+            updateDisplays();
+        }
+
+        // Drawing
+        function draw() {
+            drawPopulation();
+            drawGraph();
+            drawDistribution();
+        }
+
+        function drawPopulation() {
+            const w = popCanvas.offsetWidth;
+            const h = popCanvas.offsetHeight;
+
+            // Background gradient showing environment
+            const gradient = popCtx.createLinearGradient(0, 0, w, h);
+            const envColor = `hsla(${envHue}, 30%, 15%, 1)`;
+            const envColor2 = `hsla(${envHue}, 20%, 8%, 1)`;
+            gradient.addColorStop(0, envColor);
+            gradient.addColorStop(1, envColor2);
+            popCtx.fillStyle = gradient;
+            popCtx.fillRect(0, 0, w, h);
+
+            // Draw environment texture
+            popCtx.fillStyle = `hsla(${envHue}, 40%, 20%, 0.3)`;
+            for (let i = 0; i < 50; i++) {
+                const x = (i * 73) % w;
+                const y = (i * 47) % h;
+                popCtx.beginPath();
+                popCtx.arc(x, y, 20 + Math.random() * 30, 0, Math.PI * 2);
+                popCtx.fill();
+            }
+
+            // Move and draw individuals
+            population.forEach(ind => {
+                // Random movement
+                ind.vx += (Math.random() - 0.5) * 0.3;
+                ind.vy += (Math.random() - 0.5) * 0.3;
+                ind.vx *= 0.98;
+                ind.vy *= 0.98;
+                ind.x += ind.vx;
+                ind.y += ind.vy;
+
+                // Wrap around
+                if (ind.x < 0) ind.x = w;
+                if (ind.x > w) ind.x = 0;
+                if (ind.y < 0) ind.y = h;
+                if (ind.y > h) ind.y = 0;
+
+                // Draw individual
+                const color = `hsl(${ind.hue}, ${ind.saturation}%, ${ind.lightness}%)`;
+                popCtx.fillStyle = color;
+
+                // Size based on fitness
+                const displaySize = ind.size * (0.7 + ind.fitness * 0.6);
+
+                popCtx.beginPath();
+                popCtx.arc(ind.x, ind.y, displaySize, 0, Math.PI * 2);
+                popCtx.fill();
+
+                // Outline for visibility
+                popCtx.strokeStyle = 'rgba(0,0,0,0.3)';
+                popCtx.lineWidth = 1;
+                popCtx.stroke();
+            });
+
+            // Legend
+            popCtx.fillStyle = '#fff';
+            popCtx.font = '12px Inter';
+            popCtx.fillText(`Gen ${generation}`, 20, h - 20);
+        }
+
+        function drawGraph() {
+            const w = graphCanvas.offsetWidth;
+            const h = graphCanvas.offsetHeight;
+
+            graphCtx.fillStyle = '#0a0a0a';
+            graphCtx.fillRect(0, 0, w, h);
+
+            // Grid
+            graphCtx.strokeStyle = '#1f2937';
+            graphCtx.lineWidth = 1;
+            for (let i = 0; i <= 4; i++) {
+                const y = i * h / 4;
+                graphCtx.beginPath();
+                graphCtx.moveTo(0, y);
+                graphCtx.lineTo(w, y);
+                graphCtx.stroke();
+            }
+
+            if (avgFitnessHistory.length < 2) return;
+
+            // Draw worst fitness
+            graphCtx.strokeStyle = '#4b5563';
+            graphCtx.lineWidth = 1;
+            graphCtx.beginPath();
+            worstFitnessHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - val * h;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Draw average fitness
+            graphCtx.strokeStyle = '#10b981';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            avgFitnessHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - val * h;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Draw best fitness
+            graphCtx.strokeStyle = '#f59e0b';
+            graphCtx.lineWidth = 2;
+            graphCtx.beginPath();
+            bestFitnessHistory.forEach((val, i) => {
+                const px = (i / maxHistory) * w;
+                const py = h - val * h;
+                if (i === 0) graphCtx.moveTo(px, py);
+                else graphCtx.lineTo(px, py);
+            });
+            graphCtx.stroke();
+
+            // Y-axis labels
+            graphCtx.fillStyle = '#6b7280';
+            graphCtx.font = '10px JetBrains Mono';
+            graphCtx.fillText('1.0', 5, 12);
+            graphCtx.fillText('0.5', 5, h / 2 + 4);
+            graphCtx.fillText('0.0', 5, h - 5);
+        }
+
+        function drawDistribution() {
+            const w = distCanvas.offsetWidth;
+            const h = distCanvas.offsetHeight;
+
+            distCtx.fillStyle = '#030712';
+            distCtx.fillRect(0, 0, w, h);
+
+            // Create histogram of hues
+            const bins = 36;
+            const binSize = 360 / bins;
+            const histogram = new Array(bins).fill(0);
+
+            population.forEach(ind => {
+                const bin = Math.floor(ind.hue / binSize) % bins;
+                histogram[bin]++;
+            });
+
+            const maxCount = Math.max(...histogram, 1);
+
+            // Draw bars
+            const barWidth = w / bins;
+            histogram.forEach((count, i) => {
+                const barHeight = (count / maxCount) * (h - 10);
+                const hue = i * binSize + binSize / 2;
+
+                distCtx.fillStyle = `hsl(${hue}, 70%, 50%)`;
+                distCtx.fillRect(i * barWidth, h - barHeight, barWidth - 1, barHeight);
+            });
+
+            // Mark optimal hue
+            const optimalBin = envHue / binSize;
+            distCtx.strokeStyle = '#fff';
+            distCtx.lineWidth = 2;
+            distCtx.beginPath();
+            distCtx.moveTo(optimalBin * barWidth + barWidth / 2, 0);
+            distCtx.lineTo(optimalBin * barWidth + barWidth / 2, h);
+            distCtx.stroke();
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            if (playing) {
+                timeAccum += dt * speed;
+                while (timeAccum >= 1) {
+                    nextGeneration();
+                    timeAccum -= 1;
+                }
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('env-hue').addEventListener('input', (e) => {
+            envHue = parseFloat(e.target.value);
+            document.getElementById('env-hue-value').textContent = Math.round(envHue);
+            updateDisplays();
+        });
+
+        document.getElementById('selection').addEventListener('input', (e) => {
+            selectionStrength = parseFloat(e.target.value);
+            document.getElementById('selection-value').textContent = selectionStrength.toFixed(1);
+        });
+
+        document.getElementById('mutation').addEventListener('input', (e) => {
+            mutationRate = parseFloat(e.target.value);
+            document.getElementById('mutation-value').textContent = mutationRate.toFixed(2);
+        });
+
+        document.getElementById('pop-size').addEventListener('input', (e) => {
+            popSize = parseInt(e.target.value);
+            document.getElementById('pop-size-value').textContent = popSize;
+        });
+
+        document.getElementById('survival').addEventListener('input', (e) => {
+            survivalRate = parseFloat(e.target.value) / 100;
+            document.getElementById('survival-value').textContent = Math.round(survivalRate * 100);
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            playing = !playing;
+            document.getElementById('play-text').textContent = playing ? '⏸ Pausar' : '▶ Evolucionar';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', reset);
+        document.getElementById('next-gen-btn').addEventListener('click', nextGeneration);
+        document.getElementById('change-env-btn').addEventListener('click', changeEnvironment);
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playing = !playing;
+                document.getElementById('play-text').textContent = playing ? '⏸ Pausar' : '▶ Evolucionar';
+            } else if (e.code === 'KeyR') {
+                reset();
+            } else if (e.code === 'KeyN' || e.code === 'ArrowRight') {
+                nextGeneration();
+            } else if (e.code === 'KeyE') {
+                changeEnvironment();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvases);
+
+        // Start
+        init();
+        requestAnimationFrame(animate);
+    </script>
+</body>
+</html>

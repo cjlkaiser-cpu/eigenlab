@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stack & Heap — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --color-stack: #22c55e;
+            --color-heap: #f472b6;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .pill-muted:hover { border-color: var(--border); background: var(--bg-panel); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-heap); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em-stack { color: var(--color-stack); font-weight: 600; }
+        .em-heap { color: var(--color-heap); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .chip-stack { border-color: rgba(34, 197, 94, 0.4); color: var(--color-stack); }
+        .chip-heap { border-color: rgba(244, 114, 182, 0.4); color: var(--color-heap); }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--accent); }
+
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+        .callout-danger { border-color: rgba(239, 68, 68, 0.4); }
+        .callout-warn { border-color: rgba(251, 191, 36, 0.4); }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-stack { border-color: rgba(34, 197, 94, 0.4); }
+        .b-heap { border-color: rgba(244, 114, 182, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .section { margin-top: 1rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: linear-gradient(135deg, var(--color-stack), var(--color-heap));
+            color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(34, 197, 94, 0.1);
+            border-left: 3px solid var(--color-stack);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-heap);
+        }
+
+        .reflection ol { margin: 0; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Stack & Heap</span>
+                </nav>
+                <h1>Stack & Heap — Guia</h1>
+                <div class="subtitle">Anatomia de la memoria: donde viven tus datos y por que importa</div>
+            </div>
+            <div class="header-actions">
+                <a href="../stack-heap-visualizer.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Stack = automatico, Heap = manual</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">El modelo de memoria</div>
+                <p class="lead">
+                    La memoria de un programa es un espacio finito dividido en regiones.
+                    El <span class="em-stack">Stack</span> maneja la ejecucion: llamadas, retornos, variables locales.
+                    El <span class="em-heap">Heap</span> almacena datos dinamicos que sobreviven a las funciones.
+                </p>
+
+                <div class="chips">
+                    <span class="chip chip-stack">Stack: LIFO</span>
+                    <span class="chip chip-stack">Automatico</span>
+                    <span class="chip chip-heap">Heap: Dinamico</span>
+                    <span class="chip chip-heap">Manual/GC</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <h2>Stack (Pila)</h2>
+                        <p class="mini">
+                            Crece hacia abajo. Cada llamada a funcion crea un <strong>frame</strong>
+                            con variables locales y direccion de retorno. Al terminar la funcion,
+                            el frame desaparece automaticamente. Rapido, predecible, limitado.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Heap (Monton)</h2>
+                        <p class="mini">
+                            Crece hacia arriba. Tu pides memoria explicitamente (<code>malloc</code>,
+                            <code>new</code>) y la liberas manualmente (<code>free</code>, <code>delete</code>)
+                            o via garbage collector. Flexible, lento, propenso a errores.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Ejemplo en C</div>
+                <pre>void foo() {
+  int x = 5;           // Stack
+  int* p = malloc(4);  // p en Stack
+                       // *p en Heap
+  *p = 10;
+  free(p);             // Liberar Heap
+}  // x liberado automaticamente</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Visualizacion</div>
+                <div style="display:flex; gap:1rem; margin-top:0.75rem">
+                    <div class="badge b-stack"><span class="swatch" style="background: var(--color-stack)"></span>Stack</div>
+                    <div class="badge b-heap"><span class="swatch" style="background: var(--color-heap)"></span>Heap</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Stack Frames: la anatomia de una llamada</h2>
+                <p>
+                    Cada llamada a funcion crea un <strong>stack frame</strong>:
+                </p>
+                <ul>
+                    <li><strong>Return address:</strong> donde continuar al terminar</li>
+                    <li><strong>Base pointer:</strong> enlace al frame anterior</li>
+                    <li><strong>Argumentos:</strong> parametros pasados a la funcion</li>
+                    <li><strong>Variables locales:</strong> los datos de esta funcion</li>
+                </ul>
+                <div class="callout callout-accent">
+                    <p>
+                        <strong>LIFO</strong> (Last In, First Out): el ultimo frame creado
+                        es el primero en destruirse. Esta propiedad hace que la recursion funcione
+                        y que la memoria se gestione automaticamente.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Heap Allocation: libertad con responsabilidad</h2>
+                <p>
+                    El heap es necesario cuando:
+                </p>
+                <ul>
+                    <li>El tamano no se conoce en compilacion</li>
+                    <li>Los datos deben sobrevivir a la funcion</li>
+                    <li>Los datos son demasiado grandes para el stack</li>
+                    <li>Necesitas compartir datos entre funciones</li>
+                </ul>
+                <div class="callout callout-warn">
+                    <p>
+                        <strong>Peligros:</strong> Memory leaks (olvidar free), dangling pointers
+                        (usar memoria liberada), double free (liberar dos veces), fragmentacion.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Punteros: el puente entre mundos</h2>
+                <p>
+                    Un <strong>puntero</strong> es una variable que guarda una direccion de memoria:
+                </p>
+                <div class="callout">
+                    <p>
+                        <code>int* p = malloc(sizeof(int));</code><br><br>
+                        <code>p</code> vive en el <span class="em-stack">Stack</span> (8 bytes, la direccion)<br>
+                        <code>*p</code> vive en el <span class="em-heap">Heap</span> (4 bytes, el entero)
+                    </p>
+                </div>
+                <p class="mini">
+                    Los punteros son poderosos pero peligrosos. Un puntero incorrecto
+                    puede leer/escribir cualquier parte de la memoria, causando crashes
+                    o vulnerabilidades de seguridad.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>El zoo de bugs de memoria</h2>
+                <ul>
+                    <li><strong>Stack Overflow:</strong> recursion demasiado profunda</li>
+                    <li><strong>Memory Leak:</strong> heap nunca liberado</li>
+                    <li><strong>Dangling Pointer:</strong> usar despues de free</li>
+                    <li><strong>Double Free:</strong> liberar dos veces</li>
+                    <li><strong>Buffer Overflow:</strong> escribir mas alla del limite</li>
+                    <li><strong>Use After Free:</strong> acceder a memoria liberada</li>
+                </ul>
+                <div class="badge b-bad" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-bad)"></span>
+                    Causa de la mayoria de vulnerabilidades de seguridad
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela como funciona la memoria en tiempo de ejecucion.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">Visualizar la recursion</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Cada llamada recursiva crea un nuevo frame en el stack,
+                y los frames se destruyen en orden inverso al retornar.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Ejecuta una funcion factorial(5)</li>
+                        <li>Observa como el stack crece con cada llamada</li>
+                        <li>Cuenta los frames: deberia haber 5 (o 6 con main)</li>
+                        <li>Nota que cada frame tiene su propia copia de "n"</li>
+                        <li>Observa los frames desaparecer al retornar</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        La recursion funciona porque el stack mantiene el contexto de cada
+                        llamada separado. factorial(3) no interfiere con factorial(5)
+                        porque viven en frames distintos.
+                    </p>
+                    <div class="badge b-stack" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-stack)"></span>
+                        Cada frame = una instancia de la funcion
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Provocar Stack Overflow</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Una recursion sin caso base agotara el stack,
+                causando un crash cuando el stack colisione con el heap.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Crea una funcion que se llame a si misma sin condicion de parada</li>
+                        <li>Ejecuta y observa el stack crecer rapidamente</li>
+                        <li>Nota cuando el stack se acerca al heap</li>
+                        <li>Observa el crash: "Stack Overflow"</li>
+                        <li>Calcula: cuantos frames cupieron?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El stack tiene un tamano maximo (tipicamente 1-8 MB). Cada frame
+                        consume espacio para variables locales, return address, etc.
+                        Recursion infinita = frames infinitos = crash garantizado.
+                    </p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        ulimit -s muestra el limite del stack
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Memory Leak: el heap que nunca se libera</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Si allocamos memoria en el heap sin liberarla,
+                el heap crecera indefinidamente hasta agotar la memoria disponible.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>En un loop, haz malloc(1000) sin free</li>
+                        <li>Observa el heap crecer con cada iteracion</li>
+                        <li>El stack no crece (el puntero se sobrescribe)</li>
+                        <li>Los bloques previos quedan "huerfanos"</li>
+                        <li>Ejecuta suficientes iteraciones — que pasa?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        Un memory leak clasico: el puntero se sobrescribe, perdiendo
+                        la referencia al bloque anterior. La memoria queda allocada
+                        pero inaccesible. En produccion, esto agota la RAM lentamente.
+                    </p>
+                    <div class="callout">
+                        <p class="mini">
+                            <strong>Herramientas:</strong> Valgrind, AddressSanitizer, LeakSanitizer
+                            detectan memory leaks automaticamente.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../stack-heap-visualizer.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">Organizacion de memoria en otros sistemas</h2>
+            <p>El patron stack/heap aparece en contextos sorprendentes.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">La celula: compartimentalizacion</span>
+            </div>
+            <p>
+                Una celula organiza sus componentes en compartimentos. El citoplasma
+                es como el heap: espacio general para organelos. El reticulo endoplasmatico
+                procesa proteinas en capas, como el stack procesa funciones. La membrana
+                gestiona que entra y sale, como el sistema operativo gestiona la memoria.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/mitosis.html">Mitosis</a> —
+                la celula "duplica su memoria" antes de dividirse.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Automatas finitos: estados como frames</span>
+            </div>
+            <p>
+                Un DFA tiene un estado actual pero no stack. Un PDA (automata de pila)
+                agrega un stack para recordar contexto, permitiendo reconocer lenguajes
+                mas complejos. La jerarquia de Chomsky refleja el poder que da la memoria.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../finite-automata.html">Finite Automata</a> —
+                comparar DFA (sin stack) vs lo que podria un PDA.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #d97706"></span>
+                <span class="connection-title">Estratigrafia: capas de tiempo</span>
+            </div>
+            <p>
+                Las capas geologicas se depositan como un stack: la mas reciente arriba.
+                Los fosiles en capas profundas son mas antiguos. Leer la estratigrafia
+                es como leer un stack trace: cada capa representa un momento en el tiempo.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Geology/Geology Visual Lab/estratigrafia.html">Estratigrafia</a> —
+                capas geologicas como "stack frames" del tiempo.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #06b6d4"></span>
+                <span class="connection-title">Reacciones quimicas: intermediarios</span>
+            </div>
+            <p>
+                Una reaccion multi-paso tiene intermediarios que existen temporalmente,
+                como variables locales en el stack. Los catalizadores "prestan" recursos
+                y los recuperan, similar a como el stack presta espacio y lo recupera.
+                El estado de transicion es el "return address" quimico.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Chemistry/Chemistry Visual Lab/cinetica.html">Cinetica Quimica</a> —
+                intermediarios como "variables temporales".
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Modelos alternativos</div>
+            <h2 style="margin-top:0.5rem">Mas alla del modelo clasico</h2>
+            <ul>
+                <li>
+                    <strong>Garbage Collection (Java, Python, Go):</strong> El runtime
+                    libera automaticamente la memoria no referenciada. Mas seguro,
+                    pero con overhead y pausas impredecibles.
+                </li>
+                <li>
+                    <strong>Ownership (Rust):</strong> El compilador rastrea quien
+                    "posee" cada dato y libera automaticamente al salir del scope.
+                    Seguridad sin garbage collector.
+                </li>
+                <li>
+                    <strong>Arenas/Pools:</strong> Allocar muchos objetos juntos y
+                    liberarlos todos de una vez. Usado en juegos y servidores.
+                </li>
+                <li>
+                    <strong>Stack allocation extendido:</strong> Algunos lenguajes
+                    permiten VLAs (Variable Length Arrays) en el stack.
+                </li>
+            </ul>
+            <div class="callout callout-accent">
+                <p>
+                    <strong>Tradeoff eterno:</strong> Control manual (C/C++) da rendimiento
+                    maximo pero riesgo de bugs. Gestion automatica (GC, Rust) da seguridad
+                    pero con costo en rendimiento o complejidad.
+                </p>
+            </div>
+        </section>
+
+        <!-- SEGURIDAD -->
+        <section class="card section">
+            <div class="kicker">Seguridad</div>
+            <h2 style="margin-top:0.5rem">Por que la memoria importa para la seguridad</h2>
+            <ul>
+                <li><strong>Buffer Overflow:</strong> Sobrescribir return address para ejecutar codigo malicioso</li>
+                <li><strong>Use After Free:</strong> Reusar memoria liberada para inyectar datos</li>
+                <li><strong>Format String:</strong> Leer/escribir memoria via printf malformado</li>
+                <li><strong>Heap Spray:</strong> Llenar el heap con shellcode y saltar a el</li>
+            </ul>
+            <p class="mini">
+                La mayoria de exploits de bajo nivel abusan del modelo de memoria.
+                Por eso lenguajes como Rust y tecnicas como ASLR, stack canaries,
+                DEP existen: mitigar las consecuencias de bugs de memoria.
+            </p>
+        </section>
+
+        <!-- PREGUNTAS DE REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ol>
+                <li>
+                    Por que el stack crece hacia abajo y el heap hacia arriba?
+                    Que pasaria si crecieran en la misma direccion?
+                </li>
+                <li>
+                    Rust no tiene garbage collector pero previene memory leaks.
+                    Como logra esto sin overhead en runtime?
+                </li>
+                <li>
+                    Un servidor web procesa millones de requests.
+                    Como deberia manejar la memoria para evitar leaks acumulativos?
+                </li>
+                <li>
+                    Los lenguajes funcionales puros (Haskell) no tienen "variables".
+                    Tienen stack y heap? Como manejan la memoria?
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Stack & Heap Guide
+    </footer>
+</body>
+</html>

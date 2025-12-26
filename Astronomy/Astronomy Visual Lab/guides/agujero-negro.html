@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agujero Negro — Guia · Astronomy Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #6366f1;
+            --accent-glow: rgba(99, 102, 241, 0.3);
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+            --color-cyan: #22d3ee;
+            --color-violet: #8b5cf6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a { color: var(--accent); }
+
+        h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--accent);
+            background: rgba(99, 102, 241, 0.1);
+            text-decoration: none;
+        }
+
+        .pill-muted {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent);
+        }
+
+        main {
+            max-width: 980px;
+            margin: 0 auto;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+
+        .kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .lead {
+            margin: 0.75rem 0 0;
+            color: var(--text-primary);
+            font-size: 0.95rem;
+        }
+
+        h2 {
+            font-size: 1rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+        }
+
+        h3 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin: 0 0 0.5rem;
+            color: var(--accent);
+        }
+
+        p {
+            margin: 0.625rem 0;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        ul, ol {
+            margin: 0.625rem 0;
+            padding-left: 1.25rem;
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+        }
+
+        li { margin: 0.375rem 0; }
+
+        strong { color: var(--text-primary); }
+
+        .em { color: var(--accent); font-weight: 600; }
+
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 1rem;
+            align-items: start;
+        }
+
+        .two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .three {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        @media (max-width: 860px) {
+            .hero, .two, .three, .grid { grid-template-columns: 1fr; }
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .chip {
+            font-size: 0.7rem;
+            padding: 0.375rem 0.625rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-secondary);
+        }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+
+        pre {
+            margin: 0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            overflow: auto;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+
+        code {
+            font-size: 0.8rem;
+            color: var(--accent);
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.75rem;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+
+        .swatch {
+            width: 12px;
+            height: 12px;
+            border-radius: 3px;
+        }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            margin-top: 0.75rem;
+        }
+
+        .callout p { margin: 0; }
+
+        .callout-accent {
+            border-color: rgba(99, 102, 241, 0.4);
+            background: rgba(99, 102, 241, 0.05);
+        }
+
+        .equations {
+            display: grid;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+
+        .eq {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            font-size: 0.8rem;
+        }
+
+        .eq span:first-child { color: var(--text-secondary); }
+        .eq code { color: var(--accent); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1.5rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(99, 102, 241, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            color: var(--text-primary);
+            margin-bottom: 0.75rem;
+        }
+
+        .reflection ul { margin: 0; }
+
+        .timeline {
+            border-left: 2px solid var(--border);
+            padding-left: 1.25rem;
+            margin-top: 0.75rem;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1rem;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -1.4rem;
+            top: 0.25rem;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 2px solid var(--bg-primary);
+        }
+
+        .timeline-year {
+            font-size: 0.75rem;
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .timeline-text {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        footer {
+            max-width: 980px;
+            margin: 2rem auto 0;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Astronomy Visual Lab</a>
+                    <span> / </span>
+                    <span>Agujero Negro</span>
+                </nav>
+                <h1>Agujero Negro — Guia</h1>
+                <div class="subtitle">Donde el espacio-tiempo se curva hasta romperse</div>
+            </div>
+            <div class="header-actions">
+                <a href="../agujero-negro.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Nada escapa del horizonte</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- HERO -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es y por que importa</div>
+                <p class="lead">
+                    Un <span class="em">agujero negro</span> es una region del espacio donde la gravedad
+                    es tan intensa que nada — ni siquiera la luz — puede escapar.
+                    Son laboratorios naturales de <strong>fisica extrema</strong>: relatividad general,
+                    termodinamica cuantica y la naturaleza del espacio-tiempo.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Horizonte de eventos</span>
+                    <span class="chip">Singularidad</span>
+                    <span class="chip">Radio de Schwarzschild</span>
+                    <span class="chip">ISCO</span>
+                    <span class="chip">Fotosfera</span>
+                </div>
+
+                <div class="callout callout-accent" style="margin-top: 1rem">
+                    <p>
+                        <strong>Idea central:</strong> El agujero negro no es un "objeto" — es una
+                        <em>region</em> del espacio-tiempo. El horizonte de eventos es una frontera
+                        matematica, no una superficie fisica. Nada especial ocurre al cruzarla...
+                        excepto que ya no puedes volver.
+                    </p>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">La ecuacion fundamental</div>
+                <pre>Radio de Schwarzschild:
+
+  rs = 2GM/c²
+
+Para el Sol:  rs = 2.95 km
+Para la Tierra: rs = 8.9 mm
+
+Metrica de Schwarzschild:
+ds² = -(1-rs/r)dt²
+    + (1-rs/r)⁻¹dr²
+    + r²dΩ²</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados visuales</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #8b5cf6"></span>Horizonte de eventos</div>
+                    <div class="legend-item"><span class="swatch" style="background: #facc15"></span>Fotosfera (1.5 rs)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #22d3ee"></span>ISCO (3 rs)</div>
+                    <div class="legend-item"><span class="swatch" style="background: #f97316"></span>Disco de acrecion</div>
+                </div>
+            </aside>
+        </section>
+
+        <!-- ANATOMIA -->
+        <section class="two">
+            <div class="card">
+                <h2>Anatomia de un agujero negro</h2>
+                <p>
+                    La estructura de un agujero negro de Schwarzschild (sin rotacion) tiene
+                    varias regiones criticas:
+                </p>
+                <ul>
+                    <li><strong>Singularidad (r = 0):</strong> Punto de densidad infinita. Las ecuaciones de Einstein "explotan" aqui.</li>
+                    <li><strong>Horizonte de eventos (r = rs):</strong> Frontera de no retorno. Dentro, todas las direcciones apuntan hacia la singularidad.</li>
+                    <li><strong>Fotosfera (r = 1.5 rs):</strong> Orbita inestable de fotones. La luz puede "girar" alrededor del agujero negro.</li>
+                    <li><strong>ISCO (r = 3 rs):</strong> Orbita circular estable mas interna. Debajo, cualquier perturbacion causa caida.</li>
+                </ul>
+            </div>
+
+            <div class="card">
+                <h2>Tipos de agujeros negros</h2>
+                <div class="equations">
+                    <div class="eq"><span>Estelares</span><code>3–100 M☉</code></div>
+                    <div class="eq"><span>Intermedios</span><code>100–10⁵ M☉</code></div>
+                    <div class="eq"><span>Supermasivos</span><code>10⁶–10¹⁰ M☉</code></div>
+                    <div class="eq"><span>Primordiales</span><code>? (hipoteticos)</code></div>
+                </div>
+                <div class="callout">
+                    <p>
+                        <strong>Sagitario A*:</strong> El agujero negro supermasivo en el centro
+                        de la Via Lactea tiene ~4 millones de masas solares y un radio de
+                        Schwarzschild de ~12 millones de km (0.08 UA).
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- FISICA PROFUNDA -->
+        <section class="two">
+            <div class="card">
+                <h2>Dilatacion temporal</h2>
+                <p>
+                    El tiempo pasa mas lento cerca de un agujero negro. Un observador lejano
+                    ve que un objeto cayendo se <strong>congela</strong> en el horizonte,
+                    enrojeciendose hasta desaparecer:
+                </p>
+                <div class="callout">
+                    <p class="mono" style="font-size: 0.8rem">
+                        t_propio / t_lejano = √(1 - rs/r)
+                    </p>
+                </div>
+                <p class="mini">
+                    En r = 1.5 rs, el tiempo pasa al 58% de lo normal.
+                    En r = 1.01 rs, al 10%. En el horizonte, se detiene (desde afuera).
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Precesion relativista</h2>
+                <p>
+                    Las orbitas cerca de un agujero negro no son elipses cerradas.
+                    La relatividad general causa una <strong>precesion</strong> del periastro:
+                </p>
+                <ul>
+                    <li>En Mercurio: 43 arcsec/siglo (confirmado en 1915)</li>
+                    <li>En la estrella S2 cerca de Sgr A*: medido en 2020</li>
+                    <li>En la simulacion: orbitas "en espiral" que no cierran</li>
+                </ul>
+                <div class="badge b-good" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-good)"></span>
+                    Activar "Correcciones relativistas" para ver
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto diferente de la fisica del agujero negro.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">Orbitas estables vs inestables</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Solo las orbitas con r > 3rs (ISCO) son estables.
+                Debajo, cualquier orbita terminara cayendo al agujero negro.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Usa el preset <strong>"Circular"</strong> — observa una orbita estable</li>
+                        <li>Aumenta la masa del agujero negro con el slider</li>
+                        <li>Observa: la orbita se mantiene circular pero con diferente velocidad</li>
+                        <li>Ahora usa <strong>"Caida"</strong> y observa la espiral final</li>
+                        <li>Intenta lanzar una particula justo en r = 3rs con velocidad tangencial</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Observa:</strong> La orbita circular en ISCO es
+                    "marginalmente estable" — cualquier perturbacion la desestabiliza.</p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        ISCO: frontera entre orbitar y caer
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Precesion relativista en accion</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Con correcciones relativistas, las orbitas elipticas
+                no cierran — el periastro avanza cada vuelta.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Desactiva <strong>"Correcciones relativistas"</strong></li>
+                        <li>Lanza una orbita eliptica (preset o manual)</li>
+                        <li>Observa: la orbita cierra perfectamente (Kepler/Newton)</li>
+                        <li>Activa las correcciones relativistas</li>
+                        <li>Lanza la misma orbita — observa la precesion</li>
+                        <li>Aumenta la longitud de estela para ver el patron</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>Descubrimiento historico:</strong> Einstein explico
+                    la anomalia de Mercurio en 1915. La precesion de 43"/siglo era inexplicable
+                    con Newton.</p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        La orbita "dibuja una flor"
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">El destino de la luz (fotosfera)</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> A r = 1.5rs, los fotones pueden orbitar el agujero negro.
+                Mas cerca, incluso la luz cae. Esto crea la "sombra" fotografiada por el EHT.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Activa <strong>"Esfera de fotones"</strong> (linea amarilla punteada)</li>
+                        <li>Intenta lanzar una particula tangencialmente justo en r = 1.5rs</li>
+                        <li>Observa: incluso con velocidad c, la orbita es inestable</li>
+                        <li>Usa <strong>"Sobrevuelo"</strong> y observa la deflexion gravitacional</li>
+                        <li>Lanza particulas desde diferentes angulos — algunas escapan, otras caen</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini"><strong>La sombra del agujero negro:</strong> La imagen del EHT
+                    muestra un anillo brillante (disco de acrecion) rodeando una region oscura
+                    (la sombra). El radio aparente de la sombra es ~2.6rs debido al lensing.</p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        Dentro de la fotosfera: no hay orbitas
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../agujero-negro.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">El agujero negro en contexto</h2>
+            <p>Los agujeros negros conectan con fisica fundamental en multiples niveles.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">Ondas gravitacionales: el sonido del espacio-tiempo</span>
+            </div>
+            <p>
+                Cuando dos agujeros negros se fusionan, emiten ondas gravitacionales —
+                ondulaciones en el tejido del espacio-tiempo. LIGO detecto la primera senal
+                en 2015 (GW150914): dos agujeros de ~30 M☉ fusionandose.
+                La frecuencia aumenta hasta el "chirp" final.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Astronomy Sound Lab/ondas-gravitacionales.html">Ondas Gravitacionales</a> —
+                sonificacion de datos LIGO.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Lentes gravitacionales: la luz que se curva</span>
+            </div>
+            <p>
+                La gravedad curva el espacio-tiempo, y la luz sigue esa curvatura.
+                Un agujero negro actua como una lente cosmica: puede magnificar, distorsionar
+                o crear multiples imagenes de objetos detras de el. El "anillo de Einstein"
+                es el caso perfecto de alineacion.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../lentes-gravitacionales.html">Lentes Gravitacionales</a> —
+                deflexion de luz por masa.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22d3ee"></span>
+                <span class="connection-title">Diagrama H-R: el origen de los agujeros negros estelares</span>
+            </div>
+            <p>
+                Los agujeros negros estelares nacen de la muerte de estrellas masivas (> 25 M☉).
+                Estas estrellas estan en la esquina superior izquierda del diagrama H-R.
+                Cuando agotan su combustible, colapsan: supernova → agujero negro.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../diagrama-hr.html">Diagrama H-R</a> —
+                clasificacion estelar y evolucion.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #a855f7"></span>
+                <span class="connection-title">Termodinamica: la entropia del horizonte</span>
+            </div>
+            <p>
+                Bekenstein y Hawking descubrieron que los agujeros negros tienen entropia
+                proporcional al area del horizonte (no al volumen). Esto sugiere que la
+                informacion del universo podria estar codificada en superficies 2D —
+                el <strong>principio holografico</strong>.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../../Physics/Physics Visual Lab/entropia.html">Entropia</a> —
+                desorden y flecha del tiempo.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Que NO muestra esta simulacion</h2>
+            <div class="grid">
+                <div>
+                    <ul>
+                        <li><strong>Rotacion (Kerr):</strong> Los agujeros negros reales rotan,
+                        creando ergoesferas y arrastrando el espacio-tiempo. Esta simulacion
+                        usa Schwarzschild (sin rotacion).</li>
+                        <li><strong>Lensing real:</strong> El "fondo de estrellas" deberia
+                        distorsionarse visualmente cerca del horizonte. Aqui solo se insinua
+                        con el grid.</li>
+                    </ul>
+                </div>
+                <div>
+                    <ul>
+                        <li><strong>Radiacion Hawking:</strong> Los agujeros negros emiten
+                        radiacion termica (muy debil). Un agujero de 10 M☉ tardaria 10⁶⁷ anos
+                        en evaporarse.</li>
+                        <li><strong>Efectos de marea:</strong> La "espaguetificacion" por
+                        fuerzas de marea no se visualiza — las particulas son puntuales.</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- HISTORIA -->
+        <section class="card section">
+            <div class="kicker">Historia</div>
+            <h2 style="margin-top:0.5rem">De la teoria a la imagen</h2>
+            <div class="timeline">
+                <div class="timeline-item">
+                    <div class="timeline-year">1783</div>
+                    <div class="timeline-text">John Michell propone "estrellas oscuras" — objetos tan masivos que la luz no escapa (Newton).</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1915</div>
+                    <div class="timeline-text">Einstein publica la Relatividad General. Meses despues...</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1916</div>
+                    <div class="timeline-text">Karl Schwarzschild encuentra la primera solucion exacta, desde el frente de guerra.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1967</div>
+                    <div class="timeline-text">John Wheeler acuna el termino "black hole" (agujero negro).</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">1974</div>
+                    <div class="timeline-text">Stephen Hawking predice que los agujeros negros emiten radiacion.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2015</div>
+                    <div class="timeline-text">LIGO detecta ondas gravitacionales de fusion de agujeros negros (GW150914).</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2019</div>
+                    <div class="timeline-text">Event Horizon Telescope fotografía la sombra de M87* — primera imagen directa.</div>
+                </div>
+                <div class="timeline-item">
+                    <div class="timeline-year">2022</div>
+                    <div class="timeline-text">EHT fotografía Sagitario A*, el agujero negro de nuestra galaxia.</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ul>
+                <li>Si nada puede escapar de un agujero negro, como sabemos que existen? Que evidencias indirectas tenemos?</li>
+                <li>El horizonte de eventos no es una superficie fisica. Entonces, que "siente" un astronauta al cruzarlo?</li>
+                <li>Por que el radio de Schwarzschild depende solo de la masa? Que implica esto sobre la "simplicidad" de los agujeros negros?</li>
+                <li>La paradoja de la informacion: si un libro cae a un agujero negro, la informacion se pierde para siempre?</li>
+                <li>Si pudieras orbitar muy cerca de un agujero negro (pero fuera del horizonte), que verias mirando hacia el universo?</li>
+            </ul>
+        </section>
+
+        <!-- RESUMEN -->
+        <section class="card section">
+            <div class="kicker">En resumen</div>
+            <h2 style="margin-top:0.5rem">El agujero negro como frontera del conocimiento</h2>
+            <p>
+                Los agujeros negros son mas que objetos exoticos — son <strong>laboratorios de fisica fundamental</strong>.
+                En sus horizontes convergen la relatividad general, la mecanica cuantica y la termodinamica.
+                Entenderlos completamente requiere una teoria de la gravedad cuantica que aun no tenemos.
+            </p>
+            <p>
+                Esta simulacion te permite explorar la dinamica orbital en gravedad extrema:
+                orbitas que no cierran, horizontes que atrapan, y la frontera entre escapar y caer.
+                Cada particula que lanzas es un experimento mental hecho visible.
+            </p>
+            <p class="mini" style="margin-top: 1rem">
+                En el horizonte de eventos, el espacio se convierte en tiempo.
+            </p>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Astronomy Visual Lab — Agujero Negro
+    </footer>
+</body>
+</html>

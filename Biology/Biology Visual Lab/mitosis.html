@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mitosis - Biology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f43f5e;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .param-highlight {
+            padding: 1px 6px;
+            border-radius: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(244, 63, 94, 0.1), rgba(251, 113, 133, 0.05));
+            border: 1px solid rgba(244, 63, 94, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(244, 63, 94, 0.5);
+        }
+
+        .phase-btn {
+            transition: all 0.2s;
+        }
+        .phase-btn.active {
+            background: rgba(244, 63, 94, 0.2);
+            border-color: rgba(244, 63, 94, 0.5);
+        }
+
+        .timeline-marker {
+            transition: all 0.3s;
+        }
+        .timeline-marker.active {
+            transform: scale(1.3);
+            box-shadow: 0 0 10px rgba(244, 63, 94, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <div>
+                        <nav class="text-xs text-gray-600 mb-0.5">
+                            <a href="../../_portal/index.html" class="hover:text-emerald-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-emerald-400 transition">Biology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Mitosis</span>
+                        </nav>
+                        <h1 class="text-lg font-light">
+                            <span class="text-rose-400 font-medium glow-text">Mitosis</span>
+                            <span class="text-gray-600 text-sm ml-2">División Celular</span>
+                        </h1>
+                    </div>
+                </div>
+                <div class="flex items-center gap-6 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Fase:</span>
+                        <span id="phase-display" class="text-rose-400 mono font-medium">Interfase</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Cromosomas:</span>
+                        <span id="chromo-display" class="text-rose-400 mono">2n = 4</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative flex flex-col">
+            <!-- Main cell visualization -->
+            <div class="flex-1 relative">
+                <canvas id="cell-canvas" class="w-full h-full"></canvas>
+
+                <!-- Phase timeline -->
+                <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 bg-gray-950/90 border border-gray-800 rounded-full px-6 py-3">
+                    <div class="flex items-center gap-4">
+                        <button onclick="goToPhase(0)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="0" title="Interfase"></button>
+                        <div class="w-8 h-0.5 bg-gray-700"></div>
+                        <button onclick="goToPhase(1)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="1" title="Profase"></button>
+                        <div class="w-8 h-0.5 bg-gray-700"></div>
+                        <button onclick="goToPhase(2)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="2" title="Metafase"></button>
+                        <div class="w-8 h-0.5 bg-gray-700"></div>
+                        <button onclick="goToPhase(3)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="3" title="Anafase"></button>
+                        <div class="w-8 h-0.5 bg-gray-700"></div>
+                        <button onclick="goToPhase(4)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="4" title="Telofase"></button>
+                        <div class="w-8 h-0.5 bg-gray-700"></div>
+                        <button onclick="goToPhase(5)" class="timeline-marker w-4 h-4 rounded-full bg-gray-600 cursor-pointer" data-phase="5" title="Citocinesis"></button>
+                    </div>
+                </div>
+
+                <!-- Structure labels -->
+                <div class="absolute top-4 left-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-gray-300 mb-2">Estructuras</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-rose-500"></span>
+                            <span class="text-rose-400">Cromosomas</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-amber-500"></span>
+                            <span class="text-amber-400">Centrómeros</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-green-500"></span>
+                            <span class="text-green-400">Huso mitótico</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3 h-3 rounded-full bg-violet-500"></span>
+                            <span class="text-violet-400">Centrosomas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Phase description -->
+            <div class="h-32 border-t border-gray-900 p-4 bg-gray-950">
+                <div class="flex gap-6">
+                    <div class="flex-1">
+                        <h3 id="phase-title" class="text-lg font-medium text-rose-400 mb-2">Interfase</h3>
+                        <p id="phase-desc" class="text-sm text-gray-400">La célula crece y duplica su ADN. Los cromosomas están descondensados como cromatina. Es la fase más larga del ciclo celular.</p>
+                    </div>
+                    <div class="w-48 text-xs mono text-gray-500">
+                        <div class="mb-1">Eventos clave:</div>
+                        <ul id="phase-events" class="list-disc list-inside space-y-1">
+                            <li>Replicación del ADN</li>
+                            <li>Síntesis de proteínas</li>
+                            <li>Crecimiento celular</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <!-- Explanation + Guide -->
+            <div class="mb-6 bg-gray-900/50 rounded-xl p-4 border border-gray-800">
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    La <span class="text-emerald-400">mitosis</span> produce 2 celulas hijas identicas (2n → 2n). Fases: profase, metafase, anafase, telofase + citocinesis.
+                </p>
+                <a href="guides/mitosis.html" class="mt-3 flex items-center gap-2 text-xs text-emerald-400 hover:text-emerald-300 transition">
+                    <span class="w-4 h-4 rounded-full bg-emerald-500/20 flex items-center justify-center text-[10px]">?</span>
+                    Guia completa: fases, cromosomas, checkpoints
+                </a>
+            </div>
+
+            <!-- Phase Selection -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span>
+                    Fases de la Mitosis
+                </h3>
+
+                <div class="space-y-2">
+                    <button onclick="goToPhase(0)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="0">
+                        <span class="text-gray-400">0.</span> Interfase
+                    </button>
+                    <button onclick="goToPhase(1)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="1">
+                        <span class="text-gray-400">1.</span> Profase
+                    </button>
+                    <button onclick="goToPhase(2)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="2">
+                        <span class="text-gray-400">2.</span> Metafase
+                    </button>
+                    <button onclick="goToPhase(3)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="3">
+                        <span class="text-gray-400">3.</span> Anafase
+                    </button>
+                    <button onclick="goToPhase(4)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="4">
+                        <span class="text-gray-400">4.</span> Telofase
+                    </button>
+                    <button onclick="goToPhase(5)" class="phase-btn w-full py-2 px-3 bg-gray-900 border border-gray-800 rounded-lg text-sm text-left transition hover:bg-gray-800" data-phase="5">
+                        <span class="text-gray-400">5.</span> Citocinesis
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span>
+                    Simulación
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad: <span id="speed-value" class="text-emerald-400 mono">1.0</span>x
+                    </label>
+                    <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" class="w-full">
+                </div>
+
+                <div class="flex gap-2 mb-3">
+                    <button id="play-btn" class="flex-1 py-2 px-4 bg-rose-500/20 hover:bg-rose-500/30 text-rose-400 rounded-lg text-sm transition">
+                        <span id="play-text">▶ Play</span>
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+
+                <div class="flex gap-2">
+                    <button id="prev-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        ← Anterior
+                    </button>
+                    <button id="next-btn" class="flex-1 py-2 px-4 bg-gray-800 hover:bg-gray-700 text-gray-300 rounded-lg text-sm transition">
+                        Siguiente →
+                    </button>
+                </div>
+            </div>
+
+            <!-- Visualization Options -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-cyan-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-spindle" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Mostrar huso mitótico</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-membrane" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Mostrar membrana nuclear</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-labels" checked
+                               class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-rose-500">
+                        <span class="text-sm text-gray-400">Etiquetas</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Info Box -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-rose-400 mb-3">Mitosis</h3>
+                <div class="text-xs space-y-2 text-gray-400">
+                    <div>División celular que produce <span class="text-rose-400">dos células hijas idénticas</span> a la célula madre.</div>
+                    <div class="mt-2 mono">2n → 2n + 2n</div>
+                    <div class="text-gray-500">El número de cromosomas se mantiene constante.</div>
+                </div>
+            </div>
+
+            <!-- Chromosome count -->
+            <div class="bg-gray-900 rounded-xl p-4">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Contenido Genético</h3>
+                <div class="grid grid-cols-2 gap-4 text-xs">
+                    <div class="text-center p-3 bg-gray-950 rounded-lg">
+                        <div class="text-gray-500 mb-1">Cromosomas</div>
+                        <div id="n-display" class="text-xl font-medium text-rose-400">2n = 4</div>
+                    </div>
+                    <div class="text-center p-3 bg-gray-950 rounded-lg">
+                        <div class="text-gray-500 mb-1">ADN</div>
+                        <div id="dna-display" class="text-xl font-medium text-amber-400">4C</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Canvas setup
+        const canvas = document.getElementById('cell-canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Phase data
+        const phases = [
+            {
+                name: 'Interfase',
+                title: 'Interfase (G1, S, G2)',
+                desc: 'La célula crece y duplica su ADN. Los cromosomas están descondensados como cromatina. Es la fase más larga del ciclo celular.',
+                events: ['Replicación del ADN (fase S)', 'Síntesis de proteínas', 'Duplicación de centrosomas'],
+                chromosomes: '2n = 4',
+                dna: '2C → 4C'
+            },
+            {
+                name: 'Profase',
+                title: 'Profase',
+                desc: 'Los cromosomas se condensan y se hacen visibles. La envoltura nuclear comienza a desintegrarse. Los centrosomas migran a polos opuestos.',
+                events: ['Condensación de cromosomas', 'Formación del huso', 'Desaparición del nucleolo'],
+                chromosomes: '2n = 4',
+                dna: '4C'
+            },
+            {
+                name: 'Metafase',
+                title: 'Metafase',
+                desc: 'Los cromosomas se alinean en el plano ecuatorial de la célula (placa metafásica). Las fibras del huso se unen a los cinetocoros.',
+                events: ['Alineación en placa metafásica', 'Unión a cinetocoros', 'Tensión máxima del huso'],
+                chromosomes: '2n = 4',
+                dna: '4C'
+            },
+            {
+                name: 'Anafase',
+                title: 'Anafase',
+                desc: 'Las cromátidas hermanas se separan y migran hacia polos opuestos. Es la fase más corta de la mitosis.',
+                events: ['Separación de cromátidas', 'Acortamiento de microtúbulos', 'Elongación celular'],
+                chromosomes: '2n → 2n',
+                dna: '4C → 2C + 2C'
+            },
+            {
+                name: 'Telofase',
+                title: 'Telofase',
+                desc: 'Los cromosomas llegan a los polos y se descondensan. Se reforma la envoltura nuclear alrededor de cada conjunto de cromosomas.',
+                events: ['Descondensación de cromosomas', 'Reforma de envoltura nuclear', 'Reaparición del nucleolo'],
+                chromosomes: '2n | 2n',
+                dna: '2C | 2C'
+            },
+            {
+                name: 'Citocinesis',
+                title: 'Citocinesis',
+                desc: 'El citoplasma se divide mediante un anillo contráctil de actina y miosina, formando dos células hijas idénticas.',
+                events: ['Formación del surco de división', 'Contracción del anillo', 'Separación completa'],
+                chromosomes: '2n + 2n',
+                dna: '2C + 2C'
+            }
+        ];
+
+        // State
+        let currentPhase = 0;
+        let phaseProgress = 0;  // 0 to 1 within each phase
+        let playing = false;
+        let speed = 1;
+
+        // Visualization options
+        let showSpindle = true;
+        let showMembrane = true;
+        let showLabels = true;
+
+        // Initialize
+        function init() {
+            resizeCanvas();
+            updatePhaseUI();
+            requestAnimationFrame(animate);
+        }
+
+        function resizeCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        function goToPhase(phase) {
+            currentPhase = phase;
+            phaseProgress = 0;
+            updatePhaseUI();
+        }
+
+        function nextPhase() {
+            if (currentPhase < phases.length - 1) {
+                currentPhase++;
+                phaseProgress = 0;
+                updatePhaseUI();
+            }
+        }
+
+        function prevPhase() {
+            if (currentPhase > 0) {
+                currentPhase--;
+                phaseProgress = 0;
+                updatePhaseUI();
+            }
+        }
+
+        function updatePhaseUI() {
+            const phase = phases[currentPhase];
+
+            document.getElementById('phase-display').textContent = phase.name;
+            document.getElementById('phase-title').textContent = phase.title;
+            document.getElementById('phase-desc').textContent = phase.desc;
+            document.getElementById('chromo-display').textContent = phase.chromosomes;
+            document.getElementById('n-display').textContent = phase.chromosomes;
+            document.getElementById('dna-display').textContent = phase.dna;
+
+            const eventsList = document.getElementById('phase-events');
+            eventsList.innerHTML = phase.events.map(e => `<li>${e}</li>`).join('');
+
+            // Update buttons
+            document.querySelectorAll('.phase-btn').forEach((btn, i) => {
+                btn.classList.toggle('active', i === currentPhase);
+            });
+
+            // Update timeline
+            document.querySelectorAll('.timeline-marker').forEach((marker, i) => {
+                marker.classList.toggle('active', i === currentPhase);
+                marker.style.backgroundColor = i <= currentPhase ? '#f43f5e' : '#4b5563';
+            });
+        }
+
+        // Drawing
+        function draw() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw based on current phase
+            switch (currentPhase) {
+                case 0: drawInterphase(cx, cy); break;
+                case 1: drawProphase(cx, cy); break;
+                case 2: drawMetaphase(cx, cy); break;
+                case 3: drawAnaphase(cx, cy); break;
+                case 4: drawTelophase(cx, cy); break;
+                case 5: drawCytokinesis(cx, cy); break;
+            }
+        }
+
+        function drawInterphase(cx, cy) {
+            const cellRadius = 120;
+
+            // Cell membrane
+            drawCellMembrane(cx, cy, cellRadius);
+
+            // Nuclear envelope
+            if (showMembrane) {
+                ctx.strokeStyle = '#8b5cf6';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+                ctx.stroke();
+
+                if (showLabels) {
+                    ctx.fillStyle = '#8b5cf6';
+                    ctx.font = '11px Inter';
+                    ctx.fillText('Envoltura nuclear', cx + 70, cy - 40);
+                }
+            }
+
+            // Chromatin (uncondensed DNA)
+            ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
+            ctx.lineWidth = 2;
+            for (let i = 0; i < 8; i++) {
+                ctx.beginPath();
+                const startX = cx - 30 + Math.random() * 60;
+                const startY = cy - 30 + Math.random() * 60;
+                ctx.moveTo(startX, startY);
+                for (let j = 0; j < 5; j++) {
+                    ctx.lineTo(
+                        startX + (Math.random() - 0.5) * 40,
+                        startY + (Math.random() - 0.5) * 40
+                    );
+                }
+                ctx.stroke();
+            }
+
+            // Nucleolus
+            ctx.fillStyle = '#6b21a8';
+            ctx.beginPath();
+            ctx.arc(cx + 15, cy - 10, 15, 0, Math.PI * 2);
+            ctx.fill();
+
+            if (showLabels) {
+                ctx.fillStyle = '#a855f7';
+                ctx.font = '11px Inter';
+                ctx.fillText('Nucleolo', cx + 35, cy - 5);
+                ctx.fillStyle = '#f43f5e';
+                ctx.fillText('Cromatina', cx - 60, cy + 50);
+            }
+
+            // Centrosomes
+            drawCentrosomes(cx, cy, 0);
+        }
+
+        function drawProphase(cx, cy) {
+            const cellRadius = 120;
+            const condensation = phaseProgress;
+
+            drawCellMembrane(cx, cy, cellRadius);
+
+            // Fading nuclear envelope
+            if (showMembrane) {
+                ctx.strokeStyle = `rgba(139, 92, 246, ${1 - condensation * 0.7})`;
+                ctx.lineWidth = 3;
+                ctx.setLineDash([5 * condensation, 5 * condensation]);
+                ctx.beginPath();
+                ctx.arc(cx, cy, 60, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            }
+
+            // Condensing chromosomes
+            const spread = 30 * (1 - condensation * 0.5);
+            drawCondensedChromosomes(cx, cy, spread, condensation);
+
+            // Centrosomes moving apart
+            drawCentrosomes(cx, cy, condensation * 0.3);
+
+            // Early spindle
+            if (showSpindle && condensation > 0.5) {
+                drawSpindle(cx, cy, (condensation - 0.5) * 2, 0.3);
+            }
+        }
+
+        function drawMetaphase(cx, cy) {
+            const cellRadius = 120;
+
+            drawCellMembrane(cx, cy, cellRadius);
+
+            // Centrosomes at poles
+            drawCentrosomes(cx, cy, 1);
+
+            // Full spindle
+            if (showSpindle) {
+                drawSpindle(cx, cy, 1, 1);
+            }
+
+            // Chromosomes aligned at metaphase plate
+            const chromosomePositions = [
+                { x: cx, y: cy - 25 },
+                { x: cx, y: cy - 8 },
+                { x: cx, y: cy + 8 },
+                { x: cx, y: cy + 25 }
+            ];
+
+            chromosomePositions.forEach((pos, i) => {
+                drawChromosomeX(pos.x, pos.y, 1);
+            });
+
+            if (showLabels) {
+                ctx.fillStyle = '#f43f5e';
+                ctx.font = '11px Inter';
+                ctx.fillText('Placa metafásica', cx + 50, cy);
+
+                // Kinetochore labels
+                ctx.fillStyle = '#fbbf24';
+                ctx.font = '10px Inter';
+                ctx.fillText('Cinetocoro', cx + 40, cy - 35);
+            }
+        }
+
+        function drawAnaphase(cx, cy) {
+            const cellRadius = 120 + phaseProgress * 20;
+            const separation = phaseProgress * 60;
+
+            // Elongated cell
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, cellRadius, 100, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Centrosomes at poles
+            drawCentrosomes(cx, cy, 1 + phaseProgress * 0.3);
+
+            // Spindle
+            if (showSpindle) {
+                drawSpindle(cx, cy, 1, 1 - phaseProgress * 0.3, separation);
+            }
+
+            // Separating chromatids
+            const positions = [-25, -8, 8, 25];
+            positions.forEach((yOff, i) => {
+                // Left chromatid
+                ctx.fillStyle = '#f43f5e';
+                ctx.beginPath();
+                ctx.ellipse(cx - separation, cy + yOff, 8, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Right chromatid
+                ctx.beginPath();
+                ctx.ellipse(cx + separation, cy + yOff, 8, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Centromere
+                ctx.fillStyle = '#fbbf24';
+                ctx.beginPath();
+                ctx.arc(cx - separation, cy + yOff, 2, 0, Math.PI * 2);
+                ctx.arc(cx + separation, cy + yOff, 2, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
+        function drawTelophase(cx, cy) {
+            const cellRadius = 140;
+            const separation = 60;
+
+            // Elongated cell with cleavage furrow beginning
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, cellRadius, 90, 0, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Cleavage furrow
+            const furrowDepth = phaseProgress * 20;
+            ctx.fillStyle = '#030712';
+            ctx.beginPath();
+            ctx.ellipse(cx, cy - 90 + furrowDepth, 10, furrowDepth, 0, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(cx, cy + 90 - furrowDepth, 10, furrowDepth, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Reforming nuclear envelopes
+            if (showMembrane) {
+                ctx.strokeStyle = `rgba(139, 92, 246, ${phaseProgress})`;
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cx - separation, cy, 35 + phaseProgress * 10, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + separation, cy, 35 + phaseProgress * 10, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Decondensing chromosomes
+            const decondensation = phaseProgress;
+            const positions = [-15, -5, 5, 15];
+            positions.forEach((yOff) => {
+                // Left nucleus chromosomes
+                ctx.fillStyle = `rgba(244, 63, 94, ${1 - decondensation * 0.5})`;
+                ctx.beginPath();
+                ctx.ellipse(cx - separation, cy + yOff, 6 + decondensation * 4, 3 + decondensation * 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Right nucleus chromosomes
+                ctx.beginPath();
+                ctx.ellipse(cx + separation, cy + yOff, 6 + decondensation * 4, 3 + decondensation * 2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Centrosomes
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(cx - separation - 50, cy, 5, 0, Math.PI * 2);
+            ctx.arc(cx + separation + 50, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        function drawCytokinesis(cx, cy) {
+            const separation = 70 + phaseProgress * 30;
+            const cellRadius = 70 - phaseProgress * 10;
+
+            // Two daughter cells
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+
+            // Left cell
+            ctx.beginPath();
+            ctx.arc(cx - separation, cy, cellRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Right cell
+            ctx.beginPath();
+            ctx.arc(cx + separation, cy, cellRadius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Bridge (disappearing)
+            if (phaseProgress < 0.8) {
+                ctx.strokeStyle = `rgba(16, 185, 129, ${1 - phaseProgress * 1.2})`;
+                ctx.lineWidth = 3 * (1 - phaseProgress);
+                ctx.beginPath();
+                ctx.moveTo(cx - separation + cellRadius, cy);
+                ctx.lineTo(cx + separation - cellRadius, cy);
+                ctx.stroke();
+            }
+
+            // Nuclear envelopes
+            if (showMembrane) {
+                ctx.strokeStyle = '#8b5cf6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(cx - separation, cy, 30, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.arc(cx + separation, cy, 30, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Chromatin in each cell
+            ctx.strokeStyle = 'rgba(244, 63, 94, 0.5)';
+            ctx.lineWidth = 2;
+            [-separation, separation].forEach(offset => {
+                for (let i = 0; i < 6; i++) {
+                    ctx.beginPath();
+                    const startX = cx + offset - 15 + Math.random() * 30;
+                    const startY = cy - 15 + Math.random() * 30;
+                    ctx.moveTo(startX, startY);
+                    for (let j = 0; j < 4; j++) {
+                        ctx.lineTo(
+                            startX + (Math.random() - 0.5) * 20,
+                            startY + (Math.random() - 0.5) * 20
+                        );
+                    }
+                    ctx.stroke();
+                }
+            });
+
+            if (showLabels) {
+                ctx.fillStyle = '#10b981';
+                ctx.font = '12px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Célula hija', cx - separation, cy + cellRadius + 20);
+                ctx.fillText('Célula hija', cx + separation, cy + cellRadius + 20);
+                ctx.textAlign = 'left';
+            }
+        }
+
+        // Helper functions
+        function drawCellMembrane(cx, cy, radius) {
+            ctx.strokeStyle = '#10b981';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // Cytoplasm gradient
+            const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, radius);
+            gradient.addColorStop(0, 'rgba(16, 185, 129, 0.05)');
+            gradient.addColorStop(1, 'rgba(16, 185, 129, 0.02)');
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+
+        function drawCentrosomes(cx, cy, separation) {
+            const offset = 80 + separation * 40;
+
+            ctx.fillStyle = '#8b5cf6';
+            ctx.beginPath();
+            ctx.arc(cx - offset, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.arc(cx + offset, cy, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Centrioles
+            ctx.strokeStyle = '#a855f7';
+            ctx.lineWidth = 2;
+            [-offset, offset].forEach(xOff => {
+                ctx.beginPath();
+                ctx.moveTo(cx + xOff - 3, cy - 8);
+                ctx.lineTo(cx + xOff - 3, cy + 8);
+                ctx.moveTo(cx + xOff + 3, cy - 8);
+                ctx.lineTo(cx + xOff + 3, cy + 8);
+                ctx.stroke();
+            });
+
+            if (showLabels && separation > 0.5) {
+                ctx.fillStyle = '#8b5cf6';
+                ctx.font = '10px Inter';
+                ctx.fillText('Centrosoma', cx - offset - 30, cy - 20);
+            }
+        }
+
+        function drawSpindle(cx, cy, intensity, attachmentStrength, separation = 0) {
+            const poleOffset = 120;
+
+            ctx.strokeStyle = `rgba(34, 197, 94, ${intensity * 0.5})`;
+            ctx.lineWidth = 1;
+
+            // Kinetochore microtubules (to chromosomes)
+            const chromosomeYs = [-25, -8, 8, 25];
+            chromosomeYs.forEach(yOff => {
+                // Left pole to chromosome
+                ctx.beginPath();
+                ctx.moveTo(cx - poleOffset, cy);
+                ctx.quadraticCurveTo(cx - poleOffset/2, cy + yOff, cx - separation, cy + yOff);
+                ctx.stroke();
+
+                // Right pole to chromosome
+                ctx.beginPath();
+                ctx.moveTo(cx + poleOffset, cy);
+                ctx.quadraticCurveTo(cx + poleOffset/2, cy + yOff, cx + separation, cy + yOff);
+                ctx.stroke();
+            });
+
+            // Astral microtubules
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const length = 30 * intensity;
+
+                ctx.beginPath();
+                ctx.moveTo(cx - poleOffset, cy);
+                ctx.lineTo(cx - poleOffset + Math.cos(angle) * length, cy + Math.sin(angle) * length);
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.moveTo(cx + poleOffset, cy);
+                ctx.lineTo(cx + poleOffset + Math.cos(angle) * length, cy + Math.sin(angle) * length);
+                ctx.stroke();
+            }
+        }
+
+        function drawCondensedChromosomes(cx, cy, spread, condensation) {
+            const positions = [
+                { x: -spread, y: -spread },
+                { x: spread, y: -spread * 0.3 },
+                { x: -spread * 0.5, y: spread * 0.5 },
+                { x: spread * 0.7, y: spread }
+            ];
+
+            positions.forEach((pos, i) => {
+                const x = cx + pos.x;
+                const y = cy + pos.y;
+
+                if (condensation < 0.5) {
+                    // Still condensing - show as thick lines
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 2 + condensation * 4;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 10, y - 5);
+                    ctx.lineTo(x + 10, y + 5);
+                    ctx.stroke();
+                } else {
+                    // Condensed X shape
+                    drawChromosomeX(x, y, (condensation - 0.5) * 2);
+                }
+            });
+        }
+
+        function drawChromosomeX(x, y, intensity) {
+            const size = 12;
+
+            // Sister chromatids
+            ctx.fillStyle = '#f43f5e';
+            ctx.beginPath();
+            ctx.ellipse(x - 4, y, 4, size, -0.3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.ellipse(x + 4, y, 4, size, 0.3, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Centromere
+            ctx.fillStyle = '#fbbf24';
+            ctx.beginPath();
+            ctx.arc(x, y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // Animation loop
+        let lastTime = 0;
+        function animate(currentTime) {
+            const dt = Math.min((currentTime - lastTime) / 1000, 0.1);
+            lastTime = currentTime;
+
+            if (playing) {
+                phaseProgress += dt * speed * 0.3;
+                if (phaseProgress >= 1) {
+                    phaseProgress = 0;
+                    if (currentPhase < phases.length - 1) {
+                        currentPhase++;
+                        updatePhaseUI();
+                    } else {
+                        playing = false;
+                        document.getElementById('play-text').textContent = '▶ Play';
+                    }
+                }
+            }
+
+            draw();
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('play-btn').addEventListener('click', () => {
+            playing = !playing;
+            document.getElementById('play-text').textContent = playing ? '⏸ Pausa' : '▶ Play';
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            currentPhase = 0;
+            phaseProgress = 0;
+            playing = false;
+            document.getElementById('play-text').textContent = '▶ Play';
+            updatePhaseUI();
+        });
+
+        document.getElementById('next-btn').addEventListener('click', nextPhase);
+        document.getElementById('prev-btn').addEventListener('click', prevPhase);
+
+        document.getElementById('show-spindle').addEventListener('change', (e) => {
+            showSpindle = e.target.checked;
+        });
+
+        document.getElementById('show-membrane').addEventListener('change', (e) => {
+            showMembrane = e.target.checked;
+        });
+
+        document.getElementById('show-labels').addEventListener('change', (e) => {
+            showLabels = e.target.checked;
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                playing = !playing;
+                document.getElementById('play-text').textContent = playing ? '⏸ Pausa' : '▶ Play';
+            } else if (e.code === 'ArrowRight') {
+                nextPhase();
+            } else if (e.code === 'ArrowLeft') {
+                prevPhase();
+            } else if (e.code === 'KeyR') {
+                currentPhase = 0;
+                phaseProgress = 0;
+                playing = false;
+                document.getElementById('play-text').textContent = '▶ Play';
+                updatePhaseUI();
+            }
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Start
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finite Automata — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+            --color-emerald: #34d399;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(59, 130, 246, 0.1); text-decoration: none; }
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .pill-muted:hover { border-color: var(--border); background: var(--bg-panel); }
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-emerald); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--color-emerald); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre { margin: 0; padding: 1rem; border-radius: 0.5rem; border: 1px solid var(--border); background: var(--bg-primary); overflow: auto; font-size: 0.8rem; line-height: 1.5; color: var(--text-secondary); }
+        code { font-size: 0.8rem; color: var(--color-emerald); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout p { margin: 0; }
+        .callout-accent { border-color: var(--accent); background: rgba(59, 130, 246, 0.05); }
+
+        .badge { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-primary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); background: var(--bg-panel); }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: var(--color-emerald);
+            color: var(--bg-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(52, 211, 153, 0.1);
+            border-left: 3px solid var(--color-emerald);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--color-emerald);
+        }
+
+        .reflection ol { margin: 0; }
+
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Finite Automata</span>
+                </nav>
+                <h1>Finite Automata — Guia</h1>
+                <div class="subtitle">Estados, transiciones y el poder de la memoria minima</div>
+            </div>
+            <div class="header-actions">
+                <a href="../finite-automata.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Estado actual + simbolo → siguiente estado</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es un DFA?</div>
+                <p class="lead">
+                    Un <span class="em">Automata Finito Determinista</span> (DFA) es el modelo mas simple
+                    de computacion con memoria. Lee simbolos uno a uno, cambia de estado segun reglas
+                    fijas, y al final "decide" si la cadena pertenece a un lenguaje.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Estados finitos</span>
+                    <span class="chip">Transiciones deterministas</span>
+                    <span class="chip">Sin memoria externa</span>
+                    <span class="chip">Lenguajes regulares</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <h2>La intuicion profunda</h2>
+                        <p class="mini">
+                            Un DFA es una maquina que <strong>olvida</strong>. Solo recuerda su estado
+                            actual — no sabe como llego ahi ni cuantos simbolos leyo. Esa "amnesia"
+                            es su limitacion y su poder: con memoria finita, procesa cadenas infinitas.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Que observar</h2>
+                        <ul class="mini">
+                            <li>El <strong>estado actual</strong> es toda la "memoria" de la maquina.</li>
+                            <li>Las <strong>transiciones</strong> son reglas: dado (estado, simbolo), hay exactamente un destino.</li>
+                            <li>Los <strong>estados de aceptacion</strong> codifican el "patron buscado".</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Definicion formal</div>
+                <pre>M = (Q, Σ, δ, q₀, F)
+
+Q  = conjunto finito de estados
+Σ  = alfabeto (simbolos validos)
+δ  = funcion de transicion: Q × Σ → Q
+q₀ = estado inicial (q₀ ∈ Q)
+F  = estados de aceptacion (F ⊆ Q)</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados en la simulacion</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #64748b"></span>Normal</div>
+                    <div class="legend-item"><span class="swatch" style="background: #3b82f6"></span>Actual</div>
+                    <div class="legend-item"><span class="swatch" style="background: #34d399"></span>Aceptacion</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Funcion de transicion δ: el corazon del automata</h2>
+                <p>
+                    La funcion δ define <strong>completamente</strong> el comportamiento:
+                </p>
+                <div class="callout">
+                    <p>
+                        <code>δ(estado_actual, simbolo) = siguiente_estado</code><br><br>
+                        Ejemplo: <code>δ(q0, '0') = q1</code><br>
+                        "Si estoy en q0 y leo '0', voy a q1"
+                    </p>
+                </div>
+                <p class="mini">
+                    <strong>Determinismo:</strong> Para cada par (estado, simbolo) hay exactamente
+                    un destino. No hay eleccion, no hay ambiguedad. El futuro esta determinado
+                    por el presente y la entrada.
+                </p>
+                <div class="callout callout-accent">
+                    <p class="mini">
+                        <strong>Completitud:</strong> Un DFA bien formado tiene transiciones
+                        para todos los simbolos desde todos los estados. Si falta alguna,
+                        se asume transicion a un "estado trampa" (no aceptacion).
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Estados de aceptacion: codificar patrones</h2>
+                <p>
+                    El conjunto F (estados de aceptacion) codifica <em>que</em> reconoce el automata:
+                </p>
+                <ul>
+                    <li><strong>F = {q2}</strong> → "el patron termina en q2"</li>
+                    <li><strong>F = {q0, q2}</strong> → "cadena vacia O patron especifico"</li>
+                    <li><strong>F = Q</strong> → acepta todo (trivial)</li>
+                    <li><strong>F = ∅</strong> → no acepta nada</li>
+                </ul>
+                <div class="callout">
+                    <p>
+                        Un automata solo mira su estado <strong>al final</strong> de la cadena.
+                        Puede pasar por estados de aceptacion durante el proceso sin aceptar
+                        si no termina en uno.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Lenguajes regulares: el dominio de los DFA</h2>
+                <p>
+                    Los DFAs reconocen exactamente los <strong>lenguajes regulares</strong>:
+                </p>
+                <ul>
+                    <li>Cadenas que terminan en "01"</li>
+                    <li>Cadenas con numero par de 0s</li>
+                    <li>Identificadores validos (empieza con letra)</li>
+                    <li>Numeros en notacion cientifica</li>
+                    <li>Todo lo expresable con regex</li>
+                </ul>
+                <p class="mini">
+                    <strong>Teorema de Kleene:</strong> Expresiones regulares, DFAs y NFAs
+                    son equivalentes en poder expresivo. Tres notaciones, un mismo poder.
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Lo que los DFA NO pueden hacer</h2>
+                <p>
+                    Los DFAs tienen <strong>memoria finita</strong>. No pueden:
+                </p>
+                <ul>
+                    <li><strong>Contar sin limite:</strong> "mismo numero de a's y b's"</li>
+                    <li><strong>Recordar estructura:</strong> "parentesis balanceados"</li>
+                    <li><strong>Detectar palindromos:</strong> "abba", "racecar"</li>
+                    <li><strong>Comparar mitades:</strong> "la primera mitad = segunda mitad"</li>
+                </ul>
+                <div class="badge b-warn" style="margin-top:0.5rem">
+                    <span class="swatch" style="background: var(--color-warn)"></span>
+                    El lema del bombeo formaliza estas limitaciones
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un aspecto del modelo de automatas finitos.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">Reconocer sufijos: "termina en 01"</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Un automata de 3 estados puede reconocer cualquier
+                cadena que termine en "01", sin importar su longitud.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Crea un automata con estados: q0, q1, q2</li>
+                        <li>Transiciones: q0-0→q1, q0-1→q0, q1-0→q1, q1-1→q2, q2-0→q1, q2-1→q0</li>
+                        <li>Estado inicial: q0. Aceptacion: {q2}</li>
+                        <li>Prueba: "01", "001", "1101", "0011"</li>
+                        <li>Que cadenas acepta? Que patron tienen en comun?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El automata "recuerda los ultimos 2 simbolos" con solo 3 estados:
+                        q0 = "ultimo no fue 0", q1 = "ultimo fue 0", q2 = "ultimos fueron 01".
+                    </p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        Memoria O(1) para verificar sufijos
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">Paridad: contar modulo 2</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Con k estados se puede contar modulo k.
+                Para "numero par de 1s", bastan 2 estados.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Crea automata: q_even (par), q_odd (impar)</li>
+                        <li>Transiciones: '0' mantiene estado, '1' alterna</li>
+                        <li>Inicial: q_even. Aceptacion: {q_even}</li>
+                        <li>Prueba: "", "0", "1", "11", "101", "1111"</li>
+                        <li>Ahora intenta "numero de 1s divisible por 3" — cuantos estados?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El automata implementa <strong>aritmetica modular</strong>.
+                        Cada estado representa el residuo actual. Las transiciones
+                        son sumas mod k.
+                    </p>
+                    <div class="callout">
+                        <p class="mini">
+                            <strong>Generalizacion:</strong> Para "divisible por n", necesitas
+                            exactamente n estados. El DFA simula un contador circular.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">La limitacion: intenta contar sin limite</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Es imposible construir un DFA que acepte
+                exactamente las cadenas con igual numero de 0s y 1s.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Intenta disenar un automata para "mismo numero de 0s y 1s"</li>
+                        <li>Empieza simple: acepta "", "01", "10", "0011", "0101"</li>
+                        <li>Cuantos estados necesitas para manejar "0...0 1...1" con k ceros?</li>
+                        <li>Que pasa cuando k > numero de estados?</li>
+                        <li>Concluye: por que es imposible con estados finitos?</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        Si el automata tiene n estados y la cadena tiene mas de n simbolos,
+                        <strong>algun estado se repite</strong> (principio del palomar).
+                        Eso crea un ciclo que permite "bombear" la cadena, rompiendo el patron.
+                    </p>
+                    <div class="badge b-bad" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-bad)"></span>
+                        Limitacion fundamental: memoria finita
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../finite-automata.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">Automatas en la naturaleza</h2>
+            <p>El modelo estado-transicion aparece en toda la ciencia.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">La neurona como automata</span>
+            </div>
+            <p>
+                Una neurona tiene dos estados principales: reposo y disparo.
+                Las senales de entrada son los "simbolos". Si la suma supera el umbral,
+                transiciona a disparo. Es un automata con transiciones probabilisticas
+                y continuas, pero el modelo discreto captura la esencia.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/neurona.html">Neurona</a> —
+                el potencial de accion como transicion de estado.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">Mitosis: fases como estados</span>
+            </div>
+            <p>
+                La division celular sigue un ciclo de estados: G1 → S → G2 → M.
+                Cada fase tiene "checkpoints" que verifican condiciones antes de
+                transicionar. Si falla un checkpoint, la celula puede entrar en
+                "estado de espera" o apoptosis. Es un automata biologico.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/mitosis.html">Mitosis</a> —
+                las fases del ciclo celular como maquina de estados.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #06b6d4"></span>
+                <span class="connection-title">Diagramas de fase: transiciones de materia</span>
+            </div>
+            <p>
+                Solido, liquido, gas son "estados" de la materia. Temperatura y presion
+                son "entradas" que causan transiciones. El punto triple es un estado
+                con multiples transiciones posibles. El diagrama de fases es un automata
+                del comportamiento de la materia.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Chemistry/Chemistry Visual Lab/diagrama-fases.html">Diagrama de Fases</a> —
+                transiciones de estado en la materia.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Game of Life: automatas en paralelo</span>
+            </div>
+            <p>
+                El Game of Life es una rejilla donde cada celda es un automata de 2 estados
+                (viva/muerta). Todas las celdas transicionan simultaneamente basandose en
+                sus vecinas. Un automata celular es la version "distribuida" del DFA.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Mathematics/Math Visual Lab/game-of-life.html">Game of Life</a> —
+                automatas celulares y computacion emergente.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Jerarquia de Chomsky</div>
+            <h2 style="margin-top:0.5rem">DFA en contexto: que hay mas alla</h2>
+            <ul>
+                <li>
+                    <strong>Tipo 3 - Regulares (DFA):</strong> Memoria finita, sin stack.
+                    Reconoce: expresiones regulares, tokens.
+                </li>
+                <li>
+                    <strong>Tipo 2 - Libres de contexto (PDA):</strong> Stack infinito.
+                    Reconoce: gramaticas, parentesis balanceados, HTML.
+                </li>
+                <li>
+                    <strong>Tipo 1 - Sensibles al contexto:</strong> Cinta acotada.
+                    Reconoce: lenguajes naturales (aproximacion).
+                </li>
+                <li>
+                    <strong>Tipo 0 - Recursivamente enumerables (TM):</strong> Cinta infinita.
+                    Reconoce: todo lo computable. Puede no terminar.
+                </li>
+            </ul>
+            <div class="callout callout-accent">
+                <p>
+                    <strong>Tradeoff fundamental:</strong> Mas poder expresivo = mas recursos
+                    computacionales. Los DFA son limitados pero eficientes: O(n) tiempo,
+                    O(1) espacio para cualquier cadena.
+                </p>
+            </div>
+        </section>
+
+        <!-- APLICACIONES -->
+        <section class="card section">
+            <div class="kicker">Aplicaciones practicas</div>
+            <h2 style="margin-top:0.5rem">Donde viven los DFA</h2>
+            <ul>
+                <li><strong>Compiladores:</strong> Lexers tokenizan codigo fuente con DFAs</li>
+                <li><strong>Regex:</strong> Los motores compilan expresiones a DFA/NFA</li>
+                <li><strong>Protocolos:</strong> TCP, HTTP, WebSocket tienen maquinas de estado</li>
+                <li><strong>Hardware:</strong> Controladores digitales, semaforos, maquinas expendedoras</li>
+                <li><strong>Videojuegos:</strong> IA de NPCs, sistemas de dialogo, menus</li>
+                <li><strong>Bioinformatica:</strong> Busqueda de patrones en DNA (ACGT)</li>
+            </ul>
+        </section>
+
+        <!-- PREGUNTAS DE REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ol>
+                <li>
+                    Si los DFA no pueden reconocer palindromos, como hace tu cerebro
+                    para reconocer "radar" instantaneamente como palindromo?
+                </li>
+                <li>
+                    Un automata para "termina en 01" tiene 3 estados.
+                    Cuantos estados tendria uno para "termina en 0101"?
+                    Hay un patron?
+                </li>
+                <li>
+                    Los protocolos de red (TCP, HTTP) se modelan como automatas.
+                    Que "estados" tiene una conexion TCP? Que "simbolos" causan transiciones?
+                </li>
+                <li>
+                    El lema del bombeo dice que si una cadena es "suficientemente larga",
+                    tiene una parte que se puede repetir. Por que esto implica
+                    limitaciones en lo que pueden reconocer los DFA?
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Finite Automata Guide
+    </footer>
+</body>
+</html>

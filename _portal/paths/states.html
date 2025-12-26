@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Estados y Transiciones - Caminos - EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.15);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.6;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+        }
+
+        .header-content { max-width: 900px; margin: 0 auto; }
+
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--text-secondary); }
+        .breadcrumb a:hover { color: var(--text-primary); text-decoration: none; }
+
+        .path-label {
+            display: inline-block;
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            color: var(--accent);
+            background: var(--accent-glow);
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            margin-bottom: 0.75rem;
+        }
+
+        .header h1 { font-size: 2rem; font-weight: 700; margin-bottom: 0.75rem; }
+        .header .subtitle { font-size: 1.1rem; color: var(--text-secondary); max-width: 650px; }
+
+        .main { max-width: 900px; margin: 0 auto; padding: 2rem; }
+
+        .intro {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .intro h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent); }
+        .intro p { color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 0.75rem; }
+        .intro p:last-child { margin-bottom: 0; }
+
+        .key-concepts { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1rem; }
+
+        .concept {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+            border-radius: 9999px;
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--text-primary);
+        }
+
+        .journey { position: relative; }
+
+        .journey::before {
+            content: '';
+            position: absolute;
+            left: 20px;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: linear-gradient(to bottom, var(--accent), transparent);
+        }
+
+        .stop { position: relative; padding-left: 60px; margin-bottom: 2rem; }
+        .stop:last-child { margin-bottom: 0; }
+
+        .stop-number {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 40px;
+            height: 40px;
+            background: var(--bg-card);
+            border: 2px solid var(--accent);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--accent);
+        }
+
+        .stop-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            transition: all 0.2s ease;
+        }
+
+        .stop-card:hover { border-color: var(--accent); box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); }
+
+        .stop-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.75rem; }
+        .stop-title { font-size: 1.125rem; font-weight: 600; }
+
+        .stop-lab {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            background: var(--bg-secondary);
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.25rem;
+        }
+
+        .stop-description { color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem; }
+
+        .stop-connection {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            padding: 0.75rem;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            border-left: 3px solid var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        .stop-connection strong { color: var(--accent); }
+
+        .stop-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: var(--accent);
+            color: white;
+            border-radius: 0.5rem;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .stop-link:hover { text-decoration: none; filter: brightness(1.1); transform: translateX(4px); }
+
+        .summary {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            text-align: center;
+        }
+
+        .summary h2 { font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; }
+        .summary p { color: var(--text-secondary); font-size: 0.9rem; font-style: italic; }
+
+        .footer {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid var(--border);
+        }
+
+        .footer a { color: var(--text-secondary); font-size: 0.875rem; }
+        .footer a:hover { color: var(--text-primary); }
+
+        @media (max-width: 640px) {
+            .stop { padding-left: 50px; }
+            .journey::before { left: 15px; }
+            .stop-number { width: 32px; height: 32px; font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <nav class="breadcrumb">
+                <a href="../index.html">EigenLab</a> /
+                <a href="index.html">Caminos</a> /
+                Estados
+            </nav>
+            <span class="path-label">Camino 3</span>
+            <h1>Estados y Transiciones</h1>
+            <p class="subtitle">
+                Sistemas con estados discretos y reglas de cambio.
+                El mismo patron en automatas, celulas, neuronas y rocas.
+            </p>
+        </div>
+    </header>
+
+    <main class="main">
+        <section class="intro">
+            <h2>La idea central</h2>
+            <p>
+                Muchos sistemas no cambian suavemente — saltan entre estados discretos.
+                Una neurona esta en reposo o disparando. Una celula esta en G1, S, G2 o M.
+                Una roca es ignea, sedimentaria o metamorfica.
+            </p>
+            <p>
+                Lo fascinante es que la logica de las transiciones — que condiciones disparan
+                el cambio de estado — es estructuralmente similar en todos estos sistemas.
+                Entender uno ayuda a entender los demas.
+            </p>
+            <div class="key-concepts">
+                <span class="concept">Estado discreto</span>
+                <span class="concept">Transicion</span>
+                <span class="concept">Umbral</span>
+                <span class="concept">Ciclo</span>
+                <span class="concept">Irreversibilidad</span>
+            </div>
+        </section>
+
+        <div class="journey">
+            <!-- Stop 1: DFA -->
+            <div class="stop">
+                <div class="stop-number">1</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Automata Finito (DFA)</h3>
+                        <span class="stop-lab">Computation Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        El modelo mas puro de estados y transiciones. Un conjunto finito de estados,
+                        un alfabeto de simbolos, y reglas deterministas: "si estoy en q0 y leo 'a',
+                        voy a q1". Reconocen lenguajes regulares como "cadenas que terminan en 01".
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Patron clave:</strong> Estado actual + input = siguiente estado.
+                        Esta regla simple es la base de lexers, protocolos de red, maquinas expendedoras,
+                        y mucho mas.
+                    </div>
+                    <a href="../../Computation/Computation Lab/finite-automata.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 2: Mitosis -->
+            <div class="stop">
+                <div class="stop-number">2</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Ciclo Celular (Mitosis)</h3>
+                        <span class="stop-lab">Biology Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        La celula pasa por fases discretas: G1 (crecimiento), S (sintesis de ADN),
+                        G2 (preparacion), M (mitosis). Checkpoints aseguran que cada fase se complete
+                        antes de pasar a la siguiente.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con DFA:</strong> El ciclo celular ES un automata biologico.
+                        Los checkpoints son las transiciones, y las senales moleculares (ciclinas, CDKs)
+                        son el "input" que dispara el cambio de estado.
+                    </div>
+                    <a href="../../Biology/Biology Visual Lab/mitosis.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 3: Potencial de accion -->
+            <div class="stop">
+                <div class="stop-number">3</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Potencial de Accion</h3>
+                        <span class="stop-lab">Biology Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        La neurona tiene un umbral. Por debajo, permanece en reposo (-70mV).
+                        Al cruzar el umbral, dispara un potencial de accion (+40mV) y luego
+                        entra en periodo refractario. Todo-o-nada, sin terminos medios.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con la mitosis:</strong> Otro sistema biologico con estados
+                        discretos y umbrales. La neurona es un automata con 3 estados: reposo,
+                        despolarizacion, refractario. Las ecuaciones de Hodgkin-Huxley formalizan
+                        las transiciones.
+                    </div>
+                    <a href="../../Biology/Biology Visual Lab/potencial-accion.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 4: Ciclo de rocas -->
+            <div class="stop">
+                <div class="stop-number">4</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Ciclo de las Rocas</h3>
+                        <span class="stop-lab">Geology Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Igneas, sedimentarias, metamorficas. La roca puede transformarse en cualquiera
+                        de las otras dependiendo de las condiciones: enfriamiento del magma, erosion
+                        y deposito, o calor y presion. Un ciclo que dura millones de anos.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Conexion con la neurona:</strong> Estados discretos, transiciones
+                        condicionales. La diferencia es la escala temporal: milisegundos vs millones
+                        de anos. Pero la estructura logica — estado + condicion = nuevo estado —
+                        es identica.
+                    </div>
+                    <a href="../../Geology/Geology Visual Lab/rock-cycle.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+
+            <!-- Stop 5: Diagrama de fases -->
+            <div class="stop">
+                <div class="stop-number">5</div>
+                <div class="stop-card">
+                    <div class="stop-header">
+                        <h3 class="stop-title">Diagrama de Fases</h3>
+                        <span class="stop-lab">Chemistry Visual Lab</span>
+                    </div>
+                    <p class="stop-description">
+                        Solido, liquido, gas, plasma. Las fronteras del diagrama P-T son transiciones
+                        de fase: fusion, ebullicion, sublimacion. El punto triple donde coexisten
+                        tres fases. El punto critico donde desaparece la distincion liquido-gas.
+                    </p>
+                    <div class="stop-connection">
+                        <strong>Sintesis final:</strong> Desde el automata abstracto hasta la materia
+                        real. Los estados de la materia son el ejemplo mas fundamental de estados
+                        discretos con transiciones condicionadas por variables continuas (P, T).
+                    </div>
+                    <a href="../../Chemistry/Chemistry Visual Lab/phase-diagram.html" class="stop-link">
+                        Explorar simulacion →
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <section class="summary">
+            <h2>Lo que conecta estas simulaciones</h2>
+            <p>
+                "Un automata, una celula, una neurona, una roca y un vaso de agua
+                comparten la misma estructura profunda: estados discretos, transiciones
+                condicionales, umbrales que separan comportamientos cualitativamente distintos."
+            </p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <a href="oscillations.html">← Anterior: Oscilaciones</a>
+        <a href="algorithms.html">Siguiente: Algoritmos →</a>
+    </footer>
+</body>
+</html>

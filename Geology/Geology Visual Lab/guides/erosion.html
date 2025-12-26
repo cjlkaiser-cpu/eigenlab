@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Erosion — Guia · Geology Visual Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #d97706;
+            --color-water: #3b82f6;
+            --color-glacier: #06b6d4;
+            --color-wind: #eab308;
+            --color-coast: #22c55e;
+        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg-primary); color: var(--text-primary); min-height: 100vh; line-height: 1.55; }
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+        header { position: sticky; top: 0; z-index: 10; padding: 1rem 1.5rem; background: var(--bg-secondary); border-bottom: 1px solid var(--border); }
+        .topbar { max-width: 980px; margin: 0 auto; display: flex; gap: 1rem; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-secondary); margin-bottom: 0.25rem; }
+        .breadcrumb a { color: var(--accent); }
+        h1 { font-size: 1.25rem; font-weight: 600; }
+        .subtitle { font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.25rem; }
+        .header-actions { display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap; }
+        .pill { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.875rem; border-radius: 9999px; font-size: 0.8rem; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-primary); transition: all 0.2s; }
+        .pill:hover { border-color: var(--accent); background: rgba(217, 119, 6, 0.1); text-decoration: none; }
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 0.5rem; padding: 1.25rem; }
+        .kicker { font-size: 0.7rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); font-weight: 600; }
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .three { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+        .four { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .three, .four { grid-template-columns: 1fr; } }
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip { font-size: 0.7rem; padding: 0.375rem 0.625rem; border-radius: 9999px; border: 1px solid var(--border); background: var(--bg-panel); color: var(--text-secondary); }
+        .callout { border: 1px dashed var(--border); background: var(--bg-panel); border-radius: 0.5rem; padding: 0.875rem; margin-top: 0.75rem; }
+        .callout-accent { border-color: var(--accent); background: rgba(217, 119, 6, 0.05); }
+        .section { margin-top: 1.5rem; }
+
+        /* Experiments */
+        .experiment { border-left: 3px solid var(--accent); }
+        .experiment-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+        .experiment-number { width: 28px; height: 28px; background: var(--accent); color: var(--bg-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 600; font-size: 0.8rem; flex-shrink: 0; }
+        .experiment-title { font-weight: 600; color: var(--text-primary); }
+        .hypothesis { background: rgba(217, 119, 6, 0.1); border: 1px solid rgba(217, 119, 6, 0.3); border-radius: 0.375rem; padding: 0.75rem; margin: 0.75rem 0; }
+        .hypothesis-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.05em; color: var(--accent); font-weight: 600; margin-bottom: 0.25rem; }
+
+        /* Connections */
+        .connection { display: flex; gap: 0.75rem; padding: 0.75rem; background: var(--bg-panel); border-radius: 0.5rem; border: 1px solid var(--border); }
+        .connection:hover { border-color: var(--accent); }
+        .connection-icon { width: 36px; height: 36px; border-radius: 0.375rem; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .connection-content { flex: 1; }
+        .connection-title { font-size: 0.8rem; font-weight: 600; color: var(--text-primary); margin-bottom: 0.25rem; }
+        .connection-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; }
+        .connection-link { font-size: 0.7rem; color: var(--accent); margin-top: 0.25rem; display: inline-block; }
+
+        /* Reflections */
+        .reflection { background: linear-gradient(135deg, rgba(217, 119, 6, 0.1), transparent); border: 1px solid rgba(217, 119, 6, 0.2); }
+        .reflection h2 { color: var(--accent); }
+        .reflection li { color: var(--text-secondary); }
+        .reflection li::marker { color: var(--accent); }
+
+        /* Navigation */
+        .guide-nav { display: flex; justify-content: space-between; margin-top: 2rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+        .guide-nav a { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; color: var(--text-secondary); padding: 0.5rem 0.75rem; border-radius: 0.375rem; border: 1px solid var(--border); }
+        .guide-nav a:hover { border-color: var(--accent); color: var(--text-primary); text-decoration: none; }
+        footer { max-width: 980px; margin: 2rem auto 0; padding: 1.25rem 1.5rem; border-top: 1px solid var(--border); font-size: 0.75rem; color: var(--text-secondary); }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Geology Visual Lab</a>
+                    <span> / </span>
+                    <span>Erosion</span>
+                </nav>
+                <h1>Erosion — Guia</h1>
+                <div class="subtitle">Agua, viento, hielo y olas esculpen el paisaje</div>
+            </div>
+            <div class="header-actions">
+                <a href="../erosion.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">El concepto</div>
+                <p class="lead">
+                    La <span class="em">erosion</span> es la fuerza que destruye montañas. Agua, viento,
+                    hielo y gravedad desintegran rocas, transportan fragmentos y los depositan en otro lugar.
+                    Es lenta pero implacable — el Gran Cañon tardo 6 millones de años.
+                </p>
+                <div class="chips">
+                    <span class="chip">Erosion hidrica</span>
+                    <span class="chip">Erosion eolica</span>
+                    <span class="chip">Erosion glaciar</span>
+                    <span class="chip">Erosion costera</span>
+                    <span class="chip">Meteorizacion</span>
+                </div>
+                <div class="two" style="margin-top: 1rem;">
+                    <div>
+                        <h2>El ciclo</h2>
+                        <p>
+                            Erosion = meteorizacion (fragmentar) + transporte (mover) + deposito (dejar).
+                            La energia viene del Sol (ciclo del agua, viento) y la gravedad.
+                            Sin erosion, no habria suelos, deltas ni playas.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Equilibrio dinamico</h2>
+                        <p>
+                            Las montañas crecen por tectonica y se destruyen por erosion.
+                            Cuando se equilibran, la altura se estabiliza. Los Himalayas
+                            aun crecen; los Apalaches ya no — la erosion gano.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <aside class="card">
+                <div class="kicker">Agentes erosivos</div>
+                <div style="margin-top: 0.5rem; font-size: 0.8rem;">
+                    <p style="margin: 0.5rem 0;"><span style="color: var(--color-water);">●</span> <strong>Agua:</strong> Rios, lluvia — el mas poderoso</p>
+                    <p style="margin: 0.5rem 0;"><span style="color: var(--color-glacier);">●</span> <strong>Hielo:</strong> Glaciares — valles en U</p>
+                    <p style="margin: 0.5rem 0;"><span style="color: var(--color-wind);">●</span> <strong>Viento:</strong> Desiertos — dunas y yardangs</p>
+                    <p style="margin: 0.5rem 0;"><span style="color: var(--color-coast);">●</span> <strong>Olas:</strong> Costas — acantilados y arcos</p>
+                </div>
+                <div class="callout" style="margin-top: 0.75rem;">
+                    <p style="margin: 0;"><strong>Dato:</strong> Los rios transportan 20 mil millones de toneladas de sedimento al mar cada año.</p>
+                </div>
+            </aside>
+        </section>
+
+        <!-- Erosion Types -->
+        <section class="two section">
+            <div class="card" style="border-top: 3px solid var(--color-water);">
+                <h2 style="color: var(--color-water);">Erosion Hidrica</h2>
+                <p>
+                    El agua es el agente erosivo mas importante. Rios excavan valles en V,
+                    la lluvia forma carcavas, las cascadas retroceden.
+                </p>
+                <ul>
+                    <li><strong>Valles en V:</strong> Rios jovenes excavan hacia abajo</li>
+                    <li><strong>Meandros:</strong> Rios maduros serpentean</li>
+                    <li><strong>Deltas:</strong> Sedimento depositado en desembocadura</li>
+                    <li><strong>Carcavas:</strong> Erosion rapida en suelo descubierto</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-glacier);">
+                <h2 style="color: var(--color-glacier);">Erosion Glaciar</h2>
+                <p>
+                    Los glaciares son rios de hielo que avanzan cm/dia. Arrancan roca
+                    del fondo y lados, creando formas distintivas.
+                </p>
+                <ul>
+                    <li><strong>Valles en U:</strong> Mucho mas anchos que en V</li>
+                    <li><strong>Circos:</strong> Anfiteatros donde nace el glaciar</li>
+                    <li><strong>Fiordos:</strong> Valles glaciares inundados por mar</li>
+                    <li><strong>Erraticos:</strong> Rocas transportadas cientos de km</li>
+                </ul>
+            </div>
+        </section>
+
+        <section class="two section">
+            <div class="card" style="border-top: 3px solid var(--color-wind);">
+                <h2 style="color: var(--color-wind);">Erosion Eolica</h2>
+                <p>
+                    El viento arrastra arena y particulas finas. Dominante en desiertos
+                    y zonas aridas donde no hay vegetacion que proteja.
+                </p>
+                <ul>
+                    <li><strong>Dunas:</strong> Arena acumulada por viento</li>
+                    <li><strong>Deflacion:</strong> Viento remueve finos, deja gravas</li>
+                    <li><strong>Yardangs:</strong> Rocas esculpidas aerodinamicamente</li>
+                    <li><strong>Loess:</strong> Polvo depositado lejos (China, Pampa)</li>
+                </ul>
+            </div>
+            <div class="card" style="border-top: 3px solid var(--color-coast);">
+                <h2 style="color: var(--color-coast);">Erosion Costera</h2>
+                <p>
+                    Las olas golpean la costa con energia enorme. Crean acantilados,
+                    arcos, cuevas y playas. La costa siempre cambia.
+                </p>
+                <ul>
+                    <li><strong>Acantilados:</strong> Costa rocosa retrocede</li>
+                    <li><strong>Arcos y stacks:</strong> Resistencia diferencial</li>
+                    <li><strong>Playas:</strong> Arena depositada por deriva</li>
+                    <li><strong>Barras:</strong> Sedimento paralelo a la costa</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- Experiments -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Experimentos guiados</div>
+
+            <div class="three">
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">1</span>
+                        <span class="experiment-title">Valle en V vs Valle en U</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "El agente erosivo determina la forma del valle"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Selecciona "Erosion hidrica"</li>
+                        <li>Observa el perfil: V estrecha y profunda</li>
+                        <li>Cambia a "Erosion glaciar"</li>
+                        <li>Nota la U ancha con fondo plano</li>
+                        <li>Razon: el hielo erosiona lados, no solo fondo</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Aplicacion:</strong> Identifica valles glaciares en mapas.
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">2</span>
+                        <span class="experiment-title">Velocidad y transporte</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "A mayor velocidad del agente, mayor tamaño de particula transportada"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Ajusta la intensidad del rio a minimo</li>
+                        <li>Solo se mueve arcilla y limo</li>
+                        <li>Sube la intensidad: ahora arena</li>
+                        <li>Maxima intensidad: gravas y cantos</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Diagrama de Hjulstrom:</strong> Velocidad vs tamaño.
+                    </p>
+                </div>
+
+                <div class="card experiment">
+                    <div class="experiment-header">
+                        <span class="experiment-number">3</span>
+                        <span class="experiment-title">Formacion de dunas</span>
+                    </div>
+                    <div class="hypothesis">
+                        <div class="hypothesis-label">Hipotesis</div>
+                        <p style="margin: 0; color: var(--text-primary); font-size: 0.8rem;">
+                            "La forma de las dunas depende de la direccion y constancia del viento"
+                        </p>
+                    </div>
+                    <ol style="font-size: 0.8rem;">
+                        <li>Activa erosion eolica con viento unidireccional</li>
+                        <li>Se forman dunas barcanas (media luna)</li>
+                        <li>Cambia a viento bidireccional</li>
+                        <li>Se forman dunas lineales (seif)</li>
+                        <li>Viento variable: dunas estrella</li>
+                    </ol>
+                    <p style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                        <strong>Marte:</strong> Tiene dunas similares a las terrestres.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interdisciplinary Connections -->
+        <section class="section">
+            <div class="kicker" style="margin-bottom: 0.75rem;">Conexiones interdisciplinarias</div>
+            <div class="two">
+                <a href="ciclo-rocas.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(217, 119, 6, 0.15); color: #d97706;">🪨</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Ciclo de las Rocas</div>
+                        <div class="connection-desc">
+                            La erosion es la puerta de entrada a las rocas sedimentarias.
+                            Destruye igneas y metamorficas, crea sedimentos que se compactan.
+                        </div>
+                        <span class="connection-link">Ver simulacion →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Physics/Physics Visual Lab/dinamica-fluidos.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(34, 197, 94, 0.15); color: #22c55e;">💧</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Dinamica de Fluidos</div>
+                        <div class="connection-desc">
+                            La erosion hidrica sigue las leyes de fluidos. Velocidad, viscosidad,
+                            turbulencia — la fisica del agua esculpe cañones.
+                        </div>
+                        <span class="connection-link">Physics Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="../../../Chemistry/Chemistry Visual Lab/reacciones.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(6, 182, 212, 0.15); color: #06b6d4;">⚗️</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Reacciones Quimicas</div>
+                        <div class="connection-desc">
+                            La meteorizacion quimica disuelve rocas. El CO₂ del aire + agua = acido carbonico
+                            que disuelve caliza. Cuevas, karst, estalactitas.
+                        </div>
+                        <span class="connection-link">Chemistry Visual Lab →</span>
+                    </div>
+                </a>
+
+                <a href="estratigrafia.html" class="connection">
+                    <div class="connection-icon" style="background: rgba(217, 119, 6, 0.15); color: #d97706;">📚</div>
+                    <div class="connection-content">
+                        <div class="connection-title">Estratigrafia</div>
+                        <div class="connection-desc">
+                            Los sedimentos erosionados se depositan en capas. Cada estrato
+                            es un registro del ambiente de erosion y deposito de esa epoca.
+                        </div>
+                        <span class="connection-link">Ver simulacion →</span>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Key Insight -->
+        <section class="card callout-accent section">
+            <div class="kicker">Insight fundamental</div>
+            <h2 style="margin-top: 0.5rem;">La erosion regula el clima</h2>
+            <p>
+                Cuando las rocas silicatadas se erosionan, reaccionan con CO₂ atmosferico.
+                Este "termostato geologico" ha regulado el clima durante miles de millones de años.
+                Mas montañas = mas erosion = menos CO₂ = enfriamiento.
+            </p>
+            <p>
+                La elevacion de los Himalayas hace 50 Ma contribuyo al enfriamiento global que
+                llevo a las glaciaciones del Pleistoceno. La geologia moldea el clima, que moldea
+                la erosion, que moldea la geologia. Un feedback planetario.
+            </p>
+        </section>
+
+        <!-- Limitations -->
+        <section class="card section">
+            <div class="kicker">Limitaciones del modelo</div>
+            <h2 style="margin-top: 0.5rem;">Que simplifica esta simulacion</h2>
+            <div class="two" style="margin-top: 0.75rem;">
+                <div>
+                    <p><strong>En la simulacion:</strong></p>
+                    <ul>
+                        <li>Agentes erosivos separados</li>
+                        <li>Terreno 2D uniforme</li>
+                        <li>Erosion acelerada para visualizacion</li>
+                        <li>Sin vegetacion ni humanos</li>
+                    </ul>
+                </div>
+                <div>
+                    <p><strong>En la realidad:</strong></p>
+                    <ul>
+                        <li>Multiples agentes simultaneos</li>
+                        <li>Topografia 3D compleja</li>
+                        <li>Procesos de millones de años</li>
+                        <li>Vegetacion protege, humanos aceleran</li>
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        <!-- Reflection Questions -->
+        <section class="card reflection section">
+            <h2>Preguntas para reflexionar</h2>
+            <ol style="margin-top: 0.75rem;">
+                <li>¿Por que la deforestacion acelera dramaticamente la erosion? ¿Que papel juegan las raices?</li>
+                <li>Si la Luna no tiene erosion, ¿por que sus crateres antiguos siguen intactos?</li>
+                <li>¿Como podria un geologo distinguir un valle glaciar antiguo en una zona ahora sin hielo?</li>
+                <li>Si pudieras detener toda erosion, ¿que pasaria con los suelos agricolas en 1000 años?</li>
+            </ol>
+        </section>
+
+        <!-- Navigation -->
+        <nav class="guide-nav">
+            <a href="ciclo-rocas.html">← Ciclo de Rocas</a>
+            <a href="estratigrafia.html">Estratigrafia →</a>
+        </nav>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Geology Visual Lab — Erosion
+    </footer>
+</body>
+</html>

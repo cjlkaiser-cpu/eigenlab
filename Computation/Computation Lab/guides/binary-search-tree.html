@@ -1,0 +1,728 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binary Search Tree — Guia · Computation Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #3b82f6;
+            --color-good: #22c55e;
+            --color-warn: #fbbf24;
+            --color-bad: #ef4444;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            line-height: 1.55;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        header {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .topbar {
+            max-width: 980px;
+            margin: 0 auto;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+
+        .breadcrumb a { color: var(--accent); }
+
+        h1 { font-size: 1.25rem; font-weight: 600; }
+
+        .subtitle {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-top: 0.25rem;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 0.75rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 0.875rem;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .pill:hover {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.1);
+            text-decoration: none;
+        }
+
+        .pill-muted { color: var(--text-secondary); font-size: 0.75rem; }
+        .pill-muted:hover { border-color: var(--border); background: var(--bg-panel); }
+
+        .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+
+        main { max-width: 980px; margin: 0 auto; padding: 1.5rem; }
+
+        .card {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+        }
+
+        .kicker {
+            font-size: 0.7rem;
+            letter-spacing: 0.1em;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+        }
+
+        .lead { margin: 0.75rem 0 0; color: var(--text-primary); font-size: 0.95rem; }
+        h2 { font-size: 1rem; font-weight: 600; margin: 0 0 0.5rem; }
+        p { margin: 0.625rem 0; color: var(--text-secondary); font-size: 0.85rem; }
+        ul, ol { margin: 0.625rem 0; padding-left: 1.25rem; color: var(--text-secondary); font-size: 0.85rem; }
+        li { margin: 0.375rem 0; }
+        strong { color: var(--text-primary); }
+        .em { color: var(--accent); font-weight: 600; }
+        .mini { font-size: 0.75rem; color: var(--text-secondary); }
+
+        .hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 1rem; align-items: start; }
+        .two { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; }
+        @media (max-width: 860px) { .hero, .two, .grid { grid-template-columns: 1fr; } }
+
+        .chips { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.75rem; }
+        .chip {
+            font-size: 0.7rem;
+            padding: 0.375rem 0.625rem;
+            border-radius: 9999px;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-secondary);
+        }
+
+        code, pre { font-family: 'JetBrains Mono', monospace; }
+        pre {
+            margin: 0;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            background: var(--bg-primary);
+            overflow: auto;
+            font-size: 0.8rem;
+            line-height: 1.5;
+            color: var(--text-secondary);
+        }
+        code { font-size: 0.8rem; color: var(--accent); }
+
+        .legend { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 0.75rem; }
+        .legend-item { display: flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--text-secondary); }
+        .swatch { width: 12px; height: 12px; border-radius: 3px; }
+
+        .callout {
+            border: 1px dashed var(--border);
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 0.875rem;
+            margin-top: 0.75rem;
+        }
+        .callout p { margin: 0; }
+
+        .callout-accent {
+            border-color: var(--accent);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .equations { display: grid; gap: 0.5rem; margin-top: 0.75rem; }
+        .eq {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.625rem 0.875rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            font-size: 0.8rem;
+        }
+        .eq span:first-child { color: var(--text-secondary); }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            color: var(--text-primary);
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+        }
+        .b-good { border-color: rgba(34, 197, 94, 0.4); }
+        .b-warn { border-color: rgba(251, 191, 36, 0.4); }
+        .b-bad { border-color: rgba(239, 68, 68, 0.4); }
+
+        .section { margin-top: 1rem; }
+
+        .experiment {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1.25rem;
+            margin-top: 1rem;
+        }
+
+        .experiment-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .experiment-number {
+            width: 28px;
+            height: 28px;
+            background: var(--accent);
+            color: var(--text-primary);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .hypothesis {
+            background: rgba(59, 130, 246, 0.1);
+            border-left: 3px solid var(--accent);
+            padding: 0.75rem;
+            border-radius: 0 0.375rem 0.375rem 0;
+            margin: 0.75rem 0;
+        }
+
+        .hypothesis p { margin: 0; font-style: italic; }
+
+        .connection {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 0.75rem;
+        }
+
+        .connection-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .connection-icon {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .connection-title {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .connection p { margin: 0; }
+
+        .reflection {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            margin-top: 1rem;
+        }
+
+        .reflection h3 {
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            color: var(--accent);
+        }
+
+        .reflection ol { margin: 0; }
+
+        footer {
+            max-width: 980px;
+            margin: 2rem auto 0;
+            padding: 1.25rem 1.5rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="topbar">
+            <div>
+                <nav class="breadcrumb">
+                    <a href="../../../_portal/index.html">EigenLab</a>
+                    <span> / </span>
+                    <a href="../index.html">Computation Lab</a>
+                    <span> / </span>
+                    <span>Binary Search Tree</span>
+                </nav>
+                <h1>Binary Search Tree — Guia</h1>
+                <div class="subtitle">Divide et impera: la estrategia que transforma O(n) en O(log n)</div>
+            </div>
+            <div class="header-actions">
+                <a href="../binary-search-tree.html" class="pill">
+                    <span>&#9654;</span>
+                    <span>Abrir simulacion</span>
+                </a>
+                <div class="pill pill-muted">
+                    <span class="dot"></span>
+                    <span>Orden parcial → busqueda logaritmica</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="card">
+                <div class="kicker">Que es un BST?</div>
+                <p class="lead">
+                    Un <span class="em">Arbol Binario de Busqueda</span> es una estructura jerarquica donde
+                    cada decision binaria elimina la mitad del espacio de busqueda:
+                    <strong>izquierda &lt; nodo &lt; derecha</strong>.
+                </p>
+
+                <div class="chips">
+                    <span class="chip">Divide y venceras</span>
+                    <span class="chip">Busqueda O(log n)</span>
+                    <span class="chip">Estructura recursiva</span>
+                    <span class="chip">Jerarquia natural</span>
+                </div>
+
+                <div class="grid">
+                    <div>
+                        <h2>La intuicion profunda</h2>
+                        <p class="mini">
+                            El BST es la pregunta de los 20 preguntas hecha estructura de datos.
+                            En cada nodo preguntas "es menor o mayor?" — una decision binaria que
+                            descarta exactamente la mitad de las posibilidades. Con 10 preguntas
+                            distingues entre 1024 elementos; con 20, entre un millon.
+                        </p>
+                    </div>
+                    <div>
+                        <h2>Que observar</h2>
+                        <ul class="mini">
+                            <li>El camino de busqueda es una <strong>secuencia de decisiones</strong>.</li>
+                            <li>La profundidad = numero de comparaciones.</li>
+                            <li>La forma del arbol depende del <strong>orden de insercion</strong>.</li>
+                            <li>Recorrido inorder = elementos ordenados.</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="card">
+                <div class="kicker">Pseudocodigo: Busqueda</div>
+                <pre>function search(node, value):
+  if node == null:
+    return NOT_FOUND
+  if value == node.value:
+    return FOUND
+  if value < node.value:
+    return search(node.left, value)
+  else:
+    return search(node.right, value)</pre>
+
+                <div style="height:1rem"></div>
+
+                <div class="kicker">Estados visuales</div>
+                <div class="legend">
+                    <div class="legend-item"><span class="swatch" style="background: #64748b"></span>Normal</div>
+                    <div class="legend-item"><span class="swatch" style="background: #3b82f6"></span>Visitando</div>
+                    <div class="legend-item"><span class="swatch" style="background: #22c55e"></span>Encontrado</div>
+                    <div class="legend-item"><span class="swatch" style="background: #ef4444"></span>No existe</div>
+                </div>
+            </aside>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>La propiedad BST: un invariante recursivo</h2>
+                <p>
+                    Para <strong>todo</strong> nodo N en el arbol:
+                </p>
+                <div class="callout">
+                    <p>
+                        Todos los valores en el subarbol izquierdo son <strong>&lt; N</strong><br>
+                        Todos los valores en el subarbol derecho son <strong>&gt; N</strong>
+                    </p>
+                </div>
+                <p class="mini">
+                    Esta propiedad es <strong>recursiva</strong>: cada subarbol es tambien un BST valido.
+                    Si alguna vez se viola, el arbol pierde su poder de busqueda logaritmica.
+                </p>
+                <div class="callout callout-accent">
+                    <p class="mini">
+                        <strong>Verificacion:</strong> Un recorrido inorder de un BST valido
+                        <em>siempre</em> produce los elementos en orden ascendente.
+                    </p>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2>Complejidad: lo mejor y lo peor</h2>
+                <div class="equations">
+                    <div class="eq"><span>Busqueda (promedio)</span><code>O(log n)</code></div>
+                    <div class="eq"><span>Busqueda (peor caso)</span><code>O(n)</code></div>
+                    <div class="eq"><span>Insercion</span><code>O(h)</code> <span class="mini">h = altura</span></div>
+                    <div class="eq"><span>Espacio</span><code>O(n)</code></div>
+                </div>
+                <div class="callout">
+                    <p>
+                        El <strong>secreto</strong>: la complejidad depende de la <em>altura</em>, no del
+                        numero de nodos. Un arbol balanceado tiene h ≈ log(n). Un arbol degenerado
+                        tiene h = n. Mismos datos, rendimiento radicalmente diferente.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <section class="two">
+            <div class="card">
+                <h2>Recorridos: tres formas de leer el arbol</h2>
+                <ul>
+                    <li><strong>Inorder</strong> (izq → nodo → der): elementos ordenados</li>
+                    <li><strong>Preorder</strong> (nodo → izq → der): raiz primero, util para clonar</li>
+                    <li><strong>Postorder</strong> (izq → der → nodo): hojas primero, util para eliminar</li>
+                </ul>
+                <div class="callout">
+                    <p>
+                        <strong>Propiedad fundamental:</strong> Preorder + Inorder (o Postorder + Inorder)
+                        reconstruyen unicamente el arbol original. Con uno solo no alcanza.
+                    </p>
+                </div>
+                <p class="mini">
+                    Esto tiene implicaciones en serializacion: para guardar un BST y reconstruirlo
+                    exactamente, necesitas dos recorridos (o preorder solo si conoces la propiedad BST).
+                </p>
+            </div>
+
+            <div class="card">
+                <h2>Eliminacion: el caso complejo</h2>
+                <p>Tres casos segun el nodo a eliminar:</p>
+                <ol>
+                    <li><strong>Hoja</strong>: simplemente eliminar</li>
+                    <li><strong>Un hijo</strong>: el hijo "sube" a ocupar su lugar</li>
+                    <li><strong>Dos hijos</strong>: reemplazar con el <em>sucesor inorder</em></li>
+                </ol>
+                <div class="callout callout-accent">
+                    <p class="mini">
+                        El <strong>sucesor inorder</strong> es el menor del subarbol derecho:
+                        baja a la derecha una vez, luego todo a la izquierda. Siempre tiene
+                        como maximo un hijo, lo que simplifica su eliminacion.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- EXPERIMENTOS GUIADOS -->
+        <section class="card section">
+            <div class="kicker">Laboratorio</div>
+            <h2 style="margin-top:0.5rem">Experimentos guiados</h2>
+            <p>Cada experimento revela un principio fundamental del BST.</p>
+        </section>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">1</div>
+                <h2 style="margin:0">El arbol degenerado</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Insertar elementos ordenados produce el peor caso posible,
+                convirtiendo O(log n) en O(n).</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Inserta en orden: 1, 2, 3, 4, 5, 6, 7</li>
+                        <li>Dibuja mentalmente la forma resultante</li>
+                        <li>Busca el valor 7 — cuenta los nodos visitados</li>
+                        <li>Reinicia y ahora inserta: 4, 2, 6, 1, 3, 5, 7</li>
+                        <li>Busca el 7 de nuevo — compara las visitas</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El primer orden produce una "lista enlazada disfrazada". El segundo
+                        aproxima un arbol balanceado. <strong>Mismos datos, estructura diferente.</strong>
+                    </p>
+                    <div class="badge b-warn" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-warn)"></span>
+                        7 pasos vs 3 pasos para encontrar el 7
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">2</div>
+                <h2 style="margin:0">El elemento medio como raiz</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Insertar el elemento medio primero produce arboles
+                mas balanceados que insertar en cualquier otro orden.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Toma la secuencia 1-15 y encuentra el medio: 8</li>
+                        <li>Inserta 8 primero, luego 4, 12, 2, 6, 10, 14, 1, 3, 5, 7, 9, 11, 13, 15</li>
+                        <li>Observa: cada nivel tiene el doble de nodos que el anterior</li>
+                        <li>Calcula la altura: log2(15) ≈ 4 niveles</li>
+                        <li>Compara con insercion aleatoria — repite 3 veces</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        Este patron (medio, medio de mitades, etc.) es exactamente lo que hace
+                        el algoritmo de construccion de BST balanceado desde array ordenado.
+                        Es <strong>divide y venceras aplicado a la construccion</strong>.
+                    </p>
+                    <div class="badge b-good" style="margin-top:0.5rem">
+                        <span class="swatch" style="background: var(--color-good)"></span>
+                        Altura optima garantizada
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="experiment">
+            <div class="experiment-header">
+                <div class="experiment-number">3</div>
+                <h2 style="margin:0">Eliminacion y reestructuracion</h2>
+            </div>
+            <div class="hypothesis">
+                <p><strong>Hipotesis:</strong> Eliminar la raiz con dos hijos mantiene la propiedad BST
+                pero puede desbalancear el arbol.</p>
+            </div>
+            <div class="grid">
+                <div>
+                    <ol>
+                        <li>Construye un arbol balanceado con: 50, 25, 75, 10, 30, 60, 90</li>
+                        <li>Elimina la raiz (50) — observa quien la reemplaza</li>
+                        <li>El 60 (sucesor inorder) sube. Por que el 60?</li>
+                        <li>Verifica con inorder que sigue ordenado</li>
+                        <li>Elimina el nuevo 60 — observa la cascada</li>
+                    </ol>
+                </div>
+                <div>
+                    <p class="mini">
+                        El sucesor inorder es el "siguiente en orden". Eliminaciones repetidas
+                        pueden degradar el balance. Por eso existen AVL y Red-Black trees
+                        que re-balancean automaticamente.
+                    </p>
+                    <div class="callout">
+                        <p class="mini">
+                            <strong>Alternativa:</strong> Tambien puedes usar el predecesor inorder
+                            (el mayor del subarbol izquierdo). Ambos mantienen la propiedad BST.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div style="margin-top:1rem; text-align:center;">
+            <a href="../binary-search-tree.html" class="pill">
+                <span>&#9654;</span>
+                <span>Probar en la simulacion</span>
+            </a>
+        </div>
+
+        <!-- CONEXIONES INTERDISCIPLINARIAS -->
+        <section class="card section">
+            <div class="kicker">Conexiones con EigenLab</div>
+            <h2 style="margin-top:0.5rem">El BST en otros dominios</h2>
+            <p>La estructura jerarquica de decision aparece en toda la ciencia.</p>
+        </section>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #10b981"></span>
+                <span class="connection-title">Taxonomia biologica</span>
+            </div>
+            <p>
+                La clasificacion de especies (Reino → Filo → Clase → Orden → Familia → Genero → Especie)
+                es un arbol de decisiones. Cada bifurcacion pregunta "tiene esta caracteristica?" y
+                divide el espacio de organismos. Linneo invento un BST biologico en 1735.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Biology/Biology Visual Lab/evolucion.html">Algoritmo Genetico</a> —
+                la seleccion natural "busca" en el espacio de genotipos.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #f97316"></span>
+                <span class="connection-title">Busqueda binaria: el algoritmo gemelo</span>
+            </div>
+            <p>
+                La busqueda binaria en un array ordenado es el BST "aplanado". Ambos usan la misma
+                estrategia: comparar con el medio, descartar mitad. El BST permite inserciones dinamicas;
+                el array ordenado tiene mejor localidad de cache.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Conexion:</strong> Construir un BST balanceado desde array ordenado es O(n).
+                Pero insertar n elementos uno a uno puede ser O(n log n) o O(n^2).
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #06b6d4"></span>
+                <span class="connection-title">Diagramas de fase y decisiones</span>
+            </div>
+            <p>
+                Un diagrama de fases (P-T) divide el espacio en regiones. Preguntar "a esta temperatura
+                y presion, es solido, liquido o gas?" es recorrer un arbol de decisiones implicito
+                sobre las fronteras de fase.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Chemistry/Chemistry Visual Lab/diagrama-fases.html">Diagrama de Fases</a> —
+                las transiciones de fase son "bordes" en el arbol de estados de la materia.
+            </p>
+        </div>
+
+        <div class="connection">
+            <div class="connection-header">
+                <span class="connection-icon" style="background: #22c55e"></span>
+                <span class="connection-title">El pendulo doble y la sensibilidad inicial</span>
+            </div>
+            <p>
+                El orden de insercion en un BST es analogo a las condiciones iniciales en sistemas
+                caoticos. Pequenas diferencias en el orden producen arboles radicalmente diferentes,
+                igual que pequenas diferencias en angulo inicial del pendulo doble.
+            </p>
+            <p class="mini" style="margin-top:0.5rem">
+                <strong>Simulacion relacionada:</strong>
+                <a href="../../Physics/Physics Visual Lab/pendulo-doble.html">Pendulo Doble</a> —
+                sensibilidad a condiciones iniciales.
+            </p>
+        </div>
+
+        <!-- LIMITACIONES -->
+        <section class="card section">
+            <div class="kicker">Limitaciones</div>
+            <h2 style="margin-top:0.5rem">Cuando el BST no es la respuesta</h2>
+            <ul>
+                <li>
+                    <strong>Datos muy dinamicos:</strong> Inserciones y eliminaciones frecuentes
+                    degradan el balance. Usar AVL o Red-Black.
+                </li>
+                <li>
+                    <strong>Datos en disco:</strong> El BST tiene mala localidad de cache.
+                    Usar B-trees (multiples claves por nodo, menos niveles).
+                </li>
+                <li>
+                    <strong>Busquedas por rango:</strong> Encontrar "todos entre 10 y 20"
+                    es eficiente, pero no es la especialidad del BST. Considerar Segment Trees.
+                </li>
+                <li>
+                    <strong>Datos sin orden total:</strong> Si los elementos no son comparables
+                    (ej: vectores 2D), el BST no aplica. Usar KD-trees.
+                </li>
+            </ul>
+            <div class="callout callout-accent">
+                <p>
+                    <strong>Regla practica:</strong> El BST basico es educativo. En produccion,
+                    casi siempre usaras una variante auto-balanceada (std::map en C++ usa Red-Black).
+                </p>
+            </div>
+        </section>
+
+        <!-- PARA PROFUNDIZAR -->
+        <section class="card section">
+            <div class="kicker">Conexiones tecnicas</div>
+            <h2 style="margin-top:0.5rem">Estructuras que evolucionan del BST</h2>
+            <ul>
+                <li><strong>AVL Trees:</strong> balance estricto (diferencia de altura ≤ 1), rotaciones frecuentes</li>
+                <li><strong>Red-Black Trees:</strong> balance relajado, menos rotaciones, usado en stdlib</li>
+                <li><strong>Splay Trees:</strong> auto-ajuste por acceso, buenos para datos con localidad temporal</li>
+                <li><strong>Treaps:</strong> BST + heap con prioridades aleatorias = balance probabilistico</li>
+                <li><strong>B-Trees:</strong> multiples claves por nodo, optimizado para I/O, base de datos</li>
+            </ul>
+        </section>
+
+        <!-- PREGUNTAS DE REFLEXION -->
+        <section class="reflection">
+            <h3>Preguntas para reflexionar</h3>
+            <ol>
+                <li>
+                    Si tienes un array ordenado, puedes hacer busqueda binaria en O(log n).
+                    Entonces, por que molestarse con un BST?
+                </li>
+                <li>
+                    El BST garantiza O(log n) en promedio pero O(n) en peor caso.
+                    Por que no siempre usamos AVL que garantiza O(log n) siempre?
+                </li>
+                <li>
+                    Un BST con n nodos tiene altura minima log(n) y maxima n.
+                    Cuantos arboles BST distintos puedes formar con los valores {1, 2, 3}?
+                </li>
+                <li>
+                    Si necesitas encontrar el k-esimo elemento mas pequeno repetidamente,
+                    como modificarias el BST para hacerlo eficiente?
+                </li>
+            </ol>
+        </section>
+    </main>
+
+    <footer>
+        <a href="../../../_portal/index.html">EigenLab</a> — Computation Lab — Binary Search Tree Guide
+    </footer>
+</body>
+</html>

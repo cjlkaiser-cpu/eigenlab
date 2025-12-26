@@ -1,0 +1,1420 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EigenLab - Simulaciones Interactivas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-card: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+
+            --color-physics-visual: #22c55e;
+            --color-physics-sound: #a855f7;
+            --color-chemistry: #06b6d4;
+            --color-biochemistry: #ec4899;
+            --color-mathematics: #f97316;
+            --color-astronomy: #6366f1;
+            --color-biology: #10b981;
+            --color-geology: #d97706;
+            --color-computation: #3b82f6;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* Header */
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            padding: 2rem;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #22c55e, #06b6d4, #a855f7, #6366f1);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            margin-top: 0.5rem;
+            font-weight: 400;
+            letter-spacing: 0.01em;
+        }
+
+        .stats-inline {
+            margin-top: 1.25rem;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            letter-spacing: 0.02em;
+        }
+
+        .epigraph {
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            opacity: 0.7;
+            letter-spacing: 0.01em;
+        }
+
+        .paths-link {
+            display: inline-block;
+            margin-top: 1.5rem;
+            padding: 0.625rem 1.25rem;
+            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(168, 85, 247, 0.15));
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.2s ease;
+        }
+
+        .paths-link:hover {
+            border-color: #22c55e;
+            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+            transform: translateY(-2px);
+        }
+
+        /* Main content */
+        .main {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        /* Discipline sections */
+        .discipline {
+            margin-bottom: 3rem;
+        }
+
+        .discipline-header {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .discipline-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .discipline-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .discipline-count {
+            margin-left: auto;
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        /* Labs grid */
+        .labs-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+
+        /* Lab card */
+        .lab-card {
+            background: var(--bg-card);
+            border-radius: 1rem;
+            border: 1px solid var(--border);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lab-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--card-accent);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3),
+                        0 0 30px var(--card-glow);
+        }
+
+        .lab-preview {
+            height: 160px;
+            background: var(--bg-secondary);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lab-preview-canvas {
+            width: 100%;
+            height: 100%;
+        }
+
+        .lab-badge {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            padding: 0.25rem 0.625rem;
+            font-size: 0.6875rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            border-radius: 0.25rem;
+            background: var(--card-accent);
+            color: var(--bg-primary);
+        }
+
+        .lab-content {
+            padding: 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .lab-type {
+            font-size: 0.6875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--card-accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .lab-name {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .lab-description {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            flex: 1;
+        }
+
+        .lab-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+        }
+
+        .lab-meta span {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        /* Color themes */
+        .physics-visual {
+            --card-accent: var(--color-physics-visual);
+            --card-glow: rgba(34, 197, 94, 0.15);
+        }
+
+        .physics-sound {
+            --card-accent: var(--color-physics-sound);
+            --card-glow: rgba(168, 85, 247, 0.15);
+        }
+
+        .chemistry {
+            --card-accent: var(--color-chemistry);
+            --card-glow: rgba(6, 182, 212, 0.15);
+        }
+
+        .biochemistry {
+            --card-accent: var(--color-biochemistry);
+            --card-glow: rgba(236, 72, 153, 0.15);
+        }
+
+        .mathematics {
+            --card-accent: var(--color-mathematics);
+            --card-glow: rgba(249, 115, 22, 0.15);
+        }
+
+        .astronomy {
+            --card-accent: var(--color-astronomy);
+            --card-glow: rgba(99, 102, 241, 0.15);
+        }
+
+        .biology {
+            --card-accent: var(--color-biology);
+            --card-glow: rgba(16, 185, 129, 0.15);
+        }
+
+        .geology {
+            --card-accent: var(--color-geology);
+            --card-glow: rgba(217, 119, 6, 0.15);
+        }
+
+        .computation {
+            --card-accent: var(--color-computation);
+            --card-glow: rgba(59, 130, 246, 0.15);
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+        }
+
+        .footer-quote {
+            font-size: 0.95rem;
+            font-style: italic;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            opacity: 0.8;
+        }
+
+        .footer-info {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .footer a {
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.75rem;
+            }
+
+            .tagline {
+                font-size: 1rem;
+            }
+
+            .stats-inline {
+                font-size: 0.8rem;
+            }
+
+            .labs-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>EigenLab</h1>
+        <p class="tagline">Donde las ecuaciones cobran vida</p>
+        <p class="stats-inline">117+ simulaciones · 11 laboratorios · 8 disciplinas</p>
+        <p class="epigraph">Las ecuaciones no describen objetos — describen comportamientos.</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+            <a href="paths/index.html" class="paths-link">Explorar Caminos de Aprendizaje →</a>
+            <a href="knowledge-graph.html" class="paths-link" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.15));">Mapa de Conexiones →</a>
+        </div>
+    </header>
+
+    <main class="main">
+        <!-- Physics -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(34, 197, 94, 0.15);">
+                    <span>&#9883;</span>
+                </div>
+                <h2 class="discipline-title">Physics</h2>
+                <span class="discipline-count">2 laboratorios</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Physics/Physics Visual Lab/index.html" class="lab-card physics-visual">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-physics-visual"></canvas>
+                        <span class="lab-badge">19 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Physics Visual Lab</h3>
+                        <p class="lab-description">
+                            Mecánica, ondas, óptica, termodinámica y relatividad. Simulaciones interactivas con Canvas 2D y métodos numéricos (RK4, Newton-Raphson).
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>JavaScript</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="../Physics/Physics Sound Lab/index.html" class="lab-card physics-sound">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-physics-sound"></canvas>
+                        <span class="lab-badge">7+ sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Sound Lab</div>
+                        <h3 class="lab-name">Physics Sound Lab</h3>
+                        <p class="lab-description">
+                            Donde las ecuaciones se convierten en sonido. Metrónomos físicos y música generativa basada en física orbital y teoría del caos.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Web Audio</span>
+                            <span>Papers</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Chemistry -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(6, 182, 212, 0.15);">
+                    <span>&#9878;</span>
+                </div>
+                <h2 class="discipline-title">Chemistry</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Chemistry/Chemistry Visual Lab/index.html" class="lab-card chemistry">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-chemistry"></canvas>
+                        <span class="lab-badge">17 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Chemistry Visual Lab</h3>
+                        <p class="lab-description">
+                            Estructura atómica, termodinámica, cinética y electroquímica. Incluye visualizaciones 3D con Three.js para moléculas y orbitales.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Three.js</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Biochemistry -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(236, 72, 153, 0.15);">
+                    <span>&#9830;</span>
+                </div>
+                <h2 class="discipline-title">Biochemistry</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Biochemistry/Biochem Visual Lab/index.html" class="lab-card biochemistry">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-biochemistry"></canvas>
+                        <span class="lab-badge">16 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Biochem Visual Lab</h3>
+                        <p class="lab-description">
+                            ADN, proteínas y metabolismo celular. Glucólisis, ciclo de Krebs, síntesis de proteínas y regulación génica visualizados.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Animaciones</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Mathematics -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(249, 115, 22, 0.15);">
+                    <span>&#8734;</span>
+                </div>
+                <h2 class="discipline-title">Mathematics</h2>
+                <span class="discipline-count">2 laboratorios</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Mathematics/Math Visual Lab/index.html" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-mathematics"></canvas>
+                        <span class="lab-badge">22 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Math Visual Lab</h3>
+                        <p class="lab-description">
+                            Fractales, caos, teoría de números, topología y geometría. Mandelbrot, Poincaré, Möbius, nudos matemáticos y más.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Interactivo</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="../Mathematics/Math Generative Art Lab/index.html" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-generative"></canvas>
+                        <span class="lab-badge">7 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Generative Art</div>
+                        <h3 class="lab-name">Math Generative Art Lab</h3>
+                        <p class="lab-description">
+                            Arte generativo basado en matemáticas. Reacción-difusión, L-Systems, campos de flujo, atractores extraños y teselaciones.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Procedural</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Astronomy -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(99, 102, 241, 0.15);">
+                    <span>&#9733;</span>
+                </div>
+                <h2 class="discipline-title">Astronomy</h2>
+                <span class="discipline-count">2 laboratorios</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Astronomy/Astronomy Visual Lab/index.html" class="lab-card astronomy">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-astronomy"></canvas>
+                        <span class="lab-badge">6 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Astronomy Visual Lab</h3>
+                        <p class="lab-description">
+                            Cosmología y astrofísica. Ley de Hubble, agujeros negros, lentes gravitacionales, diagrama H-R, fases lunares y estaciones.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Relatividad</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="../Astronomy/Astronomy Sound Lab/index.html" class="lab-card astronomy">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-astronomy-sound"></canvas>
+                        <span class="lab-badge">3 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Sound Lab</div>
+                        <h3 class="lab-name">Astronomy Sound Lab</h3>
+                        <p class="lab-description">
+                            Donde el cosmos se convierte en sonido. Púlsares rítmicos, el chirp de ondas gravitacionales y la música de los exoplanetas.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Web Audio</span>
+                            <span>Sonificación</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Biology -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(16, 185, 129, 0.15);">
+                    <span>&#127793;</span>
+                </div>
+                <h2 class="discipline-title">Biology</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Biology/Biology Visual Lab/index.html" class="lab-card biology">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-biology"></canvas>
+                        <span class="lab-badge">6 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Biology Visual Lab</h3>
+                        <p class="lab-description">
+                            Neurociencia, ecología y genética. Potencial de acción (Hodgkin-Huxley), ecosistemas (Lotka-Volterra), genética poblacional, mitosis, meiosis y selección natural.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Modelos</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Geology -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(217, 119, 6, 0.15);">
+                    <span>&#127755;</span>
+                </div>
+                <h2 class="discipline-title">Geology</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Geology/Geology Visual Lab/index.html" class="lab-card geology">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-geology"></canvas>
+                        <span class="lab-badge">6 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Geology Visual Lab</h3>
+                        <p class="lab-description">
+                            Geología dinámica. Tectónica de placas, terremotos, volcanes, ciclo de rocas, erosión y estratigrafía visualizados interactivamente.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Geofísica</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- Computation -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(59, 130, 246, 0.15);">
+                    <span>&#128187;</span>
+                </div>
+                <h2 class="discipline-title">Computation</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Computation/Computation Lab/index.html" class="lab-card computation">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-computation"></canvas>
+                        <span class="lab-badge">6 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">Computation Lab</h3>
+                        <p class="lab-description">
+                            Algoritmos, estructuras de datos y redes neuronales. Bubble sort, BST, compuertas lógicas, perceptrón, autómatas finitos y memoria stack/heap.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>Algoritmos</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p class="footer-quote">"Visualizar no es simplificar. Visualizar es exponer la estructura."</p>
+        <p class="footer-info">
+            EigenLab &mdash; Codigo abierto<br>
+            <a href="https://github.com/cjlkaiser-cpu">Carlos Lorente Kaiser</a>
+        </p>
+    </footer>
+
+    <script>
+        // Mini previews animados
+        const previews = {
+            'preview-physics-visual': (ctx, w, h, t) => {
+                // Péndulo
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = 20;
+                const length = h * 0.6;
+                const angle = Math.sin(t * 2) * 0.5;
+                const bx = cx + Math.sin(angle) * length;
+                const by = cy + Math.cos(angle) * length;
+
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(bx, by);
+                ctx.stroke();
+
+                ctx.fillStyle = '#22c55e';
+                ctx.beginPath();
+                ctx.arc(bx, by, 12, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Trail
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.1)';
+                for (let i = 0; i < 5; i++) {
+                    const a = Math.sin((t - i * 0.1) * 2) * 0.5;
+                    const x = cx + Math.sin(a) * length;
+                    const y = cy + Math.cos(a) * length;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 8 - i, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+
+            'preview-physics-sound': (ctx, w, h, t) => {
+                // Ondas de audio
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.strokeStyle = '#a855f7';
+                ctx.lineWidth = 2;
+
+                for (let wave = 0; wave < 3; wave++) {
+                    ctx.beginPath();
+                    ctx.globalAlpha = 1 - wave * 0.3;
+                    for (let x = 0; x < w; x++) {
+                        const y = h / 2 + Math.sin(x * 0.05 + t * 3 + wave) * (20 - wave * 5);
+                        if (x === 0) ctx.moveTo(x, y);
+                        else ctx.lineTo(x, y);
+                    }
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // Círculos de audio
+                ctx.strokeStyle = 'rgba(168, 85, 247, 0.3)';
+                for (let i = 0; i < 3; i++) {
+                    const r = ((t * 50 + i * 30) % 80);
+                    ctx.beginPath();
+                    ctx.arc(w / 2, h / 2, r, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            },
+
+            'preview-chemistry': (ctx, w, h, t) => {
+                // Modelo atómico
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Órbitas
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                for (let i = 1; i <= 3; i++) {
+                    ctx.beginPath();
+                    ctx.ellipse(cx, cy, i * 25, i * 15, 0, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Electrones
+                ctx.fillStyle = '#06b6d4';
+                for (let i = 0; i < 3; i++) {
+                    const orbit = (i % 3) + 1;
+                    const angle = t * (4 - orbit) + i * 2;
+                    const x = cx + Math.cos(angle) * orbit * 25;
+                    const y = cy + Math.sin(angle) * orbit * 15;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Núcleo
+                ctx.fillStyle = '#06b6d4';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+                ctx.fill();
+            },
+
+            'preview-biochemistry': (ctx, w, h, t) => {
+                // Doble hélice ADN
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+
+                for (let y = 0; y < h; y += 8) {
+                    const offset = t * 50 + y * 0.1;
+                    const x1 = cx + Math.sin(offset) * 30;
+                    const x2 = cx - Math.sin(offset) * 30;
+
+                    // Cadenas
+                    ctx.fillStyle = '#ec4899';
+                    ctx.beginPath();
+                    ctx.arc(x1, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    ctx.fillStyle = '#f472b6';
+                    ctx.beginPath();
+                    ctx.arc(x2, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Puentes
+                    if (y % 16 === 0) {
+                        ctx.strokeStyle = 'rgba(236, 72, 153, 0.3)';
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(x1, y);
+                        ctx.lineTo(x2, y);
+                        ctx.stroke();
+                    }
+                }
+            },
+
+            'preview-mathematics': (ctx, w, h, t) => {
+                // Fractal / Espiral
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Espiral
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+
+                for (let i = 0; i < 200; i++) {
+                    const angle = i * 0.1 + t;
+                    const r = i * 0.5;
+                    const x = cx + Math.cos(angle) * r;
+                    const y = cy + Math.sin(angle) * r;
+                    if (i === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                // Puntos
+                ctx.fillStyle = '#f97316';
+                for (let i = 0; i < 8; i++) {
+                    const angle = t + i * Math.PI / 4;
+                    const r = 40 + Math.sin(t * 2 + i) * 10;
+                    const x = cx + Math.cos(angle) * r;
+                    const y = cy + Math.sin(angle) * r;
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+
+            'preview-generative': (ctx, w, h, t) => {
+                // Reaction-diffusion / flow field style
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Flow field lines
+                const gridSize = 20;
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 1;
+
+                for (let x = 10; x < w - 10; x += gridSize) {
+                    for (let y = 10; y < h - 10; y += gridSize) {
+                        const angle = Math.sin(x * 0.02 + t) * Math.cos(y * 0.02 + t * 0.5) * Math.PI;
+                        const len = 8;
+
+                        ctx.globalAlpha = 0.6;
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x + Math.cos(angle) * len, y + Math.sin(angle) * len);
+                        ctx.stroke();
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Floating particles following flow
+                ctx.fillStyle = '#fb923c';
+                for (let i = 0; i < 12; i++) {
+                    const px = (w * 0.1 + i * w * 0.07 + t * 20) % w;
+                    const py = h / 2 + Math.sin(px * 0.03 + t + i) * 40;
+                    ctx.beginPath();
+                    ctx.arc(px, py, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            },
+
+            'preview-astronomy': (ctx, w, h, t) => {
+                // Galaxias y expansión del universo
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Estrellas de fondo
+                ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                for (let i = 0; i < 30; i++) {
+                    const x = (i * 47 + Math.sin(i) * 10) % w;
+                    const y = (i * 31 + Math.cos(i) * 10) % h;
+                    const size = 0.5 + (i % 3) * 0.3;
+                    ctx.beginPath();
+                    ctx.arc(x, y, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Agujero negro central
+                const gradient = ctx.createRadialGradient(cx, cy, 0, cx, cy, 30);
+                gradient.addColorStop(0, '#000');
+                gradient.addColorStop(0.7, 'rgba(99, 102, 241, 0.3)');
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(cx, cy, 30, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Disco de acreción
+                ctx.strokeStyle = '#6366f1';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.ellipse(cx, cy, 25, 8, t * 0.5, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // Galaxias alejándose (Hubble)
+                for (let i = 0; i < 6; i++) {
+                    const angle = i * Math.PI / 3 + t * 0.2;
+                    const dist = 40 + Math.sin(t + i) * 5 + t * 3;
+                    const x = cx + Math.cos(angle) * dist;
+                    const y = cy + Math.sin(angle) * dist;
+
+                    // Color redshift
+                    const redshift = Math.min(dist / 80, 1);
+                    const hue = 240 - redshift * 200; // azul -> rojo
+                    ctx.fillStyle = `hsl(${hue}, 70%, 60%)`;
+
+                    ctx.beginPath();
+                    ctx.arc(x, y, 3 + (1 - redshift) * 2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Vector velocidad
+                    ctx.strokeStyle = `hsla(${hue}, 60%, 50%, 0.5)`;
+                    ctx.lineWidth = 1;
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + Math.cos(angle) * 12, y + Math.sin(angle) * 12);
+                    ctx.stroke();
+                }
+            },
+
+            'preview-astronomy-sound': (ctx, w, h, t) => {
+                // Pulsar + ondas de sonido
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Sound wave rings
+                for (let i = 0; i < 5; i++) {
+                    const phase = (t * 2 + i * 0.5) % 3;
+                    const radius = phase * 40;
+                    const alpha = Math.max(0, 1 - phase / 3) * 0.4;
+                    ctx.strokeStyle = `rgba(99, 102, 241, ${alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Rotating pulsar beam
+                ctx.save();
+                ctx.translate(cx, cy);
+                ctx.rotate(t * 4);
+
+                const beamGrad = ctx.createLinearGradient(0, 0, 0, -50);
+                beamGrad.addColorStop(0, 'rgba(99, 102, 241, 0.8)');
+                beamGrad.addColorStop(1, 'transparent');
+                ctx.fillStyle = beamGrad;
+                ctx.beginPath();
+                ctx.moveTo(-8, 0);
+                ctx.lineTo(-3, -50);
+                ctx.lineTo(3, -50);
+                ctx.lineTo(8, 0);
+                ctx.fill();
+
+                ctx.rotate(Math.PI);
+                ctx.fillStyle = beamGrad;
+                ctx.beginPath();
+                ctx.moveTo(-8, 0);
+                ctx.lineTo(-3, -50);
+                ctx.lineTo(3, -50);
+                ctx.lineTo(8, 0);
+                ctx.fill();
+                ctx.restore();
+
+                // Central pulsar
+                ctx.fillStyle = '#6366f1';
+                ctx.beginPath();
+                ctx.arc(cx, cy, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Waveform at bottom
+                ctx.strokeStyle = '#818cf8';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 2) {
+                    const freq = 0.1 + Math.sin(t) * 0.05;
+                    const amp = 8 + Math.sin(t * 2) * 4;
+                    const y = h - 15 + Math.sin(x * freq + t * 5) * amp;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+            },
+
+            'preview-biology': (ctx, w, h, t) => {
+                // Células, neurona y ADN
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Células flotantes de fondo
+                ctx.globalAlpha = 0.3;
+                for (let i = 0; i < 8; i++) {
+                    const x = (cx + Math.sin(t * 0.5 + i * 1.5) * 60 + i * 30) % w;
+                    const y = (cy + Math.cos(t * 0.3 + i * 1.2) * 40 + i * 15) % h;
+                    const size = 8 + Math.sin(t + i) * 2;
+
+                    // Membrana celular
+                    ctx.strokeStyle = '#10b981';
+                    ctx.lineWidth = 1.5;
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, size, size * 0.8, i * 0.5, 0, Math.PI * 2);
+                    ctx.stroke();
+
+                    // Núcleo
+                    ctx.fillStyle = '#059669';
+                    ctx.beginPath();
+                    ctx.arc(x, y, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Neurona central simplificada
+                const neuronX = cx;
+                const neuronY = cy - 10;
+
+                // Soma (cuerpo celular)
+                const gradient = ctx.createRadialGradient(neuronX, neuronY, 0, neuronX, neuronY, 18);
+                gradient.addColorStop(0, '#34d399');
+                gradient.addColorStop(1, '#10b981');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(neuronX, neuronY, 15, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Dendritas
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 2;
+                for (let i = 0; i < 4; i++) {
+                    const angle = -Math.PI / 2 + (i - 1.5) * 0.4;
+                    const len = 20 + Math.sin(t * 2 + i) * 3;
+                    ctx.beginPath();
+                    ctx.moveTo(neuronX, neuronY);
+                    ctx.quadraticCurveTo(
+                        neuronX + Math.cos(angle) * len * 0.5,
+                        neuronY + Math.sin(angle) * len * 0.5 - 5,
+                        neuronX + Math.cos(angle) * len,
+                        neuronY + Math.sin(angle) * len
+                    );
+                    ctx.stroke();
+                }
+
+                // Axón
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(neuronX, neuronY + 15);
+                ctx.lineTo(neuronX, neuronY + 55);
+                ctx.stroke();
+
+                // Potencial de acción propagándose
+                const pulsePos = ((t * 80) % 50);
+                if (pulsePos < 40) {
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.beginPath();
+                    ctx.arc(neuronX, neuronY + 15 + pulsePos, 4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Glow
+                    ctx.fillStyle = 'rgba(251, 191, 36, 0.3)';
+                    ctx.beginPath();
+                    ctx.arc(neuronX, neuronY + 15 + pulsePos, 8, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Mini gráfico de voltaje
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 2) {
+                    const progress = x / w;
+                    const spike = Math.exp(-Math.pow((progress - 0.5 - (t % 1) * 0.3) * 8, 2)) * 15;
+                    const y = h - 12 - spike;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+
+                // Baseline
+                ctx.strokeStyle = 'rgba(16, 185, 129, 0.3)';
+                ctx.setLineDash([2, 2]);
+                ctx.beginPath();
+                ctx.moveTo(0, h - 12);
+                ctx.lineTo(w, h - 12);
+                ctx.stroke();
+                ctx.setLineDash([]);
+            },
+
+            'preview-computation': (ctx, w, h, t) => {
+                // Algoritmos y estructuras de datos
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Binary Search Tree en la izquierda
+                const treeX = w * 0.25;
+                const treeY = h * 0.2;
+
+                // Nodos del árbol
+                const nodes = [
+                    { x: treeX, y: treeY, val: 8 },
+                    { x: treeX - 35, y: treeY + 30, val: 4 },
+                    { x: treeX + 35, y: treeY + 30, val: 12 },
+                    { x: treeX - 50, y: treeY + 60, val: 2 },
+                    { x: treeX - 20, y: treeY + 60, val: 6 },
+                    { x: treeX + 20, y: treeY + 60, val: 10 },
+                ];
+
+                // Dibujar conexiones
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1.5;
+                ctx.beginPath();
+                ctx.moveTo(nodes[0].x, nodes[0].y);
+                ctx.lineTo(nodes[1].x, nodes[1].y);
+                ctx.moveTo(nodes[0].x, nodes[0].y);
+                ctx.lineTo(nodes[2].x, nodes[2].y);
+                ctx.moveTo(nodes[1].x, nodes[1].y);
+                ctx.lineTo(nodes[3].x, nodes[3].y);
+                ctx.moveTo(nodes[1].x, nodes[1].y);
+                ctx.lineTo(nodes[4].x, nodes[4].y);
+                ctx.moveTo(nodes[2].x, nodes[2].y);
+                ctx.lineTo(nodes[5].x, nodes[5].y);
+                ctx.stroke();
+
+                // Nodo resaltado (cambia con el tiempo)
+                const highlightIdx = Math.floor((t * 2) % nodes.length);
+
+                nodes.forEach((node, i) => {
+                    ctx.beginPath();
+                    ctx.arc(node.x, node.y, 12, 0, Math.PI * 2);
+                    ctx.fillStyle = i === highlightIdx ? '#3b82f6' : '#1e293b';
+                    ctx.fill();
+                    ctx.strokeStyle = i === highlightIdx ? '#60a5fa' : '#64748b';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px Inter';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(node.val, node.x, node.y);
+                });
+
+                // Barras de ordenamiento en la derecha
+                const barStartX = w * 0.55;
+                const barWidth = 12;
+                const barSpacing = 16;
+                const maxBarHeight = h * 0.5;
+
+                // Valores de las barras (animadas)
+                const barValues = [0.3, 0.7, 0.5, 0.9, 0.4, 0.8];
+                const sortPhase = (t * 0.5) % 3;
+
+                barValues.forEach((val, i) => {
+                    // Simular intercambio durante ordenamiento
+                    let adjustedVal = val;
+                    if (sortPhase < 1 && i === Math.floor(sortPhase * 6)) {
+                        adjustedVal = barValues[(i + 1) % barValues.length];
+                    }
+
+                    const barHeight = adjustedVal * maxBarHeight;
+                    const x = barStartX + i * barSpacing;
+                    const y = h * 0.7 - barHeight;
+
+                    // Color basado en estado
+                    const isComparing = Math.floor(t * 4) % barValues.length === i;
+                    ctx.fillStyle = isComparing ? '#fbbf24' : '#3b82f6';
+                    ctx.fillRect(x, y, barWidth, barHeight);
+                });
+
+                // Autómata finito en la parte inferior
+                const states = [
+                    { x: w * 0.15, y: h * 0.88 },
+                    { x: w * 0.35, y: h * 0.88 },
+                    { x: w * 0.55, y: h * 0.88 },
+                ];
+
+                const currentState = Math.floor(t * 1.5) % 3;
+
+                // Flechas de transición
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < states.length - 1; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(states[i].x + 10, states[i].y);
+                    ctx.lineTo(states[i + 1].x - 10, states[i + 1].y);
+                    ctx.stroke();
+
+                    // Cabeza de flecha
+                    ctx.fillStyle = '#334155';
+                    ctx.beginPath();
+                    ctx.moveTo(states[i + 1].x - 10, states[i + 1].y);
+                    ctx.lineTo(states[i + 1].x - 15, states[i + 1].y - 3);
+                    ctx.lineTo(states[i + 1].x - 15, states[i + 1].y + 3);
+                    ctx.fill();
+                }
+
+                // Estados
+                states.forEach((state, i) => {
+                    ctx.beginPath();
+                    ctx.arc(state.x, state.y, 8, 0, Math.PI * 2);
+                    ctx.fillStyle = i === currentState ? '#3b82f6' : 'transparent';
+                    ctx.fill();
+                    ctx.strokeStyle = i === 2 ? '#34d399' : '#64748b';
+                    ctx.lineWidth = i === currentState ? 2 : 1;
+                    ctx.stroke();
+
+                    // Doble círculo para estado de aceptación
+                    if (i === 2) {
+                        ctx.beginPath();
+                        ctx.arc(state.x, state.y, 5, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+                });
+
+                // Perceptrón simplificado
+                const px = w * 0.82;
+                const py = h * 0.5;
+
+                // Inputs
+                for (let i = 0; i < 3; i++) {
+                    const iy = py - 20 + i * 20;
+                    ctx.fillStyle = Math.random() > 0.5 ? '#3b82f6' : '#1e293b';
+                    ctx.beginPath();
+                    ctx.arc(px - 25, iy, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.strokeStyle = '#64748b';
+                    ctx.stroke();
+
+                    // Conexión
+                    ctx.strokeStyle = 'rgba(59, 130, 246, 0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(px - 20, iy);
+                    ctx.lineTo(px, py);
+                    ctx.stroke();
+                }
+
+                // Neurona
+                ctx.beginPath();
+                ctx.arc(px, py, 10, 0, Math.PI * 2);
+                ctx.fillStyle = '#3b82f6';
+                ctx.fill();
+
+                // Output
+                ctx.strokeStyle = '#3b82f6';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.moveTo(px + 10, py);
+                ctx.lineTo(px + 25, py);
+                ctx.stroke();
+            },
+
+            'preview-geology': (ctx, w, h, t) => {
+                // Capas geológicas + ondas sísmicas + volcán
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                // Cielo
+                ctx.fillStyle = '#1e293b';
+                ctx.fillRect(0, 0, w, h * 0.3);
+
+                // Capas estratigráficas
+                const layers = [
+                    { color: '#92400e', y: 0.3 },   // Suelo
+                    { color: '#78350f', y: 0.45 },  // Sedimento 1
+                    { color: '#451a03', y: 0.6 },   // Sedimento 2
+                    { color: '#7c2d12', y: 0.75 },  // Roca ígnea
+                    { color: '#dc2626', y: 0.9 }    // Manto (parcial)
+                ];
+
+                layers.forEach((layer, i) => {
+                    ctx.fillStyle = layer.color;
+                    const nextY = layers[i + 1] ? layers[i + 1].y : 1;
+                    ctx.fillRect(0, h * layer.y, w, h * (nextY - layer.y));
+                });
+
+                // Ondas sísmicas expandiéndose
+                const epicenterX = w * 0.3;
+                const epicenterY = h * 0.65;
+                for (let i = 0; i < 4; i++) {
+                    const phase = (t * 1.5 + i * 0.4) % 2;
+                    const radius = phase * 60;
+                    const alpha = Math.max(0, 1 - phase / 2) * 0.5;
+                    ctx.strokeStyle = `rgba(217, 119, 6, ${alpha})`;
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(epicenterX, epicenterY, radius, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Epicentro
+                ctx.fillStyle = '#d97706';
+                ctx.beginPath();
+                ctx.arc(epicenterX, epicenterY, 4, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Mini volcán a la derecha
+                const vx = w * 0.75;
+                const vy = h * 0.3;
+
+                // Cono del volcán
+                ctx.fillStyle = '#57534e';
+                ctx.beginPath();
+                ctx.moveTo(vx - 30, vy + 30);
+                ctx.lineTo(vx, vy);
+                ctx.lineTo(vx + 30, vy + 30);
+                ctx.fill();
+
+                // Cráter
+                ctx.fillStyle = '#ef4444';
+                ctx.beginPath();
+                ctx.ellipse(vx, vy + 2, 8, 4, 0, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Partículas de erupción
+                ctx.fillStyle = '#f97316';
+                for (let i = 0; i < 6; i++) {
+                    const age = (t * 2 + i * 0.5) % 1.5;
+                    const px = vx + Math.sin(t * 3 + i * 2) * age * 15;
+                    const py = vy - age * 40;
+                    const size = 3 * (1 - age / 1.5);
+                    if (size > 0) {
+                        ctx.globalAlpha = 1 - age / 1.5;
+                        ctx.beginPath();
+                        ctx.arc(px, py, size, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Humo/ceniza
+                ctx.fillStyle = 'rgba(100, 100, 100, 0.4)';
+                for (let i = 0; i < 4; i++) {
+                    const smokeAge = (t + i * 0.3) % 2;
+                    const sx = vx + Math.sin(t * 2 + i) * smokeAge * 10;
+                    const sy = vy - 30 - smokeAge * 25;
+                    const size = 5 + smokeAge * 8;
+                    ctx.globalAlpha = 0.3 * (1 - smokeAge / 2);
+                    ctx.beginPath();
+                    ctx.arc(sx, sy, size, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                ctx.globalAlpha = 1;
+
+                // Placas tectónicas moviéndose (flechas)
+                ctx.strokeStyle = '#d97706';
+                ctx.fillStyle = '#d97706';
+                ctx.lineWidth = 2;
+
+                // Flecha izquierda (hacia la izquierda)
+                const arrowY = h * 0.85;
+                ctx.beginPath();
+                ctx.moveTo(w * 0.15 + 20, arrowY);
+                ctx.lineTo(w * 0.15, arrowY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(w * 0.15, arrowY);
+                ctx.lineTo(w * 0.15 + 6, arrowY - 4);
+                ctx.lineTo(w * 0.15 + 6, arrowY + 4);
+                ctx.fill();
+
+                // Flecha derecha (hacia la derecha)
+                ctx.beginPath();
+                ctx.moveTo(w * 0.5 - 20, arrowY);
+                ctx.lineTo(w * 0.5, arrowY);
+                ctx.stroke();
+                ctx.beginPath();
+                ctx.moveTo(w * 0.5, arrowY);
+                ctx.lineTo(w * 0.5 - 6, arrowY - 4);
+                ctx.lineTo(w * 0.5 - 6, arrowY + 4);
+                ctx.fill();
+            }
+        };
+
+        // Inicializar previews
+        Object.keys(previews).forEach(id => {
+            const canvas = document.getElementById(id);
+            if (!canvas) return;
+
+            const ctx = canvas.getContext('2d');
+            const dpr = window.devicePixelRatio || 1;
+
+            function resize() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function animate(time) {
+                const t = time / 1000;
+                const w = canvas.width / dpr;
+                const h = canvas.height / dpr;
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+                previews[id](ctx, w, h, t);
+                requestAnimationFrame(animate);
+            }
+
+            requestAnimationFrame(animate);
+        });
+    </script>
+</body>
+</html>
