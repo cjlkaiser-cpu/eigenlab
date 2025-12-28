@@ -1,0 +1,3 @@
+[submodule "Mathematics/Euler Lab"]
+	path = Mathematics/Euler Lab
+	url = https://github.com/cjlkaiser-cpu/euler-lab.git
