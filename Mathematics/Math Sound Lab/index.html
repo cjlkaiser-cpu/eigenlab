@@ -566,6 +566,75 @@
                 </div>
             </a>
 
+            <!-- L-Systems Musicales -->
+            <a href="l-systems-musicales.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-orange-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="relative w-48 h-48">
+                            <!-- Fractal tree visualization -->
+                            <svg class="w-full h-full opacity-80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Trunk -->
+                                <line x1="50" y1="90" x2="50" y2="70" stroke="#f97316" stroke-width="2" class="animate-pulse"/>
+                                <!-- Level 1 branches -->
+                                <line x1="50" y1="70" x2="40" y2="55" stroke="#fb923c" stroke-width="1.5" class="animate-pulse" style="animation-delay: 0.1s"/>
+                                <line x1="50" y1="70" x2="60" y2="55" stroke="#fb923c" stroke-width="1.5" class="animate-pulse" style="animation-delay: 0.1s"/>
+                                <!-- Level 2 branches -->
+                                <line x1="40" y1="55" x2="32" y2="45" stroke="#fdba74" stroke-width="1" class="animate-pulse" style="animation-delay: 0.2s"/>
+                                <line x1="40" y1="55" x2="44" y2="42" stroke="#fdba74" stroke-width="1" class="animate-pulse" style="animation-delay: 0.2s"/>
+                                <line x1="60" y1="55" x2="56" y2="42" stroke="#fdba74" stroke-width="1" class="animate-pulse" style="animation-delay: 0.2s"/>
+                                <line x1="60" y1="55" x2="68" y2="45" stroke="#fdba74" stroke-width="1" class="animate-pulse" style="animation-delay: 0.2s"/>
+                                <!-- Level 3 branches (smaller) -->
+                                <line x1="32" y1="45" x2="28" y2="38" stroke="#a3e635" stroke-width="0.8" class="animate-pulse" style="animation-delay: 0.3s"/>
+                                <line x1="32" y1="45" x2="35" y2="36" stroke="#a3e635" stroke-width="0.8" class="animate-pulse" style="animation-delay: 0.3s"/>
+                                <line x1="68" y1="45" x2="72" y2="38" stroke="#a3e635" stroke-width="0.8" class="animate-pulse" style="animation-delay: 0.3s"/>
+                                <line x1="68" y1="45" x2="65" y2="36" stroke="#a3e635" stroke-width="0.8" class="animate-pulse" style="animation-delay: 0.3s"/>
+                                <!-- Musical notes floating -->
+                                <text x="25" y="30" fill="#22c55e" font-size="8" class="animate-pulse" style="animation-delay: 0.4s">♪</text>
+                                <text x="70" y="35" fill="#22c55e" font-size="8" class="animate-pulse" style="animation-delay: 0.6s">♫</text>
+                                <text x="48" y="25" fill="#22c55e" font-size="8" class="animate-pulse" style="animation-delay: 0.5s">♪</text>
+                            </svg>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Gramáticas Generativas</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">L-Systems Musicales</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Gramáticas de Lindenmayer que generan árboles fractales. El crecimiento vegetal se sincroniza con composición musical: ramificaciones→notas, profundidad→octavas.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>Generativo</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 21v-4m0 0V5a2 2 0 012-2h6.5l1 1H21l-3 6 3 6h-8.5l-1-1H5a2 2 0 00-2 2zm9-13.5V9"/>
+                                </svg>
+                                <span>6 Presets</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                                <span>Fractal</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
             <!-- Placeholder para futuras simulaciones -->
             <div class="bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 border-dashed opacity-50">
                 <div class="h-48 bg-gradient-to-br from-gray-800/20 to-gray-900/20 flex items-center justify-center">
