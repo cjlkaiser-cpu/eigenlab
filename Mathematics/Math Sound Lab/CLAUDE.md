@@ -8,8 +8,8 @@ El **Math Sound Lab** es un laboratorio de sonificación matemática que convier
 
 ## Características del Laboratorio
 
-- **8 simulaciones** diversas: autómatas, fractales, caos, teoría de números, composición generativa
-- **~7,631 líneas de código** total
+- **9 simulaciones** diversas: autómatas, fractales, caos, teoría de números, composición generativa, Fibonacci
+- **~8,902 líneas de código** total (actualizado 2026-01-10)
 - **Archivos autocontenidos** (HTML/CSS/JS en un solo archivo)
 - **Sin dependencias externas** (excepto Tailwind CSS y Three.js vía CDN)
 - **Compatible iOS/Safari** (lazy audio initialization)
@@ -498,6 +498,69 @@ function midiNoteToFrequency(midiNote) {
 
 ---
 
+### 9. Fibonacci Musical (`fibonacci-musical.html`)
+
+**Concepto:** Secuencia de Fibonacci sonificada con armonías basadas en convergencia a φ
+
+**Mapeo sonoro:**
+- **F(n)/F(n-1) ratio** → Intervalos musicales (converge a 8:5, sexta menor)
+- **Índice en secuencia** → Pitch (múltiples modos de mapeo)
+- **Convergencia a φ** → Modulation index (FM synthesis)
+- **Convergencia a φ** → Filter brightness (400-8000 Hz)
+
+**Audio (Phase 1 - Armonías y Polifonía):**
+- 3 modos de reproducción:
+  - **Modo Simple**: Melodía monofónica
+  - **Modo Armónico**: Nota base + intervalo basado en ratio Fibonacci
+  - **Modo Polifónico**: Triadas (F(n), F(n-1), F(n-2))
+- Mapeo de ratios a intervalos musicales:
+  - ratio > 1.95 → Octava (2:1)
+  - ratio > 1.55 → Sexta menor (8:5) - ¡cerca de φ!
+  - ratio > 1.45 → Quinta justa (3:2)
+  - ratio > 1.3 → Cuarta justa (4:3)
+  - ratio ≤ 1.3 → Tercera mayor (5:4)
+- 4 modos de mapeo frecuencial:
+  - **Ratios Fibonacci**: baseFreq * φ^(n/3)
+  - **Logarítmico**: baseFreq * log₂(F(n) + 2)
+  - **Pentatónico**: Escala pentatónica secuencial
+  - **Escala Áurea**: División de octava por φ (12 notas)
+
+**Audio (Phase 2 - Timbre Evolutivo):**
+- **FM Synthesis con φ**: Carrier * φ = Modulator
+  - Modulation index = convergencia% (0-100%)
+  - Timbre evoluciona de simple a complejo
+- **Delay Fibonacci**: 6 taps con timing F(1) a F(6)
+  - Tiempos: 100ms, 100ms, 200ms, 300ms, 500ms, 800ms
+  - Feedback decreciente: 0.5 → 0.05
+  - Espacialización áurea
+- **Filtro Evolutivo**: Brightness aumenta con convergencia
+  - 0% convergencia → 400 Hz (oscuro)
+  - 100% convergencia → 8000 Hz (brillante)
+  - Q factor: 1 → 4
+
+**Visualización:**
+- 3 vistas: Espiral áurea, Barras, Rectángulos dorados
+- Animación durante playback con highlight
+- Estadísticas de convergencia en tiempo real
+
+**Características únicas:**
+- Convergencia matemática audible como evolución timbral
+- Escala áurea generada por división φ de octava (741.64 cents)
+- Armonías que evolucionan hacia proporción áurea
+- Delays rítmicos basados en sucesión de Fibonacci
+- 4 formas de onda seleccionables
+- BPM ajustable (30-240)
+
+**Transformación en 2 fases:**
+- **Antes**: Melodía monofónica simple
+- **Phase 1** (+90 líneas): Armonías + polifonía + escala áurea
+- **Phase 2** (+169 líneas): FM synthesis + delay + filtro evolutivo
+- **Resultado**: Sistema armónico rico donde φ es audible
+
+**Líneas de código:** 1,271 (de 1,012 inicial, +259 líneas)
+
+---
+
 ## Convenciones de Código
 
 ### Nomenclatura
@@ -735,29 +798,24 @@ const dt = (time - lastTime) / 1000;
    - Texturas sonoras emergentes
    - Inspirado en Physics Sound Lab
 
-2. **Secuencia de Fibonacci Musical**
-   - Proporción áurea como intervalos
-   - Espiral de Fibonacci visual
-   - Conexión con naturaleza
-
-3. **Curvas de Lissajous Sonoras**
+2. **Curvas de Lissajous Sonoras**
    - Ratios de frecuencia → armonía
    - Figuras paramétricas
    - x(t) = A·sin(aωt + δ), y(t) = B·sin(bωt)
 
 ### Media Prioridad
 
-4. **Algoritmos de Ordenamiento Sonoros**
+3. **Algoritmos de Ordenamiento Sonoros**
    - Bubble, Quick, Merge sort visualizados
    - Comparaciones → beeps
    - Educativo para complejidad algorítmica
 
-5. **Péndulo de Foucault Musical**
+4. **Péndulo de Foucault Musical**
    - Precesión → cambio tonal
    - Three.js 3D
    - Parámetro: latitud
 
-6. **Caos de Collatz**
+5. **Caos de Collatz**
    - Conjetura 3n+1
    - Trayectorias → melodías
    - Convergencia a 1
@@ -779,4 +837,8 @@ const dt = (time - lastTime) / 1000;
 ---
 
 **Última actualización:** 2026-01-10
-**Versión del laboratorio:** 8 simulaciones, ~7,631 líneas de código
+**Versión del laboratorio:** 9 simulaciones, ~8,902 líneas de código
+
+**Commits recientes:**
+- `faa8461` - feat(math-sound): add Phase 2 enhancements to Fibonacci Musical
+- `78281c9` - feat(math-sound): add Phase 1 enhancements to Fibonacci Musical
