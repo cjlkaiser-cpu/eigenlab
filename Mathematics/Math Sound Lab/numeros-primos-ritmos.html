@@ -1,0 +1,798 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Números Primos como Ritmos - Math Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas {
+            cursor: pointer;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 146, 60, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+        .mode-btn {
+            transition: all 0.2s;
+        }
+        .mode-btn.active {
+            background: rgba(249, 115, 22, 0.3);
+            border-color: #f97316;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Números Primos</span> como Ritmos
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Primos: <span id="prime-count" class="text-orange-400">0</span></span>
+                    <span class="text-gray-500">Rango: <span id="range-display" class="text-cyan-400">2-100</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative bg-gray-950">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-2 rounded-lg border border-gray-800">
+                <div class="text-xs mono text-gray-400">
+                    <span id="mode-indicator">Espiral de Ulam</span>
+                </div>
+            </div>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Click en un número para testear primalidad
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Controles</h2>
+
+            <!-- Playback -->
+            <div class="mb-6 flex gap-2">
+                <button id="play-btn" class="flex-1 py-2 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="play-text">Reproducir Secuencia</span>
+                </button>
+                <button id="reset-btn" class="py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition" title="Reiniciar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Range Control -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Rango de exploración: <span id="max-number-value" class="text-orange-400 mono">100</span>
+                </label>
+                <input type="range" id="max-number" min="10" max="1000" value="100" step="10" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>10</span>
+                    <span>1000</span>
+                </div>
+            </div>
+
+            <!-- Speed -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad: <span id="speed-value" class="text-cyan-400 mono">8</span> notas/s
+                </label>
+                <input type="range" id="speed" min="1" max="20" value="8" class="w-full">
+            </div>
+
+            <!-- Visualization Mode -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">📊 Modo de Visualización</h3>
+
+            <div class="grid grid-cols-1 gap-2 mb-4">
+                <button onclick="setVisualizationMode('spiral')" class="mode-btn active px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                    <div class="font-medium">Espiral de Ulam</div>
+                    <div class="text-gray-500 text-xs">Patrón espiral revelando diagonales</div>
+                </button>
+                <button onclick="setVisualizationMode('linear')" class="mode-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                    <div class="font-medium">Grid Lineal</div>
+                    <div class="text-gray-500 text-xs">Distribución en cuadrícula</div>
+                </button>
+                <button onclick="setVisualizationMode('gaps')" class="mode-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                    <div class="font-medium">Distancias (Gaps)</div>
+                    <div class="text-gray-500 text-xs">Espacios entre primos consecutivos</div>
+                </button>
+                <button onclick="setVisualizationMode('sieve')" class="mode-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition text-left">
+                    <div class="font-medium">Criba de Eratóstenes</div>
+                    <div class="text-gray-500 text-xs">Algoritmo de eliminación</div>
+                </button>
+            </div>
+
+            <!-- Audio Section -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">🎵 Audio Musical</h3>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="audio-enabled" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Activar sonido</span>
+                </label>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volume-value" class="text-orange-400 mono">50</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="50" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Escala musical</label>
+                <select id="scale-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                    <option value="pentatonic-minor">Pentatónica Menor</option>
+                    <option value="pentatonic-major">Pentatónica Mayor</option>
+                    <option value="major">Mayor (Jónica)</option>
+                    <option value="minor">Menor Natural</option>
+                    <option value="dorian">Dórica</option>
+                    <option value="phrygian">Frigia</option>
+                </select>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                    <option value="sine">Senoidal</option>
+                    <option value="triangle" selected>Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Rhythm Mapping -->
+            <h4 class="text-xs font-medium text-gray-500 mb-3 mt-6">Mapeo Rítmico</h4>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Duración base: <span id="duration-value" class="text-cyan-400 mono">200</span>ms
+                </label>
+                <input type="range" id="note-duration" min="50" max="500" value="200" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Duración mínima de nota</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="gap-rhythm" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Gaps → Duración</span>
+                </label>
+                <p class="text-xs text-gray-600 mt-1 ml-7">Mayor distancia = nota más larga</p>
+            </div>
+
+            <!-- Statistics -->
+            <div class="mt-4 p-3 bg-gray-900/50 rounded-lg">
+                <div class="text-xs mono space-y-1">
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Densidad π(n):</span>
+                        <span id="prime-density" class="text-orange-400">0%</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Gap promedio:</span>
+                        <span id="avg-gap" class="text-cyan-400">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Gap máximo:</span>
+                        <span id="max-gap" class="text-cyan-400">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Teoría de Números Primos</h3>
+                <div class="mono text-xs space-y-3 mb-3">
+                    <div class="text-gray-400">
+                        <div class="mb-1">Un primo p es divisible solo por 1 y p:</div>
+                        <div class="bg-black/30 p-2 rounded">
+                            ∀d∈ℕ: d|p ⟹ d=1 ∨ d=p
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-orange-400">Teorema:</span> Hay infinitos primos (Euclides)
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">π(n) ≈ n/ln(n)</span> (Teorema de los Números Primos)
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                    <span class="text-orange-400 font-medium">Espiral de Ulam (1963):</span> Al colocar números en espiral, los primos forman diagonales sorprendentes.
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    <span class="text-cyan-400 font-medium">Gaps:</span> La distancia entre primos consecutivos crece pero de forma irregular (conjetura de gaps acotados).
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // State
+        let primes = [];
+        let maxNumber = 100;
+        let visualizationMode = 'spiral';
+        let currentPlayIndex = 0;
+        let isPlaying = false;
+        let animationId = null;
+        let lastPlayTime = 0;
+        let speed = 8; // notes per second
+
+        // Audio
+        let audioContext = null;
+        let isAudioInitialized = false;
+        let masterGain = null;
+        let audioEnabled = false;
+        let masterVolume = 0.5;
+        let waveformType = 'triangle';
+        let currentScale = 'pentatonic-minor';
+        let noteDuration = 200; // ms
+        let useGapRhythm = true;
+
+        // Sieve animation
+        let sieveStep = 0;
+        let sieveNumbers = [];
+        let sieveCurrentPrime = 2;
+
+        // Musical scales (semitones from root)
+        const scales = {
+            'pentatonic-minor': [0, 3, 5, 7, 10],
+            'pentatonic-major': [0, 2, 4, 7, 9],
+            'major': [0, 2, 4, 5, 7, 9, 11],
+            'minor': [0, 2, 3, 5, 7, 8, 10],
+            'dorian': [0, 2, 3, 5, 7, 9, 10],
+            'phrygian': [0, 1, 3, 5, 7, 8, 10]
+        };
+
+        // ============ PRIME GENERATION ============
+
+        function sieveOfEratosthenes(max) {
+            const isPrime = new Array(max + 1).fill(true);
+            isPrime[0] = isPrime[1] = false;
+
+            for (let i = 2; i * i <= max; i++) {
+                if (isPrime[i]) {
+                    for (let j = i * i; j <= max; j += i) {
+                        isPrime[j] = false;
+                    }
+                }
+            }
+
+            return isPrime.map((val, idx) => val ? idx : null).filter(n => n !== null);
+        }
+
+        function generatePrimes() {
+            primes = sieveOfEratosthenes(maxNumber);
+            updateStats();
+        }
+
+        function isPrime(n) {
+            if (n < 2) return false;
+            if (n === 2) return true;
+            if (n % 2 === 0) return false;
+            for (let i = 3; i * i <= n; i += 2) {
+                if (n % i === 0) return false;
+            }
+            return true;
+        }
+
+        function updateStats() {
+            const density = (primes.length / maxNumber * 100).toFixed(2);
+            document.getElementById('prime-count').textContent = primes.length;
+            document.getElementById('prime-density').textContent = density + '%';
+            document.getElementById('range-display').textContent = `2-${maxNumber}`;
+
+            // Calculate gaps
+            const gaps = [];
+            for (let i = 1; i < primes.length; i++) {
+                gaps.push(primes[i] - primes[i - 1]);
+            }
+
+            const avgGap = gaps.length > 0 ? (gaps.reduce((a, b) => a + b, 0) / gaps.length).toFixed(2) : 0;
+            const maxGap = gaps.length > 0 ? Math.max(...gaps) : 0;
+
+            document.getElementById('avg-gap').textContent = avgGap;
+            document.getElementById('max-gap').textContent = maxGap;
+        }
+
+        // ============ VISUALIZATION ============
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+            render();
+        }
+
+        function setVisualizationMode(mode) {
+            visualizationMode = mode;
+            document.getElementById('mode-indicator').textContent = {
+                'spiral': 'Espiral de Ulam',
+                'linear': 'Grid Lineal',
+                'gaps': 'Distancias entre Primos',
+                'sieve': 'Criba de Eratóstenes'
+            }[mode];
+
+            // Reset sieve
+            if (mode === 'sieve') {
+                resetSieve();
+            }
+
+            // Update active button
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.closest('button')?.classList.add('active');
+
+            render();
+        }
+
+        function resetSieve() {
+            sieveStep = 0;
+            sieveNumbers = Array.from({ length: maxNumber + 1 }, (_, i) => ({
+                value: i,
+                isPrime: i >= 2,
+                marked: false
+            }));
+            sieveCurrentPrime = 2;
+        }
+
+        function stepSieve() {
+            if (sieveCurrentPrime * sieveCurrentPrime > maxNumber) return;
+
+            // Mark multiples of current prime
+            for (let i = sieveCurrentPrime * sieveCurrentPrime; i <= maxNumber; i += sieveCurrentPrime) {
+                if (sieveNumbers[i]) {
+                    sieveNumbers[i].isPrime = false;
+                    sieveNumbers[i].marked = true;
+                }
+            }
+
+            // Find next prime
+            sieveCurrentPrime++;
+            while (sieveCurrentPrime <= maxNumber && !sieveNumbers[sieveCurrentPrime].isPrime) {
+                sieveCurrentPrime++;
+            }
+
+            sieveStep++;
+        }
+
+        function drawSpiral() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+            const centerX = w / 2;
+            const centerY = h / 2;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Calculate cell size
+            const gridSize = Math.ceil(Math.sqrt(maxNumber));
+            const cellSize = Math.min(w, h) / (gridSize + 2);
+
+            // Generate spiral coordinates
+            const coords = [];
+            let x = 0, y = 0;
+            let dx = 0, dy = -1;
+
+            for (let i = 0; i <= maxNumber; i++) {
+                coords[i] = { x, y };
+
+                if (x === y || (x < 0 && x === -y) || (x > 0 && x === 1 - y)) {
+                    const temp = dx;
+                    dx = -dy;
+                    dy = temp;
+                }
+
+                x += dx;
+                y += dy;
+            }
+
+            // Draw numbers
+            const primeSet = new Set(primes);
+
+            for (let n = 1; n <= maxNumber; n++) {
+                const coord = coords[n];
+                const screenX = centerX + coord.x * cellSize;
+                const screenY = centerY + coord.y * cellSize;
+
+                const prime = primeSet.has(n);
+
+                if (prime) {
+                    // Highlight prime
+                    ctx.fillStyle = n === primes[currentPlayIndex] && isPlaying ? '#fb923c' : '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, cellSize / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else {
+                    // Composite number
+                    ctx.fillStyle = '#1f2937';
+                    ctx.fillRect(screenX - 1, screenY - 1, 2, 2);
+                }
+            }
+        }
+
+        function drawLinear() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            const cols = Math.ceil(Math.sqrt(maxNumber * 1.5));
+            const rows = Math.ceil(maxNumber / cols);
+            const cellSize = Math.min(w / cols, h / rows);
+
+            const primeSet = new Set(primes);
+
+            for (let n = 1; n <= maxNumber; n++) {
+                const row = Math.floor((n - 1) / cols);
+                const col = (n - 1) % cols;
+
+                const x = col * cellSize + cellSize / 2;
+                const y = row * cellSize + cellSize / 2;
+
+                const prime = primeSet.has(n);
+
+                if (prime) {
+                    ctx.fillStyle = n === primes[currentPlayIndex] && isPlaying ? '#fb923c' : '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(x, y, cellSize / 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Number label for small ranges
+                    if (maxNumber <= 200) {
+                        ctx.fillStyle = '#fff';
+                        ctx.font = `${Math.max(8, cellSize / 4)}px JetBrains Mono`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(n, x, y);
+                    }
+                } else {
+                    ctx.fillStyle = '#1f2937';
+                    ctx.fillRect(x - 1, y - 1, 2, 2);
+                }
+            }
+        }
+
+        function drawGaps() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            if (primes.length < 2) return;
+
+            // Calculate gaps
+            const gaps = [];
+            for (let i = 1; i < primes.length; i++) {
+                gaps.push(primes[i] - primes[i - 1]);
+            }
+
+            const maxGap = Math.max(...gaps);
+            const barWidth = w / gaps.length;
+
+            // Draw bars
+            for (let i = 0; i < gaps.length; i++) {
+                const barHeight = (gaps[i] / maxGap) * h * 0.9;
+                const x = i * barWidth;
+                const y = h - barHeight;
+
+                const isPlaying = i === currentPlayIndex - 1;
+                const gradient = ctx.createLinearGradient(0, h, 0, y);
+                gradient.addColorStop(0, isPlaying ? '#fb923c' : '#f97316');
+                gradient.addColorStop(1, isPlaying ? '#fdba74' : '#fb923c');
+
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x + 1, y, barWidth - 2, barHeight);
+
+                // Label
+                if (gaps.length < 50) {
+                    ctx.fillStyle = '#6b7280';
+                    ctx.font = '10px JetBrains Mono';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(gaps[i], x + barWidth / 2, h - 5);
+                }
+            }
+        }
+
+        function drawSieve() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            const cols = Math.ceil(Math.sqrt(maxNumber * 1.5));
+            const rows = Math.ceil(maxNumber / cols);
+            const cellSize = Math.min(w / cols, h / rows);
+
+            for (let n = 2; n <= maxNumber; n++) {
+                const row = Math.floor((n - 2) / cols);
+                const col = (n - 2) % cols;
+
+                const x = col * cellSize + cellSize / 2;
+                const y = row * cellSize + cellSize / 2;
+
+                const data = sieveNumbers[n];
+
+                if (data.isPrime) {
+                    ctx.fillStyle = '#f97316';
+                    ctx.beginPath();
+                    ctx.arc(x, y, cellSize / 3, 0, Math.PI * 2);
+                    ctx.fill();
+                } else if (data.marked) {
+                    // Crossed out
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x - cellSize / 4, y - cellSize / 4);
+                    ctx.lineTo(x + cellSize / 4, y + cellSize / 4);
+                    ctx.moveTo(x + cellSize / 4, y - cellSize / 4);
+                    ctx.lineTo(x - cellSize / 4, y + cellSize / 4);
+                    ctx.stroke();
+                } else {
+                    ctx.fillStyle = '#4b5563';
+                    ctx.fillRect(x - 1, y - 1, 2, 2);
+                }
+            }
+        }
+
+        function render() {
+            switch (visualizationMode) {
+                case 'spiral':
+                    drawSpiral();
+                    break;
+                case 'linear':
+                    drawLinear();
+                    break;
+                case 'gaps':
+                    drawGaps();
+                    break;
+                case 'sieve':
+                    drawSieve();
+                    break;
+            }
+        }
+
+        // ============ AUDIO ============
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = masterVolume;
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function playPrime(primeValue, gap = 1) {
+            if (!isAudioInitialized || !audioEnabled) return;
+
+            const scale = scales[currentScale];
+            const noteIndex = (primes.indexOf(primeValue)) % scale.length;
+            const semitone = scale[noteIndex];
+
+            // Map prime to octave (spread across 3 octaves)
+            const primeIndex = primes.indexOf(primeValue);
+            const octaveOffset = Math.floor((primeIndex / primes.length) * 3);
+            const midiNote = 60 + octaveOffset * 12 + semitone;
+            const frequency = 440 * Math.pow(2, (midiNote - 69) / 12);
+
+            // Duration based on gap
+            const duration = useGapRhythm ? (noteDuration + gap * 50) / 1000 : noteDuration / 1000;
+
+            const now = audioContext.currentTime;
+
+            // Oscillator
+            const osc = audioContext.createOscillator();
+            osc.type = waveformType;
+            osc.frequency.value = frequency;
+
+            // Envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(masterVolume * 0.3, now + 0.005);
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            osc.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+        }
+
+        // ============ PLAYBACK ============
+
+        function togglePlay() {
+            if (!isAudioInitialized && audioEnabled) {
+                initAudioContext();
+            }
+
+            isPlaying = !isPlaying;
+
+            if (isPlaying) {
+                currentPlayIndex = 0;
+                lastPlayTime = performance.now();
+                animationId = requestAnimationFrame(playLoop);
+            } else {
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+            }
+
+            updatePlayButton();
+        }
+
+        function playLoop(timestamp) {
+            if (!isPlaying) return;
+
+            const interval = 1000 / speed;
+
+            if (timestamp - lastPlayTime >= interval) {
+                if (currentPlayIndex < primes.length) {
+                    const prime = primes[currentPlayIndex];
+                    const gap = currentPlayIndex > 0 ? prime - primes[currentPlayIndex - 1] : 0;
+
+                    playPrime(prime, gap);
+                    currentPlayIndex++;
+                    lastPlayTime = timestamp;
+                    render();
+                } else {
+                    isPlaying = false;
+                    currentPlayIndex = 0;
+                    updatePlayButton();
+                    render();
+                    return;
+                }
+            }
+
+            // Sieve animation
+            if (visualizationMode === 'sieve' && sieveCurrentPrime * sieveCurrentPrime <= maxNumber) {
+                stepSieve();
+                render();
+            }
+
+            animationId = requestAnimationFrame(playLoop);
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('play-icon');
+            const text = document.getElementById('play-text');
+
+            if (isPlaying) {
+                text.textContent = 'Detener';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Reproducir Secuencia';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('play-btn').addEventListener('click', togglePlay);
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (isPlaying) togglePlay();
+            currentPlayIndex = 0;
+            if (visualizationMode === 'sieve') resetSieve();
+            render();
+        });
+
+        document.getElementById('max-number').addEventListener('input', (e) => {
+            maxNumber = parseInt(e.target.value);
+            document.getElementById('max-number-value').textContent = maxNumber;
+            generatePrimes();
+            if (visualizationMode === 'sieve') resetSieve();
+            render();
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            document.getElementById('speed-value').textContent = speed;
+        });
+
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            if (e.target.checked && !isAudioInitialized) {
+                initAudioContext();
+            }
+            audioEnabled = e.target.checked;
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            masterVolume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value;
+            if (masterGain) {
+                masterGain.gain.value = masterVolume;
+            }
+        });
+
+        document.getElementById('scale-select').addEventListener('change', (e) => {
+            currentScale = e.target.value;
+        });
+
+        document.getElementById('waveform-select').addEventListener('change', (e) => {
+            waveformType = e.target.value;
+        });
+
+        document.getElementById('note-duration').addEventListener('input', (e) => {
+            noteDuration = parseInt(e.target.value);
+            document.getElementById('duration-value').textContent = noteDuration;
+        });
+
+        document.getElementById('gap-rhythm').addEventListener('change', (e) => {
+            useGapRhythm = e.target.checked;
+        });
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            // Simple click detection - just show alert for now
+            // In a full implementation, would calculate which number was clicked
+            const randomPrime = primes[Math.floor(Math.random() * primes.length)];
+            playPrime(randomPrime);
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+        });
+
+        // ============ INITIALIZATION ============
+
+        generatePrimes();
+        initCanvas();
+    </script>
+</body>
+</html>
