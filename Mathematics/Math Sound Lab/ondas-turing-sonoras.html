@@ -1,0 +1,989 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ondas de Turing Sonoras - Math Sound Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           Ondas de Turing Sonoras - Gray-Scott
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #f97316;
+            --accent-glow: rgba(249, 115, 22, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .header .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main container */
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Canvas area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            image-rendering: pixelated;
+        }
+
+        /* Control panel */
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-group label span {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        button:hover {
+            background: var(--border);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 500;
+        }
+
+        button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        button.secondary {
+            background: transparent;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button.secondary:hover {
+            background: rgba(249, 115, 22, 0.1);
+        }
+
+        /* Select dropdowns */
+        select {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        select:hover {
+            border-color: var(--accent);
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        /* Stats box */
+        .stats-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-item .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-item .stat-value {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Math box */
+        .math-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+        }
+
+        .math-box .equation {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+            font-size: 0.7rem;
+        }
+
+        .math-box .description {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        /* Separator */
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                max-height: 50vh;
+            }
+        }
+
+        /* Scrollbar */
+        .controls::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Ondas de Turing Sonoras</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="index.html">Math Sound Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="controls">
+            <!-- Presets -->
+            <div class="control-section">
+                <h3>Presets Clásicos</h3>
+
+                <select id="preset-select">
+                    <option value="">Seleccionar patrón...</option>
+                    <option value="mitosis">Mitosis</option>
+                    <option value="coral">Coral Growth</option>
+                    <option value="spots">Spots</option>
+                    <option value="bacteria">Bacterias</option>
+                    <option value="worms">Worms</option>
+                    <option value="waves">Waves</option>
+                </select>
+
+                <button id="load-preset" class="primary" disabled>Cargar Preset</button>
+            </div>
+
+            <!-- Parameters -->
+            <div class="control-section">
+                <h3>Parámetros Gray-Scott</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Feed Rate (F)
+                        <span id="feed-value">0.0545</span>
+                    </label>
+                    <input type="range" id="feed" min="0.0100" max="0.0800" step="0.0001" value="0.0545">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Kill Rate (k)
+                        <span id="kill-value">0.0620</span>
+                    </label>
+                    <input type="range" id="kill" min="0.0450" max="0.0700" step="0.0001" value="0.0620">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Timestep (dt)
+                        <span id="timestep-value">1.0</span>
+                    </label>
+                    <input type="range" id="timestep" min="0.5" max="2.0" step="0.1" value="1.0">
+                </div>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="control-section">
+                <h3>Simulación</h3>
+
+                <div class="button-group">
+                    <button id="btn-play" class="primary">Iniciar</button>
+                    <button id="btn-reset">Resetear</button>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Velocidad
+                        <span id="speed-value">1</span>x
+                    </label>
+                    <input type="range" id="speed" min="1" max="10" value="1">
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div class="control-section">
+                <h3>Audio</h3>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="audio-enabled" checked>
+                    <label for="audio-enabled">Activar Audio</label>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Volumen
+                        <span id="volume-value">50%</span>
+                    </label>
+                    <input type="range" id="volume" min="0" max="100" value="50">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Velocidad de Scan
+                        <span id="scan-speed-value">120</span> BPM
+                    </label>
+                    <input type="range" id="scan-speed" min="30" max="240" value="120">
+                </div>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Escala</label>
+                <select id="scale">
+                    <option value="pentatonic-minor">Pentatónica Menor</option>
+                    <option value="pentatonic-major">Pentatónica Mayor</option>
+                    <option value="chromatic">Cromática</option>
+                </select>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Forma de Onda</label>
+                <select id="waveform">
+                    <option value="sine">Senoidal</option>
+                    <option value="triangle" selected>Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Statistics -->
+            <div class="control-section">
+                <h3>Estadísticas</h3>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Iteraciones</span>
+                        <span class="stat-value" id="iterations-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">FPS</span>
+                        <span class="stat-value" id="fps-value">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Concentración V</span>
+                        <span class="stat-value" id="concentration-value">0.000</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Box -->
+            <div class="control-section">
+                <h3>Matemática</h3>
+
+                <div class="math-box">
+                    <div class="equation">dU/dt = Dᵤ∇²U - UV² + F(1-U)</div>
+                    <div class="equation">dV/dt = Dᵥ∇²V + UV² - (F+k)V</div>
+                    <div class="description">
+                        Sistema de reacción-difusión Gray-Scott. U y V son concentraciones químicas,
+                        F es tasa de alimentación, k es tasa de muerte. Genera patrones de Turing emergentes.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        /* ========================================
+           Ondas de Turing Sonoras - Gray-Scott
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            gridSize: 128,
+            feed: 0.0545,
+            kill: 0.0620,
+            diffU: 0.16,
+            diffV: 0.08,
+            dt: 1.0,
+            speed: 1,
+            volume: 0.5,
+            audioEnabled: true,
+            scanSpeed: 120,
+            scale: 'pentatonic-minor',
+            waveform: 'triangle',
+        };
+
+        // ===== PRESETS =====
+        const presets = {
+            mitosis: {
+                name: 'Mitosis',
+                F: 0.0367,
+                k: 0.0649,
+                description: 'Células dividiéndose'
+            },
+            coral: {
+                name: 'Coral Growth',
+                F: 0.0545,
+                k: 0.0620,
+                description: 'Crecimiento coralino'
+            },
+            spots: {
+                name: 'Spots',
+                F: 0.0380,
+                k: 0.0610,
+                description: 'Manchas estables'
+            },
+            bacteria: {
+                name: 'Bacterias',
+                F: 0.0140,
+                k: 0.0540,
+                description: 'Colonias bacterianas'
+            },
+            worms: {
+                name: 'Worms',
+                F: 0.0580,
+                k: 0.0650,
+                description: 'Gusanos ondulantes'
+            },
+            waves: {
+                name: 'Waves',
+                F: 0.0300,
+                k: 0.0600,
+                description: 'Ondas propagándose'
+            }
+        };
+
+        // ===== ESCALAS MUSICALES =====
+        const scales = {
+            'pentatonic-minor': [0, 3, 5, 7, 10],
+            'pentatonic-major': [0, 2, 4, 7, 9],
+            'chromatic': [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
+        };
+
+        // ===== AUDIO =====
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = CONFIG.volume;
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function playNote(frequency, duration, volume) {
+            if (!isAudioInitialized || !CONFIG.audioEnabled) return;
+
+            const now = audioContext.currentTime;
+
+            const osc = audioContext.createOscillator();
+            osc.type = CONFIG.waveform;
+            osc.frequency.value = frequency;
+
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(volume * 0.3, now + 0.01);
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = frequency * 2;
+            filter.Q.value = 1;
+
+            osc.connect(filter);
+            filter.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+        }
+
+        function midiToFrequency(midiNote) {
+            return 440 * Math.pow(2, (midiNote - 69) / 12);
+        }
+
+        // ===== CANVAS SETUP =====
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = CONFIG.gridSize;
+            canvas.height = CONFIG.gridSize;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+        }
+
+        // ===== GRAY-SCOTT MODEL =====
+        let gridU = [];
+        let gridV = [];
+        let nextU = [];
+        let nextV = [];
+
+        function initGrid() {
+            const N = CONFIG.gridSize;
+
+            // Initialize grids
+            for (let i = 0; i < N; i++) {
+                gridU[i] = [];
+                gridV[i] = [];
+                nextU[i] = [];
+                nextV[i] = [];
+                for (let j = 0; j < N; j++) {
+                    gridU[i][j] = 1.0;
+                    gridV[i][j] = 0.0;
+                    nextU[i][j] = 1.0;
+                    nextV[i][j] = 0.0;
+                }
+            }
+
+            // Seed with initial perturbation (square in center)
+            const centerX = Math.floor(N / 2);
+            const centerY = Math.floor(N / 2);
+            const size = 10;
+
+            for (let i = centerY - size; i < centerY + size; i++) {
+                for (let j = centerX - size; j < centerX + size; j++) {
+                    if (i >= 0 && i < N && j >= 0 && j < N) {
+                        gridV[i][j] = 1.0;
+                    }
+                }
+            }
+
+            // Add random noise
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    if (Math.random() < 0.05) {
+                        gridV[i][j] = 1.0;
+                    }
+                }
+            }
+        }
+
+        function laplacian(grid, i, j) {
+            const N = CONFIG.gridSize;
+
+            // Periodic boundary conditions (toroidal)
+            const im1 = (i - 1 + N) % N;
+            const ip1 = (i + 1) % N;
+            const jm1 = (j - 1 + N) % N;
+            const jp1 = (j + 1) % N;
+
+            // 5-point stencil
+            return grid[i][jp1] + grid[i][jm1] + grid[ip1][j] + grid[im1][j] - 4 * grid[i][j];
+        }
+
+        function stepGrayScott() {
+            const N = CONFIG.gridSize;
+            const dt = CONFIG.dt;
+            const F = CONFIG.feed;
+            const k = CONFIG.kill;
+            const Du = CONFIG.diffU;
+            const Dv = CONFIG.diffV;
+
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const U = gridU[i][j];
+                    const V = gridV[i][j];
+
+                    const lapU = laplacian(gridU, i, j);
+                    const lapV = laplacian(gridV, i, j);
+
+                    const reaction = U * V * V;
+
+                    // Gray-Scott equations
+                    nextU[i][j] = U + dt * (Du * lapU - reaction + F * (1 - U));
+                    nextV[i][j] = V + dt * (Dv * lapV + reaction - (F + k) * V);
+
+                    // Clamp to [0, 1]
+                    nextU[i][j] = Math.max(0, Math.min(1, nextU[i][j]));
+                    nextV[i][j] = Math.max(0, Math.min(1, nextV[i][j]));
+                }
+            }
+
+            // Swap grids
+            [gridU, nextU] = [nextU, gridU];
+            [gridV, nextV] = [nextV, gridV];
+        }
+
+        // ===== VISUALIZATION =====
+        function drawGrid() {
+            const N = CONFIG.gridSize;
+            const imageData = ctx.createImageData(N, N);
+            const data = imageData.data;
+
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const idx = (i * N + j) * 4;
+                    const v = gridV[i][j];
+
+                    // Color mapping: blue (low) -> orange (high)
+                    if (v < 0.3) {
+                        // Blue
+                        const t = v / 0.3;
+                        data[idx + 0] = Math.floor(3 * t);
+                        data[idx + 1] = Math.floor(23 * t);
+                        data[idx + 2] = Math.floor(66 + (145 - 66) * t);
+                    } else if (v < 0.6) {
+                        // Blue -> Orange
+                        const t = (v - 0.3) / 0.3;
+                        data[idx + 0] = Math.floor(3 + (249 - 3) * t);
+                        data[idx + 1] = Math.floor(23 + (115 - 23) * t);
+                        data[idx + 2] = Math.floor(145 * (1 - t));
+                    } else {
+                        // Orange -> Yellow
+                        const t = (v - 0.6) / 0.4;
+                        data[idx + 0] = 249;
+                        data[idx + 1] = Math.floor(115 + (220 - 115) * t);
+                        data[idx + 2] = Math.floor(22 + (50 - 22) * t);
+                    }
+
+                    data[idx + 3] = 255; // Alpha
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+        }
+
+        // ===== AUDIO SCANNING =====
+        let scanRow = 0;
+        let lastScanTime = 0;
+
+        function scanAudio() {
+            if (!CONFIG.audioEnabled || !isAudioInitialized) return;
+
+            const N = CONFIG.gridSize;
+            const scale = scales[CONFIG.scale];
+            const baseNote = 48; // C3
+
+            // Scan every 4 rows for performance
+            const step = 4;
+
+            for (let j = 0; j < N; j += step) {
+                const v = gridV[scanRow][j];
+
+                // Threshold for playing note
+                if (v > 0.3) {
+                    // Map position to pitch
+                    const scaleIndex = Math.floor((j / N) * scale.length);
+                    const octave = Math.floor((v - 0.3) / 0.2);
+                    const midiNote = baseNote + scale[scaleIndex] + octave * 12;
+                    const frequency = midiToFrequency(midiNote);
+
+                    // Volume based on concentration
+                    const volume = Math.min(1, (v - 0.3) * 2) * CONFIG.volume;
+
+                    // Short note
+                    playNote(frequency, 0.1, volume);
+                }
+            }
+
+            // Move to next row
+            scanRow = (scanRow + 2) % N;
+        }
+
+        // ===== SIMULATION LOOP =====
+        let isRunning = false;
+        let iterations = 0;
+        let animationId = null;
+        let lastFrameTime = 0;
+        let fps = 0;
+
+        function loop(timestamp) {
+            if (!isRunning) return;
+
+            // FPS calculation
+            if (lastFrameTime) {
+                const delta = timestamp - lastFrameTime;
+                fps = Math.round(1000 / delta);
+            }
+            lastFrameTime = timestamp;
+
+            // Multiple steps per frame based on speed
+            for (let s = 0; s < CONFIG.speed; s++) {
+                stepGrayScott();
+                iterations++;
+            }
+
+            drawGrid();
+
+            // Audio scan at specified BPM
+            const scanInterval = 60000 / CONFIG.scanSpeed; // ms between scans
+            if (timestamp - lastScanTime >= scanInterval) {
+                scanAudio();
+                lastScanTime = timestamp;
+            }
+
+            updateStats();
+
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function startSimulation() {
+            if (!isAudioInitialized && CONFIG.audioEnabled) {
+                initAudioContext();
+            }
+
+            isRunning = true;
+            document.getElementById('btn-play').textContent = 'Pausar';
+            lastFrameTime = 0;
+            lastScanTime = 0;
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function pauseSimulation() {
+            isRunning = false;
+            document.getElementById('btn-play').textContent = 'Iniciar';
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+        }
+
+        function resetSimulation() {
+            pauseSimulation();
+            iterations = 0;
+            scanRow = 0;
+            initGrid();
+            drawGrid();
+            updateStats();
+        }
+
+        function updateStats() {
+            document.getElementById('iterations-value').textContent = iterations;
+            document.getElementById('fps-value').textContent = fps;
+
+            // Average concentration of V
+            const N = CONFIG.gridSize;
+            let avgV = 0;
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    avgV += gridV[i][j];
+                }
+            }
+            avgV /= (N * N);
+            document.getElementById('concentration-value').textContent = avgV.toFixed(3);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Presets
+        document.getElementById('preset-select').addEventListener('change', (e) => {
+            document.getElementById('load-preset').disabled = !e.target.value;
+        });
+
+        document.getElementById('load-preset').addEventListener('click', () => {
+            const key = document.getElementById('preset-select').value;
+            if (!key) return;
+
+            const preset = presets[key];
+            CONFIG.feed = preset.F;
+            CONFIG.kill = preset.k;
+
+            document.getElementById('feed').value = preset.F;
+            document.getElementById('kill').value = preset.k;
+            document.getElementById('feed-value').textContent = preset.F.toFixed(4);
+            document.getElementById('kill-value').textContent = preset.k.toFixed(4);
+
+            resetSimulation();
+        });
+
+        // Parameters
+        document.getElementById('feed').addEventListener('input', (e) => {
+            CONFIG.feed = parseFloat(e.target.value);
+            document.getElementById('feed-value').textContent = CONFIG.feed.toFixed(4);
+        });
+
+        document.getElementById('kill').addEventListener('input', (e) => {
+            CONFIG.kill = parseFloat(e.target.value);
+            document.getElementById('kill-value').textContent = CONFIG.kill.toFixed(4);
+        });
+
+        document.getElementById('timestep').addEventListener('input', (e) => {
+            CONFIG.dt = parseFloat(e.target.value);
+            document.getElementById('timestep-value').textContent = CONFIG.dt.toFixed(1);
+        });
+
+        // Simulation controls
+        document.getElementById('btn-play').addEventListener('click', () => {
+            if (isRunning) {
+                pauseSimulation();
+            } else {
+                startSimulation();
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', resetSimulation);
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            CONFIG.speed = parseInt(e.target.value);
+            document.getElementById('speed-value').textContent = CONFIG.speed;
+        });
+
+        // Audio settings
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            CONFIG.audioEnabled = e.target.checked;
+            if (CONFIG.audioEnabled && !isAudioInitialized) {
+                initAudioContext();
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            CONFIG.volume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value + '%';
+            if (masterGain) {
+                masterGain.gain.value = CONFIG.volume;
+            }
+        });
+
+        document.getElementById('scan-speed').addEventListener('input', (e) => {
+            CONFIG.scanSpeed = parseInt(e.target.value);
+            document.getElementById('scan-speed-value').textContent = CONFIG.scanSpeed;
+        });
+
+        document.getElementById('scale').addEventListener('change', (e) => {
+            CONFIG.scale = e.target.value;
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            CONFIG.waveform = e.target.value;
+        });
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            initGrid();
+            drawGrid();
+            updateStats();
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            drawGrid();
+        });
+    </script>
+</body>
+</html>
