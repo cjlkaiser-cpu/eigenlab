@@ -428,6 +428,16 @@
                     <label for="audio-enabled">Activar Audio</label>
                 </div>
 
+                <div class="checkbox-group">
+                    <input type="checkbox" id="harmonic-mode" checked>
+                    <label for="harmonic-mode">Armonías basadas en ratios</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="polyphonic-mode">
+                    <label for="polyphonic-mode">Modo Polifónico (triadas)</label>
+                </div>
+
                 <div class="slider-group">
                     <label>
                         Volumen
@@ -441,6 +451,7 @@
                     <option value="ratios">Ratios Fibonacci (φ)</option>
                     <option value="logarithmic">Logarítmico</option>
                     <option value="pentatonic">Pentatónica Secuencial</option>
+                    <option value="golden-scale">Escala Áurea (φ)</option>
                 </select>
 
                 <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Forma de Onda</label>
@@ -506,6 +517,8 @@
             bpm: 120,
             volume: 0.6,
             audioEnabled: true,
+            harmonicMode: true,      // Armonías basadas en ratios
+            polyphonicMode: false,   // Modo polifónico (triadas)
             mappingMode: 'ratios',
             waveform: 'triangle',
         };
@@ -532,7 +545,7 @@
             }
         }
 
-        function playNote(frequency, duration, volume) {
+        function playNote(frequency, duration, volume, pan = 0) {
             if (!isAudioInitialized || !CONFIG.audioEnabled) return;
 
             const now = audioContext.currentTime;
@@ -551,12 +564,50 @@
             filter.frequency.value = frequency * 2;
             filter.Q.value = 1;
 
+            // Panning estéreo
+            const panner = audioContext.createStereoPanner();
+            panner.pan.value = Math.max(-1, Math.min(1, pan));
+
             osc.connect(filter);
-            filter.connect(envelope);
+            filter.connect(panner);
+            panner.connect(envelope);
             envelope.connect(masterGain);
 
             osc.start(now);
             osc.stop(now + duration + 0.1);
+        }
+
+        // Mapear ratio de Fibonacci a intervalo musical
+        function mapRatioToInterval(ratio) {
+            if (ratio > 1.95) return 2.0;      // Octave (2:1)
+            if (ratio > 1.55) return 1.6;      // Minor 6th (8:5) - cerca de φ!
+            if (ratio > 1.45) return 1.5;      // Perfect 5th (3:2)
+            if (ratio > 1.3) return 1.333;     // Perfect 4th (4:3)
+            return 1.25;                        // Major 3rd (5:4)
+        }
+
+        // Tocar acorde (triada)
+        function playChord(frequencies, duration, volume) {
+            if (!isAudioInitialized || !CONFIG.audioEnabled) return;
+
+            frequencies.forEach((freq, index) => {
+                const pan = (index - 1) * 0.3; // Spread estéreo: -0.3, 0, +0.3
+                const adjustedVolume = volume * 0.5; // Reducir para evitar clipping
+                playNote(freq, duration, adjustedVolume, pan);
+            });
+        }
+
+        // Generar escala áurea (división de octava por φ)
+        function generateGoldenScale() {
+            const scale = [];
+            let cents = 0;
+
+            while (scale.length < 12) {
+                scale.push(cents);
+                cents = (cents + 1200 / PHI) % 1200;  // ≈ 741.64 cents
+            }
+
+            return scale.sort((a, b) => a - b);
         }
 
         function midiToFrequency(midiNote) {
@@ -603,6 +654,14 @@
                     const note = scale[index % scale.length];
                     const midiNote = 60 + octave * 12 + note;
                     return midiToFrequency(midiNote);
+
+                case 'golden-scale':
+                    // Escala áurea: división de octava por φ
+                    const goldenScale = generateGoldenScale();
+                    const scaleIndex = index % goldenScale.length;
+                    const octaveOffset = Math.floor(index / goldenScale.length);
+                    const cents = goldenScale[scaleIndex] + (octaveOffset * 1200);
+                    return baseFreq * Math.pow(2, cents / 1200);
 
                 default:
                     return baseFreq;
@@ -865,10 +924,33 @@
             if (timestamp - lastPlayTime >= interval) {
                 if (playbackIndex < fibonacci.length) {
                     const value = fibonacci[playbackIndex];
-                    const frequency = fibonacciToFrequency(value, playbackIndex);
                     const duration = interval / 1000 * 0.8;
 
-                    playNote(frequency, duration, CONFIG.volume);
+                    // MODO POLIFÓNICO: Tocar triada (3 notas simultáneas)
+                    if (CONFIG.polyphonicMode && playbackIndex >= 2) {
+                        const freq1 = fibonacciToFrequency(fibonacci[playbackIndex], playbackIndex);
+                        const freq2 = fibonacciToFrequency(fibonacci[playbackIndex - 1], playbackIndex - 1);
+                        const freq3 = fibonacciToFrequency(fibonacci[playbackIndex - 2], playbackIndex - 2);
+                        playChord([freq1, freq2, freq3], duration, CONFIG.volume);
+                    }
+                    // MODO ARMÓNICO: Tocar nota + armonía basada en ratio
+                    else if (CONFIG.harmonicMode && playbackIndex >= 1) {
+                        const baseFreq = fibonacciToFrequency(value, playbackIndex);
+                        const ratio = ratios[playbackIndex] || 1;
+                        const intervalRatio = mapRatioToInterval(ratio);
+
+                        // Nota base
+                        playNote(baseFreq, duration, CONFIG.volume);
+
+                        // Intervalo armónico
+                        const harmonicFreq = baseFreq * intervalRatio;
+                        playNote(harmonicFreq, duration, CONFIG.volume * 0.6);
+                    }
+                    // MODO SIMPLE: Solo melodía
+                    else {
+                        const frequency = fibonacciToFrequency(value, playbackIndex);
+                        playNote(frequency, duration, CONFIG.volume);
+                    }
 
                     currentIndex = playbackIndex;
                     render();
@@ -980,6 +1062,14 @@
             if (CONFIG.audioEnabled && !isAudioInitialized) {
                 initAudioContext();
             }
+        });
+
+        document.getElementById('harmonic-mode').addEventListener('change', (e) => {
+            CONFIG.harmonicMode = e.target.checked;
+        });
+
+        document.getElementById('polyphonic-mode').addEventListener('change', (e) => {
+            CONFIG.polyphonicMode = e.target.checked;
         });
 
         document.getElementById('volume').addEventListener('input', (e) => {
