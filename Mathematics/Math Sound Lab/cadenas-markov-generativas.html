@@ -1,0 +1,1629 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadenas de Markov Generativas - Math Sound Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           Cadenas de Markov Generativas
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #f97316;
+            --accent-glow: rgba(249, 115, 22, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .header .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main container */
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Canvas area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid var(--border);
+            background: var(--bg-primary);
+        }
+
+        .tab-btn {
+            padding: 0.75rem 1.5rem;
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(249, 115, 22, 0.05);
+        }
+
+        .tab-btn.active {
+            border-bottom-color: var(--accent);
+            background: rgba(249, 115, 22, 0.1);
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        /* Canvas container */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* State indicator overlay */
+        .state-indicator {
+            position: absolute;
+            top: 1rem;
+            left: 1rem;
+            background: rgba(15, 23, 42, 0.9);
+            padding: 0.5rem 1rem;
+            border-radius: 0.5rem;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            display: none;
+        }
+
+        .state-indicator.active {
+            display: block;
+        }
+
+        .state-indicator .label {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        /* Control panel */
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-group label span {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        button:hover {
+            background: var(--border);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button:disabled:hover {
+            background: var(--bg-panel);
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 500;
+        }
+
+        button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        button.secondary {
+            background: transparent;
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        button.secondary:hover {
+            background: rgba(249, 115, 22, 0.1);
+        }
+
+        /* Select dropdowns */
+        select {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        select:hover {
+            border-color: var(--accent);
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        /* States display */
+        .states-display {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(70px, 1fr));
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .state-badge {
+            background: var(--bg-panel);
+            padding: 0.5rem;
+            border-radius: 0.25rem;
+            border: 1px solid var(--border);
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--accent);
+        }
+
+        /* Recording display */
+        .recording-display {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            min-height: 60px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            overflow-wrap: break-word;
+        }
+
+        .recording-display.active {
+            border-color: var(--accent);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Stats box */
+        .stats-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-item .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-item .stat-value {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Math box */
+        .math-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.875rem;
+            line-height: 1.8;
+        }
+
+        .math-box .equation {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .math-box .description {
+            color: var(--text-secondary);
+            font-size: 0.75rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        /* Separator */
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        /* Feedback message */
+        .feedback-message {
+            font-size: 0.75rem;
+            padding: 0.5rem 0.75rem;
+            border-radius: 0.25rem;
+            background: rgba(249, 115, 22, 0.1);
+            border: 1px solid var(--accent);
+            color: var(--accent);
+            display: none;
+        }
+
+        .feedback-message.active {
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                max-height: 50vh;
+            }
+        }
+
+        /* Scrollbar */
+        .controls::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Cadenas de Markov Generativas</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="index.html">Math Sound Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <!-- Tabs -->
+            <div class="tabs">
+                <button id="tab-heatmap" class="tab-btn active">Heatmap</button>
+                <button id="tab-graph" class="tab-btn">Grafo</button>
+            </div>
+
+            <!-- Canvas -->
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+                <div id="state-indicator" class="state-indicator">
+                    Estado actual: <span class="label" id="current-state-label">-</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="controls">
+            <!-- Configuration -->
+            <div class="control-section">
+                <h3>Configuración</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Número de Estados
+                        <span id="num-states-value">4</span>
+                    </label>
+                    <input type="range" id="num-states" min="2" max="12" value="4">
+                </div>
+
+                <div class="states-display" id="states-display"></div>
+            </div>
+
+            <!-- Training -->
+            <div class="control-section">
+                <h3>Entrenamiento</h3>
+
+                <select id="preset-melody">
+                    <option value="">Seleccionar melodía...</option>
+                    <option value="twinkle">Twinkle Twinkle Little Star</option>
+                    <option value="ode">Ode to Joy</option>
+                    <option value="birthday">Happy Birthday</option>
+                    <option value="mario">Super Mario Bros</option>
+                </select>
+
+                <button id="train-preset" class="primary" disabled>Entrenar con Preset</button>
+
+                <div class="separator"></div>
+
+                <button id="btn-record" class="secondary">Grabar Secuencia</button>
+
+                <div id="recording-display" class="recording-display">
+                    Notas grabadas aparecerán aquí...
+                </div>
+
+                <button id="train-recording" disabled>Entrenar con Grabación</button>
+            </div>
+
+            <!-- Generation -->
+            <div class="control-section">
+                <h3>Generación</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Longitud de Secuencia
+                        <span id="sequence-length-value">16</span>
+                    </label>
+                    <input type="range" id="sequence-length" min="4" max="64" value="16">
+                </div>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Estado Inicial</label>
+                <select id="start-state"></select>
+
+                <button id="generate-sequence" class="primary">Generar Secuencia</button>
+
+                <div id="generation-feedback" class="feedback-message"></div>
+
+                <div class="separator"></div>
+
+                <div class="button-group">
+                    <button id="btn-play" class="primary">Reproducir</button>
+                    <button id="btn-stop">Detener</button>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Velocidad (BPM)
+                        <span id="bpm-value">120</span>
+                    </label>
+                    <input type="range" id="bpm" min="40" max="240" value="120">
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div class="control-section">
+                <h3>Audio</h3>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="audio-enabled" checked>
+                    <label for="audio-enabled">Activar Audio</label>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Volumen
+                        <span id="volume-value">70%</span>
+                    </label>
+                    <input type="range" id="volume" min="0" max="100" value="70">
+                </div>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Escala</label>
+                <select id="scale">
+                    <option value="pentatonic-minor">Pentatónica Menor</option>
+                    <option value="pentatonic-major">Pentatónica Mayor</option>
+                </select>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Forma de Onda</label>
+                <select id="waveform">
+                    <option value="sine">Senoidal</option>
+                    <option value="triangle">Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Statistics -->
+            <div class="control-section">
+                <h3>Estadísticas</h3>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Entropía</span>
+                        <span class="stat-value" id="entropy-value">-</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Estado más probable</span>
+                        <span class="stat-value" id="most-likely-state">-</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Box -->
+            <div class="control-section">
+                <h3>Matemática</h3>
+
+                <div class="math-box">
+                    <div class="equation">P(j|i) = matrix[i][j]</div>
+                    <div class="equation">Σⱼ P(j|i) = 1</div>
+                    <div class="description">
+                        Una cadena de Markov es un proceso estocástico donde el siguiente estado
+                        depende solo del estado actual (propiedad de Markov).
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        /* ========================================
+           Cadenas de Markov Generativas
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            numStates: 4,
+            sequenceLength: 16,
+            bpm: 120,
+            volume: 0.7,
+            audioEnabled: true,
+            scale: 'pentatonic-minor',
+            waveform: 'sine',
+            startState: null, // null = aleatorio
+        };
+
+        // ===== MELODÍAS PRE-CARGADAS =====
+        const presetMelodies = {
+            twinkle: {
+                name: "Twinkle Twinkle Little Star",
+                sequence: [
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "A4", duration: "medium"},
+                    {pitch: "A4", duration: "medium"},
+                    {pitch: "G4", duration: "long"},
+                    {pitch: "F4", duration: "medium"},
+                    {pitch: "F4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "C4", duration: "long"},
+                ]
+            },
+            ode: {
+                name: "Ode to Joy",
+                sequence: [
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "F4", duration: "medium"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "F4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "E4", duration: "medium"},
+                    {pitch: "D4", duration: "short"},
+                    {pitch: "D4", duration: "long"},
+                ]
+            },
+            birthday: {
+                name: "Happy Birthday",
+                sequence: [
+                    {pitch: "C4", duration: "short"},
+                    {pitch: "C4", duration: "short"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "F4", duration: "medium"},
+                    {pitch: "E4", duration: "long"},
+                    {pitch: "C4", duration: "short"},
+                    {pitch: "C4", duration: "short"},
+                    {pitch: "D4", duration: "medium"},
+                    {pitch: "C4", duration: "medium"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "F4", duration: "long"},
+                ]
+            },
+            mario: {
+                name: "Super Mario Bros",
+                sequence: [
+                    {pitch: "E4", duration: "short"},
+                    {pitch: "E4", duration: "short"},
+                    {pitch: "E4", duration: "short"},
+                    {pitch: "C4", duration: "short"},
+                    {pitch: "E4", duration: "short"},
+                    {pitch: "G4", duration: "medium"},
+                    {pitch: "G3", duration: "medium"},
+                ]
+            }
+        };
+
+        // ===== ESCALAS =====
+        const scales = {
+            'pentatonic-minor': [0, 3, 5, 7, 10],  // C-Eb-F-G-Bb
+            'pentatonic-major': [0, 2, 4, 7, 9],   // C-D-E-G-A
+        };
+
+        // ===== CLASE MARKOV CHAIN =====
+        class MarkovChain {
+            constructor(numStates = 4) {
+                this.numStates = numStates;
+                this.states = [];
+                this.matrix = [];
+                this.initializeStates();
+                this.initializeMatrix();
+            }
+
+            initializeStates() {
+                this.states = [];
+
+                // Pitches disponibles (pentatónica menor: C, Eb, F, G, Bb)
+                const pitches = ['C4', 'Eb4', 'F4', 'G4', 'Bb4'];
+                const durations = [
+                    { name: 'short', ms: 200 },
+                    { name: 'medium', ms: 400 },
+                    { name: 'long', ms: 800 }
+                ];
+
+                // Generar combinaciones pitch x duration hasta alcanzar numStates
+                let id = 0;
+                const combinations = [];
+
+                for (const pitch of pitches) {
+                    for (const dur of durations) {
+                        if (combinations.length < this.numStates) {
+                            combinations.push({
+                                id: id++,
+                                pitch: pitch,
+                                midiNote: midiNoteFromPitch(pitch),
+                                duration: dur.name,
+                                durationMs: dur.ms,
+                                label: `${pitch}-${dur.name[0].toUpperCase()}`
+                            });
+                        }
+                    }
+                }
+
+                this.states = combinations;
+            }
+
+            initializeMatrix() {
+                const N = this.numStates;
+                const uniformProb = 1 / N;
+
+                this.matrix = Array(N).fill(0).map(() =>
+                    Array(N).fill(uniformProb)
+                );
+            }
+
+            train(sequence) {
+                if (sequence.length < 2) return;
+
+                const N = this.numStates;
+                const counts = Array(N).fill(0).map(() => Array(N).fill(0));
+
+                // Contar transiciones
+                for (let i = 0; i < sequence.length - 1; i++) {
+                    const currentStateIdx = this.findClosestState(sequence[i]);
+                    const nextStateIdx = this.findClosestState(sequence[i + 1]);
+                    counts[currentStateIdx][nextStateIdx]++;
+                }
+
+                // Normalizar para obtener probabilidades
+                for (let i = 0; i < N; i++) {
+                    const rowSum = counts[i].reduce((a, b) => a + b, 0);
+                    if (rowSum > 0) {
+                        for (let j = 0; j < N; j++) {
+                            this.matrix[i][j] = counts[i][j] / rowSum;
+                        }
+                    } else {
+                        // Si no hay transiciones desde este estado, mantener uniforme
+                        for (let j = 0; j < N; j++) {
+                            this.matrix[i][j] = 1 / N;
+                        }
+                    }
+                }
+            }
+
+            generate(startStateIdx, length) {
+                const sequence = [];
+                let currentState = startStateIdx !== null && startStateIdx >= 0
+                    ? startStateIdx
+                    : Math.floor(Math.random() * this.numStates);
+
+                for (let step = 0; step < length; step++) {
+                    sequence.push(this.states[currentState]);
+
+                    // Elegir siguiente estado según probabilidades
+                    const probabilities = this.matrix[currentState];
+                    const rand = Math.random();
+                    let cumulative = 0;
+
+                    for (let j = 0; j < this.numStates; j++) {
+                        cumulative += probabilities[j];
+                        if (rand <= cumulative) {
+                            currentState = j;
+                            break;
+                        }
+                    }
+                }
+
+                return sequence;
+            }
+
+            normalize() {
+                for (let i = 0; i < this.numStates; i++) {
+                    const rowSum = this.matrix[i].reduce((a, b) => a + b, 0);
+                    if (rowSum > 0) {
+                        for (let j = 0; j < this.numStates; j++) {
+                            this.matrix[i][j] /= rowSum;
+                        }
+                    }
+                }
+            }
+
+            setTransition(i, j, value) {
+                if (i < 0 || i >= this.numStates || j < 0 || j >= this.numStates) return;
+
+                this.matrix[i][j] = Math.max(0, Math.min(1, value));
+
+                // Normalizar fila
+                const rowSum = this.matrix[i].reduce((a, b) => a + b, 0);
+                if (rowSum > 0) {
+                    for (let k = 0; k < this.numStates; k++) {
+                        this.matrix[i][k] /= rowSum;
+                    }
+                }
+            }
+
+            calculateEntropy() {
+                let totalEntropy = 0;
+
+                for (let i = 0; i < this.numStates; i++) {
+                    let rowEntropy = 0;
+                    for (let j = 0; j < this.numStates; j++) {
+                        const p = this.matrix[i][j];
+                        if (p > 0) {
+                            rowEntropy -= p * Math.log2(p);
+                        }
+                    }
+                    totalEntropy += rowEntropy;
+                }
+
+                return totalEntropy / this.numStates;
+            }
+
+            findClosestState(note) {
+                // note = {pitch, duration}
+                let minDist = Infinity;
+                let closestIdx = 0;
+
+                const noteMidi = midiNoteFromPitch(note.pitch);
+                const noteDurMs = note.duration === 'short' ? 200 :
+                                 note.duration === 'medium' ? 400 : 800;
+
+                for (let i = 0; i < this.states.length; i++) {
+                    const state = this.states[i];
+
+                    // Distancia en semitonos
+                    const pitchDist = Math.abs(state.midiNote - noteMidi);
+
+                    // Penalización por duración diferente
+                    const durDist = Math.abs(state.durationMs - noteDurMs) / 100;
+
+                    const totalDist = pitchDist + durDist;
+
+                    if (totalDist < minDist) {
+                        minDist = totalDist;
+                        closestIdx = i;
+                    }
+                }
+
+                return closestIdx;
+            }
+        }
+
+        // ===== AUDIO ENGINE =====
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = CONFIG.volume;
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function playNote(midiNote, durationMs) {
+            if (!isAudioInitialized || !CONFIG.audioEnabled) return;
+
+            const frequency = 440 * Math.pow(2, (midiNote - 69) / 12);
+            const duration = durationMs / 1000;
+            const now = audioContext.currentTime;
+
+            const osc = audioContext.createOscillator();
+            osc.type = CONFIG.waveform;
+            osc.frequency.value = frequency;
+
+            // ADSR Envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(CONFIG.volume * 0.4, now + 0.005); // Attack
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration); // Release
+
+            // Filter para suavizar
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = frequency * 4;
+            filter.Q.value = 1;
+
+            osc.connect(filter);
+            filter.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+        }
+
+        function midiNoteFromPitch(pitch) {
+            // pitch format: "C4", "D#4", "Eb4", etc.
+            const noteNames = {
+                'C': 0, 'C#': 1, 'Db': 1,
+                'D': 2, 'D#': 3, 'Eb': 3,
+                'E': 4,
+                'F': 5, 'F#': 6, 'Gb': 6,
+                'G': 7, 'G#': 8, 'Ab': 8,
+                'A': 9, 'A#': 10, 'Bb': 10,
+                'B': 11
+            };
+
+            const match = pitch.match(/^([A-G][b#]?)(\d+)$/);
+            if (!match) return 60; // Default C4
+
+            const noteName = match[1];
+            const octave = parseInt(match[2]);
+
+            const semitone = noteNames[noteName] || 0;
+            const midiNote = (octave + 1) * 12 + semitone;
+
+            return midiNote;
+        }
+
+        // ===== CANVAS SETUP =====
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+            render();
+        }
+
+        // ===== VISUALIZACIÓN =====
+        let currentView = 'heatmap'; // 'heatmap' o 'graph'
+
+        function render() {
+            if (!markovChain) return;
+
+            if (currentView === 'heatmap') {
+                drawHeatmap();
+            } else {
+                drawGraph();
+            }
+        }
+
+        function drawHeatmap() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const N = markovChain.numStates;
+
+            // Limpiar
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Calcular tamaño de celda con margen
+            const margin = 80;
+            const gridSize = Math.min(w - margin * 2, h - margin * 2);
+            const cellSize = gridSize / N;
+
+            // Dibujar matriz
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const x = margin + j * cellSize;
+                    const y = margin + i * cellSize;
+                    const prob = markovChain.matrix[i][j];
+
+                    // Color HSL: azul → naranja según probabilidad
+                    const hue = 200 - prob * 170; // 200 (cyan) → 30 (orange)
+                    const lightness = 20 + prob * 50; // 20% → 70%
+                    ctx.fillStyle = `hsl(${hue}, 70%, ${lightness}%)`;
+
+                    // Dibujar celda
+                    ctx.fillRect(x, y, cellSize - 2, cellSize - 2);
+
+                    // Valor numérico si hay espacio
+                    if (cellSize > 35) {
+                        ctx.fillStyle = prob > 0.5 ? '#000' : '#fff';
+                        ctx.font = `${Math.max(10, cellSize / 4)}px JetBrains Mono`;
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText(
+                            prob.toFixed(2),
+                            x + cellSize / 2,
+                            y + cellSize / 2
+                        );
+                    }
+
+                    // Highlight si reproduciendo y es estado actual
+                    if (isPlaying && i === currentStateIdx) {
+                        ctx.strokeStyle = '#fb923c';
+                        ctx.lineWidth = 4;
+                        ctx.strokeRect(x, y, cellSize - 2, cellSize - 2);
+                    }
+                }
+            }
+
+            // Labels de estados (filas)
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '12px JetBrains Mono';
+            ctx.textAlign = 'right';
+            ctx.textBaseline = 'middle';
+
+            for (let i = 0; i < N; i++) {
+                const label = markovChain.states[i].label;
+                const y = margin + i * cellSize + cellSize / 2;
+                ctx.fillText(label, margin - 10, y);
+            }
+
+            // Labels de estados (columnas)
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+
+            for (let j = 0; j < N; j++) {
+                const label = markovChain.states[j].label;
+                const x = margin + j * cellSize + cellSize / 2;
+
+                // Rotar si labels se superponen
+                if (cellSize < 50) {
+                    ctx.save();
+                    ctx.translate(x, margin - 10);
+                    ctx.rotate(-Math.PI / 4);
+                    ctx.textAlign = 'right';
+                    ctx.fillText(label, 0, 0);
+                    ctx.restore();
+                } else {
+                    ctx.fillText(label, x, margin - 10);
+                }
+            }
+
+            // Títulos de ejes
+            ctx.fillStyle = '#f97316';
+            ctx.font = '14px Inter';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            ctx.fillText('Estado Siguiente →', w / 2, margin - 45);
+
+            // Eje Y vertical
+            ctx.save();
+            ctx.translate(20, h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillText('Estado Actual →', 0, 0);
+            ctx.restore();
+        }
+
+        function drawGraph() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const N = markovChain.numStates;
+
+            // Limpiar
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Posicionar nodos en círculo
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) * 0.35;
+
+            const nodePositions = [];
+            for (let i = 0; i < N; i++) {
+                const angle = (i / N) * Math.PI * 2 - Math.PI / 2;
+                nodePositions.push({
+                    x: centerX + Math.cos(angle) * radius,
+                    y: centerY + Math.sin(angle) * radius
+                });
+            }
+
+            // 1. Dibujar aristas (flechas)
+            for (let i = 0; i < N; i++) {
+                for (let j = 0; j < N; j++) {
+                    const prob = markovChain.matrix[i][j];
+                    if (prob < 0.05) continue; // Umbral mínimo
+
+                    const from = nodePositions[i];
+                    const to = nodePositions[j];
+
+                    // Grosor y alpha según probabilidad
+                    const lineWidth = 1 + prob * 5;
+                    const alpha = 0.3 + prob * 0.7;
+                    ctx.strokeStyle = `rgba(249, 115, 22, ${alpha})`;
+                    ctx.lineWidth = lineWidth;
+
+                    if (i === j) {
+                        // Self-loop
+                        drawSelfLoop(from.x, from.y, 25, prob);
+                    } else {
+                        // Flecha curva
+                        drawCurvedArrow(from.x, from.y, to.x, to.y, prob);
+                    }
+                }
+            }
+
+            // 2. Dibujar nodos encima
+            for (let i = 0; i < N; i++) {
+                const pos = nodePositions[i];
+                const nodeRadius = 30;
+
+                // Círculo de nodo
+                ctx.fillStyle = '#1f2937';
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(pos.x, pos.y, nodeRadius, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.stroke();
+
+                // Highlight si reproduciendo
+                if (isPlaying && i === currentStateIdx) {
+                    ctx.strokeStyle = '#fb923c';
+                    ctx.lineWidth = 4;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, nodeRadius + 5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+
+                // Label
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(markovChain.states[i].label, pos.x, pos.y);
+            }
+        }
+
+        function drawCurvedArrow(x1, y1, x2, y2, prob) {
+            // Punto de control para curva Bézier
+            const midX = (x1 + x2) / 2;
+            const midY = (y1 + y2) / 2;
+            const dx = x2 - x1;
+            const dy = y2 - y1;
+            const curvature = 0.2;
+            const controlX = midX - dy * curvature;
+            const controlY = midY + dx * curvature;
+
+            // Dibujar curva
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.quadraticCurveTo(controlX, controlY, x2, y2);
+            ctx.stroke();
+
+            // Punta de flecha
+            const arrowSize = 8;
+            const angle = Math.atan2(y2 - controlY, x2 - controlX);
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.beginPath();
+            ctx.moveTo(x2, y2);
+            ctx.lineTo(
+                x2 - arrowSize * Math.cos(angle - Math.PI / 6),
+                y2 - arrowSize * Math.sin(angle - Math.PI / 6)
+            );
+            ctx.lineTo(
+                x2 - arrowSize * Math.cos(angle + Math.PI / 6),
+                y2 - arrowSize * Math.sin(angle + Math.PI / 6)
+            );
+            ctx.closePath();
+            ctx.fill();
+
+            // Label de probabilidad (solo si alta)
+            if (prob > 0.3) {
+                ctx.fillStyle = '#fff';
+                ctx.font = '10px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(prob.toFixed(2), controlX, controlY - 10);
+            }
+        }
+
+        function drawSelfLoop(x, y, radius, prob) {
+            // Arco circular arriba del nodo
+            const startAngle = -Math.PI * 0.7;
+            const endAngle = -Math.PI * 0.3;
+
+            ctx.beginPath();
+            ctx.arc(x, y - radius, radius / 2, startAngle, endAngle);
+            ctx.stroke();
+
+            // Punta de flecha
+            const arrowAngle = endAngle;
+            const arrowX = x + Math.cos(arrowAngle) * radius / 2;
+            const arrowY = y - radius + Math.sin(arrowAngle) * radius / 2;
+
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.beginPath();
+            ctx.moveTo(arrowX, arrowY);
+            ctx.lineTo(arrowX - 6, arrowY - 4);
+            ctx.lineTo(arrowX - 6, arrowY + 4);
+            ctx.closePath();
+            ctx.fill();
+        }
+
+        // ===== ESTADO DE APLICACIÓN =====
+        const AppState = {
+            IDLE: 'idle',
+            RECORDING: 'recording',
+            TRAINING: 'training',
+            PLAYING: 'playing',
+            EDITING: 'editing'
+        };
+
+        let currentAppState = AppState.IDLE;
+        let markovChain = null;
+        let generatedSequence = [];
+        let currentPlayIndex = 0;
+        let currentStateIdx = -1;
+        let isPlaying = false;
+        let animationId = null;
+        let lastPlayTime = 0;
+
+        // Grabación
+        let isRecording = false;
+        let recordedNotes = [];
+        let lastNoteTime = 0;
+
+        // ===== PLAY LOOP =====
+        function playLoop(timestamp) {
+            if (!isPlaying) return;
+
+            const interval = 60000 / CONFIG.bpm; // ms entre notas
+
+            if (timestamp - lastPlayTime >= interval) {
+                if (currentPlayIndex < generatedSequence.length) {
+                    const state = generatedSequence[currentPlayIndex];
+                    playNote(state.midiNote, state.durationMs);
+                    currentStateIdx = state.id;
+                    currentPlayIndex++;
+                    lastPlayTime = timestamp;
+
+                    // Actualizar UI
+                    document.getElementById('current-state-label').textContent = state.label;
+                    document.getElementById('state-indicator').classList.add('active');
+
+                    render();
+                } else {
+                    // Fin de secuencia
+                    stopPlayback();
+                    return;
+                }
+            }
+
+            animationId = requestAnimationFrame(playLoop);
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            currentPlayIndex = 0;
+            currentStateIdx = -1;
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+            document.getElementById('btn-play').textContent = 'Reproducir';
+            document.getElementById('state-indicator').classList.remove('active');
+            render();
+        }
+
+        // ===== FUNCIONES AUXILIARES =====
+        function updateStatesDisplay() {
+            const container = document.getElementById('states-display');
+            container.innerHTML = '';
+
+            markovChain.states.forEach(state => {
+                const badge = document.createElement('div');
+                badge.className = 'state-badge';
+                badge.textContent = state.label;
+                container.appendChild(badge);
+            });
+        }
+
+        function updateStartStateOptions() {
+            const select = document.getElementById('start-state');
+            select.innerHTML = '<option value="-1">Aleatorio</option>';
+
+            markovChain.states.forEach((state, idx) => {
+                const option = document.createElement('option');
+                option.value = idx;
+                option.textContent = state.label;
+                select.appendChild(option);
+            });
+        }
+
+        function updateStats() {
+            const entropy = markovChain.calculateEntropy();
+            document.getElementById('entropy-value').textContent = entropy.toFixed(3);
+
+            // Estado más probable desde estado actual (si está reproduciendo)
+            if (isPlaying && currentStateIdx >= 0) {
+                const probs = markovChain.matrix[currentStateIdx];
+                const maxIdx = probs.indexOf(Math.max(...probs));
+                const maxProb = probs[maxIdx];
+                document.getElementById('most-likely-state').textContent =
+                    `${markovChain.states[maxIdx].label} (${(maxProb * 100).toFixed(1)}%)`;
+            } else {
+                // Calcular estado más probable general (mayor probabilidad promedio)
+                let maxAvgProb = 0;
+                let maxAvgIdx = 0;
+
+                for (let j = 0; j < markovChain.numStates; j++) {
+                    let avgProb = 0;
+                    for (let i = 0; i < markovChain.numStates; i++) {
+                        avgProb += markovChain.matrix[i][j];
+                    }
+                    avgProb /= markovChain.numStates;
+
+                    if (avgProb > maxAvgProb) {
+                        maxAvgProb = avgProb;
+                        maxAvgIdx = j;
+                    }
+                }
+
+                document.getElementById('most-likely-state').textContent =
+                    `${markovChain.states[maxAvgIdx].label} (${(maxAvgProb * 100).toFixed(1)}%)`;
+            }
+        }
+
+        function showFeedback(message) {
+            const feedback = document.getElementById('generation-feedback');
+            feedback.textContent = message;
+            feedback.classList.add('active');
+            setTimeout(() => {
+                feedback.classList.remove('active');
+            }, 3000);
+        }
+
+        // ===== INICIALIZACIÓN =====
+        function init() {
+            markovChain = new MarkovChain(CONFIG.numStates);
+            updateStatesDisplay();
+            updateStartStateOptions();
+            updateStats();
+            render();
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Tabs
+        document.getElementById('tab-heatmap').addEventListener('click', () => {
+            currentView = 'heatmap';
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-heatmap').classList.add('active');
+            render();
+        });
+
+        document.getElementById('tab-graph').addEventListener('click', () => {
+            currentView = 'graph';
+            document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+            document.getElementById('tab-graph').classList.add('active');
+            render();
+        });
+
+        // Configuración: Número de estados
+        document.getElementById('num-states').addEventListener('input', (e) => {
+            const newNumStates = parseInt(e.target.value);
+            document.getElementById('num-states-value').textContent = newNumStates;
+
+            CONFIG.numStates = newNumStates;
+            markovChain = new MarkovChain(newNumStates);
+            updateStatesDisplay();
+            updateStartStateOptions();
+            updateStats();
+            render();
+        });
+
+        // Training: Preset melody
+        document.getElementById('preset-melody').addEventListener('change', (e) => {
+            const presetKey = e.target.value;
+            document.getElementById('train-preset').disabled = !presetKey;
+        });
+
+        document.getElementById('train-preset').addEventListener('click', () => {
+            const presetKey = document.getElementById('preset-melody').value;
+            if (!presetKey) return;
+
+            const melody = presetMelodies[presetKey];
+            markovChain.train(melody.sequence);
+            updateStats();
+            render();
+            showFeedback(`Entrenado con "${melody.name}"`);
+        });
+
+        // Training: Recording
+        document.getElementById('btn-record').addEventListener('click', () => {
+            isRecording = !isRecording;
+
+            if (isRecording) {
+                recordedNotes = [];
+                lastNoteTime = 0;
+                document.getElementById('btn-record').textContent = 'Detener Grabación';
+                document.getElementById('btn-record').classList.add('primary');
+                document.getElementById('recording-display').classList.add('active');
+                document.getElementById('recording-display').textContent = 'Grabando... (Click en estados o presiona teclas)';
+                document.getElementById('train-recording').disabled = true;
+            } else {
+                document.getElementById('btn-record').textContent = 'Grabar Secuencia';
+                document.getElementById('btn-record').classList.remove('primary');
+                document.getElementById('recording-display').classList.remove('active');
+                document.getElementById('train-recording').disabled = recordedNotes.length < 4;
+
+                if (recordedNotes.length > 0) {
+                    document.getElementById('recording-display').textContent =
+                        recordedNotes.map(n => `${n.pitch}-${n.duration[0]}`).join(', ');
+                } else {
+                    document.getElementById('recording-display').textContent = 'Notas grabadas aparecerán aquí...';
+                }
+            }
+        });
+
+        document.getElementById('train-recording').addEventListener('click', () => {
+            if (recordedNotes.length < 4) return;
+
+            markovChain.train(recordedNotes);
+            updateStats();
+            render();
+            showFeedback(`Entrenado con ${recordedNotes.length} notas grabadas`);
+        });
+
+        // Grabación con teclado
+        document.addEventListener('keydown', (e) => {
+            if (!isRecording) return;
+
+            const keyToPitch = {
+                'a': 'C4', 'w': 'Eb4', 's': 'F4', 'd': 'G4', 'f': 'Bb4',
+                'g': 'C5', 'y': 'Eb5', 'h': 'F5', 'j': 'G5', 'k': 'Bb5'
+            };
+
+            const pitch = keyToPitch[e.key.toLowerCase()];
+            if (!pitch) return;
+
+            recordNote(pitch);
+        });
+
+        function recordNote(pitch) {
+            if (!isRecording) return;
+
+            const now = performance.now();
+            const deltaMs = lastNoteTime ? now - lastNoteTime : 400;
+
+            // Discretizar duración
+            let duration;
+            if (deltaMs < 300) duration = 'short';
+            else if (deltaMs < 600) duration = 'medium';
+            else duration = 'long';
+
+            recordedNotes.push({ pitch, duration });
+            lastNoteTime = now;
+
+            // Reproducir nota
+            const midiNote = midiNoteFromPitch(pitch);
+            const durationMs = duration === 'short' ? 200 : duration === 'medium' ? 400 : 800;
+
+            if (!isAudioInitialized) initAudioContext();
+            playNote(midiNote, durationMs);
+
+            // Actualizar display
+            document.getElementById('recording-display').textContent =
+                recordedNotes.map(n => `${n.pitch}-${n.duration[0]}`).join(', ');
+        }
+
+        // Generación
+        document.getElementById('sequence-length').addEventListener('input', (e) => {
+            CONFIG.sequenceLength = parseInt(e.target.value);
+            document.getElementById('sequence-length-value').textContent = CONFIG.sequenceLength;
+        });
+
+        document.getElementById('start-state').addEventListener('change', (e) => {
+            CONFIG.startState = parseInt(e.target.value);
+        });
+
+        document.getElementById('generate-sequence').addEventListener('click', () => {
+            const startIdx = CONFIG.startState >= 0 ? CONFIG.startState : null;
+            generatedSequence = markovChain.generate(startIdx, CONFIG.sequenceLength);
+            showFeedback(`Secuencia generada: ${CONFIG.sequenceLength} notas`);
+        });
+
+        // Reproducción
+        document.getElementById('btn-play').addEventListener('click', () => {
+            if (!isAudioInitialized) initAudioContext();
+
+            if (generatedSequence.length === 0) {
+                showFeedback('Genera una secuencia primero');
+                return;
+            }
+
+            if (isPlaying) {
+                stopPlayback();
+            } else {
+                isPlaying = true;
+                currentPlayIndex = 0;
+                lastPlayTime = performance.now();
+                document.getElementById('btn-play').textContent = 'Pausar';
+                animationId = requestAnimationFrame(playLoop);
+            }
+        });
+
+        document.getElementById('btn-stop').addEventListener('click', () => {
+            stopPlayback();
+        });
+
+        document.getElementById('bpm').addEventListener('input', (e) => {
+            CONFIG.bpm = parseInt(e.target.value);
+            document.getElementById('bpm-value').textContent = CONFIG.bpm;
+        });
+
+        // Audio settings
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            CONFIG.audioEnabled = e.target.checked;
+            if (CONFIG.audioEnabled && !isAudioInitialized) {
+                initAudioContext();
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            CONFIG.volume = e.target.value / 100;
+            document.getElementById('volume-value').textContent = e.target.value + '%';
+            if (masterGain) {
+                masterGain.gain.value = CONFIG.volume;
+            }
+        });
+
+        document.getElementById('scale').addEventListener('change', (e) => {
+            CONFIG.scale = e.target.value;
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            CONFIG.waveform = e.target.value;
+        });
+
+        // Click en canvas para editar (modo simple)
+        canvas.addEventListener('click', (e) => {
+            if (isPlaying || currentView !== 'heatmap') return;
+
+            const rect = canvas.getBoundingClientRect();
+            const x = (e.clientX - rect.left) * dpr;
+            const y = (e.clientY - rect.top) * dpr;
+
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const N = markovChain.numStates;
+            const margin = 80;
+            const gridSize = Math.min(w - margin * 2, h - margin * 2);
+            const cellSize = gridSize / N;
+
+            // Determinar celda clickeada
+            const col = Math.floor((x / dpr - margin) / cellSize);
+            const row = Math.floor((y / dpr - margin) / cellSize);
+
+            if (row >= 0 && row < N && col >= 0 && col < N) {
+                const currentValue = markovChain.matrix[row][col];
+                const newValue = prompt(
+                    `Probabilidad ${markovChain.states[row].label} → ${markovChain.states[col].label}:`,
+                    currentValue.toFixed(2)
+                );
+
+                if (newValue !== null) {
+                    const parsed = parseFloat(newValue);
+                    if (!isNaN(parsed) && parsed >= 0 && parsed <= 1) {
+                        markovChain.setTransition(row, col, parsed);
+                        updateStats();
+                        render();
+                    }
+                }
+            }
+        });
+
+        // ===== INICIAR =====
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            init();
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+    </script>
+</body>
+</html>
