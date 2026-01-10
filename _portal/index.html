@@ -466,7 +466,7 @@
                     <span>&#8734;</span>
                 </div>
                 <h2 class="discipline-title">Mathematics</h2>
-                <span class="discipline-count">2 laboratorios</span>
+                <span class="discipline-count">4 laboratorios</span>
             </div>
 
             <div class="labs-grid">
@@ -502,6 +502,42 @@
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Procedural</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="../Mathematics/Math Sound Lab/index.html" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-math-sound"></canvas>
+                        <span class="lab-badge">1 sim</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Sound Lab</div>
+                        <h3 class="lab-name">Math Sound Lab</h3>
+                        <p class="lab-description">
+                            Sonificación de patrones matemáticos. Autómatas celulares musicales, fractales sonoros y música algorítmica generativa.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Web Audio API</span>
+                            <span>Generativo</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="../Mathematics/Euler Lab/index.html" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-euler"></canvas>
+                        <span class="lab-badge">100 problemas</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Problem Solving</div>
+                        <h3 class="lab-name">Euler Lab</h3>
+                        <p class="lab-description">
+                            100 problemas de Project Euler resueltos pedagógicamente. 4 niveles: a mano, fuerza bruta, pythónico y matemático.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Pyodide</span>
+                            <span>Interactivo</span>
                         </div>
                     </div>
                 </a>
@@ -868,6 +904,107 @@
                     ctx.arc(px, py, 3, 0, Math.PI * 2);
                     ctx.fill();
                 }
+            },
+
+            'preview-math-sound': (ctx, w, h, t) => {
+                // Game of Life Musical - cellular automaton with sound visualization
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                const gridSize = 8;
+                const cellSize = Math.floor(w / gridSize);
+                const cx = w / 2;
+                const cy = h / 2;
+
+                // Draw grid cells
+                for (let i = 0; i < gridSize; i++) {
+                    for (let j = 0; j < gridSize; j++) {
+                        const x = i * cellSize;
+                        const y = j * cellSize;
+
+                        // Procedural pattern based on position and time
+                        const dist = Math.sqrt(Math.pow(i - gridSize/2, 2) + Math.pow(j - gridSize/2, 2));
+                        const wave = Math.sin(t * 2 + dist * 0.5);
+                        const alive = wave > 0.2;
+
+                        if (alive) {
+                            // Glow intensity based on wave
+                            const intensity = (wave - 0.2) / 0.8;
+                            const glow = 10 + intensity * 10;
+
+                            ctx.shadowColor = '#f97316';
+                            ctx.shadowBlur = glow;
+                            ctx.fillStyle = `rgba(249, 115, 22, ${0.4 + intensity * 0.6})`;
+                            ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                            ctx.shadowBlur = 0;
+                        } else {
+                            // Dead cell
+                            ctx.fillStyle = '#1f2937';
+                            ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                        }
+                    }
+                }
+
+                // Draw waveform overlay
+                ctx.strokeStyle = '#fb923c';
+                ctx.lineWidth = 2;
+                ctx.globalAlpha = 0.5;
+                ctx.beginPath();
+                for (let x = 0; x < w; x += 2) {
+                    const y = cy + Math.sin(x * 0.05 + t * 3) * 20;
+                    if (x === 0) ctx.moveTo(x, y);
+                    else ctx.lineTo(x, y);
+                }
+                ctx.stroke();
+                ctx.globalAlpha = 1;
+            },
+
+            'preview-euler': (ctx, w, h, t) => {
+                // Numbers and primes animation
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+
+                ctx.font = 'bold 14px monospace';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                // Grid of numbers
+                const primes = [2, 3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 43, 47];
+                const cols = 5;
+                const rows = 4;
+                const cellW = w / cols;
+                const cellH = h / rows;
+
+                let num = 1 + Math.floor(t * 2) % 20;
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = col * cellW + cellW / 2;
+                        const y = row * cellH + cellH / 2;
+                        const n = num + row * cols + col;
+
+                        // Highlight primes
+                        const isPrime = primes.includes(n);
+                        const highlight = Math.sin(t * 3 + col + row) > 0.5;
+
+                        if (isPrime) {
+                            ctx.fillStyle = highlight ? '#fb923c' : '#f97316';
+                            ctx.globalAlpha = 0.8 + Math.sin(t * 2 + n) * 0.2;
+                        } else {
+                            ctx.fillStyle = '#6b7280';
+                            ctx.globalAlpha = 0.4;
+                        }
+
+                        ctx.fillText(n.toString(), x, y);
+                    }
+                }
+                ctx.globalAlpha = 1;
+
+                // Floating formula
+                ctx.fillStyle = '#f97316';
+                ctx.globalAlpha = 0.6 + Math.sin(t) * 0.3;
+                ctx.font = '10px monospace';
+                ctx.fillText('Σ n(n+1)/2', w / 2, h - 10);
+                ctx.globalAlpha = 1;
             },
 
             'preview-astronomy': (ctx, w, h, t) => {
