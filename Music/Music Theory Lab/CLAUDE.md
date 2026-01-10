@@ -735,6 +735,9 @@ const modeNames = [
 ## Mejoras Futuras
 
 ### Fase 2: Expansión Teórica
+- [ ] **Escala de 15 notas con quintas áureas apiladas**: `cents_i = (i × 833.09) mod 1200`
+  - Distribución más uniforme: 0, 30, 99, 199, 298, 397, 466, 565, 665, 764, 833, 863, 932, 1032, 1131
+  - Cubre mejor la octava (gap máximo ~100¢ vs ~147¢ actual)
 - [ ] Escalas de 5 notas (pentatónicas áureas)
 - [ ] Escalas de 8-9 notas (octatónicas, nonatónicas)
 - [ ] Microtonalidad φ (escalas > 12 notas por octava)
