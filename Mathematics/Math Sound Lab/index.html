@@ -800,6 +800,83 @@
                 </div>
             </a>
 
+            <!-- Lissajous Sonoras -->
+            <a href="lissajous-sonoras.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-orange-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="relative w-48 h-48">
+                            <!-- Lissajous curve visualization -->
+                            <svg class="w-full h-full opacity-80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Figure-8 Lissajous (2:1 ratio) -->
+                                <path d="M 100 50 Q 140 70, 140 100 Q 140 130, 100 150 Q 60 130, 60 100 Q 60 70, 100 50"
+                                      stroke="#f97316" stroke-width="3" fill="none" opacity="0.9" class="animate-pulse"/>
+                                <!-- Animated particle tracing the curve -->
+                                <circle r="4" fill="#fb923c" opacity="0.8">
+                                    <animateMotion dur="3s" repeatCount="indefinite">
+                                        <mpath href="#lissajousPath"/>
+                                    </animateMotion>
+                                </circle>
+                                <!-- Hidden path for animation -->
+                                <path id="lissajousPath" d="M 100 50 Q 140 70, 140 100 Q 140 130, 100 150 Q 60 130, 60 100 Q 60 70, 100 50" fill="none"/>
+
+                                <!-- Harmonic ratio indicators -->
+                                <circle cx="100" cy="100" r="2" fill="#fdba74" opacity="0.6"/>
+                                <line x1="50" y1="100" x2="150" y2="100" stroke="#fdba74" stroke-width="1" opacity="0.3"/>
+                                <line x1="100" y1="50" x2="100" y2="150" stroke="#fdba74" stroke-width="1" opacity="0.3"/>
+
+                                <!-- Trail points -->
+                                <circle cx="100" cy="50" r="2" fill="#f97316" opacity="0.4" class="animate-pulse"/>
+                                <circle cx="140" cy="100" r="2" fill="#f97316" opacity="0.4" class="animate-pulse" style="animation-delay: 0.75s"/>
+                                <circle cx="100" cy="150" r="2" fill="#f97316" opacity="0.4" class="animate-pulse" style="animation-delay: 1.5s"/>
+                                <circle cx="60" cy="100" r="2" fill="#f97316" opacity="0.4" class="animate-pulse" style="animation-delay: 2.25s"/>
+                            </svg>
+
+                            <!-- Frequency ratio notation -->
+                            <div class="absolute bottom-4 left-1/2 transform -translate-x-1/2 text-xs font-mono text-orange-400 animate-pulse">
+                                <span class="opacity-80">a:b = 3:2</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Curvas Paramétricas</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Curvas de Lissajous Sonoras</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Figuras paramétricas con ratios armónicos. Dos osciladores duales (X e Y) generan intervalos musicales: 3:2 quinta, 4:3 cuarta, 5:4 tercera mayor.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>Dual Osc</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01"/>
+                                </svg>
+                                <span>7 Presets</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"/>
+                                </svg>
+                                <span>Armonía</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
             <!-- Placeholder para futuras simulaciones -->
             <div class="bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 border-dashed opacity-50">
                 <div class="h-48 bg-gradient-to-br from-gray-800/20 to-gray-900/20 flex items-center justify-center">

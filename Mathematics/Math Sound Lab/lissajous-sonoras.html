@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Curvas de Lissajous Sonoras - Math Sound Lab</title>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           Curvas de Lissajous Sonoras
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border: #334155;
+            --accent: #f97316;
+            --accent-glow: rgba(249, 115, 22, 0.3);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header */
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+        }
+
+        .header .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .header .breadcrumb a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .header .breadcrumb a:hover {
+            text-decoration: underline;
+        }
+
+        /* Main container */
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 0;
+            overflow: hidden;
+        }
+
+        /* Canvas area */
+        .canvas-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-secondary);
+            position: relative;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        /* Control panel */
+        .controls {
+            width: 340px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .control-section {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-section h3 {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+            font-weight: 600;
+        }
+
+        /* Sliders */
+        .slider-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-group label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-group label span {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            appearance: none;
+            cursor: pointer;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        input[type="range"]::-moz-range-thumb {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+            border: none;
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        /* Buttons */
+        .button-group {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        button {
+            flex: 1;
+            padding: 0.625rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        button:hover {
+            background: var(--border);
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        button.primary {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: var(--bg-primary);
+            font-weight: 500;
+        }
+
+        button.primary:hover {
+            filter: brightness(1.1);
+        }
+
+        /* Select dropdowns */
+        select {
+            width: 100%;
+            padding: 0.625rem;
+            border: 1px solid var(--border);
+            border-radius: 0.375rem;
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Checkbox */
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: var(--accent);
+        }
+
+        /* Stats box */
+        .stats-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+        }
+
+        .stat-item {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .stat-item .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-item .stat-value {
+            color: var(--accent);
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 500;
+        }
+
+        /* Math box */
+        .math-box {
+            background: var(--bg-panel);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            border: 1px solid var(--border);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.75rem;
+            line-height: 1.8;
+        }
+
+        .math-box .equation {
+            color: var(--accent);
+            margin-bottom: 0.5rem;
+        }
+
+        .math-box .description {
+            color: var(--text-secondary);
+            font-size: 0.7rem;
+            font-family: 'Inter', sans-serif;
+            line-height: 1.5;
+        }
+
+        /* Separator */
+        .separator {
+            height: 1px;
+            background: var(--border);
+            margin: 0.5rem 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                max-height: 50vh;
+            }
+        }
+
+        /* Scrollbar */
+        .controls::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .controls::-webkit-scrollbar-track {
+            background: var(--bg-primary);
+        }
+
+        .controls::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 3px;
+        }
+
+        .controls::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Curvas de Lissajous Sonoras</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="index.html">Math Sound Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <!-- Canvas Area -->
+        <div class="canvas-area">
+            <div class="canvas-container">
+                <canvas id="canvas"></canvas>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="controls">
+            <!-- Presets -->
+            <div class="control-section">
+                <h3>Presets Armónicos</h3>
+
+                <select id="preset-select">
+                    <option value="">Seleccionar ratio...</option>
+                    <option value="1:1">1:1 - Círculo</option>
+                    <option value="2:1">2:1 - Figura de 8</option>
+                    <option value="3:2">3:2 - Quinta musical</option>
+                    <option value="4:3">4:3 - Cuarta musical</option>
+                    <option value="5:4">5:4 - Tercera mayor</option>
+                    <option value="3:1">3:1 - Compleja</option>
+                    <option value="5:3">5:3 - Sexta mayor</option>
+                </select>
+
+                <button id="load-preset" class="primary" disabled>Cargar Preset</button>
+            </div>
+
+            <!-- Frequency Parameters -->
+            <div class="control-section">
+                <h3>Frecuencias</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Frecuencia A (X-axis)
+                        <span id="freq-a-value">1</span>
+                    </label>
+                    <input type="range" id="freq-a" min="1" max="10" value="1">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Frecuencia B (Y-axis)
+                        <span id="freq-b-value">1</span>
+                    </label>
+                    <input type="range" id="freq-b" min="1" max="10" value="1">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Fase (δ)
+                        <span id="phase-value">0°</span>
+                    </label>
+                    <input type="range" id="phase" min="0" max="360" value="0">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Velocidad Angular (ω)
+                        <span id="omega-value">2.0</span>
+                    </label>
+                    <input type="range" id="omega" min="0.5" max="5.0" step="0.1" value="2.0">
+                </div>
+            </div>
+
+            <!-- Amplitudes -->
+            <div class="control-section">
+                <h3>Amplitudes</h3>
+
+                <div class="slider-group">
+                    <label>
+                        Amplitud X (A)
+                        <span id="amp-x-value">1.0</span>
+                    </label>
+                    <input type="range" id="amp-x" min="0.1" max="1.0" step="0.1" value="1.0">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Amplitud Y (B)
+                        <span id="amp-y-value">1.0</span>
+                    </label>
+                    <input type="range" id="amp-y" min="0.1" max="1.0" step="0.1" value="1.0">
+                </div>
+            </div>
+
+            <!-- Animation Controls -->
+            <div class="control-section">
+                <h3>Animación</h3>
+
+                <div class="button-group">
+                    <button id="btn-play" class="primary">Reproducir</button>
+                    <button id="btn-reset">Resetear</button>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-trail" checked>
+                    <label for="show-trail">Mostrar rastro</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="show-axes" checked>
+                    <label for="show-axes">Mostrar ejes</label>
+                </div>
+            </div>
+
+            <!-- Audio Settings -->
+            <div class="control-section">
+                <h3>Audio</h3>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="audio-enabled" checked>
+                    <label for="audio-enabled">Activar Audio Dual</label>
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Volumen
+                        <span id="volume-value">40%</span>
+                    </label>
+                    <input type="range" id="volume" min="0" max="100" value="40">
+                </div>
+
+                <div class="slider-group">
+                    <label>
+                        Frecuencia Base (Hz)
+                        <span id="base-freq-value">220</span>
+                    </label>
+                    <input type="range" id="base-freq" min="110" max="440" value="220">
+                </div>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Forma de Onda</label>
+                <select id="waveform">
+                    <option value="sine" selected>Senoidal</option>
+                    <option value="triangle">Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Statistics -->
+            <div class="control-section">
+                <h3>Estadísticas</h3>
+
+                <div class="stats-box">
+                    <div class="stat-item">
+                        <span class="stat-label">Ratio A:B</span>
+                        <span class="stat-value" id="stat-ratio">1:1</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Intervalo Musical</span>
+                        <span class="stat-value" id="stat-interval">Unísono</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Freq X (Hz)</span>
+                        <span class="stat-value" id="stat-freq-x">220</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Freq Y (Hz)</span>
+                        <span class="stat-value" id="stat-freq-y">220</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Box -->
+            <div class="control-section">
+                <h3>Matemática</h3>
+
+                <div class="math-box">
+                    <div class="equation">x(t) = A·sin(a·ω·t + δ)</div>
+                    <div class="equation">y(t) = B·sin(b·ω·t)</div>
+                    <div class="description">
+                        Las curvas de Lissajous son figuras paramétricas creadas por dos movimientos
+                        armónicos perpendiculares. El ratio a:b determina la forma. Usadas en
+                        análisis de frecuencias y síntesis de Fourier.
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        /* ========================================
+           Curvas de Lissajous Sonoras
+           Math Sound Lab - EigenLab
+           ======================================== */
+
+        // ===== CONFIGURACIÓN =====
+        const CONFIG = {
+            freqA: 1,
+            freqB: 1,
+            phase: 0,
+            omega: 2.0,
+            ampX: 1.0,
+            ampY: 1.0,
+            baseFreq: 220,
+            volume: 0.4,
+            audioEnabled: true,
+            waveform: 'sine',
+            showTrail: true,
+            showAxes: true,
+        };
+
+        // ===== PRESETS =====
+        const presets = {
+            '1:1': { a: 1, b: 1, name: 'Círculo', interval: 'Unísono' },
+            '2:1': { a: 2, b: 1, name: 'Figura de 8', interval: 'Octava' },
+            '3:2': { a: 3, b: 2, name: 'Quinta musical', interval: 'Quinta Justa' },
+            '4:3': { a: 4, b: 3, name: 'Cuarta musical', interval: 'Cuarta Justa' },
+            '5:4': { a: 5, b: 4, name: 'Tercera mayor', interval: 'Tercera Mayor' },
+            '3:1': { a: 3, b: 1, name: 'Compleja', interval: 'Octava + Quinta' },
+            '5:3': { a: 5, b: 3, name: 'Sexta mayor', interval: 'Sexta Mayor' },
+        };
+
+        // Musical intervals
+        const intervals = {
+            '1:1': 'Unísono',
+            '2:1': 'Octava',
+            '3:2': 'Quinta Justa',
+            '4:3': 'Cuarta Justa',
+            '5:4': 'Tercera Mayor',
+            '6:5': 'Tercera Menor',
+            '5:3': 'Sexta Mayor',
+            '8:5': 'Sexta Menor',
+            '3:1': 'Octava + Quinta',
+        };
+
+        // ===== AUDIO =====
+        let audioContext = null;
+        let masterGain = null;
+        let oscX = null;
+        let oscY = null;
+        let gainX = null;
+        let gainY = null;
+        let isAudioInitialized = false;
+        let isAudioPlaying = false;
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = CONFIG.volume;
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function startAudio() {
+            if (!isAudioInitialized || !CONFIG.audioEnabled || isAudioPlaying) return;
+
+            const now = audioContext.currentTime;
+
+            // Oscillator X
+            oscX = audioContext.createOscillator();
+            oscX.type = CONFIG.waveform;
+            oscX.frequency.value = CONFIG.baseFreq * CONFIG.freqA;
+
+            gainX = audioContext.createGain();
+            gainX.gain.setValueAtTime(0, now);
+            gainX.gain.linearRampToValueAtTime(CONFIG.volume * 0.5, now + 0.05);
+
+            oscX.connect(gainX);
+            gainX.connect(masterGain);
+
+            // Oscillator Y
+            oscY = audioContext.createOscillator();
+            oscY.type = CONFIG.waveform;
+            oscY.frequency.value = CONFIG.baseFreq * CONFIG.freqB;
+
+            gainY = audioContext.createGain();
+            gainY.gain.setValueAtTime(0, now);
+            gainY.gain.linearRampToValueAtTime(CONFIG.volume * 0.5, now + 0.05);
+
+            oscY.connect(gainY);
+            gainY.connect(masterGain);
+
+            // Start oscillators
+            oscX.start(now);
+            oscY.start(now);
+
+            isAudioPlaying = true;
+        }
+
+        function stopAudio() {
+            if (!isAudioPlaying) return;
+
+            const now = audioContext.currentTime;
+
+            if (oscX && gainX) {
+                gainX.gain.cancelScheduledValues(now);
+                gainX.gain.setValueAtTime(gainX.gain.value, now);
+                gainX.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                oscX.stop(now + 0.15);
+            }
+
+            if (oscY && gainY) {
+                gainY.gain.cancelScheduledValues(now);
+                gainY.gain.setValueAtTime(gainY.gain.value, now);
+                gainY.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                oscY.stop(now + 0.15);
+            }
+
+            isAudioPlaying = false;
+        }
+
+        function updateAudioFrequencies() {
+            if (isAudioPlaying && oscX && oscY) {
+                const now = audioContext.currentTime;
+                oscX.frequency.setValueAtTime(CONFIG.baseFreq * CONFIG.freqA, now);
+                oscY.frequency.setValueAtTime(CONFIG.baseFreq * CONFIG.freqB, now);
+            }
+        }
+
+        // ===== CANVAS SETUP =====
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let dpr = window.devicePixelRatio || 1;
+
+        function resizeCanvas() {
+            const rect = canvas.parentElement.getBoundingClientRect();
+            canvas.width = rect.width * dpr;
+            canvas.height = rect.height * dpr;
+            canvas.style.width = rect.width + 'px';
+            canvas.style.height = rect.height + 'px';
+            ctx.scale(dpr, dpr);
+        }
+
+        // ===== LISSAJOUS CURVE =====
+        let t = 0;
+        let trail = [];
+        let isRunning = false;
+        let animationId = null;
+
+        function lissajousX(time) {
+            return CONFIG.ampX * Math.sin(CONFIG.freqA * CONFIG.omega * time + CONFIG.phase * Math.PI / 180);
+        }
+
+        function lissajousY(time) {
+            return CONFIG.ampY * Math.sin(CONFIG.freqB * CONFIG.omega * time);
+        }
+
+        function draw() {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const scale = Math.min(w, h) * 0.35;
+
+            // Draw axes
+            if (CONFIG.showAxes) {
+                ctx.strokeStyle = '#334155';
+                ctx.lineWidth = 1;
+
+                // X axis
+                ctx.beginPath();
+                ctx.moveTo(0, centerY);
+                ctx.lineTo(w, centerY);
+                ctx.stroke();
+
+                // Y axis
+                ctx.beginPath();
+                ctx.moveTo(centerX, 0);
+                ctx.lineTo(centerX, h);
+                ctx.stroke();
+
+                // Circle guide
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, scale, 0, Math.PI * 2);
+                ctx.stroke();
+            }
+
+            // Draw trail
+            if (CONFIG.showTrail && trail.length > 1) {
+                ctx.strokeStyle = '#f97316';
+                ctx.lineWidth = 2;
+                ctx.lineCap = 'round';
+                ctx.lineJoin = 'round';
+
+                ctx.beginPath();
+                for (let i = 0; i < trail.length; i++) {
+                    const point = trail[i];
+                    const x = centerX + point.x * scale;
+                    const y = centerY - point.y * scale; // Invert Y
+
+                    if (i === 0) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        ctx.lineTo(x, y);
+                    }
+                }
+                ctx.stroke();
+            }
+
+            // Draw current point
+            if (trail.length > 0) {
+                const current = trail[trail.length - 1];
+                const x = centerX + current.x * scale;
+                const y = centerY - current.y * scale;
+
+                // Glow effect
+                ctx.shadowColor = '#f97316';
+                ctx.shadowBlur = 20;
+                ctx.fillStyle = '#fb923c';
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.shadowBlur = 0;
+
+                // Inner dot
+                ctx.fillStyle = '#fff';
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw ratio label
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '18px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'top';
+            ctx.fillText(`${CONFIG.freqA}:${CONFIG.freqB}`, centerX, 20);
+        }
+
+        function loop(timestamp) {
+            if (!isRunning) return;
+
+            // Calculate position
+            const x = lissajousX(t);
+            const y = lissajousY(t);
+
+            trail.push({ x, y });
+
+            // Limit trail length
+            const maxTrailLength = 1000;
+            if (trail.length > maxTrailLength) {
+                trail.shift();
+            }
+
+            draw();
+
+            // Increment time
+            t += 0.02;
+
+            // Clear trail after full period to restart
+            const period = (2 * Math.PI) / (CONFIG.omega * Math.min(CONFIG.freqA, CONFIG.freqB));
+            if (t > period * 10) { // 10 periods
+                t = 0;
+                trail = [];
+            }
+
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function startAnimation() {
+            if (!isAudioInitialized && CONFIG.audioEnabled) {
+                initAudioContext();
+            }
+
+            isRunning = true;
+            document.getElementById('btn-play').textContent = 'Pausar';
+
+            if (CONFIG.audioEnabled) {
+                startAudio();
+            }
+
+            animationId = requestAnimationFrame(loop);
+        }
+
+        function stopAnimation() {
+            isRunning = false;
+            document.getElementById('btn-play').textContent = 'Reproducir';
+
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+            }
+
+            stopAudio();
+        }
+
+        function resetAnimation() {
+            stopAnimation();
+            t = 0;
+            trail = [];
+            draw();
+        }
+
+        // ===== STATS =====
+        function updateStats() {
+            // Calculate GCD for ratio simplification
+            const gcd = (a, b) => b === 0 ? a : gcd(b, a % b);
+            const divisor = gcd(CONFIG.freqA, CONFIG.freqB);
+            const ratioA = CONFIG.freqA / divisor;
+            const ratioB = CONFIG.freqB / divisor;
+
+            document.getElementById('stat-ratio').textContent = `${ratioA}:${ratioB}`;
+
+            // Musical interval
+            const ratioKey = `${ratioA}:${ratioB}`;
+            const interval = intervals[ratioKey] || 'Personalizado';
+            document.getElementById('stat-interval').textContent = interval;
+
+            // Frequencies
+            const freqX = CONFIG.baseFreq * CONFIG.freqA;
+            const freqY = CONFIG.baseFreq * CONFIG.freqB;
+            document.getElementById('stat-freq-x').textContent = freqX.toFixed(1);
+            document.getElementById('stat-freq-y').textContent = freqY.toFixed(1);
+        }
+
+        // ===== EVENT LISTENERS =====
+
+        // Presets
+        document.getElementById('preset-select').addEventListener('change', (e) => {
+            document.getElementById('load-preset').disabled = !e.target.value;
+        });
+
+        document.getElementById('load-preset').addEventListener('click', () => {
+            const key = document.getElementById('preset-select').value;
+            if (!key) return;
+
+            const preset = presets[key];
+            CONFIG.freqA = preset.a;
+            CONFIG.freqB = preset.b;
+
+            document.getElementById('freq-a').value = preset.a;
+            document.getElementById('freq-b').value = preset.b;
+            document.getElementById('freq-a-value').textContent = preset.a;
+            document.getElementById('freq-b-value').textContent = preset.b;
+
+            updateAudioFrequencies();
+            updateStats();
+            resetAnimation();
+        });
+
+        // Frequency controls
+        document.getElementById('freq-a').addEventListener('input', (e) => {
+            CONFIG.freqA = parseInt(e.target.value);
+            document.getElementById('freq-a-value').textContent = CONFIG.freqA;
+            updateAudioFrequencies();
+            updateStats();
+        });
+
+        document.getElementById('freq-b').addEventListener('input', (e) => {
+            CONFIG.freqB = parseInt(e.target.value);
+            document.getElementById('freq-b-value').textContent = CONFIG.freqB;
+            updateAudioFrequencies();
+            updateStats();
+        });
+
+        document.getElementById('phase').addEventListener('input', (e) => {
+            CONFIG.phase = parseInt(e.target.value);
+            document.getElementById('phase-value').textContent = CONFIG.phase + '°';
+            resetAnimation();
+        });
+
+        document.getElementById('omega').addEventListener('input', (e) => {
+            CONFIG.omega = parseFloat(e.target.value);
+            document.getElementById('omega-value').textContent = CONFIG.omega.toFixed(1);
+        });
+
+        // Amplitude controls
+        document.getElementById('amp-x').addEventListener('input', (e) => {
+            CONFIG.ampX = parseFloat(e.target.value);
+            document.getElementById('amp-x-value').textContent = CONFIG.ampX.toFixed(1);
+        });
+
+        document.getElementById('amp-y').addEventListener('input', (e) => {
+            CONFIG.ampY = parseFloat(e.target.value);
+            document.getElementById('amp-y-value').textContent = CONFIG.ampY.toFixed(1);
+        });
+
+        // Animation controls
+        document.getElementById('btn-play').addEventListener('click', () => {
+            if (isRunning) {
+                stopAnimation();
+            } else {
+                startAnimation();
+            }
+        });
+
+        document.getElementById('btn-reset').addEventListener('click', resetAnimation);
+
+        document.getElementById('show-trail').addEventListener('change', (e) => {
+            CONFIG.showTrail = e.target.checked;
+            draw();
+        });
+
+        document.getElementById('show-axes').addEventListener('change', (e) => {
+            CONFIG.showAxes = e.target.checked;
+            draw();
+        });
+
+        // Audio settings
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            CONFIG.audioEnabled = e.target.checked;
+
+            if (CONFIG.audioEnabled && !isAudioInitialized) {
+                initAudioContext();
+            }
+
+            if (!CONFIG.audioEnabled && isAudioPlaying) {
+                stopAudio();
+            } else if (CONFIG.audioEnabled && isRunning && !isAudioPlaying) {
+                startAudio();
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            CONFIG.volume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value + '%';
+            if (masterGain) {
+                masterGain.gain.value = CONFIG.volume;
+            }
+        });
+
+        document.getElementById('base-freq').addEventListener('input', (e) => {
+            CONFIG.baseFreq = parseInt(e.target.value);
+            document.getElementById('base-freq-value').textContent = CONFIG.baseFreq;
+            updateAudioFrequencies();
+            updateStats();
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            CONFIG.waveform = e.target.value;
+            if (isAudioPlaying) {
+                stopAudio();
+                startAudio();
+            }
+        });
+
+        // ===== INITIALIZATION =====
+        window.addEventListener('load', () => {
+            resizeCanvas();
+            updateStats();
+            draw();
+        });
+
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            draw();
+        });
+    </script>
+</body>
+</html>
