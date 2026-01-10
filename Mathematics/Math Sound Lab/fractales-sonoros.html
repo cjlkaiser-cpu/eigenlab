@@ -1,0 +1,701 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fractales Sonoros - Math Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas {
+            cursor: crosshair;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 146, 60, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+        .preset-btn {
+            transition: all 0.2s;
+        }
+        .preset-btn.active {
+            background: rgba(249, 115, 22, 0.3);
+            border-color: #f97316;
+        }
+        .palette-btn {
+            width: 40px;
+            height: 24px;
+            border-radius: 4px;
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .palette-btn.active {
+            border-color: #f97316;
+            box-shadow: 0 0 10px rgba(249, 115, 22, 0.5);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Fractales</span> Sonoros
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Zoom: <span id="zoom-display" class="text-orange-400">1.0</span>x</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative bg-gray-950">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-3 rounded-lg border border-gray-800 space-y-1">
+                <div class="text-xs mono">
+                    <span class="text-gray-500">Real:</span>
+                    <span id="re-display" class="text-orange-400 ml-2">0.0000</span>
+                </div>
+                <div class="text-xs mono">
+                    <span class="text-gray-500">Imag:</span>
+                    <span id="im-display" class="text-cyan-400 ml-2">0.0000</span>
+                </div>
+                <div class="text-xs mono">
+                    <span class="text-gray-500">Iter:</span>
+                    <span id="iter-display" class="text-green-400 ml-2">0</span>
+                </div>
+            </div>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600 space-y-1">
+                <div>Click: centrar y zoom · Shift+Click: zoom out</div>
+                <div>Hover: sonificar punto · Drag: pan</div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Controles</h2>
+
+            <!-- Fractal Type -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Tipo de Fractal</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="setFractalType('mandelbrot')" class="preset-btn active px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Mandelbrot
+                    </button>
+                    <button onclick="setFractalType('julia')" class="preset-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Julia
+                    </button>
+                </div>
+            </div>
+
+            <!-- Julia Parameter (only visible when Julia is selected) -->
+            <div id="julia-params" class="mb-6 hidden">
+                <label class="block text-sm text-gray-400 mb-2">Parámetro Julia (c)</label>
+                <div class="grid grid-cols-2 gap-2 mb-2">
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            Real: <span id="julia-re-value" class="text-orange-400 mono">-0.70</span>
+                        </label>
+                        <input type="range" id="julia-re" min="-2" max="2" step="0.01" value="-0.70" class="w-full">
+                    </div>
+                    <div>
+                        <label class="block text-xs text-gray-500 mb-1">
+                            Imag: <span id="julia-im-value" class="text-cyan-400 mono">0.27</span>
+                        </label>
+                        <input type="range" id="julia-im" min="-2" max="2" step="0.01" value="0.27" class="w-full">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Zoom Presets -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Presets de Zoom</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="loadZoomPreset('overview')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Vista General
+                    </button>
+                    <button onclick="loadZoomPreset('seahorse')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Caballito
+                    </button>
+                    <button onclick="loadZoomPreset('elephant')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Valle Elefante
+                    </button>
+                    <button onclick="loadZoomPreset('spiral')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Espirales
+                    </button>
+                </div>
+            </div>
+
+            <!-- Iterations -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Iteraciones máximas: <span id="max-iter-value" class="text-orange-400 mono">100</span>
+                </label>
+                <input type="range" id="max-iter" min="10" max="500" step="10" value="100" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Mayor detalle = más lento</p>
+            </div>
+
+            <!-- Color Palette -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Paleta de Colores</label>
+                <div class="flex gap-2 flex-wrap">
+                    <button onclick="setPalette('classic')" class="palette-btn active" style="background: linear-gradient(90deg, #000, #00f, #0ff, #fff)" title="Clásica"></button>
+                    <button onclick="setPalette('fire')" class="palette-btn" style="background: linear-gradient(90deg, #000, #f00, #ff0, #fff)" title="Fuego"></button>
+                    <button onclick="setPalette('ocean')" class="palette-btn" style="background: linear-gradient(90deg, #000, #006, #0af, #0ff)" title="Océano"></button>
+                    <button onclick="setPalette('sunset')" class="palette-btn" style="background: linear-gradient(90deg, #2a0845, #7f0084, #ff6a00, #ffd500)" title="Atardecer"></button>
+                    <button onclick="setPalette('grayscale')" class="palette-btn" style="background: linear-gradient(90deg, #000, #888, #fff)" title="Escala Grises"></button>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="mb-6 space-y-2">
+                <button id="reset-btn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                    Resetear Vista
+                </button>
+                <button id="render-btn" class="w-full py-2 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition">
+                    Re-renderizar
+                </button>
+            </div>
+
+            <!-- Audio Section -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">🎵 Sonificación FM</h3>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="audio-enabled" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Activar sonido</span>
+                </label>
+                <p class="text-xs text-gray-600 mt-1 ml-7">Hover sobre el fractal</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volume-value" class="text-orange-400 mono">30</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="30" class="w-full">
+            </div>
+
+            <!-- FM Synthesis Parameters -->
+            <h4 class="text-xs font-medium text-gray-500 mb-3 mt-6">Síntesis FM</h4>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Frecuencia portadora: <span id="carrier-freq-value" class="text-cyan-400 mono">440</span> Hz
+                </label>
+                <input type="range" id="carrier-freq" min="100" max="1000" step="10" value="440" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Índice FM: <span id="fm-index-value" class="text-cyan-400 mono">5.0</span>
+                </label>
+                <input type="range" id="fm-index" min="0" max="20" step="0.1" value="5" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Iteraciones modulan el índice</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Ratio modulador: <span id="mod-ratio-value" class="text-cyan-400 mono">2.0</span>
+                </label>
+                <input type="range" id="mod-ratio" min="0.5" max="8" step="0.1" value="2" class="w-full">
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-3 mb-5">
+                <div class="text-xs space-y-1">
+                    <div class="text-gray-400">
+                        <span class="text-orange-400">Iteraciones</span> → FM Index
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">Re(c)</span> → Carrier Freq
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-green-400">Im(c)</span> → Modulator Freq
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Fractales Complejos</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="bg-black/30 p-2 rounded">
+                        <div class="text-gray-400 mb-1">Mandelbrot:</div>
+                        <div class="text-gray-400">z<sub>n+1</sub> = z<sub>n</sub>² + c</div>
+                        <div class="text-gray-400 text-xs mt-1">z<sub>0</sub> = 0, c = pixel</div>
+                    </div>
+                    <div class="bg-black/30 p-2 rounded">
+                        <div class="text-gray-400 mb-1">Julia:</div>
+                        <div class="text-gray-400">z<sub>n+1</sub> = z<sub>n</sub>² + c</div>
+                        <div class="text-gray-400 text-xs mt-1">z<sub>0</sub> = pixel, c = const</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                    <span class="text-orange-400 font-medium">Benoit Mandelbrot (1980):</span> Descubrió la auto-similitud infinita en el plano complejo.
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    <span class="text-cyan-400 font-medium">Dimensión fractal:</span> Entre 1 y 2, geometría no-euclidiana.
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Fractal parameters
+        let fractalType = 'mandelbrot';
+        let centerX = -0.5;
+        let centerY = 0.0;
+        let zoom = 1.0;
+        let maxIterations = 100;
+        let juliaC = { re: -0.70, im: 0.27 };
+
+        // Color palette
+        let currentPalette = 'classic';
+        const palettes = {
+            classic: (t) => {
+                const r = Math.floor(9 * (1 - t) * t * t * t * 255);
+                const g = Math.floor(15 * (1 - t) * (1 - t) * t * t * 255);
+                const b = Math.floor(8.5 * (1 - t) * (1 - t) * (1 - t) * t * 255);
+                return `rgb(${r},${g},${b})`;
+            },
+            fire: (t) => {
+                const r = Math.floor(255 * t);
+                const g = Math.floor(255 * t * t);
+                const b = 0;
+                return `rgb(${r},${g},${b})`;
+            },
+            ocean: (t) => {
+                const r = 0;
+                const g = Math.floor(100 + 155 * t);
+                const b = Math.floor(150 + 105 * t);
+                return `rgb(${r},${g},${b})`;
+            },
+            sunset: (t) => {
+                const r = Math.floor(42 + (255 - 42) * t);
+                const g = Math.floor(8 + (213 - 8) * t);
+                const b = Math.floor(69 + (0 - 69) * t);
+                return `rgb(${r},${g},${b})`;
+            },
+            grayscale: (t) => {
+                const v = Math.floor(255 * t);
+                return `rgb(${v},${v},${v})`;
+            }
+        };
+
+        // Mouse state
+        let isDragging = false;
+        let lastMouseX = 0;
+        let lastMouseY = 0;
+
+        // Audio
+        let audioContext = null;
+        let isAudioInitialized = false;
+        let masterGain = null;
+        let carrier = null;
+        let modulator = null;
+        let modulatorGain = null;
+        let audioEnabled = false;
+        let masterVolume = 0.3;
+        let carrierBaseFreq = 440;
+        let fmIndexBase = 5;
+        let modulatorRatio = 2.0;
+        let isPlayingAudio = false;
+
+        // ============ FRACTAL COMPUTATION ============
+
+        function mandelbrot(x, y) {
+            let zx = 0, zy = 0;
+            let iteration = 0;
+
+            while (zx * zx + zy * zy < 4 && iteration < maxIterations) {
+                const xtemp = zx * zx - zy * zy + x;
+                zy = 2 * zx * zy + y;
+                zx = xtemp;
+                iteration++;
+            }
+
+            return iteration;
+        }
+
+        function julia(x, y) {
+            let zx = x, zy = y;
+            let iteration = 0;
+
+            while (zx * zx + zy * zy < 4 && iteration < maxIterations) {
+                const xtemp = zx * zx - zy * zy + juliaC.re;
+                zy = 2 * zx * zy + juliaC.im;
+                zx = xtemp;
+                iteration++;
+            }
+
+            return iteration;
+        }
+
+        function computeFractal(x, y) {
+            return fractalType === 'mandelbrot' ? mandelbrot(x, y) : julia(x, y);
+        }
+
+        // ============ RENDERING ============
+
+        function render() {
+            const width = canvas.width;
+            const height = canvas.height;
+            const imageData = ctx.createImageData(width, height);
+
+            const scale = 3.0 / zoom;
+            const offsetX = centerX;
+            const offsetY = centerY;
+
+            for (let py = 0; py < height; py++) {
+                for (let px = 0; px < width; px++) {
+                    // Map pixel to complex plane
+                    const x = (px - width / 2) * (scale / width) + offsetX;
+                    const y = (py - height / 2) * (scale / height) + offsetY;
+
+                    const iterations = computeFractal(x, y);
+                    const t = iterations / maxIterations;
+
+                    // Get color from palette
+                    let color;
+                    if (iterations === maxIterations) {
+                        color = { r: 0, g: 0, b: 0 };
+                    } else {
+                        const colorStr = palettes[currentPalette](t);
+                        const match = colorStr.match(/rgb\((\d+),(\d+),(\d+)\)/);
+                        color = {
+                            r: parseInt(match[1]),
+                            g: parseInt(match[2]),
+                            b: parseInt(match[3])
+                        };
+                    }
+
+                    const index = (py * width + px) * 4;
+                    imageData.data[index] = color.r;
+                    imageData.data[index + 1] = color.g;
+                    imageData.data[index + 2] = color.b;
+                    imageData.data[index + 3] = 255;
+                }
+            }
+
+            ctx.putImageData(imageData, 0, 0);
+            updateZoomDisplay();
+        }
+
+        function updateZoomDisplay() {
+            document.getElementById('zoom-display').textContent = zoom.toFixed(1);
+        }
+
+        // ============ AUDIO ============
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.gain.value = 0;
+                masterGain.connect(audioContext.destination);
+
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function startFMAudio() {
+            if (!isAudioInitialized || isPlayingAudio) return;
+
+            // Modulator
+            modulator = audioContext.createOscillator();
+            modulator.frequency.value = carrierBaseFreq * modulatorRatio;
+
+            modulatorGain = audioContext.createGain();
+            modulatorGain.gain.value = 0;
+
+            modulator.connect(modulatorGain);
+
+            // Carrier
+            carrier = audioContext.createOscillator();
+            carrier.frequency.value = carrierBaseFreq;
+
+            modulatorGain.connect(carrier.frequency);
+            carrier.connect(masterGain);
+
+            modulator.start();
+            carrier.start();
+
+            isPlayingAudio = true;
+        }
+
+        function updateFMAudio(x, y) {
+            if (!audioEnabled || !isPlayingAudio) return;
+
+            const iterations = computeFractal(x, y);
+            const t = iterations / maxIterations;
+
+            // Map iterations to FM index (more iterations = more complex timbre)
+            const fmIndex = fmIndexBase * (1 - t);
+            const modulationDepth = fmIndex * carrierBaseFreq * modulatorRatio;
+            modulatorGain.gain.setValueAtTime(modulationDepth, audioContext.currentTime);
+
+            // Map real part to carrier frequency
+            const freqOffset = x * 200;
+            const carrierFreq = Math.max(100, Math.min(2000, carrierBaseFreq + freqOffset));
+            carrier.frequency.setValueAtTime(carrierFreq, audioContext.currentTime);
+
+            // Map imaginary part to modulator ratio
+            const modRatioOffset = y * 0.5;
+            const modFreq = carrierFreq * (modulatorRatio + modRatioOffset);
+            modulator.frequency.setValueAtTime(Math.max(10, modFreq), audioContext.currentTime);
+
+            // Volume based on iterations (in set = silent)
+            const volume = iterations === maxIterations ? 0 : masterVolume * t;
+            masterGain.gain.setValueAtTime(volume, audioContext.currentTime);
+        }
+
+        function stopFMAudio() {
+            if (!isPlayingAudio) return;
+
+            masterGain.gain.setValueAtTime(0, audioContext.currentTime);
+
+            setTimeout(() => {
+                if (carrier) {
+                    carrier.stop();
+                    carrier = null;
+                }
+                if (modulator) {
+                    modulator.stop();
+                    modulator = null;
+                }
+                isPlayingAudio = false;
+            }, 100);
+        }
+
+        // ============ INTERACTION ============
+
+        function pixelToComplex(px, py) {
+            const scale = 3.0 / zoom;
+            const x = (px - canvas.width / 2) * (scale / canvas.width) + centerX;
+            const y = (py - canvas.height / 2) * (scale / canvas.height) + centerY;
+            return { x, y };
+        }
+
+        function setFractalType(type) {
+            fractalType = type;
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.classList.add('active');
+
+            document.getElementById('julia-params').classList.toggle('hidden', type !== 'julia');
+
+            render();
+        }
+
+        function setPalette(name) {
+            currentPalette = name;
+            document.querySelectorAll('.palette-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.classList.add('active');
+            render();
+        }
+
+        function loadZoomPreset(name) {
+            const presets = {
+                overview: { x: -0.5, y: 0, zoom: 1 },
+                seahorse: { x: -0.743643887037151, y: 0.131825904205330, zoom: 100 },
+                elephant: { x: 0.257, y: 0, zoom: 50 },
+                spiral: { x: -0.7269, y: 0.1889, zoom: 200 }
+            };
+
+            const preset = presets[name];
+            centerX = preset.x;
+            centerY = preset.y;
+            zoom = preset.zoom;
+
+            render();
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const py = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const { x, y } = pixelToComplex(px, py);
+
+            centerX = x;
+            centerY = y;
+
+            if (e.shiftKey) {
+                zoom /= 2;
+            } else {
+                zoom *= 2;
+            }
+
+            render();
+        });
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastMouseX = e.clientX;
+            lastMouseY = e.clientY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const px = (e.clientX - rect.left) * (canvas.width / rect.width);
+            const py = (e.clientY - rect.top) * (canvas.height / rect.height);
+
+            const { x, y } = pixelToComplex(px, py);
+            const iterations = computeFractal(x, y);
+
+            document.getElementById('re-display').textContent = x.toFixed(4);
+            document.getElementById('im-display').textContent = y.toFixed(4);
+            document.getElementById('iter-display').textContent = iterations;
+
+            // Audio on hover
+            if (audioEnabled) {
+                if (!isPlayingAudio) startFMAudio();
+                updateFMAudio(x, y);
+            }
+
+            // Pan
+            if (isDragging) {
+                const scale = 3.0 / zoom;
+                const dx = (e.clientX - lastMouseX) * (scale / canvas.width);
+                const dy = (e.clientY - lastMouseY) * (scale / canvas.height);
+
+                centerX -= dx;
+                centerY -= dy;
+
+                lastMouseX = e.clientX;
+                lastMouseY = e.clientY;
+
+                render();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+            if (audioEnabled) stopFMAudio();
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            centerX = -0.5;
+            centerY = 0.0;
+            zoom = 1.0;
+            render();
+        });
+
+        document.getElementById('render-btn').addEventListener('click', () => {
+            render();
+        });
+
+        document.getElementById('max-iter').addEventListener('input', (e) => {
+            maxIterations = parseInt(e.target.value);
+            document.getElementById('max-iter-value').textContent = maxIterations;
+        });
+
+        document.getElementById('julia-re').addEventListener('input', (e) => {
+            juliaC.re = parseFloat(e.target.value);
+            document.getElementById('julia-re-value').textContent = juliaC.re.toFixed(2);
+            if (fractalType === 'julia') render();
+        });
+
+        document.getElementById('julia-im').addEventListener('input', (e) => {
+            juliaC.im = parseFloat(e.target.value);
+            document.getElementById('julia-im-value').textContent = juliaC.im.toFixed(2);
+            if (fractalType === 'julia') render();
+        });
+
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            if (e.target.checked && !isAudioInitialized) {
+                initAudioContext();
+            }
+            audioEnabled = e.target.checked;
+
+            if (!audioEnabled) {
+                stopFMAudio();
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            masterVolume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value;
+        });
+
+        document.getElementById('carrier-freq').addEventListener('input', (e) => {
+            carrierBaseFreq = parseInt(e.target.value);
+            document.getElementById('carrier-freq-value').textContent = carrierBaseFreq;
+        });
+
+        document.getElementById('fm-index').addEventListener('input', (e) => {
+            fmIndexBase = parseFloat(e.target.value);
+            document.getElementById('fm-index-value').textContent = fmIndexBase.toFixed(1);
+        });
+
+        document.getElementById('mod-ratio').addEventListener('input', (e) => {
+            modulatorRatio = parseFloat(e.target.value);
+            document.getElementById('mod-ratio-value').textContent = modulatorRatio.toFixed(1);
+        });
+
+        window.addEventListener('resize', () => {
+            initCanvas();
+            render();
+        });
+
+        // ============ INITIALIZATION ============
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+        }
+
+        initCanvas();
+        render();
+    </script>
+</body>
+</html>
