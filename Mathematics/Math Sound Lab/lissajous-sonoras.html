@@ -93,6 +93,7 @@
             width: 100%;
             height: 100%;
             display: block;
+            cursor: crosshair;
         }
 
         /* Control panel */
@@ -515,6 +516,21 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Audio Dinámico Info -->
+            <div class="control-section">
+                <h3>Audio Dinámico</h3>
+
+                <div class="math-box">
+                    <div class="description" style="font-size: 0.75rem;">
+                        <strong>🎵 Pan Estéreo:</strong> Posición X controla left/right<br>
+                        <strong>🔊 Filtro:</strong> Posición Y controla brightness (400-4000 Hz)<br>
+                        <strong>⚡ Volumen:</strong> Velocidad de partícula controla intensidad<br>
+                        <strong>🎚️ Fase (δ):</strong> Modula resonancia del filtro (Q)<br>
+                        <strong>🖱️ Click/Drag:</strong> Toca notas en cualquier punto
+                    </div>
+                </div>
+            </div>
         </aside>
     </main>
 
@@ -571,6 +587,10 @@
         let oscY = null;
         let gainX = null;
         let gainY = null;
+        let panNodeX = null;
+        let panNodeY = null;
+        let filterX = null;
+        let filterY = null;
         let isAudioInitialized = false;
         let isAudioPlaying = false;
 
@@ -594,28 +614,48 @@
 
             const now = audioContext.currentTime;
 
-            // Oscillator X
+            // Oscillator X with filter and pan
             oscX = audioContext.createOscillator();
             oscX.type = CONFIG.waveform;
             oscX.frequency.value = CONFIG.baseFreq * CONFIG.freqA;
+
+            filterX = audioContext.createBiquadFilter();
+            filterX.type = 'lowpass';
+            filterX.frequency.value = 2000;
+            filterX.Q.value = 1;
+
+            panNodeX = audioContext.createStereoPanner();
+            panNodeX.pan.value = 0;
 
             gainX = audioContext.createGain();
             gainX.gain.setValueAtTime(0, now);
             gainX.gain.linearRampToValueAtTime(CONFIG.volume * 0.5, now + 0.05);
 
-            oscX.connect(gainX);
+            oscX.connect(filterX);
+            filterX.connect(panNodeX);
+            panNodeX.connect(gainX);
             gainX.connect(masterGain);
 
-            // Oscillator Y
+            // Oscillator Y with filter and pan
             oscY = audioContext.createOscillator();
             oscY.type = CONFIG.waveform;
             oscY.frequency.value = CONFIG.baseFreq * CONFIG.freqB;
+
+            filterY = audioContext.createBiquadFilter();
+            filterY.type = 'lowpass';
+            filterY.frequency.value = 2000;
+            filterY.Q.value = 1;
+
+            panNodeY = audioContext.createStereoPanner();
+            panNodeY.pan.value = 0;
 
             gainY = audioContext.createGain();
             gainY.gain.setValueAtTime(0, now);
             gainY.gain.linearRampToValueAtTime(CONFIG.volume * 0.5, now + 0.05);
 
-            oscY.connect(gainY);
+            oscY.connect(filterY);
+            filterY.connect(panNodeY);
+            panNodeY.connect(gainY);
             gainY.connect(masterGain);
 
             // Start oscillators
@@ -655,6 +695,47 @@
             }
         }
 
+        function updateAudioDynamics(x, y, velocity) {
+            if (!isAudioPlaying) return;
+
+            const now = audioContext.currentTime;
+
+            // Pan basado en posición X (-1 a 1)
+            if (panNodeX && panNodeY) {
+                panNodeX.pan.setValueAtTime(x, now);
+                panNodeY.pan.setValueAtTime(-x, now); // Opuesto para efecto estéreo más amplio
+            }
+
+            // Filtro basado en posición Y
+            // Y arriba (1) → filtro abierto (bright)
+            // Y abajo (-1) → filtro cerrado (dark)
+            if (filterX && filterY) {
+                const minFreq = 400;
+                const maxFreq = 4000;
+                const filterFreq = minFreq + ((y + 1) / 2) * (maxFreq - minFreq);
+
+                filterX.frequency.setValueAtTime(filterFreq, now);
+                filterY.frequency.setValueAtTime(filterFreq, now);
+
+                // Q modulado por fase (δ) - mejora #8
+                const phaseNormalized = CONFIG.phase / 360;
+                const qValue = 0.5 + phaseNormalized * 4; // Q de 0.5 a 4.5
+                filterX.Q.setValueAtTime(qValue, now);
+                filterY.Q.setValueAtTime(qValue, now);
+            }
+
+            // Volumen basado en velocidad
+            // Mayor velocidad → mayor volumen
+            if (gainX && gainY) {
+                const velocityNormalized = Math.min(velocity / 2, 1); // Normalizar
+                const volumeMultiplier = 0.3 + velocityNormalized * 0.7; // 0.3 a 1.0
+                const targetVolume = CONFIG.volume * 0.5 * volumeMultiplier;
+
+                gainX.gain.setValueAtTime(targetVolume, now);
+                gainY.gain.setValueAtTime(targetVolume, now);
+            }
+        }
+
         // ===== CANVAS SETUP =====
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
@@ -674,6 +755,7 @@
         let trail = [];
         let isRunning = false;
         let animationId = null;
+        let lastPosition = { x: 0, y: 0 };
 
         function lissajousX(time) {
             return CONFIG.ampX * Math.sin(CONFIG.freqA * CONFIG.omega * time + CONFIG.phase * Math.PI / 180);
@@ -777,6 +859,16 @@
             const x = lissajousX(t);
             const y = lissajousY(t);
 
+            // Calculate velocity for audio dynamics
+            const dx = x - lastPosition.x;
+            const dy = y - lastPosition.y;
+            const velocity = Math.sqrt(dx * dx + dy * dy);
+
+            // Update audio dynamics
+            updateAudioDynamics(x, y, velocity);
+
+            lastPosition = { x, y };
+
             trail.push({ x, y });
 
             // Limit trail length
@@ -855,6 +947,136 @@
             document.getElementById('stat-freq-x').textContent = freqX.toFixed(1);
             document.getElementById('stat-freq-y').textContent = freqY.toFixed(1);
         }
+
+        // ===== INTERACTIVIDAD (CLICK & DRAG) =====
+        let clickAudioNodes = [];
+
+        function playNoteAtPosition(x, y) {
+            if (!isAudioInitialized) {
+                initAudioContext();
+            }
+
+            const now = audioContext.currentTime;
+            const duration = 0.3;
+
+            // Create short note based on position
+            const osc = audioContext.createOscillator();
+            osc.type = CONFIG.waveform;
+
+            // Frequency based on distance from center
+            const distance = Math.sqrt(x * x + y * y);
+            const freqMultiplier = 1 + distance * 2;
+            osc.frequency.value = CONFIG.baseFreq * freqMultiplier;
+
+            // Filter
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            const minFreq = 400;
+            const maxFreq = 4000;
+            filter.frequency.value = minFreq + ((y + 1) / 2) * (maxFreq - minFreq);
+            filter.Q.value = 0.5 + (CONFIG.phase / 360) * 4;
+
+            // Pan
+            const pan = audioContext.createStereoPanner();
+            pan.pan.value = x;
+
+            // Envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(CONFIG.volume * 0.8, now + 0.01);
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            // Connect
+            osc.connect(filter);
+            filter.connect(pan);
+            pan.connect(envelope);
+            envelope.connect(masterGain);
+
+            // Play
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+
+            // Cleanup
+            clickAudioNodes.push({ osc, envelope, stopTime: now + duration + 0.1 });
+            setTimeout(() => {
+                clickAudioNodes = clickAudioNodes.filter(node => node.stopTime > audioContext.currentTime);
+            }, (duration + 0.2) * 1000);
+        }
+
+        function canvasToLissajous(canvasX, canvasY) {
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const scale = Math.min(w, h) * 0.35;
+
+            const x = (canvasX - centerX) / scale;
+            const y = -(canvasY - centerY) / scale; // Invert Y
+
+            return { x, y };
+        }
+
+        let isDragging = false;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const { x, y } = canvasToLissajous(mouseX, mouseY);
+            playNoteAtPosition(x, y);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            const { x, y } = canvasToLissajous(mouseX, mouseY);
+
+            // Throttle to avoid too many notes
+            if (Math.random() < 0.3) {
+                playNoteAtPosition(x, y);
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            isDragging = false;
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            isDragging = false;
+        });
+
+        // Touch support
+        canvas.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            isDragging = true;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+            const { x, y } = canvasToLissajous(touchX, touchY);
+            playNoteAtPosition(x, y);
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (!isDragging) return;
+            const touch = e.touches[0];
+            const rect = canvas.getBoundingClientRect();
+            const touchX = touch.clientX - rect.left;
+            const touchY = touch.clientY - rect.top;
+            const { x, y } = canvasToLissajous(touchX, touchY);
+
+            if (Math.random() < 0.3) {
+                playNoteAtPosition(x, y);
+            }
+        });
+
+        canvas.addEventListener('touchend', () => {
+            isDragging = false;
+        });
 
         // ===== EVENT LISTENERS =====
 
