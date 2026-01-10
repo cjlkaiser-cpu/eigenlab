@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Music - EigenLab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#ec4899',
+                        secondary: '#be185d',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .gradient-bg {
+            background: linear-gradient(135deg, #1a0a2e 0%, #0f0519 100%);
+        }
+
+        .gradient-text {
+            background: linear-gradient(135deg, #ec4899 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .card {
+            transition: all 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 35px rgba(236, 72, 153, 0.3);
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen text-gray-100">
+    <div class="container mx-auto px-6 py-12 max-w-6xl">
+        <!-- Header -->
+        <header class="text-center mb-16">
+            <div class="text-sm text-gray-400 mb-4">
+                <a href="../_portal/index.html" class="text-primary hover:underline">EigenLab</a>
+                <span class="mx-2">/</span>
+                <span>Music</span>
+            </div>
+
+            <h1 class="text-6xl font-bold mb-4 gradient-text">
+                Music
+            </h1>
+
+            <p class="text-xl text-gray-300 max-w-2xl mx-auto">
+                Teoría musical, composición algorítmica y sistemas armónicos experimentales
+            </p>
+        </header>
+
+        <!-- Labs Grid -->
+        <section class="mb-16">
+            <h2 class="text-3xl font-bold text-center mb-12 text-primary">Laboratorios</h2>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <!-- Music Theory Lab -->
+                <div class="card bg-white bg-opacity-5 rounded-2xl p-8 border border-primary border-opacity-30">
+                    <div class="text-5xl mb-4">🎼</div>
+                    <h3 class="text-2xl font-bold text-primary mb-3">
+                        Music Theory Lab
+                    </h3>
+                    <p class="text-gray-300 mb-6 leading-relaxed">
+                        Sistema Armónico Áureo: Teoría musical completa basada en la proporción áurea φ.
+                        Escalas, acordes y composición algorítmica desde primeros principios.
+                    </p>
+                    <ul class="text-sm text-gray-400 space-y-2 mb-6">
+                        <li>✓ Escala cromática generada por φ (12 notas)</li>
+                        <li>✓ Armonizador con optimización de consonancia</li>
+                        <li>✓ Compositor algorítmico SATB (Bach en universo φ)</li>
+                        <li>✓ Teoría completa documentada</li>
+                    </ul>
+                    <div class="bg-black bg-opacity-30 rounded-lg p-4 mb-6">
+                        <div class="text-xs text-gray-400 mb-1">Simulaciones</div>
+                        <div class="text-2xl font-bold text-primary">3</div>
+                    </div>
+                    <a href="Music Theory Lab/index.html"
+                       class="block w-full bg-gradient-to-r from-primary to-secondary text-white text-center px-6 py-3 rounded-lg hover:shadow-xl transition-all duration-300 font-semibold">
+                        Abrir Lab →
+                    </a>
+                </div>
+
+                <!-- Placeholder for Future Labs -->
+                <div class="card bg-white bg-opacity-5 rounded-2xl p-8 border border-gray-600 border-opacity-30 opacity-50">
+                    <div class="text-5xl mb-4">🎹</div>
+                    <h3 class="text-2xl font-bold text-gray-400 mb-3">
+                        Próximamente...
+                    </h3>
+                    <p class="text-gray-500 mb-6 leading-relaxed">
+                        Futuros laboratorios podrían incluir: Composition Lab, Audio Processing Lab,
+                        Acoustics Lab, o Tuning Systems Lab.
+                    </p>
+                    <div class="bg-black bg-opacity-30 rounded-lg p-4 mb-6">
+                        <div class="text-xs text-gray-500 mb-1">En desarrollo</div>
+                        <div class="text-2xl font-bold text-gray-500">—</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- About Music -->
+        <section class="mb-16">
+            <div class="bg-white bg-opacity-5 rounded-2xl p-8 border border-primary border-opacity-30">
+                <h2 class="text-2xl font-bold text-primary mb-4">Sobre la Disciplina Music</h2>
+                <div class="text-gray-300 leading-relaxed space-y-3">
+                    <p>
+                        La disciplina <strong class="text-white">Music</strong> en EigenLab explora la intersección
+                        entre matemáticas, física y música a través de sistemas formales, composición algorítmica
+                        y análisis teórico.
+                    </p>
+                    <p>
+                        A diferencia de enfoques tradicionales, aquí la música se aborda como un <strong class="text-white">sistema
+                        matemático completo</strong>: partiendo de axiomas (como φ en el Sistema Armónico Áureo) y derivando
+                        escalas, acordes, función armónica y reglas contrapuntísticas desde primeros principios.
+                    </p>
+                    <p>
+                        Los laboratorios combinan <strong class="text-primary">teoría rigurosa</strong> con
+                        <strong class="text-primary">experimentación interactiva</strong>, permitiendo tanto exploración
+                        conceptual como composición práctica.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-400 text-sm">
+            <p>
+                <a href="../_portal/index.html" class="text-primary hover:underline">← Volver a EigenLab</a>
+            </p>
+            <p class="mt-4">
+                Music · EigenLab · 2026
+            </p>
+        </footer>
+    </div>
+</body>
+</html>

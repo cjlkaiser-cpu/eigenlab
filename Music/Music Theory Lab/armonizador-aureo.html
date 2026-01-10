@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armonizador Áureo - Music Theory Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .canvas-container {
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        input[type="range"], input[type="number"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ec4899;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        input[type="number"] {
+            height: auto;
+            padding: 8px 12px;
+            border: 1px solid #374151;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.05));
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .scale-note {
+            transition: all 0.2s;
+        }
+        .scale-note:hover {
+            transform: scale(1.05);
+        }
+        .scale-note.selected {
+            box-shadow: 0 0 15px rgba(167, 139, 250, 0.6);
+        }
+
+        .chord-type-btn.active {
+            background: linear-gradient(135deg, #6366f1, #4f46e5);
+        }
+
+        .progression-chord {
+            transition: all 0.2s;
+        }
+        .progression-chord:hover {
+            transform: translateY(-2px);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-pink-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-pink-400 font-medium">Armonizador</span> Áureo
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Acordes: <span id="chord-count-header" class="text-pink-400">0</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Control Panel -->
+        <aside class="w-80 border-r border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-pink-400 glow-text">Controles</h2>
+
+            <!-- Play Progression -->
+            <div class="mb-6">
+                <button id="playBtn" class="w-full py-3 px-4 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="playText">Reproducir Progresión</span>
+                </button>
+            </div>
+
+            <!-- Scale Preset -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Escala Diatónica</label>
+                <select id="scalePreset" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="major">Mayor Áurea Óptima</option>
+                    <option value="minor">Menor Áurea</option>
+                </select>
+            </div>
+
+            <!-- Chord Type -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Tipo de Acorde</label>
+                <div class="grid grid-cols-3 gap-2">
+                    <button class="chord-type-btn active px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition" data-type="triad">Tríada</button>
+                    <button class="chord-type-btn px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition" data-type="seventh">7ª</button>
+                    <button class="chord-type-btn px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition" data-type="ninth">9ª</button>
+                </div>
+            </div>
+
+            <!-- Tempo -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Tempo: <span id="tempoValue" class="text-cyan-400 mono">80</span> BPM
+                </label>
+                <input type="range" id="tempo" min="40" max="180" value="80" class="w-full">
+            </div>
+
+            <!-- Waveform -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Forma de Onda</label>
+                <select id="waveform" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="sine">Sine (Suave)</option>
+                    <option value="triangle" selected>Triangle (Cálido)</option>
+                    <option value="sawtooth">Sawtooth (Brillante)</option>
+                </select>
+            </div>
+
+            <!-- Preset Progressions -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-pink-400 mb-4">Progresiones Preset</h3>
+
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button onclick="loadPreset('I-IV-V-I')" class="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition">I-IV-V-I</button>
+                <button onclick="loadPreset('ii-V-I')" class="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition">ii-V-I</button>
+                <button onclick="loadPreset('I-vi-IV-V')" class="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition">I-vi-IV-V</button>
+                <button onclick="loadPreset('circle')" class="px-3 py-2 bg-gray-900 border border-gray-800 rounded-lg text-xs hover:bg-gray-800 transition">Círculo φ</button>
+            </div>
+
+            <button id="clearBtn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                Limpiar Progresión
+            </button>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Acordes Áureos</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div><span class="text-purple-400">Tríada:</span> φ⁰, φ², φ³</div>
+                    <div><span class="text-purple-400">7ª:</span> φ⁰, φ², φ³, φ⁴</div>
+                    <div><span class="text-purple-400">9ª:</span> φ⁰, φ², φ³, φ⁴, φ⁵</div>
+                </div>
+                <p class="text-xs text-gray-500 mt-3">
+                    Los acordes se forman apilando potencias de φ envueltas en la octava.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Scale Notes -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-medium text-pink-400">Escala Diatónica Áurea (7 notas)</h3>
+                    <div class="flex gap-4 text-xs mono">
+                        <span class="text-gray-500">Score: <span id="scaleScore" class="text-cyan-400">—</span></span>
+                        <span class="text-gray-500">Cons: <span id="avgConsonance" class="text-cyan-400">—</span></span>
+                    </div>
+                </div>
+                <div id="scaleNotesGrid" class="grid grid-cols-7 gap-3">
+                    <!-- Generated by JS -->
+                </div>
+                <p class="text-xs text-gray-600 mt-3">Haz clic en los grados (I-VII) para añadir acordes a la progresión</p>
+            </div>
+
+            <!-- Progression Builder -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-sm font-medium text-pink-400">Progresión Armónica</h3>
+                    <div class="flex gap-4 text-xs mono">
+                        <span class="text-gray-500">Acordes: <span id="chordCount" class="text-pink-400">0</span></span>
+                        <span class="text-gray-500">Movimiento: <span id="voiceMovement" class="text-cyan-400">0¢</span></span>
+                    </div>
+                </div>
+                <div id="progressionChords" class="min-h-24 flex flex-wrap gap-3 p-4 border-2 border-dashed border-gray-800 rounded-lg">
+                    <span class="text-gray-600 text-sm italic">Haz clic en los grados para añadir acordes...</span>
+                </div>
+            </div>
+
+            <!-- Chord Visualization -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Visualización de Acorde</h3>
+                <div class="canvas-container bg-black">
+                    <canvas id="chordCanvas" width="800" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Consonance Heatmap -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Análisis de Consonancia</h3>
+                <div class="canvas-container bg-black">
+                    <canvas id="consonanceCanvas" width="800" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Load Engine -->
+    <script src="golden-harmony-engine.js"></script>
+
+    <script>
+        // ============ ENGINE ============
+        const engine = new GoldenHarmonyEngine();
+
+        // ============ AUDIO ============
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+        let currentNotes = [];
+        let isPlaying = false;
+        let playTimeouts = [];
+
+        // ============ STATE ============
+        let currentScale = null;
+        let progression = [];
+        let selectedChordType = 'triad';
+        let currentChord = null;
+        let tempo = 80;
+        let waveform = 'triangle';
+
+        // ============ CANVAS REFS ============
+        const chordCanvas = document.getElementById('chordCanvas');
+        const consonanceCanvas = document.getElementById('consonanceCanvas');
+        const chordCtx = chordCanvas.getContext('2d');
+        const consonanceCtx = consonanceCanvas.getContext('2d');
+
+        // ============ AUDIO FUNCTIONS ============
+
+        async function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.connect(audioContext.destination);
+                    masterGain.gain.value = 0.3;
+                    isAudioInitialized = true;
+                    console.log('AudioContext created, state:', audioContext.state);
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                    return false;
+                }
+            }
+
+            // Always try to resume (required by browsers after user interaction)
+            if (audioContext.state === 'suspended') {
+                try {
+                    await audioContext.resume();
+                    console.log('AudioContext resumed, new state:', audioContext.state);
+                } catch (e) {
+                    console.error('Failed to resume AudioContext:', e);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        async function playChord(chordCents, duration = 1.0, volume = 0.25) {
+            const ready = await initAudioContext();
+
+            if (!ready || !audioContext) {
+                console.error('AudioContext not ready');
+                return;
+            }
+
+            console.log('playChord:', chordCents.length, 'notes, state:', audioContext.state);
+
+            const now = audioContext.currentTime;
+            const oscillators = [];
+
+            chordCents.forEach((cents) => {
+                const freq = engine.centsToFrequency(cents);
+
+                // Validate frequency
+                if (!freq || freq <= 0 || !isFinite(freq)) {
+                    console.error('Invalid frequency for cents:', cents);
+                    return;
+                }
+
+                console.log('  Note:', freq.toFixed(2), 'Hz');
+
+                const osc = audioContext.createOscillator();
+                osc.type = waveform;
+                osc.frequency.setValueAtTime(freq, now);
+
+                const envelope = audioContext.createGain();
+                envelope.gain.setValueAtTime(0.0001, now);
+                envelope.gain.linearRampToValueAtTime(volume, now + 0.03);
+                envelope.gain.linearRampToValueAtTime(volume * 0.7, now + 0.13);
+                envelope.gain.linearRampToValueAtTime(volume * 0.7, now + duration - 0.15);
+                envelope.gain.linearRampToValueAtTime(0.0001, now + duration);
+
+                osc.connect(envelope);
+                envelope.connect(masterGain);
+
+                osc.start(now);
+                osc.stop(now + duration + 0.05);
+
+                oscillators.push({ osc, envelope });
+
+                osc.onended = () => {
+                    const idx = currentNotes.findIndex(n => n.osc === osc);
+                    if (idx !== -1) currentNotes.splice(idx, 1);
+                    try {
+                        osc.disconnect();
+                        envelope.disconnect();
+                    } catch(e) {}
+                };
+            });
+
+            currentNotes.push(...oscillators);
+        }
+
+        function stopAll() {
+            playTimeouts.forEach(t => clearTimeout(t));
+            playTimeouts = [];
+
+            currentNotes.forEach(({ osc, envelope }) => {
+                try {
+                    const now = audioContext.currentTime;
+                    envelope.gain.cancelScheduledValues(now);
+                    envelope.gain.setValueAtTime(envelope.gain.value, now);
+                    envelope.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.stop(now + 0.05);
+                } catch (e) {}
+            });
+            currentNotes = [];
+            isPlaying = false;
+            updatePlayButton();
+        }
+
+        async function playProgression() {
+            if (progression.length === 0) return;
+
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) {
+                console.error('Cannot play progression - AudioContext not ready');
+                return;
+            }
+
+            isPlaying = true;
+            updatePlayButton();
+
+            const beatDuration = 60 / tempo;
+            const chordDuration = beatDuration * 2;
+
+            progression.forEach((chord, index) => {
+                const timeout = setTimeout(() => {
+                    if (!isPlaying) return;
+                    playChord(chord.notes, chordDuration, 0.25);
+                    visualizeChord(chord);
+                    highlightProgressionChord(index);
+                }, index * chordDuration * 1000);
+                playTimeouts.push(timeout);
+            });
+
+            const totalTime = progression.length * chordDuration * 1000;
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+                document.querySelectorAll('.progression-chord').forEach(el => el.classList.remove('ring-2', 'ring-pink-400'));
+            }, totalTime));
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('playIcon');
+            const text = document.getElementById('playText');
+
+            if (isPlaying) {
+                text.textContent = 'Detener';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Reproducir Progresión';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function highlightProgressionChord(index) {
+            document.querySelectorAll('.progression-chord').forEach((el, i) => {
+                el.classList.toggle('ring-2', i === index);
+                el.classList.toggle('ring-pink-400', i === index);
+            });
+        }
+
+        // ============ SCALE GENERATION ============
+
+        function generateScale() {
+            const preset = document.getElementById('scalePreset').value;
+            currentScale = engine.generateDiatonicScale(preset);
+            renderScaleNotes();
+            updateScaleStats();
+        }
+
+        function renderScaleNotes() {
+            const grid = document.getElementById('scaleNotesGrid');
+            grid.innerHTML = '';
+
+            if (!currentScale) return;
+
+            const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+
+            currentScale.notes.forEach((note, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'scale-note bg-purple-500/20 hover:bg-purple-500/30 border border-purple-500/30 rounded-lg p-3 text-center';
+
+                btn.innerHTML = `
+                    <div class="text-purple-400 font-bold text-lg">${romanNumerals[index]}</div>
+                    <div class="text-gray-500 text-xs mono mt-1">${note.cents.toFixed(0)}¢</div>
+                `;
+
+                btn.onclick = () => {
+                    addChordToProgression(index);
+                    btn.classList.add('selected');
+                    setTimeout(() => btn.classList.remove('selected'), 200);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        function updateScaleStats() {
+            if (!currentScale) return;
+
+            document.getElementById('scaleScore').textContent = currentScale.score.toFixed(2);
+
+            let totalConsonance = 0;
+            let count = 0;
+
+            for (let i = 0; i < currentScale.notes.length; i++) {
+                for (let j = i + 1; j < currentScale.notes.length; j++) {
+                    const interval = Math.abs(currentScale.notes[j].cents - currentScale.notes[i].cents);
+                    totalConsonance += engine.consonance(interval);
+                    count++;
+                }
+            }
+
+            const avgCons = count > 0 ? totalConsonance / count : 0;
+            document.getElementById('avgConsonance').textContent = avgCons.toFixed(3);
+        }
+
+        // ============ PROGRESSION ============
+
+        async function addChordToProgression(degree) {
+            if (!currentScale) return;
+
+            const root = currentScale.notes[degree].cents;
+            let chordCents;
+
+            if (selectedChordType === 'triad') {
+                chordCents = engine.generateTriad(root);
+            } else if (selectedChordType === 'seventh') {
+                chordCents = engine.generateSeventh(root);
+            } else {
+                chordCents = engine.generateNinth(root);
+            }
+
+            const romanNumerals = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII'];
+            const chord = {
+                degree: degree,
+                name: romanNumerals[degree],
+                type: selectedChordType,
+                notes: chordCents,
+                root: root
+            };
+
+            progression.push(chord);
+            renderProgression();
+            updateProgressionStats();
+
+            // Play and visualize
+            visualizeChord(chord);
+            await playChord(chordCents, 1.0, 0.25);
+        }
+
+        function renderProgression() {
+            const container = document.getElementById('progressionChords');
+
+            if (progression.length === 0) {
+                container.innerHTML = '<span class="text-gray-600 text-sm italic">Haz clic en los grados para añadir acordes...</span>';
+                return;
+            }
+
+            container.innerHTML = '';
+
+            progression.forEach((chord, index) => {
+                const div = document.createElement('div');
+                div.className = 'progression-chord relative bg-gradient-to-br from-pink-500 to-pink-700 text-white px-4 py-3 rounded-lg cursor-pointer shadow-lg';
+
+                div.innerHTML = `
+                    <div class="font-bold text-lg">${chord.name}</div>
+                    <div class="text-pink-200 text-xs">${chord.type}</div>
+                    <button class="absolute -top-2 -right-2 w-5 h-5 bg-red-500 hover:bg-red-600 rounded-full text-xs flex items-center justify-center" onclick="event.stopPropagation(); removeChord(${index})">×</button>
+                `;
+
+                div.onclick = async () => {
+                    visualizeChord(chord);
+                    await playChord(chord.notes, 1.5, 0.3);
+                };
+
+                container.appendChild(div);
+            });
+        }
+
+        function removeChord(index) {
+            progression.splice(index, 1);
+            renderProgression();
+            updateProgressionStats();
+        }
+
+        function clearProgression() {
+            progression = [];
+            renderProgression();
+            updateProgressionStats();
+            currentChord = null;
+            drawChordVisualization();
+            drawConsonanceAnalysis();
+        }
+
+        function updateProgressionStats() {
+            const count = progression.length;
+            document.getElementById('chordCount').textContent = count;
+            document.getElementById('chord-count-header').textContent = count;
+
+            let totalMovement = 0;
+            for (let i = 0; i < progression.length - 1; i++) {
+                const leading = engine.optimalVoiceLeading(progression[i].notes, progression[i + 1].notes);
+                totalMovement += leading.totalMovement;
+            }
+            document.getElementById('voiceMovement').textContent = totalMovement.toFixed(0) + '¢';
+        }
+
+        function loadPreset(name) {
+            clearProgression();
+
+            if (!currentScale) return;
+
+            const presets = {
+                'I-IV-V-I': [0, 3, 4, 0],
+                'ii-V-I': [1, 4, 0],
+                'I-vi-IV-V': [0, 5, 3, 4],
+                'circle': [0, 4, 1, 5, 2, 6, 3, 0]
+            };
+
+            const degrees = presets[name];
+            if (!degrees) return;
+
+            degrees.forEach((degree, i) => {
+                setTimeout(() => addChordToProgression(degree), i * 150);
+            });
+        }
+
+        // ============ VISUALIZATIONS ============
+
+        function visualizeChord(chord) {
+            currentChord = chord;
+            drawChordVisualization();
+            drawConsonanceAnalysis();
+        }
+
+        function drawChordVisualization() {
+            const canvas = chordCanvas;
+            const ctx = chordCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!currentChord) {
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Selecciona un acorde para visualizar', w / 2, h / 2);
+                return;
+            }
+
+            // Draw staff
+            const staffY = h / 2;
+            const lineSpacing = 15;
+
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+
+            for (let i = -2; i <= 2; i++) {
+                const y = staffY + i * lineSpacing;
+                ctx.beginPath();
+                ctx.moveTo(80, y);
+                ctx.lineTo(w - 80, y);
+                ctx.stroke();
+            }
+
+            // Draw notes
+            const noteSpacing = (w - 200) / Math.max(currentChord.notes.length, 1);
+
+            currentChord.notes.forEach((cents, index) => {
+                const x = 100 + index * noteSpacing;
+                const y = staffY - (cents / 150);
+
+                // Note head
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.ellipse(x, y, 14, 11, -0.2, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Ledger lines
+                ctx.strokeStyle = '#374151';
+                const numLedgers = Math.abs(Math.round((y - staffY) / lineSpacing));
+                if (numLedgers > 2) {
+                    const direction = y < staffY ? -1 : 1;
+                    for (let l = 3; l <= numLedgers; l++) {
+                        const ledgerY = staffY + direction * l * lineSpacing;
+                        ctx.beginPath();
+                        ctx.moveTo(x - 18, ledgerY);
+                        ctx.lineTo(x + 18, ledgerY);
+                        ctx.stroke();
+                    }
+                }
+
+                // Cents label
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(cents.toFixed(0) + '¢', x, h - 20);
+
+                // Frequency
+                const freq = engine.centsToFrequency(cents);
+                ctx.fillStyle = '#6b7280';
+                ctx.fillText(freq.toFixed(0) + ' Hz', x, h - 5);
+            });
+
+            // Chord name
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 18px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(`${currentChord.name} (${currentChord.type})`, 20, 30);
+
+            // Note count
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '12px JetBrains Mono';
+            ctx.fillText(`${currentChord.notes.length} notas`, 20, 50);
+        }
+
+        function drawConsonanceAnalysis() {
+            const canvas = consonanceCanvas;
+            const ctx = consonanceCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!currentChord) {
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '14px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Selecciona un acorde para analizar consonancia', w / 2, h / 2);
+                return;
+            }
+
+            const analysis = engine.analyzeChordConsonance(currentChord.notes);
+            const n = currentChord.notes.length;
+            const cellSize = Math.min(50, (Math.min(w, h) - 120) / n);
+            const offsetX = (w - cellSize * n) / 2;
+            const offsetY = (h - cellSize * n) / 2 + 10;
+
+            // Draw heatmap
+            for (let i = 0; i < n; i++) {
+                for (let j = 0; j < n; j++) {
+                    const x = offsetX + j * cellSize;
+                    const y = offsetY + i * cellSize;
+
+                    if (i === j) {
+                        ctx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+                    } else {
+                        const pair = analysis.pairs.find(p =>
+                            (p.notes[0] === Math.min(i, j) && p.notes[1] === Math.max(i, j))
+                        );
+
+                        if (pair) {
+                            const cons = pair.consonance;
+                            if (cons > 0.7) {
+                                ctx.fillStyle = `rgba(34, 197, 94, ${0.3 + cons * 0.7})`;
+                            } else if (cons > 0.4) {
+                                ctx.fillStyle = `rgba(234, 179, 8, ${0.3 + cons * 0.7})`;
+                            } else {
+                                ctx.fillStyle = `rgba(239, 68, 68, ${0.3 + cons * 0.5})`;
+                            }
+                        } else {
+                            ctx.fillStyle = 'rgba(100, 100, 100, 0.2)';
+                        }
+                    }
+
+                    ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+
+                    // Value
+                    if (i !== j) {
+                        const pair = analysis.pairs.find(p =>
+                            (p.notes[0] === Math.min(i, j) && p.notes[1] === Math.max(i, j))
+                        );
+                        if (pair) {
+                            ctx.fillStyle = '#fff';
+                            ctx.font = '10px JetBrains Mono';
+                            ctx.textAlign = 'center';
+                            ctx.fillText(pair.consonance.toFixed(2), x + cellSize / 2, y + cellSize / 2 + 4);
+                        }
+                    }
+                }
+            }
+
+            // Labels
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '11px JetBrains Mono';
+            ctx.textAlign = 'center';
+
+            for (let i = 0; i < n; i++) {
+                ctx.fillText(`N${i + 1}`, offsetX + i * cellSize + cellSize / 2, offsetY - 8);
+                ctx.fillText(`N${i + 1}`, offsetX - 15, offsetY + i * cellSize + cellSize / 2 + 4);
+            }
+
+            // Stats
+            ctx.fillStyle = '#ec4899';
+            ctx.font = '12px JetBrains Mono';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Promedio: ${analysis.average.toFixed(3)}`, 20, h - 30);
+            ctx.fillStyle = '#22c55e';
+            ctx.fillText(`Max: ${analysis.max.toFixed(3)}`, 180, h - 30);
+            ctx.fillStyle = '#ef4444';
+            ctx.fillText(`Min: ${analysis.min.toFixed(3)}`, 300, h - 30);
+
+            // Legend
+            const legendX = w - 150;
+            ctx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+            ctx.fillRect(legendX, h - 50, 12, 12);
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '10px Inter';
+            ctx.fillText('Alta (>0.7)', legendX + 18, h - 40);
+
+            ctx.fillStyle = 'rgba(234, 179, 8, 0.8)';
+            ctx.fillRect(legendX, h - 35, 12, 12);
+            ctx.fillText('Media (0.4-0.7)', legendX + 18, h - 25);
+
+            ctx.fillStyle = 'rgba(239, 68, 68, 0.6)';
+            ctx.fillRect(legendX, h - 20, 12, 12);
+            ctx.fillText('Baja (<0.4)', legendX + 18, h - 10);
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('playBtn').addEventListener('click', playProgression);
+        document.getElementById('clearBtn').addEventListener('click', clearProgression);
+
+        document.getElementById('scalePreset').addEventListener('change', () => {
+            generateScale();
+            clearProgression();
+        });
+
+        document.querySelectorAll('.chord-type-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.chord-type-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                selectedChordType = btn.dataset.type;
+            });
+        });
+
+        document.getElementById('tempo').addEventListener('input', (e) => {
+            tempo = parseInt(e.target.value);
+            document.getElementById('tempoValue').textContent = tempo;
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            waveform = e.target.value;
+        });
+
+        // ============ INIT ============
+
+        function init() {
+            generateScale();
+            renderProgression();
+            updateProgressionStats();
+            drawChordVisualization();
+            drawConsonanceAnalysis();
+            console.log('Armonizador Áureo initialized');
+            console.log('Current scale:', currentScale);
+        }
+
+        init();
+    </script>
+</body>
+</html>

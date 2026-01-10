@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala Cromática Áurea - Music Theory Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .canvas-container {
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ec4899;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.05));
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .note-btn {
+            transition: all 0.2s;
+        }
+        .note-btn:hover {
+            transform: scale(1.05);
+        }
+        .note-btn.active {
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+            background: linear-gradient(135deg, #ec4899, #be185d);
+        }
+
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #374151;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active {
+            background: #ec4899;
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: left 0.3s;
+        }
+        .toggle.active::after {
+            left: 27px;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-pink-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-pink-400 font-medium">Escala Cromática</span> Áurea
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Base: <span id="base-display" class="text-pink-400">440</span> Hz</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Visualization Area -->
+        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Circular Visualization -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Visualización Circular</h3>
+                    <div class="flex items-center gap-3">
+                        <span class="text-xs text-gray-600">Comparar con 12-TET</span>
+                        <div class="toggle" id="compareToggle" onclick="toggleComparison()"></div>
+                    </div>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="circularCanvas" width="800" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Cents Bar Chart -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Distribución de Cents</h3>
+                    <span class="text-xs text-gray-600 mono">Altura = posición en cents</span>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="centsCanvas" width="800" height="250"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Valores Exactos</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-500 border-b border-gray-800">
+                                <th class="pb-2 pr-4">#</th>
+                                <th class="pb-2 pr-4">Nota</th>
+                                <th class="pb-2 pr-4 mono">Cents</th>
+                                <th class="pb-2 pr-4 mono">Ratio φ</th>
+                                <th class="pb-2 pr-4 mono">Hz</th>
+                                <th class="pb-2 mono">Intervalo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="mono text-xs">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-pink-400 glow-text">Controles</h2>
+
+            <!-- Play Button -->
+            <div class="mb-6">
+                <button id="playScaleBtn" class="w-full py-3 px-4 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="playText">Tocar Escala Completa</span>
+                </button>
+            </div>
+
+            <!-- Base Frequency -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Frecuencia base: <span id="freqValue" class="text-pink-400 mono">440</span> Hz
+                </label>
+                <input type="range" id="baseFreq" min="220" max="880" value="440" step="1" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>220 Hz (A3)</span>
+                    <span>880 Hz (A5)</span>
+                </div>
+            </div>
+
+            <!-- Waveform -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="sine">Sine (Suave)</option>
+                    <option value="triangle" selected>Triangle (Cálido)</option>
+                    <option value="sawtooth">Sawtooth (Brillante)</option>
+                    <option value="square">Square (Hueco)</option>
+                </select>
+            </div>
+
+            <!-- Duration -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Duración: <span id="durationValue" class="text-cyan-400 mono">0.8</span>s
+                </label>
+                <input type="range" id="duration" min="0.2" max="2.0" step="0.1" value="0.8" class="w-full">
+            </div>
+
+            <!-- Volume -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volumeValue" class="text-cyan-400 mono">30</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="30" class="w-full">
+            </div>
+
+            <!-- Note Grid -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-pink-400 mb-4">Notas Cromáticas (12)</h3>
+
+            <div id="notesGrid" class="grid grid-cols-4 gap-2 mb-6">
+                <!-- Generated by JS -->
+            </div>
+
+            <button id="stopBtn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" stroke-width="2"/>
+                </svg>
+                Detener
+            </button>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Fórmula Generadora</h3>
+                <div class="mono text-xs space-y-3 mb-3">
+                    <div class="text-gray-400">
+                        <div class="mb-2">La escala cromática áurea se genera por:</div>
+                        <div class="bg-black/30 p-2 rounded text-center">
+                            n<sub>i</sub> = (1200 · φ<sup>-i</sup>) mod 1200
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-pink-400">φ =</span> 1.618033988749895
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">φ¹ ≈</span> 833.09 cents (quinta áurea)
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    A diferencia del temperamento igual (100¢ por semitono), esta escala tiene intervalos irregulares que crean <span class="text-pink-400">zonas de densidad</span> únicas basadas en φ.
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Load Engine -->
+    <script src="golden-harmony-engine.js"></script>
+
+    <script>
+        // ============ ENGINE ============
+        const engine = new GoldenHarmonyEngine();
+
+        // ============ AUDIO ============
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+        let currentNotes = [];
+        let isPlaying = false;
+        let playTimeouts = [];
+
+        // ============ STATE ============
+        let compareMode = false;
+        let baseFrequency = 440;
+        let volume = 0.3;
+        let duration = 0.8;
+        let waveform = 'triangle';
+
+        // ============ CANVAS REFS ============
+        const circularCanvas = document.getElementById('circularCanvas');
+        const centsCanvas = document.getElementById('centsCanvas');
+        const circularCtx = circularCanvas.getContext('2d');
+        const centsCtx = centsCanvas.getContext('2d');
+
+        // ============ AUDIO FUNCTIONS ============
+
+        async function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.connect(audioContext.destination);
+                    masterGain.gain.value = volume;
+                    isAudioInitialized = true;
+                    console.log('AudioContext created, state:', audioContext.state);
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                    return false;
+                }
+            }
+
+            // Always try to resume (required by browsers)
+            if (audioContext.state === 'suspended') {
+                try {
+                    await audioContext.resume();
+                    console.log('AudioContext resumed, new state:', audioContext.state);
+                } catch (e) {
+                    console.error('Failed to resume AudioContext:', e);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        async function playNote(frequency, dur = duration, vol = volume) {
+            const ready = await initAudioContext();
+
+            if (!ready || !audioContext) {
+                console.error('AudioContext not ready');
+                return;
+            }
+
+            // Validate frequency
+            if (!frequency || frequency <= 0 || !isFinite(frequency)) {
+                console.error('Invalid frequency:', frequency);
+                return;
+            }
+
+            console.log('playNote:', frequency.toFixed(2), 'Hz, duration:', dur, 's, state:', audioContext.state);
+
+            const now = audioContext.currentTime;
+
+            // Simple oscillator setup
+            const osc = audioContext.createOscillator();
+            osc.type = waveform;
+            osc.frequency.setValueAtTime(frequency, now);
+
+            // Simple gain envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0.0001, now);
+            envelope.gain.linearRampToValueAtTime(vol, now + 0.02);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + 0.12);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + dur - 0.1);
+            envelope.gain.linearRampToValueAtTime(0.0001, now + dur);
+
+            // Simple routing (no filter for now)
+            osc.connect(envelope);
+            envelope.connect(masterGain);
+
+            // Start and stop
+            osc.start(now);
+            osc.stop(now + dur + 0.05);
+
+            currentNotes.push({ osc, envelope });
+
+            // Cleanup
+            osc.onended = () => {
+                const idx = currentNotes.findIndex(n => n.osc === osc);
+                if (idx !== -1) currentNotes.splice(idx, 1);
+                try {
+                    osc.disconnect();
+                    envelope.disconnect();
+                } catch(e) {}
+            };
+
+            return { osc, envelope };
+        }
+
+        function stopAll() {
+            // Clear scheduled notes
+            playTimeouts.forEach(t => clearTimeout(t));
+            playTimeouts = [];
+
+            // Stop active notes
+            currentNotes.forEach(({ osc, envelope }) => {
+                try {
+                    const now = audioContext.currentTime;
+                    envelope.gain.cancelScheduledValues(now);
+                    envelope.gain.setValueAtTime(envelope.gain.value, now);
+                    envelope.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.stop(now + 0.05);
+                } catch (e) {}
+            });
+            currentNotes = [];
+
+            // Reset UI
+            isPlaying = false;
+            updatePlayButton();
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        async function playScale() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) {
+                console.error('Cannot play scale - AudioContext not ready');
+                return;
+            }
+
+            isPlaying = true;
+            updatePlayButton();
+
+            engine.chromaticScale.forEach((note, index) => {
+                const timeout = setTimeout(async () => {
+                    const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                    await playNote(freq, duration, volume);
+                    highlightNote(index);
+                }, index * (duration * 1000 + 50));
+                playTimeouts.push(timeout);
+            });
+
+            // Reset after all notes
+            const totalTime = engine.chromaticScale.length * (duration * 1000 + 50);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+            }, totalTime));
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('playIcon');
+            const text = document.getElementById('playText');
+
+            if (isPlaying) {
+                text.textContent = 'Detener';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Tocar Escala Completa';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function highlightNote(index) {
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.querySelector(`.note-btn[data-index="${index}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), duration * 1000 - 50);
+            }
+        }
+
+        // ============ UI GENERATION ============
+
+        function generateNoteButtons() {
+            const grid = document.getElementById('notesGrid');
+            grid.innerHTML = '';
+
+            engine.chromaticScale.forEach((note, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'note-btn bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg p-2 text-center transition';
+                btn.dataset.index = index;
+                btn.dataset.cents = note.cents;
+
+                btn.innerHTML = `
+                    <div class="text-pink-400 font-medium text-sm">${note.name}</div>
+                    <div class="text-gray-500 text-xs mono">${note.cents.toFixed(0)}¢</div>
+                `;
+
+                btn.onclick = async () => {
+                    // Calculate frequency at click time (uses current baseFrequency)
+                    const freq = engine.centsToFrequency(parseFloat(btn.dataset.cents), baseFrequency);
+                    console.log('Playing note:', note.name, 'cents:', note.cents, 'freq:', freq, 'Hz, base:', baseFrequency);
+                    highlightNote(index);
+                    await playNote(freq, duration, volume);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        function generateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            engine.chromaticScale.forEach((note, index) => {
+                const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                const prevNote = index > 0 ? engine.chromaticScale[index - 1] : null;
+                const interval = prevNote ? (note.cents - prevNote.cents).toFixed(1) : '—';
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-900 hover:bg-gray-900/50';
+                row.innerHTML = `
+                    <td class="py-2 pr-4 text-gray-500">${index}</td>
+                    <td class="py-2 pr-4 text-pink-400 font-medium">${note.name}</td>
+                    <td class="py-2 pr-4 text-gray-300">${note.cents.toFixed(2)}</td>
+                    <td class="py-2 pr-4 text-gray-400">φ<sup>-${note.index}</sup></td>
+                    <td class="py-2 pr-4 text-cyan-400">${freq.toFixed(2)}</td>
+                    <td class="py-2 text-gray-500">${interval}¢</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ============ VISUALIZATIONS ============
+
+        function drawCircular() {
+            const canvas = circularCanvas;
+            const ctx = circularCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) / 2 - 60;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Circle outline
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 12-TET comparison (if enabled)
+            if (compareMode) {
+                for (let i = 0; i < 12; i++) {
+                    const cents = i * 100;
+                    const angle = (cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * (radius - 20);
+                    const y = centerY + Math.sin(angle) * (radius - 20);
+
+                    ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Legend
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.8)';
+                ctx.fillRect(20, h - 30, 12, 12);
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '11px Inter';
+                ctx.textAlign = 'left';
+                ctx.fillText('12-TET (100¢ equidistante)', 38, h - 20);
+            }
+
+            // Golden scale notes
+            engine.chromaticScale.forEach((note, index) => {
+                const angle = (note.cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                // Line from center
+                ctx.strokeStyle = 'rgba(236, 72, 153, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Dot
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Label
+                ctx.fillStyle = '#e5e7eb';
+                ctx.font = '11px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                const labelR = radius + 25;
+                const labelX = centerX + Math.cos(angle) * labelR;
+                const labelY = centerY + Math.sin(angle) * labelR;
+                ctx.fillText(note.name, labelX, labelY);
+            });
+
+            // Center label
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 24px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('φ', centerX, centerY);
+
+            // Legend for golden
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(20, h - 55, 12, 12);
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText('Escala Áurea (φ-generada)', 38, h - 45);
+        }
+
+        function drawCents() {
+            const canvas = centsCanvas;
+            const ctx = centsCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = { left: 50, right: 20, top: 20, bottom: 40 };
+            const chartW = w - padding.left - padding.right;
+            const chartH = h - padding.top - padding.bottom;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Y-axis (cents)
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, padding.top);
+            ctx.lineTo(padding.left, h - padding.bottom);
+            ctx.lineTo(w - padding.right, h - padding.bottom);
+            ctx.stroke();
+
+            // Y-axis labels
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'right';
+            for (let cents = 0; cents <= 1200; cents += 200) {
+                const y = h - padding.bottom - (cents / 1200) * chartH;
+                ctx.fillText(cents.toString(), padding.left - 8, y + 4);
+
+                // Grid line
+                ctx.strokeStyle = '#1f2937';
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(w - padding.right, y);
+                ctx.stroke();
+            }
+
+            // Bars
+            const barWidth = chartW / 12;
+
+            engine.chromaticScale.forEach((note, index) => {
+                const x = padding.left + index * barWidth;
+                const barH = (note.cents / 1200) * chartH;
+                const y = h - padding.bottom - barH;
+
+                // Golden bar
+                const gradient = ctx.createLinearGradient(0, h - padding.bottom, 0, y);
+                gradient.addColorStop(0, '#be185d');
+                gradient.addColorStop(1, '#ec4899');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x + 4, y, barWidth - 8, barH);
+
+                // 12-TET comparison
+                if (compareMode) {
+                    const tetCents = index * 100;
+                    const tetH = (tetCents / 1200) * chartH;
+                    const tetY = h - padding.bottom - tetH;
+
+                    ctx.fillStyle = 'rgba(99, 102, 241, 0.5)';
+                    ctx.fillRect(x + barWidth - 12, tetY, 6, tetH);
+                }
+
+                // X-axis label
+                ctx.fillStyle = '#9ca3af';
+                ctx.font = '9px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(note.name, x + barWidth / 2, h - padding.bottom + 15);
+
+                // Cents value on top
+                ctx.fillStyle = '#ec4899';
+                ctx.fillText(note.cents.toFixed(0), x + barWidth / 2, y - 5);
+            });
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(15, h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 12px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Cents', 0, 0);
+            ctx.restore();
+        }
+
+        function render() {
+            drawCircular();
+            drawCents();
+        }
+
+        function toggleComparison() {
+            compareMode = !compareMode;
+            document.getElementById('compareToggle').classList.toggle('active', compareMode);
+            render();
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('playScaleBtn').addEventListener('click', playScale);
+        document.getElementById('stopBtn').addEventListener('click', stopAll);
+
+        document.getElementById('baseFreq').addEventListener('input', (e) => {
+            baseFrequency = parseInt(e.target.value);
+            document.getElementById('freqValue').textContent = baseFrequency;
+            document.getElementById('base-display').textContent = baseFrequency;
+            generateNoteButtons();
+            generateTable();
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            waveform = e.target.value;
+        });
+
+        document.getElementById('duration').addEventListener('input', (e) => {
+            duration = parseFloat(e.target.value);
+            document.getElementById('durationValue').textContent = duration.toFixed(1);
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            volume = parseInt(e.target.value) / 100;
+            document.getElementById('volumeValue').textContent = e.target.value;
+            if (masterGain) masterGain.gain.value = volume;
+        });
+
+        // ============ INIT ============
+
+        function init() {
+            generateNoteButtons();
+            generateTable();
+            render();
+            console.log('Escala Cromática Áurea initialized');
+            console.log('Chromatic scale:', engine.chromaticScale);
+        }
+
+        init();
+    </script>
+</body>
+</html>

@@ -29,6 +29,7 @@
             --color-biology: #10b981;
             --color-geology: #d97706;
             --color-computation: #3b82f6;
+            --color-music: #ec4899;
         }
 
         body {
@@ -286,6 +287,11 @@
             --card-glow: rgba(59, 130, 246, 0.15);
         }
 
+        .music {
+            --card-accent: var(--color-music);
+            --card-glow: rgba(236, 72, 153, 0.15);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -337,7 +343,7 @@
     <header class="header">
         <h1>EigenLab</h1>
         <p class="tagline">Donde las ecuaciones cobran vida</p>
-        <p class="stats-inline">128+ simulaciones · 14 laboratorios · 9 disciplinas</p>
+        <p class="stats-inline">131+ simulaciones · 15 laboratorios · 10 disciplinas</p>
         <p class="epigraph">Las ecuaciones no describen objetos — describen comportamientos.</p>
         <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
             <a href="paths/index.html" class="paths-link">Caminos de Aprendizaje →</a>
@@ -680,6 +686,38 @@
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Algoritmos</span>
+                        </div>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- Music -->
+        <section class="discipline-section">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(236, 72, 153, 0.15);">
+                    <span>&#9835;</span>
+                </div>
+                <h2 class="discipline-title">Music</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="../Music/Music Theory Lab/index.html" class="lab-card music">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-music"></canvas>
+                        <span class="lab-badge">3 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Theory Lab</div>
+                        <h3 class="lab-name">Music Theory Lab</h3>
+                        <p class="lab-description">
+                            Sistema Armónico Áureo: Teoría musical basada en φ. Escala cromática áurea, armonizador con optimización de consonancia, y compositor algorítmico SATB.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Web Audio API</span>
+                            <span>Composición φ</span>
                         </div>
                     </div>
                 </a>
