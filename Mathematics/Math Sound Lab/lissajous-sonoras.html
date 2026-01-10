@@ -453,6 +453,11 @@
                     <label for="audio-enabled">Activar Audio Dual</label>
                 </div>
 
+                <div class="checkbox-group">
+                    <input type="checkbox" id="melodic-mode" checked>
+                    <label for="melodic-mode">Modo Melódico (X,Y → Frecuencia)</label>
+                </div>
+
                 <div class="slider-group">
                     <label>
                         Volumen
@@ -463,11 +468,32 @@
 
                 <div class="slider-group">
                     <label>
-                        Frecuencia Base (Hz)
-                        <span id="base-freq-value">220</span>
+                        Nota Base (MIDI)
+                        <span id="base-note-value">60 (C4)</span>
                     </label>
-                    <input type="range" id="base-freq" min="110" max="440" value="220">
+                    <input type="range" id="base-note" min="36" max="84" value="60">
                 </div>
+
+                <div class="slider-group">
+                    <label>
+                        Rango de Octavas
+                        <span id="octave-range-value">2</span>
+                    </label>
+                    <input type="range" id="octave-range" min="1" max="4" value="2">
+                </div>
+
+                <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Escala Musical</label>
+                <select id="musical-scale">
+                    <option value="pentatonic-minor" selected>Pentatónica Menor</option>
+                    <option value="pentatonic-major">Pentatónica Mayor</option>
+                    <option value="major">Mayor (Jónica)</option>
+                    <option value="minor">Menor (Eólica)</option>
+                    <option value="dorian">Dórica</option>
+                    <option value="phrygian">Frigia</option>
+                    <option value="lydian">Lidia</option>
+                    <option value="mixolydian">Mixolidia</option>
+                    <option value="chromatic">Cromática (12 notas)</option>
+                </select>
 
                 <label style="font-size: 0.875rem; margin-bottom: 0.25rem;">Forma de Onda</label>
                 <select id="waveform">
@@ -523,10 +549,11 @@
 
                 <div class="math-box">
                     <div class="description" style="font-size: 0.75rem;">
+                        <strong>🎼 Modo Melódico:</strong> X e Y controlan frecuencias (melodía)<br>
                         <strong>🎵 Pan Estéreo:</strong> Posición X controla left/right<br>
-                        <strong>🔊 Filtro:</strong> Posición Y controla brightness (400-4000 Hz)<br>
-                        <strong>⚡ Volumen:</strong> Velocidad de partícula controla intensidad<br>
-                        <strong>🎚️ Fase (δ):</strong> Modula resonancia del filtro (Q)<br>
+                        <strong>🔊 Filtro:</strong> Posición Y controla brightness<br>
+                        <strong>⚡ Volumen:</strong> Velocidad controla intensidad<br>
+                        <strong>🎚️ Fase (δ):</strong> Modula resonancia del filtro<br>
                         <strong>🖱️ Click/Drag:</strong> Toca notas en cualquier punto
                     </div>
                 </div>
@@ -548,9 +575,12 @@
             omega: 2.0,
             ampX: 1.0,
             ampY: 1.0,
-            baseFreq: 220,
+            baseNote: 60,           // C4 en MIDI
+            octaveRange: 2,         // Rango de 2 octavas
             volume: 0.4,
             audioEnabled: true,
+            melodicMode: true,      // Modo melódico activado
+            musicalScale: 'pentatonic-minor',
             waveform: 'sine',
             showTrail: true,
             showAxes: true,
@@ -579,6 +609,51 @@
             '8:5': 'Sexta Menor',
             '3:1': 'Octava + Quinta',
         };
+
+        // ===== ESCALAS MUSICALES =====
+        const musicalScales = {
+            'pentatonic-minor': [0, 3, 5, 7, 10],           // C, Eb, F, G, Bb
+            'pentatonic-major': [0, 2, 4, 7, 9],            // C, D, E, G, A
+            'major':            [0, 2, 4, 5, 7, 9, 11],     // Jónica
+            'minor':            [0, 2, 3, 5, 7, 8, 10],     // Eólica (menor natural)
+            'dorian':           [0, 2, 3, 5, 7, 9, 10],     // Dórica
+            'phrygian':         [0, 1, 3, 5, 7, 8, 10],     // Frigia
+            'lydian':           [0, 2, 4, 6, 7, 9, 11],     // Lidia
+            'mixolydian':       [0, 2, 4, 5, 7, 9, 10],     // Mixolidia
+            'chromatic':        [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11], // Todas las notas
+        };
+
+        // Helper: MIDI note to frequency
+        function midiToFrequency(midiNote) {
+            return 440 * Math.pow(2, (midiNote - 69) / 12);
+        }
+
+        // Helper: Map position to MIDI note using scale
+        function positionToMidiNote(position, axis) {
+            // position está en rango [-1, 1]
+            // Mapear a [0, 1]
+            const normalized = (position + 1) / 2;
+
+            // Obtener escala
+            const scale = musicalScales[CONFIG.musicalScale];
+            const scaleLength = scale.length;
+
+            // Calcular rango total de notas
+            const totalNotes = scaleLength * CONFIG.octaveRange;
+
+            // Mapear posición normalizada a índice de nota
+            const noteIndex = Math.floor(normalized * totalNotes);
+            const clampedIndex = Math.max(0, Math.min(totalNotes - 1, noteIndex));
+
+            // Calcular octava y nota en escala
+            const octave = Math.floor(clampedIndex / scaleLength);
+            const scaleIndex = clampedIndex % scaleLength;
+
+            // Calcular MIDI note
+            const midiNote = CONFIG.baseNote + scale[scaleIndex] + (octave * 12);
+
+            return midiNote;
+        }
 
         // ===== AUDIO =====
         let audioContext = null;
@@ -614,10 +689,24 @@
 
             const now = audioContext.currentTime;
 
+            // Frecuencias iniciales
+            let initialFreqX, initialFreqY;
+            if (CONFIG.melodicMode) {
+                // En modo melódico, empezar en el centro (x=0, y=0)
+                const midiNoteX = positionToMidiNote(0, 'x');
+                const midiNoteY = positionToMidiNote(0, 'y');
+                initialFreqX = midiToFrequency(midiNoteX);
+                initialFreqY = midiToFrequency(midiNoteY);
+            } else {
+                // Modo armónico tradicional (ratios fijos)
+                initialFreqX = CONFIG.baseNote ? midiToFrequency(CONFIG.baseNote) : 220;
+                initialFreqY = CONFIG.baseNote ? midiToFrequency(CONFIG.baseNote) : 220;
+            }
+
             // Oscillator X with filter and pan
             oscX = audioContext.createOscillator();
             oscX.type = CONFIG.waveform;
-            oscX.frequency.value = CONFIG.baseFreq * CONFIG.freqA;
+            oscX.frequency.value = initialFreqX;
 
             filterX = audioContext.createBiquadFilter();
             filterX.type = 'lowpass';
@@ -639,7 +728,7 @@
             // Oscillator Y with filter and pan
             oscY = audioContext.createOscillator();
             oscY.type = CONFIG.waveform;
-            oscY.frequency.value = CONFIG.baseFreq * CONFIG.freqB;
+            oscY.frequency.value = initialFreqY;
 
             filterY = audioContext.createBiquadFilter();
             filterY.type = 'lowpass';
@@ -700,6 +789,21 @@
 
             const now = audioContext.currentTime;
 
+            // MODO MELÓDICO: Cambiar frecuencias según posición
+            if (CONFIG.melodicMode && oscX && oscY) {
+                // Mapear X e Y a notas MIDI en la escala seleccionada
+                const midiNoteX = positionToMidiNote(x, 'x');
+                const midiNoteY = positionToMidiNote(y, 'y');
+
+                // Convertir a frecuencias
+                const freqX = midiToFrequency(midiNoteX);
+                const freqY = midiToFrequency(midiNoteY);
+
+                // Actualizar frecuencias de osciladores
+                oscX.frequency.setValueAtTime(freqX, now);
+                oscY.frequency.setValueAtTime(freqY, now);
+            }
+
             // Pan basado en posición X (-1 a 1)
             if (panNodeX && panNodeY) {
                 panNodeX.pan.setValueAtTime(x, now);
@@ -717,7 +821,7 @@
                 filterX.frequency.setValueAtTime(filterFreq, now);
                 filterY.frequency.setValueAtTime(filterFreq, now);
 
-                // Q modulado por fase (δ) - mejora #8
+                // Q modulado por fase (δ)
                 const phaseNormalized = CONFIG.phase / 360;
                 const qValue = 0.5 + phaseNormalized * 4; // Q de 0.5 a 4.5
                 filterX.Q.setValueAtTime(qValue, now);
@@ -1176,6 +1280,10 @@
             }
         });
 
+        document.getElementById('melodic-mode').addEventListener('change', (e) => {
+            CONFIG.melodicMode = e.target.checked;
+        });
+
         document.getElementById('volume').addEventListener('input', (e) => {
             CONFIG.volume = parseInt(e.target.value) / 100;
             document.getElementById('volume-value').textContent = e.target.value + '%';
@@ -1184,11 +1292,21 @@
             }
         });
 
-        document.getElementById('base-freq').addEventListener('input', (e) => {
-            CONFIG.baseFreq = parseInt(e.target.value);
-            document.getElementById('base-freq-value').textContent = CONFIG.baseFreq;
-            updateAudioFrequencies();
-            updateStats();
+        document.getElementById('base-note').addEventListener('input', (e) => {
+            CONFIG.baseNote = parseInt(e.target.value);
+            const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+            const octave = Math.floor(CONFIG.baseNote / 12) - 1;
+            const noteName = noteNames[CONFIG.baseNote % 12];
+            document.getElementById('base-note-value').textContent = `${CONFIG.baseNote} (${noteName}${octave})`;
+        });
+
+        document.getElementById('octave-range').addEventListener('input', (e) => {
+            CONFIG.octaveRange = parseInt(e.target.value);
+            document.getElementById('octave-range-value').textContent = CONFIG.octaveRange;
+        });
+
+        document.getElementById('musical-scale').addEventListener('change', (e) => {
+            CONFIG.musicalScale = e.target.value;
         });
 
         document.getElementById('waveform').addEventListener('change', (e) => {
