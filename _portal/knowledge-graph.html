@@ -586,6 +586,16 @@
                 { id: "strange-attractors", label: "Strange Attractors", type: "simulation", discipline: "mathematics", desc: "Atractores exoticos", url: "../Mathematics/Math Generative Art Lab/strange-attractors.html" },
                 { id: "teselaciones-aperiodicas", label: "Teselaciones Aperiodicas", type: "simulation", discipline: "mathematics", desc: "Penrose tilings", url: "../Mathematics/Math Generative Art Lab/teselaciones-aperiodicas.html" },
 
+                // === MATHEMATICS SOUND LAB ===
+                { id: "game-of-life-musical", label: "Game of Life Musical", type: "simulation", discipline: "mathematics", desc: "Automata celular pentatonico", url: "../Mathematics/Math Sound Lab/game-of-life-musical.html" },
+                { id: "automatas-1d-musical", label: "Automatas 1D Musical", type: "simulation", discipline: "mathematics", desc: "Reglas de Wolfram sonificadas", url: "../Mathematics/Math Sound Lab/automatas-celulares-1d.html" },
+                { id: "fourier-interactiva", label: "Fourier Interactiva", type: "simulation", discipline: "mathematics", desc: "Sintesis aditiva (32 armonicos)", url: "../Mathematics/Math Sound Lab/fourier-interactiva.html" },
+                { id: "primos-ritmos", label: "Primos Ritmos", type: "simulation", discipline: "mathematics", desc: "Espiral de Ulam + gaps ritmicos", url: "../Mathematics/Math Sound Lab/primos-ritmos.html" },
+                { id: "lorenz-musical", label: "Lorenz Musical", type: "simulation", discipline: "mathematics", desc: "Caos 3D → pitch/volumen/pan", url: "../Mathematics/Math Sound Lab/atractor-lorenz-musical.html" },
+                { id: "fractales-sonoros", label: "Fractales Sonoros", type: "simulation", discipline: "mathematics", desc: "Mandelbrot/Julia con sintesis FM", url: "../Mathematics/Math Sound Lab/fractales-sonoros.html" },
+                { id: "markov-generativas", label: "Markov Generativas", type: "simulation", discipline: "mathematics", desc: "Composicion algoritmica", url: "../Mathematics/Math Sound Lab/cadenas-markov-generativas.html" },
+                { id: "l-systems-musicales", label: "L-Systems Musicales", type: "simulation", discipline: "mathematics", desc: "Gramaticas fractales musicales", url: "../Mathematics/Math Sound Lab/l-systems-musicales.html" },
+
                 // === COMPUTATION LAB ===
                 { id: "bubble-sort", label: "Bubble Sort", type: "simulation", discipline: "computation", desc: "Ordenamiento O(n2)", url: "../Computation/Computation Lab/bubble-sort-race.html" },
                 { id: "bst", label: "Binary Search Tree", type: "simulation", discipline: "computation", desc: "Estructura de datos", url: "../Computation/Computation Lab/binary-search-tree.html" },
@@ -759,6 +769,22 @@
                 { source: "phyllotaxis", target: "l-systems" },
                 { source: "reaccion-difusion", target: "caos" },
                 { source: "teselaciones-aperiodicas", target: "mobius" },
+
+                // MATHEMATICS SOUND LAB internal connections
+                { source: "game-of-life-musical", target: "caos" },
+                { source: "automatas-1d-musical", target: "caos" },
+                { source: "fourier-interactiva", target: "fourier-visual" },
+                { source: "fourier-interactiva", target: "ondas-concept" },
+                { source: "primos-ritmos", target: "probabilidad" },
+                { source: "lorenz-musical", target: "lorenz" },
+                { source: "lorenz-musical", target: "caos" },
+                { source: "lorenz-musical", target: "rk4" },
+                { source: "fractales-sonoros", target: "mandelbrot" },
+                { source: "fractales-sonoros", target: "julia" },
+                { source: "markov-generativas", target: "caos" },
+                { source: "markov-generativas", target: "probabilidad" },
+                { source: "l-systems-musicales", target: "l-systems" },
+                { source: "l-systems-musicales", target: "fractales-ifs" },
 
                 // COMPUTATION internal connections
                 { source: "bubble-sort", target: "algoritmos" },
