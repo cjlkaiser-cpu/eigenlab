@@ -438,6 +438,21 @@
                     <label for="polyphonic-mode">Modo Polifónico (triadas)</label>
                 </div>
 
+                <div class="checkbox-group">
+                    <input type="checkbox" id="fm-synthesis-mode">
+                    <label for="fm-synthesis-mode">Síntesis FM (φ)</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="reverb-mode">
+                    <label for="reverb-mode">Delay Fibonacci</label>
+                </div>
+
+                <div class="checkbox-group">
+                    <input type="checkbox" id="evolutionary-filter-mode">
+                    <label for="evolutionary-filter-mode">Filtro Evolutivo</label>
+                </div>
+
                 <div class="slider-group">
                     <label>
                         Volumen
@@ -517,8 +532,11 @@
             bpm: 120,
             volume: 0.6,
             audioEnabled: true,
-            harmonicMode: true,      // Armonías basadas en ratios
-            polyphonicMode: false,   // Modo polifónico (triadas)
+            harmonicMode: true,         // Armonías basadas en ratios
+            polyphonicMode: false,      // Modo polifónico (triadas)
+            fmSynthesisMode: false,     // Síntesis FM con ratio φ
+            reverbMode: false,          // Delay con tiempos Fibonacci
+            evolutionaryFilterMode: false, // Filtro que evoluciona con convergencia
             mappingMode: 'ratios',
             waveform: 'triangle',
         };
@@ -545,7 +563,43 @@
             }
         }
 
-        function playNote(frequency, duration, volume, pan = 0) {
+        // Añadir delays con timing Fibonacci
+        function addFibonacciDelay(source, destination) {
+            if (!CONFIG.reverbMode) {
+                source.connect(destination);
+                return;
+            }
+
+            // Tiempos Fibonacci en segundos (primeros 6 términos no-cero)
+            const fibDelayTimes = [
+                0.1,   // F(1) = 1 → 100ms
+                0.1,   // F(2) = 1 → 100ms
+                0.2,   // F(3) = 2 → 200ms
+                0.3,   // F(4) = 3 → 300ms
+                0.5,   // F(5) = 5 → 500ms
+                0.8,   // F(6) = 8 → 800ms
+            ];
+
+            // Conectar directamente (dry signal)
+            source.connect(destination);
+
+            // Crear cadena de delays
+            fibDelayTimes.forEach((delayTime, index) => {
+                const delay = audioContext.createDelay(2.0);  // Max 2 segundos
+                delay.delayTime.value = delayTime;
+
+                const feedback = audioContext.createGain();
+                // Feedback decreciente: 0.5, 0.4, 0.3, 0.2, 0.1, 0.05
+                feedback.gain.value = Math.max(0.05, 0.6 - index * 0.1);
+
+                // Routing: source → delay → feedback → destination
+                source.connect(delay);
+                delay.connect(feedback);
+                feedback.connect(destination);
+            });
+        }
+
+        function playNote(frequency, duration, volume, pan = 0, convergence = 0) {
             if (!isAudioInitialized || !CONFIG.audioEnabled) return;
 
             const now = audioContext.currentTime;
@@ -561,8 +615,19 @@
 
             const filter = audioContext.createBiquadFilter();
             filter.type = 'lowpass';
-            filter.frequency.value = frequency * 2;
-            filter.Q.value = 1;
+
+            // Filtro evolutivo: brightness aumenta con convergencia
+            if (CONFIG.evolutionaryFilterMode) {
+                // 0% convergencia → 400 Hz (oscuro)
+                // 100% convergencia → 8000 Hz (brillante)
+                const minFreq = 400;
+                const maxFreq = 8000;
+                filter.frequency.value = minFreq + convergence * (maxFreq - minFreq);
+                filter.Q.value = 1 + convergence * 3;  // Q aumenta con convergencia
+            } else {
+                filter.frequency.value = frequency * 2;
+                filter.Q.value = 1;
+            }
 
             // Panning estéreo
             const panner = audioContext.createStereoPanner();
@@ -571,10 +636,76 @@
             osc.connect(filter);
             filter.connect(panner);
             panner.connect(envelope);
-            envelope.connect(masterGain);
+
+            // Añadir delay Fibonacci si está habilitado
+            addFibonacciDelay(envelope, masterGain);
 
             osc.start(now);
             osc.stop(now + duration + 0.1);
+        }
+
+        // Síntesis FM con ratio φ
+        function playNoteFM(carrierFreq, modulationIndex, duration, volume, pan = 0) {
+            if (!isAudioInitialized || !CONFIG.audioEnabled) return;
+
+            const now = audioContext.currentTime;
+
+            // Carrier oscillator (frecuencia audible)
+            const carrier = audioContext.createOscillator();
+            carrier.type = CONFIG.waveform;
+            carrier.frequency.value = carrierFreq;
+
+            // Modulator oscillator (frecuencia = carrier * φ)
+            const modulator = audioContext.createOscillator();
+            modulator.type = 'sine';  // Modulador siempre senoidal
+            modulator.frequency.value = carrierFreq * PHI;
+
+            // FM Amount (profundidad de modulación basada en convergencia)
+            const modulatorGain = audioContext.createGain();
+            modulatorGain.gain.value = modulationIndex * carrierFreq * 2;
+
+            // Routing FM: modulator → modulatorGain → carrier.frequency
+            modulator.connect(modulatorGain);
+            modulatorGain.connect(carrier.frequency);
+
+            // ADSR Envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(volume * 0.4, now + 0.01);
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            // Filter
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+
+            // Filtro evolutivo: brightness aumenta con convergencia (usa modulationIndex como proxy)
+            if (CONFIG.evolutionaryFilterMode) {
+                const minFreq = 400;
+                const maxFreq = 8000;
+                filter.frequency.value = minFreq + modulationIndex * (maxFreq - minFreq);
+                filter.Q.value = 1 + modulationIndex * 3;
+            } else {
+                filter.frequency.value = carrierFreq * 3;
+                filter.Q.value = 1;
+            }
+
+            // Panning estéreo
+            const panner = audioContext.createStereoPanner();
+            panner.pan.value = Math.max(-1, Math.min(1, pan));
+
+            // Routing de audio
+            carrier.connect(filter);
+            filter.connect(panner);
+            panner.connect(envelope);
+
+            // Añadir delay Fibonacci si está habilitado
+            addFibonacciDelay(envelope, masterGain);
+
+            // Playback
+            carrier.start(now);
+            modulator.start(now);
+            carrier.stop(now + duration + 0.1);
+            modulator.stop(now + duration + 0.1);
         }
 
         // Mapear ratio de Fibonacci a intervalo musical
@@ -926,30 +1057,56 @@
                     const value = fibonacci[playbackIndex];
                     const duration = interval / 1000 * 0.8;
 
+                    // Calcular convergencia a φ para modulation index
+                    const ratio = ratios[playbackIndex] || 1;
+                    const convergence = playbackIndex >= 1
+                        ? Math.max(0, 1 - Math.abs(ratio - PHI) / PHI)
+                        : 0;
+
                     // MODO POLIFÓNICO: Tocar triada (3 notas simultáneas)
                     if (CONFIG.polyphonicMode && playbackIndex >= 2) {
                         const freq1 = fibonacciToFrequency(fibonacci[playbackIndex], playbackIndex);
                         const freq2 = fibonacciToFrequency(fibonacci[playbackIndex - 1], playbackIndex - 1);
                         const freq3 = fibonacciToFrequency(fibonacci[playbackIndex - 2], playbackIndex - 2);
-                        playChord([freq1, freq2, freq3], duration, CONFIG.volume);
+
+                        if (CONFIG.fmSynthesisMode) {
+                            playNoteFM(freq1, convergence, duration, CONFIG.volume * 0.5, -0.3);
+                            playNoteFM(freq2, convergence, duration, CONFIG.volume * 0.5, 0);
+                            playNoteFM(freq3, convergence, duration, CONFIG.volume * 0.5, 0.3);
+                        } else {
+                            playChord([freq1, freq2, freq3], duration, CONFIG.volume);
+                        }
                     }
                     // MODO ARMÓNICO: Tocar nota + armonía basada en ratio
                     else if (CONFIG.harmonicMode && playbackIndex >= 1) {
                         const baseFreq = fibonacciToFrequency(value, playbackIndex);
-                        const ratio = ratios[playbackIndex] || 1;
                         const intervalRatio = mapRatioToInterval(ratio);
 
-                        // Nota base
-                        playNote(baseFreq, duration, CONFIG.volume);
+                        if (CONFIG.fmSynthesisMode) {
+                            // Nota base con FM
+                            playNoteFM(baseFreq, convergence, duration, CONFIG.volume);
 
-                        // Intervalo armónico
-                        const harmonicFreq = baseFreq * intervalRatio;
-                        playNote(harmonicFreq, duration, CONFIG.volume * 0.6);
+                            // Intervalo armónico con FM
+                            const harmonicFreq = baseFreq * intervalRatio;
+                            playNoteFM(harmonicFreq, convergence, duration, CONFIG.volume * 0.6);
+                        } else {
+                            // Nota base
+                            playNote(baseFreq, duration, CONFIG.volume, 0, convergence);
+
+                            // Intervalo armónico
+                            const harmonicFreq = baseFreq * intervalRatio;
+                            playNote(harmonicFreq, duration, CONFIG.volume * 0.6, 0, convergence);
+                        }
                     }
                     // MODO SIMPLE: Solo melodía
                     else {
                         const frequency = fibonacciToFrequency(value, playbackIndex);
-                        playNote(frequency, duration, CONFIG.volume);
+
+                        if (CONFIG.fmSynthesisMode) {
+                            playNoteFM(frequency, convergence, duration, CONFIG.volume);
+                        } else {
+                            playNote(frequency, duration, CONFIG.volume, 0, convergence);
+                        }
                     }
 
                     currentIndex = playbackIndex;
@@ -1070,6 +1227,18 @@
 
         document.getElementById('polyphonic-mode').addEventListener('change', (e) => {
             CONFIG.polyphonicMode = e.target.checked;
+        });
+
+        document.getElementById('fm-synthesis-mode').addEventListener('change', (e) => {
+            CONFIG.fmSynthesisMode = e.target.checked;
+        });
+
+        document.getElementById('reverb-mode').addEventListener('change', (e) => {
+            CONFIG.reverbMode = e.target.checked;
+        });
+
+        document.getElementById('evolutionary-filter-mode').addEventListener('change', (e) => {
+            CONFIG.evolutionaryFilterMode = e.target.checked;
         });
 
         document.getElementById('volume').addEventListener('input', (e) => {
