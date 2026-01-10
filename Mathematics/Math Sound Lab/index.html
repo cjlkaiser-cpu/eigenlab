@@ -730,6 +730,76 @@
                 </div>
             </a>
 
+            <!-- Fibonacci Musical -->
+            <a href="fibonacci-musical.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-orange-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="relative w-40 h-40">
+                            <!-- Golden spiral visualization -->
+                            <svg class="w-full h-full opacity-80" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                                <!-- Fibonacci squares -->
+                                <rect x="80" y="80" width="40" height="40" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.6"/>
+                                <rect x="80" y="55" width="25" height="25" fill="none" stroke="#fbbf24" stroke-width="2" opacity="0.7" class="animate-pulse" style="animation-delay: 0.1s"/>
+                                <rect x="55" y="55" width="25" height="25" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.8" class="animate-pulse" style="animation-delay: 0.2s"/>
+                                <rect x="55" y="80" width="15" height="15" fill="none" stroke="#fb923c" stroke-width="2" opacity="0.9" class="animate-pulse" style="animation-delay: 0.3s"/>
+                                <rect x="70" y="80" width="10" height="10" fill="none" stroke="#f97316" stroke-width="2" opacity="1.0" class="animate-pulse" style="animation-delay: 0.4s"/>
+
+                                <!-- Golden spiral arc -->
+                                <path d="M 100 100 Q 80 100 80 80 Q 80 55 105 55 Q 140 55 140 90 Q 140 130 100 130"
+                                      stroke="#fbbf24" stroke-width="3" fill="none" opacity="0.9" class="animate-pulse"/>
+
+                                <!-- Phi symbol -->
+                                <text x="100" y="160" font-size="24" fill="#fbbf24" text-anchor="middle" font-family="serif">φ</text>
+                                <text x="100" y="180" font-size="10" fill="#9ca3af" text-anchor="middle" font-family="monospace">1.618...</text>
+                            </svg>
+
+                            <!-- Floating numbers -->
+                            <div class="absolute top-2 left-2 text-xs font-mono text-yellow-400 animate-pulse">1</div>
+                            <div class="absolute top-2 right-2 text-xs font-mono text-yellow-400 animate-pulse" style="animation-delay: 0.2s">1</div>
+                            <div class="absolute bottom-2 left-2 text-xs font-mono text-yellow-400 animate-pulse" style="animation-delay: 0.4s">2</div>
+                            <div class="absolute bottom-2 right-2 text-xs font-mono text-yellow-400 animate-pulse" style="animation-delay: 0.6s">3</div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Proporción Áurea</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Secuencia de Fibonacci Musical</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            La proporción áurea φ en música. Ratios de Fibonacci→intervalos, espiral áurea visual, convergencia a φ. Conexión con naturaleza y estética.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>Golden Ratio</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"/>
+                                </svg>
+                                <span>3 Vistas</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span>Naturaleza</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
             <!-- Placeholder para futuras simulaciones -->
             <div class="bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 border-dashed opacity-50">
                 <div class="h-48 bg-gradient-to-br from-gray-800/20 to-gray-900/20 flex items-center justify-center">
