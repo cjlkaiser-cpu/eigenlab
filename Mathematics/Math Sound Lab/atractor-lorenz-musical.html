@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atractor de Lorenz Musical - Math Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 146, 60, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+        .preset-btn {
+            transition: all 0.2s;
+        }
+        .preset-btn.active {
+            background: rgba(249, 115, 22, 0.3);
+            border-color: #f97316;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Atractor de Lorenz</span> Musical
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">t: <span id="time-display" class="text-orange-400">0.00</span>s</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- 3D Visualization -->
+        <div class="flex-1 relative bg-gray-950">
+            <div id="canvas-container"></div>
+            <div class="absolute top-4 left-4 bg-black/80 backdrop-blur-sm px-4 py-3 rounded-lg border border-gray-800 space-y-1">
+                <div class="text-xs mono">
+                    <span class="text-gray-500">X:</span>
+                    <span id="x-display" class="text-orange-400 ml-2">0.00</span>
+                </div>
+                <div class="text-xs mono">
+                    <span class="text-gray-500">Y:</span>
+                    <span id="y-display" class="text-cyan-400 ml-2">0.00</span>
+                </div>
+                <div class="text-xs mono">
+                    <span class="text-gray-500">Z:</span>
+                    <span id="z-display" class="text-green-400 ml-2">0.00</span>
+                </div>
+            </div>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Arrastra para rotar · Scroll para zoom
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Controles</h2>
+
+            <!-- Playback -->
+            <div class="mb-6 flex gap-2">
+                <button id="play-btn" class="flex-1 py-2 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="play-text">Iniciar</span>
+                </button>
+                <button id="reset-btn" class="py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition" title="Reiniciar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Lorenz Parameters -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">⚙️ Parámetros de Lorenz</h3>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    σ (sigma): <span id="sigma-value" class="text-orange-400 mono">10.0</span>
+                </label>
+                <input type="range" id="sigma" min="1" max="20" step="0.1" value="10" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Número de Prandtl</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    ρ (rho): <span id="rho-value" class="text-cyan-400 mono">28.0</span>
+                </label>
+                <input type="range" id="rho" min="1" max="50" step="0.1" value="28" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Número de Rayleigh</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    β (beta): <span id="beta-value" class="text-green-400 mono">2.67</span>
+                </label>
+                <input type="range" id="beta" min="0.1" max="5" step="0.01" value="2.67" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Geometría física</p>
+            </div>
+
+            <!-- Presets -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Presets clásicos</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="loadPreset('classic')" class="preset-btn active px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Clásico
+                    </button>
+                    <button onclick="loadPreset('chaotic')" class="preset-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Caótico
+                    </button>
+                    <button onclick="loadPreset('periodic')" class="preset-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Periódico
+                    </button>
+                    <button onclick="loadPreset('unstable')" class="preset-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                        Inestable
+                    </button>
+                </div>
+            </div>
+
+            <!-- Simulation Speed -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad: <span id="speed-value" class="text-orange-400 mono">1.0</span>x
+                </label>
+                <input type="range" id="speed" min="0.1" max="3" step="0.1" value="1" class="w-full">
+            </div>
+
+            <!-- Audio Section -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">🎵 Sonificación</h3>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="audio-enabled" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Activar sonido</span>
+                </label>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volume-value" class="text-orange-400 mono">30</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="30" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                    <option value="sine" selected>Senoidal</option>
+                    <option value="triangle">Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Mapping -->
+            <h4 class="text-xs font-medium text-gray-500 mb-3 mt-6">Mapeo Sonoro</h4>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Rango X → Frecuencia: <span id="freq-range-value" class="text-cyan-400 mono">200-800</span> Hz
+                </label>
+                <input type="range" id="freq-range" min="100" max="1000" step="50" value="400" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="use-pan" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Z → Pan Estéreo</span>
+                </label>
+                <p class="text-xs text-gray-600 mt-1 ml-7">Espacialización 3D</p>
+            </div>
+
+            <div class="bg-gray-900/50 rounded-lg p-3 mb-5">
+                <div class="text-xs space-y-1">
+                    <div class="text-gray-400">
+                        <span class="text-orange-400">X</span> → Pitch (frecuencia)
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">Y</span> → Amplitud (volumen)
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-green-400">Z</span> → Pan (-1 izq, +1 der)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visualization -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">👁️ Visualización</h3>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Longitud de trayectoria: <span id="trail-length-value" class="text-cyan-400 mono">2000</span>
+                </label>
+                <input type="range" id="trail-length" min="500" max="5000" step="100" value="2000" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="show-axes" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Mostrar ejes</span>
+                </label>
+            </div>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Ecuaciones de Lorenz</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="bg-black/30 p-2 rounded space-y-1">
+                        <div class="text-gray-400">dx/dt = σ(y - x)</div>
+                        <div class="text-gray-400">dy/dt = x(ρ - z) - y</div>
+                        <div class="text-gray-400">dz/dt = xy - βz</div>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                    <span class="text-orange-400 font-medium">Edward Lorenz (1963):</span> Descubrió el caos determinista estudiando convección atmosférica.
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    <span class="text-cyan-400 font-medium">Efecto mariposa:</span> Pequeños cambios en condiciones iniciales → divergencia exponencial.
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // Three.js scene
+        let scene, camera, renderer, controls;
+        let trajectory, particle;
+        let trailPoints = [];
+        let maxTrailLength = 2000;
+
+        // Lorenz system state
+        let x = 0.1, y = 0.0, z = 0.0;
+        let sigma = 10.0, rho = 28.0, beta = 8.0 / 3.0;
+        let t = 0;
+        let dt = 0.01;
+        let speed = 1.0;
+        let isRunning = false;
+
+        // Audio
+        let audioContext = null;
+        let isAudioInitialized = false;
+        let masterGain = null;
+        let panNode = null;
+        let oscillator = null;
+        let audioEnabled = false;
+        let masterVolume = 0.3;
+        let waveformType = 'sine';
+        let freqRange = 400; // Hz range from center
+        let usePan = true;
+
+        // Animation
+        let animationId = null;
+
+        // ============ THREE.JS SETUP ============
+
+        function initThree() {
+            const container = document.getElementById('canvas-container');
+
+            // Scene
+            scene = new THREE.Scene();
+            scene.background = new THREE.Color(0x000000);
+
+            // Camera
+            camera = new THREE.PerspectiveCamera(
+                60,
+                container.clientWidth / container.clientHeight,
+                0.1,
+                1000
+            );
+            camera.position.set(50, 50, 50);
+            camera.lookAt(0, 0, 0);
+
+            // Renderer
+            renderer = new THREE.WebGLRenderer({ antialias: true });
+            renderer.setSize(container.clientWidth, container.clientHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            container.appendChild(renderer.domElement);
+
+            // Simple orbit controls (manual)
+            let isDragging = false;
+            let previousMousePosition = { x: 0, y: 0 };
+            let rotationVelocity = { x: 0, y: 0 };
+
+            renderer.domElement.addEventListener('mousedown', (e) => {
+                isDragging = true;
+                previousMousePosition = { x: e.clientX, y: e.clientY };
+            });
+
+            renderer.domElement.addEventListener('mousemove', (e) => {
+                if (isDragging) {
+                    const deltaMove = {
+                        x: e.clientX - previousMousePosition.x,
+                        y: e.clientY - previousMousePosition.y
+                    };
+
+                    rotationVelocity = {
+                        x: deltaMove.y * 0.01,
+                        y: deltaMove.x * 0.01
+                    };
+
+                    const rotationQuaternion = new THREE.Quaternion()
+                        .setFromEuler(new THREE.Euler(
+                            rotationVelocity.x,
+                            rotationVelocity.y,
+                            0,
+                            'XYZ'
+                        ));
+
+                    camera.position.applyQuaternion(rotationQuaternion);
+                    camera.lookAt(0, 0, 25);
+
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                }
+            });
+
+            renderer.domElement.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            renderer.domElement.addEventListener('wheel', (e) => {
+                e.preventDefault();
+                const delta = e.deltaY * 0.01;
+                camera.position.multiplyScalar(1 + delta * 0.1);
+            });
+
+            // Axes
+            const axesHelper = new THREE.AxesHelper(50);
+            scene.add(axesHelper);
+
+            // Trajectory line
+            const geometry = new THREE.BufferGeometry();
+            const material = new THREE.LineBasicMaterial({
+                color: 0xf97316,
+                linewidth: 2
+            });
+            trajectory = new THREE.Line(geometry, material);
+            scene.add(trajectory);
+
+            // Particle
+            const particleGeometry = new THREE.SphereGeometry(0.5, 16, 16);
+            const particleMaterial = new THREE.MeshBasicMaterial({ color: 0xfb923c });
+            particle = new THREE.Mesh(particleGeometry, particleMaterial);
+            scene.add(particle);
+
+            // Lighting
+            const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+            scene.add(ambientLight);
+
+            window.addEventListener('resize', onWindowResize);
+        }
+
+        function onWindowResize() {
+            const container = document.getElementById('canvas-container');
+            camera.aspect = container.clientWidth / container.clientHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(container.clientWidth, container.clientHeight);
+        }
+
+        // ============ LORENZ SYSTEM ============
+
+        function lorenzDerivatives(x, y, z) {
+            return {
+                dx: sigma * (y - x),
+                dy: x * (rho - z) - y,
+                dz: x * y - beta * z
+            };
+        }
+
+        function rk4Step() {
+            // Runge-Kutta 4th order
+            const h = dt * speed;
+
+            const k1 = lorenzDerivatives(x, y, z);
+            const k2 = lorenzDerivatives(
+                x + h * k1.dx / 2,
+                y + h * k1.dy / 2,
+                z + h * k1.dz / 2
+            );
+            const k3 = lorenzDerivatives(
+                x + h * k2.dx / 2,
+                y + h * k2.dy / 2,
+                z + h * k2.dz / 2
+            );
+            const k4 = lorenzDerivatives(
+                x + h * k3.dx,
+                y + h * k3.dy,
+                z + h * k3.dz
+            );
+
+            x += h * (k1.dx + 2 * k2.dx + 2 * k3.dx + k4.dx) / 6;
+            y += h * (k1.dy + 2 * k2.dy + 2 * k3.dy + k4.dy) / 6;
+            z += h * (k1.dz + 2 * k2.dz + 2 * k3.dz + k4.dz) / 6;
+
+            t += h;
+        }
+
+        function updateVisualization() {
+            // Update particle position
+            particle.position.set(x, y, z);
+
+            // Add to trajectory
+            trailPoints.push(new THREE.Vector3(x, y, z));
+            if (trailPoints.length > maxTrailLength) {
+                trailPoints.shift();
+            }
+
+            // Update trajectory line
+            const positions = new Float32Array(trailPoints.length * 3);
+            trailPoints.forEach((point, i) => {
+                positions[i * 3] = point.x;
+                positions[i * 3 + 1] = point.y;
+                positions[i * 3 + 2] = point.z;
+            });
+
+            trajectory.geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+            trajectory.geometry.setDrawRange(0, trailPoints.length);
+
+            // Update displays
+            document.getElementById('x-display').textContent = x.toFixed(2);
+            document.getElementById('y-display').textContent = y.toFixed(2);
+            document.getElementById('z-display').textContent = z.toFixed(2);
+            document.getElementById('time-display').textContent = t.toFixed(2);
+        }
+
+        // ============ AUDIO ============
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.gain.value = masterVolume;
+
+                panNode = audioContext.createStereoPanner();
+                panNode.connect(masterGain);
+                masterGain.connect(audioContext.destination);
+
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function startAudio() {
+            if (!isAudioInitialized) return;
+
+            // Stop existing oscillator
+            if (oscillator) {
+                try {
+                    oscillator.stop();
+                } catch (e) {}
+            }
+
+            oscillator = audioContext.createOscillator();
+            oscillator.type = waveformType;
+            oscillator.frequency.value = 440;
+            oscillator.connect(panNode);
+            oscillator.start();
+        }
+
+        function updateAudio() {
+            if (!audioEnabled || !oscillator) return;
+
+            // Map X to frequency (centered around 440 Hz)
+            const normalizedX = (x + 20) / 40; // Approximate range
+            const frequency = 440 + (normalizedX - 0.5) * freqRange;
+            oscillator.frequency.setValueAtTime(
+                Math.max(100, Math.min(2000, frequency)),
+                audioContext.currentTime
+            );
+
+            // Map Y to volume
+            const normalizedY = Math.max(0, Math.min(1, (y + 20) / 40));
+            masterGain.gain.setValueAtTime(
+                normalizedY * masterVolume,
+                audioContext.currentTime
+            );
+
+            // Map Z to pan
+            if (usePan) {
+                const normalizedZ = (z - 25) / 25; // Approximate range
+                panNode.pan.setValueAtTime(
+                    Math.max(-1, Math.min(1, normalizedZ)),
+                    audioContext.currentTime
+                );
+            }
+        }
+
+        function stopAudio() {
+            if (oscillator) {
+                try {
+                    oscillator.stop();
+                    oscillator = null;
+                } catch (e) {}
+            }
+        }
+
+        // ============ PRESETS ============
+
+        function loadPreset(name) {
+            switch (name) {
+                case 'classic':
+                    sigma = 10.0;
+                    rho = 28.0;
+                    beta = 8.0 / 3.0;
+                    break;
+                case 'chaotic':
+                    sigma = 10.0;
+                    rho = 30.0;
+                    beta = 2.5;
+                    break;
+                case 'periodic':
+                    sigma = 10.0;
+                    rho = 13.0;
+                    beta = 2.67;
+                    break;
+                case 'unstable':
+                    sigma = 15.0;
+                    rho = 45.0;
+                    beta = 4.0;
+                    break;
+            }
+
+            document.getElementById('sigma').value = sigma;
+            document.getElementById('rho').value = rho;
+            document.getElementById('beta').value = beta.toFixed(2);
+
+            document.getElementById('sigma-value').textContent = sigma.toFixed(1);
+            document.getElementById('rho-value').textContent = rho.toFixed(1);
+            document.getElementById('beta-value').textContent = beta.toFixed(2);
+
+            // Update active button
+            document.querySelectorAll('.preset-btn').forEach(btn => btn.classList.remove('active'));
+            event?.target.classList.add('active');
+
+            reset();
+        }
+
+        // ============ CONTROLS ============
+
+        function togglePlay() {
+            if (!isAudioInitialized && audioEnabled) {
+                initAudioContext();
+            }
+
+            isRunning = !isRunning;
+
+            if (isRunning) {
+                if (audioEnabled) startAudio();
+                animationId = requestAnimationFrame(animate);
+            } else {
+                if (animationId) cancelAnimationFrame(animationId);
+                stopAudio();
+            }
+
+            updatePlayButton();
+        }
+
+        function reset() {
+            x = 0.1;
+            y = 0.0;
+            z = 0.0;
+            t = 0;
+            trailPoints = [];
+
+            updateVisualization();
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('play-icon');
+            const text = document.getElementById('play-text');
+
+            if (isRunning) {
+                text.textContent = 'Pausar';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Iniciar';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function animate() {
+            if (!isRunning) return;
+
+            // Update physics
+            for (let i = 0; i < 5; i++) {
+                rk4Step();
+            }
+
+            updateVisualization();
+            updateAudio();
+
+            renderer.render(scene, camera);
+
+            animationId = requestAnimationFrame(animate);
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('play-btn').addEventListener('click', togglePlay);
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            if (isRunning) togglePlay();
+            reset();
+        });
+
+        document.getElementById('sigma').addEventListener('input', (e) => {
+            sigma = parseFloat(e.target.value);
+            document.getElementById('sigma-value').textContent = sigma.toFixed(1);
+        });
+
+        document.getElementById('rho').addEventListener('input', (e) => {
+            rho = parseFloat(e.target.value);
+            document.getElementById('rho-value').textContent = rho.toFixed(1);
+        });
+
+        document.getElementById('beta').addEventListener('input', (e) => {
+            beta = parseFloat(e.target.value);
+            document.getElementById('beta-value').textContent = beta.toFixed(2);
+        });
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseFloat(e.target.value);
+            document.getElementById('speed-value').textContent = speed.toFixed(1);
+        });
+
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            if (e.target.checked && !isAudioInitialized) {
+                initAudioContext();
+            }
+            audioEnabled = e.target.checked;
+
+            if (audioEnabled && isRunning) {
+                startAudio();
+            } else {
+                stopAudio();
+            }
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            masterVolume = parseInt(e.target.value) / 100;
+            document.getElementById('volume-value').textContent = e.target.value;
+        });
+
+        document.getElementById('waveform-select').addEventListener('change', (e) => {
+            waveformType = e.target.value;
+            if (oscillator) {
+                oscillator.type = waveformType;
+            }
+        });
+
+        document.getElementById('freq-range').addEventListener('input', (e) => {
+            freqRange = parseInt(e.target.value);
+            const min = 440 - freqRange / 2;
+            const max = 440 + freqRange / 2;
+            document.getElementById('freq-range-value').textContent = `${Math.round(min)}-${Math.round(max)}`;
+        });
+
+        document.getElementById('use-pan').addEventListener('change', (e) => {
+            usePan = e.target.checked;
+            if (!usePan && panNode) {
+                panNode.pan.value = 0;
+            }
+        });
+
+        document.getElementById('trail-length').addEventListener('input', (e) => {
+            maxTrailLength = parseInt(e.target.value);
+            document.getElementById('trail-length-value').textContent = maxTrailLength;
+        });
+
+        document.getElementById('show-axes').addEventListener('change', (e) => {
+            scene.children.find(child => child instanceof THREE.AxesHelper).visible = e.target.checked;
+        });
+
+        // ============ INITIALIZATION ============
+
+        initThree();
+        reset();
+
+        function render() {
+            renderer.render(scene, camera);
+            requestAnimationFrame(render);
+        }
+
+        render();
+    </script>
+</body>
+</html>
