@@ -1,0 +1,774 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autómatas Celulares 1D Musical - Math Sound Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        #canvas {
+            cursor: crosshair;
+        }
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(251, 146, 60, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+        .rule-btn {
+            transition: all 0.2s;
+        }
+        .rule-btn.active {
+            background: rgba(249, 115, 22, 0.3);
+            border-color: #f97316;
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Autómatas Celulares 1D</span> Musical
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Regla: <span id="current-rule" class="text-orange-400">30</span></span>
+                    <span class="text-gray-500">Gen: <span id="generation" class="text-cyan-400">0</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Canvas Area -->
+        <div class="flex-1 relative">
+            <canvas id="canvas" class="w-full h-full"></canvas>
+            <div class="absolute bottom-4 left-4 text-xs mono text-gray-600">
+                Click en la primera fila para editar estado inicial
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Controles</h2>
+
+            <!-- Playback -->
+            <div class="mb-6 flex gap-2">
+                <button id="play-btn" class="flex-1 py-2 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="play-icon" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="play-text">Iniciar</span>
+                </button>
+                <button id="step-btn" class="py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition" title="Un paso">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 5l7 7-7 7M5 5l7 7-7 7"/>
+                    </svg>
+                </button>
+                <button id="reset-btn" class="py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition" title="Reiniciar">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Speed -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Velocidad: <span id="speed-value" class="text-orange-400 mono">5</span> gen/s
+                </label>
+                <input type="range" id="speed" min="1" max="30" value="5" class="w-full">
+            </div>
+
+            <!-- Cell Size -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Tamaño de celda: <span id="cell-size-value" class="text-cyan-400 mono">8</span>px
+                </label>
+                <input type="range" id="cell-size" min="3" max="16" value="8" class="w-full">
+            </div>
+
+            <!-- Wolfram Rules -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">🔢 Reglas de Wolfram</h3>
+
+            <div class="grid grid-cols-2 gap-2 mb-4">
+                <button onclick="setRule(30)" class="rule-btn active px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                    Regla 30 <span class="block text-gray-600">Caos</span>
+                </button>
+                <button onclick="setRule(90)" class="rule-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                    Regla 90 <span class="block text-gray-600">Fractal</span>
+                </button>
+                <button onclick="setRule(110)" class="rule-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                    Regla 110 <span class="block text-gray-600">Turing</span>
+                </button>
+                <button onclick="setRule(184)" class="rule-btn px-3 py-2 bg-gray-900 border border-gray-800 hover:bg-gray-800 rounded-lg text-xs transition">
+                    Regla 184 <span class="block text-gray-600">Tráfico</span>
+                </button>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Regla personalizada (0-255)</label>
+                <input type="number" id="custom-rule" min="0" max="255" value="30" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                <button id="apply-custom-btn" class="w-full mt-2 py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                    Aplicar Regla
+                </button>
+            </div>
+
+            <!-- Initial State Presets -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Estado Inicial</label>
+                <div class="grid grid-cols-2 gap-2">
+                    <button onclick="loadPreset('single')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Célula única</button>
+                    <button onclick="loadPreset('random')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Aleatorio</button>
+                    <button onclick="loadPreset('symmetric')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Simétrico</button>
+                    <button onclick="loadPreset('edges')" class="px-3 py-2 bg-gray-900 hover:bg-gray-800 rounded-lg text-xs transition">Bordes</button>
+                </div>
+            </div>
+
+            <!-- Audio Musical Section -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">🎵 Audio Musical</h3>
+
+            <div class="mb-5">
+                <label class="flex items-center gap-3 cursor-pointer">
+                    <input type="checkbox" id="audio-enabled" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500 focus:ring-orange-500">
+                    <span class="text-sm text-gray-400">Activar sonido</span>
+                </label>
+                <p class="text-xs text-gray-600 mt-1 ml-7">Click para inicializar audio</p>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="audio-volume-value" class="text-orange-400 mono">50</span>%
+                </label>
+                <input type="range" id="audio-volume" min="0" max="100" value="50" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Escala pentatónica</label>
+                <select id="scale-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                    <option value="minor">Menor (C-Eb-F-G-Bb)</option>
+                    <option value="major">Mayor (C-D-E-G-A)</option>
+                </select>
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform-select" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm focus:border-orange-500 focus:outline-none">
+                    <option value="sine">Senoidal</option>
+                    <option value="triangle" selected>Triángulo</option>
+                    <option value="square">Cuadrada</option>
+                    <option value="sawtooth">Sierra</option>
+                </select>
+            </div>
+
+            <!-- Modulation -->
+            <h4 class="text-xs font-medium text-gray-500 mb-3 mt-6">Modulación</h4>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Duración de nota: <span id="duration-value" class="text-cyan-400 mono">150</span>ms
+                </label>
+                <input type="range" id="note-duration" min="50" max="500" value="150" class="w-full">
+            </div>
+
+            <div class="mb-5">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Densidad → Volumen: <span id="density-mod-value" class="text-cyan-400 mono">50</span>%
+                </label>
+                <input type="range" id="density-modulation" min="0" max="100" value="50" class="w-full">
+                <p class="text-xs text-gray-600 mt-1">Más células activas = más fuerte</p>
+            </div>
+
+            <!-- Audio Stats -->
+            <div class="mt-4 p-3 bg-gray-900/50 rounded-lg">
+                <div class="text-xs mono">
+                    <div class="flex justify-between mb-1">
+                        <span class="text-gray-500">Voces activas:</span>
+                        <span id="voice-count" class="text-orange-400">0</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="text-gray-500">Eventos sonoros:</span>
+                        <span id="audio-events" class="text-cyan-400">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Autómatas de Wolfram</h3>
+                <div class="mono text-xs space-y-2 mb-3">
+                    <div class="text-gray-400">
+                        <span class="text-orange-400">Regla N:</span> Define transición basada en 3 vecinos (izq, centro, der)
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">256 reglas posibles:</span> 2<sup>8</sup> combinaciones
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                    <span class="text-orange-400 font-medium">Regla 30:</span> Genera números pseudoaleatorios. Usada en Mathematica.
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed mb-3">
+                    <span class="text-cyan-400 font-medium">Regla 110:</span> Turing-completo. Puede simular cualquier computadora.
+                </p>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    <span class="text-orange-400 font-medium">Regla 90:</span> Genera el triángulo de Sierpiński (fractal).
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Grid state
+        let grid = [];
+        let cols;
+        let rows;
+        let cellSize = 8;
+        let currentRow = 0;
+
+        // Rule
+        let rule = 30;
+        let ruleset = [];
+
+        // Simulation state
+        let isRunning = false;
+        let generation = 0;
+        let speed = 5;
+        let lastUpdate = 0;
+        let animationId = null;
+
+        // ============ AUDIO VARIABLES ============
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+
+        let audioEnabled = false;
+        let masterVolume = 0.5;
+        let waveformType = 'triangle';
+        let currentScale = 'minor';
+        let noteDuration = 150; // ms
+        let densityModulation = 0.5;
+
+        const pentatonicScales = {
+            minor: [0, 3, 5, 7, 10],  // C-Eb-F-G-Bb
+            major: [0, 2, 4, 7, 9]     // C-D-E-G-A
+        };
+
+        const maxPolyphony = 64;
+        let activeVoices = new Map();
+        let voiceCount = 0;
+        let audioEventCount = 0;
+
+        let glowCells = new Map();
+
+        // ============ RULE FUNCTIONS ============
+
+        /**
+         * Convert rule number to binary lookup table
+         * Rule 30 = 00011110 in binary
+         * Neighborhood 111 110 101 100 011 010 001 000
+         * Output       0   0   0   1   1   1   1   0
+         */
+        function generateRuleset(ruleNumber) {
+            ruleset = [];
+            for (let i = 0; i < 8; i++) {
+                ruleset[i] = (ruleNumber >> i) & 1;
+            }
+        }
+
+        /**
+         * Apply rule to three neighbors
+         */
+        function applyRule(left, center, right) {
+            const neighborhood = (left << 2) | (center << 1) | right;
+            return ruleset[neighborhood];
+        }
+
+        /**
+         * Set active rule and update UI
+         */
+        function setRule(ruleNumber) {
+            rule = ruleNumber;
+            generateRuleset(rule);
+            document.getElementById('current-rule').textContent = rule;
+            document.getElementById('custom-rule').value = rule;
+
+            // Update active button
+            document.querySelectorAll('.rule-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event?.target.closest('button')?.classList.add('active');
+        }
+
+        // ============ GRID FUNCTIONS ============
+
+        function initCanvas() {
+            canvas.width = canvas.offsetWidth * window.devicePixelRatio;
+            canvas.height = canvas.offsetHeight * window.devicePixelRatio;
+            ctx.scale(window.devicePixelRatio, window.devicePixelRatio);
+
+            initGrid();
+            render();
+        }
+
+        function initGrid() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            cols = Math.floor(w / cellSize);
+            rows = Math.floor(h / cellSize);
+
+            grid = [];
+            for (let i = 0; i < rows; i++) {
+                grid[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    grid[i][j] = 0;
+                }
+            }
+
+            // Start with single cell in middle
+            grid[0][Math.floor(cols / 2)] = 1;
+
+            currentRow = 0;
+            generation = 0;
+            updateStats();
+        }
+
+        function loadPreset(type) {
+            // Reset to first row only
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    grid[i][j] = 0;
+                }
+            }
+
+            const mid = Math.floor(cols / 2);
+
+            switch (type) {
+                case 'single':
+                    grid[0][mid] = 1;
+                    break;
+                case 'random':
+                    for (let j = 0; j < cols; j++) {
+                        grid[0][j] = Math.random() < 0.3 ? 1 : 0;
+                    }
+                    break;
+                case 'symmetric':
+                    for (let j = 0; j < cols / 2; j++) {
+                        const val = Math.random() < 0.3 ? 1 : 0;
+                        grid[0][j] = val;
+                        grid[0][cols - 1 - j] = val;
+                    }
+                    break;
+                case 'edges':
+                    grid[0][0] = 1;
+                    grid[0][cols - 1] = 1;
+                    break;
+            }
+
+            currentRow = 0;
+            generation = 0;
+            updateStats();
+            render();
+        }
+
+        // ============ AUDIO FUNCTIONS ============
+
+        function initAudioContext() {
+            if (isAudioInitialized) return;
+
+            try {
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                masterGain = audioContext.createGain();
+                masterGain.connect(audioContext.destination);
+                masterGain.gain.value = masterVolume;
+                isAudioInitialized = true;
+                console.log('AudioContext initialized');
+            } catch (e) {
+                console.error('Audio initialization failed:', e);
+            }
+        }
+
+        function cellToMidiNote(col) {
+            const scale = pentatonicScales[currentScale];
+            const noteIndex = col % scale.length;
+            const semitone = scale[noteIndex];
+
+            // Map columns to octave range (C3-C7)
+            const minOctave = 3;
+            const maxOctave = 7;
+            const octaveRange = maxOctave - minOctave;
+            const octave = minOctave + Math.floor((col / cols) * octaveRange);
+
+            const midiNote = 60 + (octave - 4) * 12 + semitone;
+            return Math.max(21, Math.min(108, midiNote));
+        }
+
+        function midiToFrequency(midiNote) {
+            return 440 * Math.pow(2, (midiNote - 69) / 12);
+        }
+
+        function updateAudioStats() {
+            document.getElementById('voice-count').textContent = voiceCount;
+            document.getElementById('audio-events').textContent = audioEventCount;
+        }
+
+        function playCell(col, activeCellCount) {
+            if (!isAudioInitialized || !audioEnabled) return;
+            if (voiceCount >= maxPolyphony) return;
+
+            const cellKey = `${currentRow},${col}`;
+
+            // Stop existing voice if any
+            if (activeVoices.has(cellKey)) {
+                stopCellVoice(cellKey);
+            }
+
+            const midiNote = cellToMidiNote(col);
+            const frequency = midiToFrequency(midiNote);
+
+            // Volume based on density (more active cells = louder)
+            const baseVolume = 0.15;
+            const densityFactor = 1 + (activeCellCount / cols) * densityModulation;
+            const volume = Math.min(0.5, baseVolume * densityFactor * masterVolume);
+
+            const duration = noteDuration / 1000; // Convert to seconds
+            const attack = 0.005;
+            const decay = duration * 0.3;
+            const sustain = volume * 0.7;
+            const release = duration * 0.5;
+
+            const now = audioContext.currentTime;
+
+            // Create oscillator
+            const osc = audioContext.createOscillator();
+            osc.type = waveformType;
+            osc.frequency.value = frequency;
+
+            // Create ADSR envelope
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0, now);
+            envelope.gain.linearRampToValueAtTime(volume, now + attack);
+            envelope.gain.linearRampToValueAtTime(sustain, now + attack + decay);
+            envelope.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+            // Lowpass filter
+            const filter = audioContext.createBiquadFilter();
+            filter.type = 'lowpass';
+            filter.frequency.value = frequency * 4;
+            filter.Q.value = 1;
+
+            // Connect
+            osc.connect(filter);
+            filter.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + duration + 0.1);
+
+            activeVoices.set(cellKey, { osc, gain: envelope, startTime: now });
+            voiceCount++;
+            audioEventCount++;
+
+            osc.onended = () => {
+                if (activeVoices.has(cellKey)) {
+                    activeVoices.delete(cellKey);
+                    voiceCount--;
+                }
+            };
+
+            // Visual feedback
+            glowCells.set(cellKey, 1.0);
+            updateAudioStats();
+        }
+
+        function stopCellVoice(cellKey) {
+            if (!activeVoices.has(cellKey)) return;
+
+            const voice = activeVoices.get(cellKey);
+            const now = audioContext.currentTime;
+
+            try {
+                voice.gain.gain.cancelScheduledValues(now);
+                voice.gain.gain.setValueAtTime(voice.gain.gain.value, now);
+                voice.gain.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                voice.osc.stop(now + 0.06);
+            } catch (e) {
+                // Ignore
+            }
+
+            activeVoices.delete(cellKey);
+            voiceCount--;
+        }
+
+        function stopAllVoices() {
+            activeVoices.forEach((_, key) => stopCellVoice(key));
+            glowCells.clear();
+        }
+
+        // ============ SIMULATION ============
+
+        function step() {
+            if (currentRow >= rows - 1) {
+                // Scroll up: shift all rows up one, clear last row
+                for (let i = 0; i < rows - 1; i++) {
+                    grid[i] = [...grid[i + 1]];
+                }
+                grid[rows - 1] = [];
+                for (let j = 0; j < cols; j++) {
+                    grid[rows - 1][j] = 0;
+                }
+                currentRow = rows - 1;
+            } else {
+                currentRow++;
+            }
+
+            // Compute next generation
+            const prevRow = currentRow - 1;
+            let activeCellCount = 0;
+
+            for (let j = 0; j < cols; j++) {
+                const left = grid[prevRow][(j - 1 + cols) % cols];
+                const center = grid[prevRow][j];
+                const right = grid[prevRow][(j + 1) % cols];
+
+                grid[currentRow][j] = applyRule(left, center, right);
+
+                if (grid[currentRow][j] === 1) {
+                    activeCellCount++;
+                }
+            }
+
+            generation++;
+
+            // === AUDIO: Play new row ===
+            if (audioEnabled && isAudioInitialized) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[currentRow][j] === 1) {
+                        playCell(j, activeCellCount);
+                    }
+                }
+            }
+
+            updateStats();
+            render();
+        }
+
+        function updateStats() {
+            document.getElementById('generation').textContent = generation;
+        }
+
+        function render() {
+            const w = canvas.offsetWidth;
+            const h = canvas.offsetHeight;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw all rows
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === 1) {
+                        const cellKey = `${i},${j}`;
+
+                        // Glow effect for sounding cells
+                        if (glowCells.has(cellKey)) {
+                            const intensity = glowCells.get(cellKey);
+                            ctx.shadowColor = '#f97316';
+                            ctx.shadowBlur = 15 * intensity;
+                            ctx.fillStyle = '#f97316';
+                            ctx.fillRect(j * cellSize, i * cellSize, cellSize - 1, cellSize - 1);
+                            ctx.shadowBlur = 0;
+
+                            const newIntensity = intensity - 0.08;
+                            if (newIntensity <= 0) {
+                                glowCells.delete(cellKey);
+                            } else {
+                                glowCells.set(cellKey, newIntensity);
+                            }
+                        } else {
+                            ctx.fillStyle = '#f97316';
+                            ctx.fillRect(j * cellSize, i * cellSize, cellSize - 1, cellSize - 1);
+                        }
+                    }
+                }
+            }
+
+            // Highlight current generation row
+            ctx.strokeStyle = 'rgba(249, 115, 22, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(0, currentRow * cellSize, cols * cellSize, cellSize);
+        }
+
+        function gameLoop(timestamp) {
+            if (!isRunning) return;
+
+            const interval = 1000 / speed;
+
+            if (timestamp - lastUpdate >= interval) {
+                step();
+                lastUpdate = timestamp;
+            }
+
+            animationId = requestAnimationFrame(gameLoop);
+        }
+
+        function togglePlay() {
+            if (!isAudioInitialized && audioEnabled) {
+                initAudioContext();
+            }
+
+            isRunning = !isRunning;
+
+            const btn = document.getElementById('play-btn');
+            const icon = document.getElementById('play-icon');
+            const text = document.getElementById('play-text');
+
+            if (isRunning) {
+                text.textContent = 'Pausar';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+                lastUpdate = performance.now();
+                animationId = requestAnimationFrame(gameLoop);
+            } else {
+                text.textContent = 'Iniciar';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+                if (animationId) {
+                    cancelAnimationFrame(animationId);
+                }
+                stopAllVoices();
+            }
+        }
+
+        function reset() {
+            if (isRunning) togglePlay();
+            loadPreset('single');
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        // Canvas interaction (edit first row)
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+
+            const col = Math.floor(x / cellSize);
+            const row = Math.floor(y / cellSize);
+
+            // Only allow editing first row
+            if (row === 0 && col >= 0 && col < cols) {
+                grid[0][col] = grid[0][col] === 1 ? 0 : 1;
+                render();
+            }
+        });
+
+        document.getElementById('play-btn').addEventListener('click', togglePlay);
+        document.getElementById('step-btn').addEventListener('click', () => {
+            if (!isRunning) step();
+        });
+        document.getElementById('reset-btn').addEventListener('click', reset);
+
+        document.getElementById('speed').addEventListener('input', (e) => {
+            speed = parseInt(e.target.value);
+            document.getElementById('speed-value').textContent = speed;
+        });
+
+        document.getElementById('cell-size').addEventListener('input', (e) => {
+            cellSize = parseInt(e.target.value);
+            document.getElementById('cell-size-value').textContent = cellSize;
+            initGrid();
+            render();
+        });
+
+        document.getElementById('apply-custom-btn').addEventListener('click', () => {
+            const customRule = parseInt(document.getElementById('custom-rule').value);
+            if (customRule >= 0 && customRule <= 255) {
+                setRule(customRule);
+                reset();
+            }
+        });
+
+        // Audio controls
+        document.getElementById('audio-enabled').addEventListener('change', (e) => {
+            if (e.target.checked && !isAudioInitialized) {
+                initAudioContext();
+            }
+            audioEnabled = e.target.checked;
+
+            if (!audioEnabled) {
+                stopAllVoices();
+            }
+        });
+
+        document.getElementById('audio-volume').addEventListener('input', (e) => {
+            masterVolume = parseInt(e.target.value) / 100;
+            document.getElementById('audio-volume-value').textContent = e.target.value;
+            if (masterGain) {
+                masterGain.gain.value = masterVolume;
+            }
+        });
+
+        document.getElementById('scale-select').addEventListener('change', (e) => {
+            currentScale = e.target.value;
+        });
+
+        document.getElementById('waveform-select').addEventListener('change', (e) => {
+            waveformType = e.target.value;
+        });
+
+        document.getElementById('note-duration').addEventListener('input', (e) => {
+            noteDuration = parseInt(e.target.value);
+            document.getElementById('duration-value').textContent = noteDuration;
+        });
+
+        document.getElementById('density-modulation').addEventListener('input', (e) => {
+            densityModulation = parseInt(e.target.value) / 100;
+            document.getElementById('density-mod-value').textContent = e.target.value;
+        });
+
+        window.addEventListener('resize', () => {
+            const wasRunning = isRunning;
+            if (wasRunning) togglePlay();
+            initCanvas();
+            if (wasRunning) togglePlay();
+        });
+
+        // Initialize
+        generateRuleset(rule);
+        initCanvas();
+    </script>
+</body>
+</html>
