@@ -17,6 +17,7 @@ set(SOURCES
     src/physics/erosion.cpp
     src/physics/softbody.cpp
     src/physics/wave_solver.cpp
+    src/physics/molecular_dynamics.cpp
     src/bindings.cpp
 )
 

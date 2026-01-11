@@ -17,6 +17,7 @@
 #include "../include/physics/erosion.hpp"
 #include "../include/physics/softbody.hpp"
 #include "../include/physics/wave_solver.hpp"
+#include "../include/physics/molecular_dynamics.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -452,6 +453,20 @@ val getClothSpringsByType(const ClothSimulator& cs, u8 type) {
     }
 
     return val(typed_memory_view(indices.size(), indices.data()));
+}
+
+// ============================================================================
+// MolecularDynamics helpers
+// ============================================================================
+
+// Get positions as Float32Array
+val getMDPositions(const MolecularDynamics& md) {
+    return val(typed_memory_view(md.positionDataSize(), md.positionData()));
+}
+
+// Get velocities as Float32Array
+val getMDVelocities(const MolecularDynamics& md) {
+    return val(typed_memory_view(md.positionDataSize(), md.velocityData()));
 }
 
 // ============================================================================
@@ -1144,6 +1159,82 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("wavePresetPond", &wavePresetPond);
     function("wavePresetRipple", &wavePresetRipple);
     function("wavePresetSlit", &wavePresetSlit);
+
+    // ========================================================================
+    // MolecularDynamics
+    // ========================================================================
+
+    // MatterPhase enum
+    enum_<MatterPhase>("MatterPhase")
+        .value("SOLID", MatterPhase::SOLID)
+        .value("LIQUID", MatterPhase::LIQUID)
+        .value("GAS", MatterPhase::GAS)
+        .value("UNKNOWN", MatterPhase::UNKNOWN);
+
+    // MDConfig
+    value_object<MDConfig>("MDConfig")
+        .field("numAtoms", &MDConfig::numAtoms)
+        .field("boxSize", &MDConfig::boxSize)
+        .field("sigma", &MDConfig::sigma)
+        .field("epsilon", &MDConfig::epsilon)
+        .field("mass", &MDConfig::mass)
+        .field("temperature", &MDConfig::temperature)
+        .field("dt", &MDConfig::dt)
+        .field("cutoff", &MDConfig::cutoff)
+        .field("thermostatTau", &MDConfig::thermostatTau)
+        .field("periodicBC", &MDConfig::periodicBC)
+        .field("useThermostat", &MDConfig::useThermostat);
+
+    // MDStats
+    value_object<MDStats>("MDStats")
+        .field("kineticEnergy", &MDStats::kineticEnergy)
+        .field("potentialEnergy", &MDStats::potentialEnergy)
+        .field("totalEnergy", &MDStats::totalEnergy)
+        .field("temperature", &MDStats::temperature)
+        .field("pressure", &MDStats::pressure)
+        .field("density", &MDStats::density)
+        .field("phase", &MDStats::phase)
+        .field("numAtoms", &MDStats::numAtoms)
+        .field("simulationTime", &MDStats::simulationTime)
+        .field("meanSquareDisplacement", &MDStats::meanSquareDisplacement);
+
+    // MolecularDynamics class
+    class_<MolecularDynamics>("MolecularDynamics")
+        .constructor<>()
+        .constructor<const MDConfig&>()
+        .function("setConfig", &MolecularDynamics::setConfig)
+        .function("initializeLattice", &MolecularDynamics::initializeLattice)
+        .function("initializeRandom", &MolecularDynamics::initializeRandom)
+        .function("initializeLiquid", &MolecularDynamics::initializeLiquid)
+        .function("clear", &MolecularDynamics::clear)
+        .function("step", &MolecularDynamics::step)
+        .function("stepMultiple", &MolecularDynamics::stepMultiple)
+        .function("setTemperature", &MolecularDynamics::setTemperature)
+        .function("rescaleVelocities", &MolecularDynamics::rescaleVelocities)
+        .function("setEpsilon", &MolecularDynamics::setEpsilon)
+        .function("setSigma", &MolecularDynamics::setSigma)
+        .function("setCutoff", &MolecularDynamics::setCutoff)
+        .function("setThermostatEnabled", &MolecularDynamics::setThermostatEnabled)
+        .function("setThermostatTau", &MolecularDynamics::setThermostatTau)
+        .function("computeStatistics", &MolecularDynamics::computeStatistics)
+        .function("stats", &MolecularDynamics::stats)
+        .function("atomCount", &MolecularDynamics::atomCount)
+        .function("boxSize", &MolecularDynamics::boxSize)
+        .function("getTemperature", &MolecularDynamics::getTemperature)
+        .function("getKineticEnergy", &MolecularDynamics::getKineticEnergy)
+        .function("getPotentialEnergy", &MolecularDynamics::getPotentialEnergy)
+        .function("getPhase", &MolecularDynamics::getPhase);
+
+    // MD helper functions
+    function("getMDPositions", &getMDPositions);
+    function("getMDVelocities", &getMDVelocities);
+
+    // MD presets
+    function("mdPresetSolid", &mdPresetSolid);
+    function("mdPresetLiquid", &mdPresetLiquid);
+    function("mdPresetGas", &mdPresetGas);
+    function("mdPresetMelting", &mdPresetMelting);
+    function("mdPresetLarge", &mdPresetLarge);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

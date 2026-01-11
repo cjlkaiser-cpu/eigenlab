@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">9</div>
+                        <div class="text-2xl font-light text-violet-400">10</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -346,15 +346,12 @@
 
             <!-- Ondas 2D -->
             <a href="../Physics/Physics Visual Lab/ondas-2d-wasm.html"
-               class="sim-card block bg-gradient-to-br from-green-950/50 to-emerald-950/30 rounded-2xl overflow-hidden border border-green-500/20 hover:border-green-500/50 pulse-border">
+               class="sim-card block bg-gradient-to-br from-green-950/50 to-emerald-950/30 rounded-2xl overflow-hidden border border-green-500/20 hover:border-green-500/50">
                 <div class="aspect-video relative overflow-hidden">
                     <canvas id="canvas-wave" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute top-3 right-3 px-2 py-1 bg-green-500/20 rounded text-xs text-green-300 mono">
                         PDE Solver
-                    </div>
-                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
-                        NUEVO
                     </div>
                 </div>
                 <div class="p-5">
@@ -368,6 +365,34 @@
                     <div class="flex gap-2 text-xs">
                         <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">512x512</span>
                         <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Diffraction</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Dinamica Molecular -->
+            <a href="../Chemistry/Chemistry Visual Lab/dinamica-molecular.html"
+               class="sim-card block bg-gradient-to-br from-cyan-950/50 to-teal-950/30 rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-molecular" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-cyan-500/20 rounded text-xs text-cyan-300 mono">
+                        Lennard-Jones
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-cyan-500/20 text-cyan-400 rounded">Chemistry</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Dinamica Molecular</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Potencial Lennard-Jones, transiciones de fase, termostatizacion Berendsen.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Velocity Verlet</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Cell Lists</span>
                     </div>
                 </div>
             </a>
@@ -447,7 +472,8 @@
             erosion: document.getElementById('canvas-erosion'),
             heat: document.getElementById('canvas-heat'),
             gas: document.getElementById('canvas-gas'),
-            wave: document.getElementById('canvas-wave')
+            wave: document.getElementById('canvas-wave'),
+            molecular: document.getElementById('canvas-molecular')
         };
 
         function resizeCanvases() {
@@ -821,6 +847,73 @@
             }
         }
 
+        // Molecular Dynamics - Lennard-Jones atoms
+        const mdAtoms = [];
+        for (let i = 0; i < 40; i++) {
+            mdAtoms.push({
+                x: 0.15 + Math.random() * 0.7,
+                y: 0.15 + Math.random() * 0.7,
+                vx: (Math.random() - 0.5) * 0.015,
+                vy: (Math.random() - 0.5) * 0.015
+            });
+        }
+
+        function drawMolecular() {
+            const canvas = canvases.molecular;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#051520';
+            ctx.fillRect(0, 0, w, h);
+
+            // Simple Lennard-Jones-like repulsion
+            const sigma = 0.08;
+            for (let i = 0; i < mdAtoms.length; i++) {
+                for (let j = i + 1; j < mdAtoms.length; j++) {
+                    const dx = mdAtoms[j].x - mdAtoms[i].x;
+                    const dy = mdAtoms[j].y - mdAtoms[i].y;
+                    const r = Math.sqrt(dx * dx + dy * dy);
+                    if (r < sigma * 2.5 && r > 0.001) {
+                        const f = 0.0001 * (Math.pow(sigma / r, 12) - Math.pow(sigma / r, 6)) / r;
+                        mdAtoms[i].vx -= dx * f;
+                        mdAtoms[i].vy -= dy * f;
+                        mdAtoms[j].vx += dx * f;
+                        mdAtoms[j].vy += dy * f;
+                    }
+                }
+            }
+
+            mdAtoms.forEach(atom => {
+                atom.x += atom.vx;
+                atom.y += atom.vy;
+
+                // Bounce off walls
+                if (atom.x < 0.1) { atom.x = 0.1; atom.vx *= -0.9; }
+                if (atom.x > 0.9) { atom.x = 0.9; atom.vx *= -0.9; }
+                if (atom.y < 0.1) { atom.y = 0.1; atom.vy *= -0.9; }
+                if (atom.y > 0.9) { atom.y = 0.9; atom.vy *= -0.9; }
+
+                // Color by velocity (blue=slow, red=fast)
+                const speed = Math.sqrt(atom.vx * atom.vx + atom.vy * atom.vy);
+                const t = Math.min(1, speed * 60);
+                const r = Math.floor(80 + t * 175);
+                const g = Math.floor(180 - t * 100);
+                const b = Math.floor(220 - t * 150);
+
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath();
+                ctx.arc(atom.x * w, atom.y * h, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Glow
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+                ctx.beginPath();
+                ctx.arc(atom.x * w, atom.y * h, 10, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -832,6 +925,7 @@
             drawHeat();
             drawGas();
             drawWave();
+            drawMolecular();
             requestAnimationFrame(animate);
         }
 
