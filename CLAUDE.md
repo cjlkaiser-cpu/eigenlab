@@ -53,7 +53,7 @@ EigenLab/
 ├── Geology/
 │   └── Geology Visual Lab/     # 6 sims - Ondas sísmicas, tectónica
 ├── Mathematics/
-│   ├── Math Visual Lab/        # 27 sims - Geometría, topología, caos
+│   ├── Math Visual Lab/        # 28 sims - Geometría, topología, caos, campos vectoriales
 │   ├── Math Generative Art Lab/# 7 sims - L-Systems, fractales, autómatas
 │   └── Math Sound Lab/         # 8 sims - Sonificación matemática ⭐
 │       └── CLAUDE.md           # Documentación técnica detallada
@@ -81,12 +81,12 @@ EigenLab/
 | **Biochemistry** | Visual (16) | 16 | Rosa | ✅ Maduro |
 | **Biology** | Visual (6) | 6 | Verde esmeralda | ✅ Completo |
 | **Geology** | Visual (6) | 6 | Ámbar | ✅ Completo |
-| **Mathematics** | Visual (27) + Gen Art (7) + Sound (8) | 42 | Naranja | ⭐ Activo |
-| **Astronomy** | Visual (6) + Sound (3) | 9 | Índigo | ✅ Completo |
+| **Mathematics** | Visual (28) + Gen Art (7) + Sound (8) | 43 | Naranja | ⭐ Activo |
+| **Astronomy** | Visual (7) + Sound (3) | 10 | Índigo | ✅ Completo |
 | **Computation** | Lab (6) | 6 | Azul | ✅ Completo |
 | **Music** | Theory Lab (3) | 3 | Rosa/Magenta | ⭐ Nuevo |
 
-**Total:** ~131+ simulaciones
+**Total:** ~134+ simulaciones
 
 ### Math Sound Lab ⭐ (Nueva adición)
 
@@ -497,10 +497,10 @@ git push origin main
 
 ## Estado del Proyecto
 
-**Última actualización:** 2026-01-10
+**Última actualización:** 2026-01-11
 
 **Estadísticas:**
-- **~131+ simulaciones** totales
+- **~134+ simulaciones** totales
 - **10 disciplinas** científicas
 - **15 laboratorios** temáticos
 - **110+ nodos** en Knowledge Graph

@@ -16,13 +16,13 @@ Colección de laboratorios virtuales que cubren Física, Química, Bioquímica, 
 | **Biochemistry** | [Biochem Visual Lab](Biochemistry/Biochem%20Visual%20Lab/) | 15 | ADN, proteínas, metabolismo celular |
 | **Biology** | [Biology Visual Lab](Biology/Biology%20Visual%20Lab/) | 8 | Neurociencia, ecología, genética, boids |
 | **Geology** | [Geology Visual Lab](Geology/Geology%20Visual%20Lab/) | 7 | Tectónica, terremotos, volcanes, erosión hidráulica |
-| **Mathematics** | [Math Visual Lab](Mathematics/Math%20Visual%20Lab/) | 27 | Fractales, caos, teoría de números, topología |
+| **Mathematics** | [Math Visual Lab](Mathematics/Math%20Visual%20Lab/) | 28 | Fractales, caos, teoría de números, topología, campos vectoriales |
 | **Mathematics** | [Math Generative Art Lab](Mathematics/Math%20Generative%20Art%20Lab/) | 7 | Reacción-difusión, L-Systems, flow fields |
-| **Astronomy** | [Astronomy Visual Lab](Astronomy/Astronomy%20Visual%20Lab/) | 7 | Hubble, agujeros negros, formación de galaxias |
+| **Astronomy** | [Astronomy Visual Lab](Astronomy/Astronomy%20Visual%20Lab/) | 8 | Hubble, agujeros negros, formación de galaxias, anillos de Saturno |
 | **Astronomy** | [Astronomy Sound Lab](Astronomy/Astronomy%20Sound%20Lab/) | 3 | Púlsares, ondas gravitacionales, música de las esferas |
 | **Computation** | [Computation Lab](Computation/Computation%20Lab/) | 6 | Algoritmos, estructuras de datos, redes neuronales, autómatas |
 
-**Total: 11 laboratorios · 120 simulaciones · 8 disciplinas**
+**Total: 11 laboratorios · 122 simulaciones · 8 disciplinas**
 
 ---
 
@@ -103,6 +103,8 @@ Para simulaciones que requieren miles de cálculos por frame, usamos un motor C+
 | **GalaxySimulator** | Barnes-Hut N-body | 5000+ partículas @ 30fps |
 | **ErosionSimulator** | Erosión hidráulica | 256×256 terreno |
 | **ClothSimulator** | Verlet + PBD | 1200 partículas @ 60fps |
+| **SaturnRings** | Keplerian orbits | 10000+ partículas @ 60fps |
+| **VectorFields** | RK4 advection | 500+ partículas @ 60fps |
 
 ```bash
 # Compilar el motor (requiere Emscripten)
@@ -198,6 +200,8 @@ open http://localhost:8080/Physics/Physics%20Visual%20Lab/fluidos-2d.html
 - `boids-masivo.html` - Flocking
 - `formacion-galaxias.html` - N-body
 - `erosion-hidraulica.html` - Terrain erosion
+- `anillos-saturno.html` - Saturn rings
+- `campos-vectoriales.html` - Vector fields
 
 ---
 

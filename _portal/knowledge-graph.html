@@ -557,6 +557,7 @@
                 { id: "fases-lunares", label: "Fases Lunares", type: "simulation", discipline: "astronomy", desc: "Ciclo sinodico", url: "../Astronomy/Astronomy Visual Lab/fases-lunares.html" },
                 { id: "estaciones", label: "Estaciones", type: "simulation", discipline: "astronomy", desc: "Inclinacion axial", url: "../Astronomy/Astronomy Visual Lab/estaciones.html" },
                 { id: "agujero-negro", label: "Agujero Negro", type: "simulation", discipline: "astronomy", desc: "Schwarzschild", url: "../Astronomy/Astronomy Visual Lab/agujero-negro.html" },
+                { id: "anillos-saturno", label: "Anillos Saturno", type: "simulation", discipline: "astronomy", desc: "Keplerian rings (WASM)", url: "../Astronomy/Astronomy Visual Lab/anillos-saturno.html" },
 
                 // === ASTRONOMY SOUND LAB ===
                 { id: "pulsares", label: "Pulsares", type: "simulation", discipline: "astronomy", desc: "Estrellas de neutrones", url: "../Astronomy/Astronomy Sound Lab/pulsares.html" },
@@ -576,6 +577,7 @@
                 { id: "funciones", label: "Funciones", type: "simulation", discipline: "mathematics", desc: "Explorador de funciones", url: "../Mathematics/Math Visual Lab/funciones.html" },
                 { id: "geometria-3d", label: "Geometria 3D", type: "simulation", discipline: "mathematics", desc: "Solidos platonicos", url: "../Mathematics/Math Visual Lab/geometria-3d.html" },
                 { id: "edo-visual", label: "Ecuaciones Diferenciales", type: "simulation", discipline: "mathematics", desc: "Campos de pendientes", url: "../Mathematics/Math Visual Lab/ecuaciones-diferenciales.html" },
+                { id: "campos-vectoriales", label: "Campos Vectoriales", type: "simulation", discipline: "mathematics", desc: "Adveccion RK4 (WASM)", url: "../Mathematics/Math Visual Lab/campos-vectoriales.html" },
 
                 // === MATHEMATICS GENERATIVE ART LAB ===
                 { id: "flow-fields", label: "Flow Fields", type: "simulation", discipline: "mathematics", desc: "Campos vectoriales generativos", url: "../Mathematics/Math Generative Art Lab/flow-fields.html" },
@@ -737,6 +739,8 @@
                 { source: "musica-esferas", target: "gravedad" },
                 { source: "fases-lunares", target: "gravedad" },
                 { source: "estaciones", target: "gravedad" },
+                { source: "anillos-saturno", target: "gravedad" },
+                { source: "anillos-saturno", target: "rk4" },
 
                 // MATHEMATICS VISUAL LAB internal connections
                 { source: "mandelbrot", target: "julia" },
@@ -755,6 +759,10 @@
                 { source: "geometria-3d", target: "mobius" },
                 { source: "geometria-3d", target: "klein" },
                 { source: "probabilidad", target: "caos" },
+                { source: "campos-vectoriales", target: "rk4" },
+                { source: "campos-vectoriales", target: "caos" },
+                { source: "campos-vectoriales", target: "edo-visual" },
+                { source: "campos-vectoriales", target: "flow-fields" },
 
                 // MATHEMATICS GENERATIVE ART LAB internal connections
                 { source: "fractales-ifs", target: "mandelbrot" },

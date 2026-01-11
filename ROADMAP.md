@@ -25,6 +25,8 @@ Plan de desarrollo y crecimiento del ecosistema de laboratorios virtuales.
 | `GalaxySimulator` | N-body Barnes-Hut O(n log n) | 5000+ particulas @ 30fps |
 | `ErosionSimulator` | Erosion hidraulica por gotas | 256x256 terreno |
 | `ClothSimulator` | Verlet + PBD constraints | 1200 particulas @ 60fps |
+| `SaturnRings` | Keplerian orbits + ring gaps | 10000+ particulas @ 60fps |
+| `VectorFields` | RK4 particle advection | 500+ particulas @ 60fps |
 
 **Compilacion:**
 ```bash
@@ -52,7 +54,7 @@ emmake make -j4
 
 **Total: 132 simulaciones | 91 con guía (68%)**
 
-> Última actualización: 27 Dic 2025
+> Última actualización: 11 Ene 2026
 
 ---
 
@@ -675,11 +677,29 @@ Formato sugerido para propuestas:
 
 ---
 
-*Última actualización: 27 Diciembre 2025*
+*Última actualización: 11 Enero 2026*
 
 ---
 
 ## Changelog
+
+### 11 Enero 2026 - Nuevos Módulos WASM
+
+- **2 Nuevos módulos WASM añadidos al eigenlab-core:**
+  - `SaturnRings` - Simulación de anillos planetarios con órbitas Keplerianas y gaps de resonancia
+  - `VectorFields` - Campos vectoriales con advección de partículas RK4
+
+- **Nuevas simulaciones WASM:**
+
+  | Simulación | Lab | Motor | Descripción |
+  |------------|-----|-------|-------------|
+  | `anillos-saturno.html` | Astronomy Visual | SaturnRings | Anillos de Saturno con gaps de Cassini |
+  | `campos-vectoriales.html` | Math Visual | VectorFields | 8 campos vectoriales con advección |
+
+- **Total simulaciones WASM:** 7 (antes 5)
+- **Tamaño binario:** 331KB (antes 317KB)
+
+---
 
 ### 27 Diciembre 2025 - Inventario Actualizado
 
@@ -753,7 +773,7 @@ Formato sugerido para propuestas:
   |---------------------------------------|--------------------------------------|----------------------------|
   | Fractales 3D (Mandelbulb)             | Raymarching, millones de iteraciones | Rotación interactiva       |
   | Autómatas celulares 3D                | Grid cúbico grande                   | "Game of Life" volumétrico |
-  | Campos vectoriales interactivos       | Integración de miles de trayectorias | Líneas de flujo            |
+  | Campos vectoriales HECHA       | Integración de miles de trayectorias | Líneas de flujo            |
   | Atractor de Lorenz (10K trayectorias) | RK4 masivo paralelo                  | Nube de puntos caótica     |
 
   Astronomy
@@ -762,7 +782,7 @@ Formato sugerido para propuestas:
   |-----------------------|-----------------------------------|--------------------|
   | Formación de galaxias HECHA | N-body con 50K+ estrellas         | Espiral emergente  |
   | Colisión de galaxias  | Dos sistemas gravitacionales      | Colas de marea     |
-  | Anillos de Saturno    | Millones de partículas + gravedad | Estructura de gaps |
+  | Anillos de Saturno HECHA | Millones de partículas + gravedad | Estructura de gaps |
   | Disco de acreción     | Fluido + gravedad relativista     | Agujero negro      |
 
   Geology
