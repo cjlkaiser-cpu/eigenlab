@@ -1,0 +1,889 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala 12-phiW - Music Theory Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        .canvas-container {
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .note-btn {
+            transition: all 0.2s;
+        }
+        .note-btn:hover {
+            transform: scale(1.05);
+        }
+        .note-btn.active {
+            box-shadow: 0 0 20px rgba(249, 115, 22, 0.6);
+            background: linear-gradient(135deg, #f97316, #ea580c);
+        }
+
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #374151;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active {
+            background: #f97316;
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: left 0.3s;
+        }
+        .toggle.active::after {
+            left: 27px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(249, 115, 22, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .comparison-good { color: #22c55e; }
+        .comparison-similar { color: #eab308; }
+        .comparison-different { color: #ef4444; }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Escala 12-phiW</span> - Occidental Aureo
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Base: <span id="base-display" class="text-orange-400">440</span> Hz</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Visualization Area -->
+        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-5 gap-4 mb-4">
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Notas</div>
+                    <div class="text-2xl font-bold text-orange-400 mono">12</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Quinta phi</div>
+                    <div class="text-2xl font-bold text-orange-400 mono">833.09</div>
+                    <div class="text-xs text-gray-600">cents</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Semitono avg</div>
+                    <div class="text-2xl font-bold text-green-400 mono" id="avgGap">~99</div>
+                    <div class="text-xs text-gray-600">cents</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">vs 12-TET</div>
+                    <div class="text-2xl font-bold text-yellow-400 mono">-1c</div>
+                    <div class="text-xs text-gray-600">semitono</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Quinta diff</div>
+                    <div class="text-2xl font-bold text-red-400 mono">+133c</div>
+                    <div class="text-xs text-gray-600">vs 700c</div>
+                </div>
+            </div>
+
+            <!-- Circle of Fifths -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Circulo de Quintas Aureas (12 pasos)</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-600">Comparar 12-TET</span>
+                            <div class="toggle" id="compare12TETToggle" onclick="toggleCompare12TET()"></div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-600">Comparar 12-phi</span>
+                            <div class="toggle" id="compare12PhiToggle" onclick="toggleCompare12Phi()"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="circleCanvas" width="800" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Linear Comparison -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Comparacion Lineal: 12-phiW vs 12-TET</h3>
+                    <span class="text-xs text-gray-600 mono">Altura = desviacion de 12-TET</span>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="linearCanvas" width="800" height="180"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Valores Exactos de la Escala 12-phiW</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-500 border-b border-gray-800">
+                                <th class="pb-2 pr-4">#</th>
+                                <th class="pb-2 pr-4">Nota</th>
+                                <th class="pb-2 pr-4 mono">Cents</th>
+                                <th class="pb-2 pr-4 mono">Stack</th>
+                                <th class="pb-2 pr-4 mono">Hz</th>
+                                <th class="pb-2 pr-4 mono">Gap</th>
+                                <th class="pb-2 pr-4 mono">12-TET</th>
+                                <th class="pb-2 mono">Diff</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="mono text-xs">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Theory Box -->
+            <div class="bg-gray-950 border border-orange-500/30 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Por que 12-phiW es especial</h3>
+                <div class="grid grid-cols-3 gap-4 text-xs">
+                    <div>
+                        <div class="text-green-400 font-medium mb-1">Familiar</div>
+                        <p class="text-gray-500">Semitonos de ~99c son casi identicos a 12-TET (100c). Los oidos occidentales lo reconocen.</p>
+                    </div>
+                    <div>
+                        <div class="text-yellow-400 font-medium mb-1">Diferente</div>
+                        <p class="text-gray-500">La quinta de 833c (no 700c) cambia toda la armonia. V-I suena "nuevo" pero consonante.</p>
+                    </div>
+                    <div>
+                        <div class="text-orange-400 font-medium mb-1">Matematico</div>
+                        <p class="text-gray-500">Basado en phi, no en 2^(1/12). Consonancia definida por potencias de la proporcion aurea.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Controles</h2>
+
+            <!-- Play Buttons -->
+            <div class="mb-6 space-y-2">
+                <button id="playScaleBtn" class="w-full py-3 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="playText">Tocar Escala</span>
+                </button>
+
+                <button id="playFifthsBtn" class="w-full py-2 px-4 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10" fill="none" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Circulo de Quintas
+                </button>
+
+                <button id="compareTETBtn" class="w-full py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition">
+                    Comparar con 12-TET
+                </button>
+            </div>
+
+            <!-- Base Frequency -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Frecuencia base: <span id="freqValue" class="text-orange-400 mono">440</span> Hz
+                </label>
+                <input type="range" id="baseFreq" min="220" max="880" value="440" step="1" class="w-full">
+            </div>
+
+            <!-- Waveform -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="sine">Sine (Suave)</option>
+                    <option value="triangle" selected>Triangle (Calido)</option>
+                    <option value="sawtooth">Sawtooth (Brillante)</option>
+                    <option value="square">Square (Hueco)</option>
+                </select>
+            </div>
+
+            <!-- Duration -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Duracion: <span id="durationValue" class="text-cyan-400 mono">0.5</span>s
+                </label>
+                <input type="range" id="duration" min="0.2" max="1.5" step="0.1" value="0.5" class="w-full">
+            </div>
+
+            <!-- Volume -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volumeValue" class="text-cyan-400 mono">30</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="30" class="w-full">
+            </div>
+
+            <!-- Note Grid -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">Notas (12)</h3>
+
+            <div id="notesGrid" class="grid grid-cols-4 gap-2 mb-6">
+                <!-- Generated by JS -->
+            </div>
+
+            <button id="stopBtn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" stroke-width="2"/>
+                </svg>
+                Detener
+            </button>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Formula</h3>
+                <div class="mono text-xs space-y-3 mb-3">
+                    <div class="text-gray-400">
+                        <div class="mb-2">Quintas phi apiladas:</div>
+                        <div class="bg-black/30 p-2 rounded text-center">
+                            cents<sub>i</sub> = (i x 833.09) mod 1200
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-orange-400">i =</span> 0, 1, 2, ..., 11
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-green-400">12 x 833.09 =</span> 9997.08c
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-green-400">9997.08 / 1200 =</span> 8.33 octavas
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    El circulo cierra en <span class="text-orange-400">12 pasos</span> como el occidental, pero con intervalos phi.
+                </p>
+            </div>
+
+            <!-- Key Insight -->
+            <hr class="border-gray-800 my-6">
+            <div class="text-xs text-gray-500 space-y-2">
+                <div class="flex justify-between">
+                    <span>12-TET quinta:</span>
+                    <span class="text-gray-400 mono">700.00c</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>12-phiW quinta:</span>
+                    <span class="text-orange-400 mono">833.09c</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Diferencia:</span>
+                    <span class="text-red-400 mono">+133.09c</span>
+                </div>
+                <hr class="border-gray-800 my-2">
+                <div class="flex justify-between">
+                    <span>12-TET semitono:</span>
+                    <span class="text-gray-400 mono">100.00c</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>12-phiW semitono avg:</span>
+                    <span class="text-green-400 mono">~99.27c</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>Diferencia:</span>
+                    <span class="text-green-400 mono">-0.73c</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Load Engine -->
+    <script src="golden-harmony-engine.js"></script>
+
+    <script>
+        // ============ ENGINE ============
+        const engine = new GoldenHarmonyEngine();
+        const scale12W = engine.chromatic12WScale;
+
+        // ============ AUDIO ============
+        let audioContext = null;
+        let masterGain = null;
+        let currentNotes = [];
+        let isPlaying = false;
+        let playTimeouts = [];
+
+        // ============ STATE ============
+        let compare12TETMode = false;
+        let compare12PhiMode = false;
+        let baseFrequency = 440;
+        let volume = 0.3;
+        let duration = 0.5;
+        let waveform = 'triangle';
+
+        // ============ CANVAS REFS ============
+        const circleCanvas = document.getElementById('circleCanvas');
+        const linearCanvas = document.getElementById('linearCanvas');
+        const circleCtx = circleCanvas.getContext('2d');
+        const linearCtx = linearCanvas.getContext('2d');
+
+        // ============ AUDIO FUNCTIONS ============
+
+        async function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.connect(audioContext.destination);
+                    masterGain.gain.value = volume;
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                    return false;
+                }
+            }
+
+            if (audioContext.state === 'suspended') {
+                await audioContext.resume();
+            }
+
+            return true;
+        }
+
+        async function playNote(frequency, dur = duration, vol = volume) {
+            const ready = await initAudioContext();
+            if (!ready || !audioContext) return;
+
+            if (!frequency || frequency <= 0 || !isFinite(frequency)) return;
+
+            const now = audioContext.currentTime;
+
+            const osc = audioContext.createOscillator();
+            osc.type = waveform;
+            osc.frequency.setValueAtTime(frequency, now);
+
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0.0001, now);
+            envelope.gain.linearRampToValueAtTime(vol, now + 0.02);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + 0.1);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + dur - 0.1);
+            envelope.gain.linearRampToValueAtTime(0.0001, now + dur);
+
+            osc.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + dur + 0.05);
+
+            currentNotes.push({ osc, envelope });
+
+            osc.onended = () => {
+                const idx = currentNotes.findIndex(n => n.osc === osc);
+                if (idx !== -1) currentNotes.splice(idx, 1);
+                try { osc.disconnect(); envelope.disconnect(); } catch(e) {}
+            };
+        }
+
+        function stopAll() {
+            playTimeouts.forEach(t => clearTimeout(t));
+            playTimeouts = [];
+
+            currentNotes.forEach(({ osc, envelope }) => {
+                try {
+                    const now = audioContext.currentTime;
+                    envelope.gain.cancelScheduledValues(now);
+                    envelope.gain.setValueAtTime(envelope.gain.value, now);
+                    envelope.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.stop(now + 0.05);
+                } catch (e) {}
+            });
+            currentNotes = [];
+            isPlaying = false;
+            updatePlayButton();
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        async function playScale() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+            updatePlayButton();
+
+            scale12W.forEach((note, index) => {
+                const timeout = setTimeout(async () => {
+                    const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                    await playNote(freq, duration, volume);
+                    highlightNote(index);
+                }, index * (duration * 1000 + 50));
+                playTimeouts.push(timeout);
+            });
+
+            const totalTime = scale12W.length * (duration * 1000 + 50);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+            }, totalTime));
+        }
+
+        async function playFifths() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+            updatePlayButton();
+
+            // Play in stack order (circle of fifths)
+            const sortedByStack = [...scale12W].sort((a, b) => a.stackOrder - b.stackOrder);
+
+            sortedByStack.forEach((note, index) => {
+                const timeout = setTimeout(async () => {
+                    const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                    await playNote(freq, duration, volume);
+                    const chromaticIdx = scale12W.findIndex(n => n.stackOrder === note.stackOrder);
+                    highlightNote(chromaticIdx);
+                }, index * (duration * 1000 + 50));
+                playTimeouts.push(timeout);
+            });
+
+            const totalTime = scale12W.length * (duration * 1000 + 50);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+            }, totalTime));
+        }
+
+        async function compareTET() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+
+            // Play each note followed by its 12-TET equivalent
+            for (let i = 0; i < 12; i++) {
+                const timeout1 = setTimeout(async () => {
+                    const freq12W = engine.centsToFrequency(scale12W[i].cents, baseFrequency);
+                    await playNote(freq12W, duration * 0.8, volume);
+                    highlightNote(i);
+                }, i * (duration * 2000 + 100));
+
+                const timeout2 = setTimeout(async () => {
+                    const freqTET = baseFrequency * Math.pow(2, i / 12);
+                    await playNote(freqTET, duration * 0.8, volume * 0.7);
+                }, i * (duration * 2000 + 100) + duration * 900);
+
+                playTimeouts.push(timeout1, timeout2);
+            }
+
+            const totalTime = 12 * (duration * 2000 + 100);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+            }, totalTime));
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('playIcon');
+            const text = document.getElementById('playText');
+
+            if (isPlaying) {
+                text.textContent = 'Detener';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Tocar Escala';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function highlightNote(index) {
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.querySelector(`.note-btn[data-index="${index}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), duration * 1000 - 50);
+            }
+        }
+
+        // ============ UI GENERATION ============
+
+        function generateNoteButtons() {
+            const grid = document.getElementById('notesGrid');
+            grid.innerHTML = '';
+
+            scale12W.forEach((note, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'note-btn bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg p-2 text-center transition';
+                btn.dataset.index = index;
+                btn.dataset.cents = note.cents;
+
+                btn.innerHTML = `
+                    <div class="text-orange-400 font-medium text-xs">${note.name}</div>
+                    <div class="text-gray-500 text-xs mono">${note.cents.toFixed(0)}</div>
+                `;
+
+                btn.onclick = async () => {
+                    const freq = engine.centsToFrequency(parseFloat(btn.dataset.cents), baseFrequency);
+                    highlightNote(index);
+                    await playNote(freq, duration, volume);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        function generateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            scale12W.forEach((note, index) => {
+                const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                const tetCents = index * 100;
+                const diff = note.cents - tetCents;
+                const diffClass = Math.abs(diff) < 5 ? 'comparison-good' : Math.abs(diff) < 20 ? 'comparison-similar' : 'comparison-different';
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-900 hover:bg-gray-900/50';
+                row.innerHTML = `
+                    <td class="py-2 pr-4 text-gray-500">${index}</td>
+                    <td class="py-2 pr-4 text-orange-400 font-medium">${note.name}</td>
+                    <td class="py-2 pr-4 text-gray-300">${note.cents.toFixed(2)}</td>
+                    <td class="py-2 pr-4 text-yellow-400">#${note.stackOrder}</td>
+                    <td class="py-2 pr-4 text-gray-300">${freq.toFixed(2)}</td>
+                    <td class="py-2 pr-4 text-gray-500">${note.gap ? note.gap.toFixed(1) : '--'}</td>
+                    <td class="py-2 pr-4 text-gray-500">${tetCents}</td>
+                    <td class="py-2 ${diffClass}">${diff >= 0 ? '+' : ''}${diff.toFixed(1)}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ============ VISUALIZATIONS ============
+
+        function drawCircle() {
+            const canvas = circleCanvas;
+            const ctx = circleCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) / 2 - 60;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Circle outline
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 12-TET comparison
+            if (compare12TETMode) {
+                for (let i = 0; i < 12; i++) {
+                    const cents = i * 100;
+                    const angle = (cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * (radius - 20);
+                    const y = centerY + Math.sin(angle) * (radius - 20);
+
+                    ctx.fillStyle = 'rgba(6, 182, 212, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 12-phi (original) comparison
+            if (compare12PhiMode) {
+                engine.chromaticScale.forEach((note) => {
+                    const angle = (note.cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * (radius - 10);
+                    const y = centerY + Math.sin(angle) * (radius - 10);
+
+                    ctx.fillStyle = 'rgba(236, 72, 153, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            // 12-phiW scale
+            scale12W.forEach((note, index) => {
+                const angle = (note.cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                // Connection line showing circle of fifths
+                const hue = (note.stackOrder / 12) * 360;
+                ctx.strokeStyle = `hsla(${hue}, 70%, 50%, 0.3)`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Dot
+                ctx.fillStyle = '#f97316';
+                ctx.beginPath();
+                ctx.arc(x, y, 8, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Stack order inside
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 8px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(note.stackOrder.toString(), x, y);
+
+                // Label outside
+                ctx.fillStyle = '#e5e7eb';
+                ctx.font = '10px JetBrains Mono';
+                const labelR = radius + 25;
+                const labelX = centerX + Math.cos(angle) * labelR;
+                const labelY = centerY + Math.sin(angle) * labelR;
+                ctx.fillText(note.name.replace('φW', ''), labelX, labelY);
+            });
+
+            // Center label
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 18px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('12-φW', centerX, centerY);
+
+            // Legend
+            let legendY = h - 15;
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'left';
+
+            ctx.fillStyle = '#f97316';
+            ctx.fillRect(20, legendY - 8, 10, 10);
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText('12-phiW (quintas aureas)', 35, legendY);
+
+            if (compare12TETMode) {
+                legendY -= 15;
+                ctx.fillStyle = 'rgba(6, 182, 212, 0.8)';
+                ctx.fillRect(20, legendY - 8, 10, 10);
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText('12-TET (100c equidistante)', 35, legendY);
+            }
+
+            if (compare12PhiMode) {
+                legendY -= 15;
+                ctx.fillStyle = 'rgba(236, 72, 153, 0.8)';
+                ctx.fillRect(20, legendY - 8, 10, 10);
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText('12-phi (division aurea)', 35, legendY);
+            }
+        }
+
+        function drawLinear() {
+            const canvas = linearCanvas;
+            const ctx = linearCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = { left: 50, right: 20, top: 40, bottom: 30 };
+            const chartW = w - padding.left - padding.right;
+            const chartH = h - padding.top - padding.bottom;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // X-axis
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, h - padding.bottom);
+            ctx.lineTo(w - padding.right, h - padding.bottom);
+            ctx.stroke();
+
+            // Zero line (middle)
+            const zeroY = padding.top + chartH / 2;
+            ctx.strokeStyle = '#4b5563';
+            ctx.setLineDash([5, 5]);
+            ctx.beginPath();
+            ctx.moveTo(padding.left, zeroY);
+            ctx.lineTo(w - padding.right, zeroY);
+            ctx.stroke();
+            ctx.setLineDash([]);
+
+            // Draw comparison bars
+            scale12W.forEach((note, index) => {
+                const x = padding.left + (index / 11) * chartW;
+                const tetCents = index * 100;
+                const diff = note.cents - tetCents;
+
+                // Bar showing difference from 12-TET
+                const barH = (diff / 50) * (chartH / 2); // Scale: 50 cents = half height
+                const barColor = Math.abs(diff) < 5 ? '#22c55e' : Math.abs(diff) < 20 ? '#eab308' : '#ef4444';
+
+                ctx.fillStyle = barColor;
+                if (diff >= 0) {
+                    ctx.fillRect(x - 15, zeroY - barH, 30, barH);
+                } else {
+                    ctx.fillRect(x - 15, zeroY, 30, -barH);
+                }
+
+                // Note name
+                ctx.fillStyle = '#f97316';
+                ctx.font = '10px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(note.name.replace('φW', ''), x, h - padding.bottom + 15);
+
+                // Diff value
+                ctx.fillStyle = barColor;
+                ctx.font = '9px JetBrains Mono';
+                const labelY = diff >= 0 ? zeroY - barH - 5 : zeroY - barH + 12;
+                ctx.fillText((diff >= 0 ? '+' : '') + diff.toFixed(0), x, labelY);
+            });
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(15, h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 11px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Diff vs 12-TET (cents)', 0, 0);
+            ctx.restore();
+
+            // Title
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText('Verde = similar (<5c)  |  Amarillo = cercano (<20c)  |  Rojo = diferente (>20c)', padding.left, 20);
+        }
+
+        function render() {
+            drawCircle();
+            drawLinear();
+        }
+
+        function toggleCompare12TET() {
+            compare12TETMode = !compare12TETMode;
+            document.getElementById('compare12TETToggle').classList.toggle('active', compare12TETMode);
+            render();
+        }
+
+        function toggleCompare12Phi() {
+            compare12PhiMode = !compare12PhiMode;
+            document.getElementById('compare12PhiToggle').classList.toggle('active', compare12PhiMode);
+            render();
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('playScaleBtn').addEventListener('click', playScale);
+        document.getElementById('playFifthsBtn').addEventListener('click', playFifths);
+        document.getElementById('compareTETBtn').addEventListener('click', compareTET);
+        document.getElementById('stopBtn').addEventListener('click', stopAll);
+
+        document.getElementById('baseFreq').addEventListener('input', (e) => {
+            baseFrequency = parseInt(e.target.value);
+            document.getElementById('freqValue').textContent = baseFrequency;
+            document.getElementById('base-display').textContent = baseFrequency;
+            generateTable();
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            waveform = e.target.value;
+        });
+
+        document.getElementById('duration').addEventListener('input', (e) => {
+            duration = parseFloat(e.target.value);
+            document.getElementById('durationValue').textContent = duration.toFixed(1);
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            volume = parseInt(e.target.value) / 100;
+            document.getElementById('volumeValue').textContent = e.target.value;
+            if (masterGain) masterGain.gain.value = volume;
+        });
+
+        // ============ INIT ============
+
+        function init() {
+            generateNoteButtons();
+            generateTable();
+            render();
+
+            // Calculate avg gap
+            const gaps = scale12W.map(n => n.gap).filter(g => g);
+            const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+            document.getElementById('avgGap').textContent = avgGap.toFixed(1);
+
+            console.log('Escala 12-phiW initialized');
+            console.log('12-phiW scale:', scale12W);
+        }
+
+        init();
+    </script>
+</body>
+</html>

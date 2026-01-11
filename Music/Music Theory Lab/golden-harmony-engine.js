@@ -35,6 +35,12 @@ class GoldenHarmonyEngine {
         // Escala cromática áurea (12 notas)
         this.chromaticScale = this.generateChromaticScale();
 
+        // Escala cromática áurea extendida (15 notas - quintas apiladas)
+        this.chromatic15Scale = this.generateChromatic15Scale();
+
+        // Escala cromática 12-φW (12 notas - quintas apiladas, estilo occidental)
+        this.chromatic12WScale = this.generateChromatic12WScale();
+
         // Cache de escalas diatónicas
         this.diatonicScales = {};
 
@@ -43,6 +49,96 @@ class GoldenHarmonyEngine {
 
         // Configuración de consonancia
         this.consonanceTolerance = 25; // cents
+    }
+
+    /**
+     * Genera la escala cromática áurea de 15 notas (quintas áureas apiladas)
+     * Formula: cents_i = (i × 833.09) mod 1200, i ∈ [0, 14]
+     *
+     * La quinta áurea (φ¹) = 1200 × log₂(φ) ≈ 833.09 cents
+     * Apilar 15 quintas áureas cubre la octava con gaps más uniformes (~80-100¢)
+     *
+     * @returns {Array} Array de 15 objetos con propiedades {index, cents, name, phiPower}
+     */
+    generateChromatic15Scale() {
+        const notes = [];
+        const phiFifth = 1200 * Math.log2(this.PHI); // ~833.09 cents
+
+        // Generar 15 notas por apilación de quintas áureas
+        for (let i = 0; i < 15; i++) {
+            const centsRaw = i * phiFifth;
+            const cents = centsRaw % 1200;
+
+            notes.push({
+                index: i,
+                stackOrder: i, // Orden en el círculo de quintas áureas
+                cents: cents,
+                phiFifth: phiFifth,
+                name: `Φ${i}`
+            });
+        }
+
+        // Ordenar por altura (cents ascendentes)
+        notes.sort((a, b) => a.cents - b.cents);
+
+        // Asignar índice cromático después de ordenar
+        notes.forEach((note, idx) => {
+            note.chromaticIndex = idx;
+        });
+
+        return notes;
+    }
+
+    /**
+     * Genera la escala cromática 12-φW (12 notas por quintas áureas apiladas)
+     * Formula: cents_i = (i × 833.09) mod 1200, i ∈ [0, 11]
+     *
+     * Este sistema es el puente entre el mundo occidental y el universo φ:
+     * - Los semitonos son ~99 cents (casi igual a 12-TET con 100 cents)
+     * - Pero la quinta es 833 cents (no 700 cents como 12-TET)
+     * - El círculo de quintas cierra en 12 pasos (como el occidental)
+     *
+     * @returns {Array} Array de 12 objetos con propiedades {index, cents, name, stackOrder}
+     */
+    generateChromatic12WScale() {
+        const notes = [];
+        const phiFifth = 1200 * Math.log2(this.PHI); // ~833.09 cents
+
+        // Nombres estilo occidental para familiaridad
+        const westernNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+        // Generar 12 notas por apilación de quintas áureas
+        for (let i = 0; i < 12; i++) {
+            const centsRaw = i * phiFifth;
+            const cents = centsRaw % 1200;
+
+            notes.push({
+                index: i,
+                stackOrder: i, // Orden en el círculo de quintas áureas
+                cents: cents,
+                phiFifth: phiFifth,
+                name: `${i}φW` // Nombre temporal, se asignará después de ordenar
+            });
+        }
+
+        // Ordenar por altura (cents ascendentes)
+        notes.sort((a, b) => a.cents - b.cents);
+
+        // Asignar índice cromático y nombres occidentales después de ordenar
+        notes.forEach((note, idx) => {
+            note.chromaticIndex = idx;
+            note.westernName = westernNames[idx] + 'φ';
+            note.name = westernNames[idx] + 'φW';
+        });
+
+        // Calcular gaps entre notas
+        for (let i = 0; i < notes.length; i++) {
+            const nextIdx = (i + 1) % notes.length;
+            const nextCents = nextIdx === 0 ? 1200 : notes[nextIdx].cents;
+            notes[i].gap = nextCents - notes[i].cents;
+        }
+
+        return notes;
     }
 
     /**

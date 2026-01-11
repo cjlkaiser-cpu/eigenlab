@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="es" xml:lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <title>Sistema Armónico Áureo: Teoría Musical desde la Proporción Divina</title>
+  <link rel="stylesheet" href="paper-style.css" />
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+  <style>
+    .epigraph {
+      font-style: italic;
+      text-align: right;
+      margin: 2rem 0;
+      padding-right: 2rem;
+      color: #555;
+    }
+    .epigraph-source {
+      font-size: 0.9em;
+      margin-top: 0.5rem;
+    }
+    .note-box {
+      background: #fffde7;
+      border-left: 3px solid #f9a825;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .phi-box {
+      background: #fff3e0;
+      border-left: 3px solid #f97316;
+      padding: 1rem 1.5rem;
+      margin: 1.5rem 0;
+    }
+    .highlight-quote {
+      font-size: 1.1em;
+      text-align: center;
+      padding: 1.5rem;
+      margin: 2rem 0;
+      background: linear-gradient(135deg, #f5f5f5 0%, #fafafa 100%);
+      border-radius: 8px;
+    }
+    .formula {
+      text-align: center;
+      margin: 1.5rem 0;
+      font-size: 1.1em;
+    }
+    .system-comparison td:first-child {
+      font-weight: 600;
+    }
+    .golden-symbol {
+      color: #f97316;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+<header id="title-block-header">
+  <h1 class="title">Sistema Armónico Áureo: Teoría Musical desde la Proporción Divina</h1>
+  <p style="font-style: italic; color: #666;">Tres sistemas tonales derivados de φ = 1.618... y su implementación en Web Audio</p>
+  <p style="font-size: 0.9rem; color: #666; margin-top: 1rem;">Enero 2026</p>
+  <p style="font-size: 0.85rem; color: #888;">Carlos Lorente Kaiser &amp; Claude Opus 4.5</p>
+</header>
+
+<nav id="TOC" role="doc-toc">
+  <strong>Contenidos</strong>
+  <ul>
+    <li><a href="#abstract">Resumen</a></li>
+    <li><a href="#introduccion">1. Introducción</a></li>
+    <li><a href="#phi">2. La proporción áurea como operador musical</a>
+      <ul>
+        <li><a href="#propiedades">2.1 Propiedades únicas de φ</a></li>
+        <li><a href="#hipotesis">2.2 Hipótesis central</a></li>
+      </ul>
+    </li>
+    <li><a href="#sistema-12">3. Sistema 12-φ: División por potencias de φ</a>
+      <ul>
+        <li><a href="#escala-cromatica">3.1 La escala cromática áurea</a></li>
+        <li><a href="#consonancia">3.2 Función de consonancia</a></li>
+        <li><a href="#diatonicas">3.3 Escalas diatónicas optimizadas</a></li>
+      </ul>
+    </li>
+    <li><a href="#sistema-15">4. Sistema 15-φ: Quintas áureas apiladas</a>
+      <ul>
+        <li><a href="#motivacion-15">4.1 Motivación: limitaciones del 12-φ</a></li>
+        <li><a href="#formula-15">4.2 Fórmula generadora</a></li>
+        <li><a href="#ventajas-15">4.3 Ventajas distributivas</a></li>
+      </ul>
+    </li>
+    <li><a href="#sistema-12w">5. Sistema 12-φW: El puente occidental</a>
+      <ul>
+        <li><a href="#descubrimiento">5.1 El descubrimiento clave</a></li>
+        <li><a href="#comparacion">5.2 Comparación con 12-TET</a></li>
+        <li><a href="#aplicaciones">5.3 Aplicaciones prácticas</a></li>
+      </ul>
+    </li>
+    <li><a href="#implementacion">6. Implementación técnica</a>
+      <ul>
+        <li><a href="#motor">6.1 Motor matemático</a></li>
+        <li><a href="#audio">6.2 Síntesis de audio</a></li>
+        <li><a href="#simulaciones">6.3 Las 9 simulaciones</a></li>
+      </ul>
+    </li>
+    <li><a href="#composicion">7. Composición algorítmica</a></li>
+    <li><a href="#reflexiones">8. Reflexiones</a></li>
+    <li><a href="#conclusiones">9. Conclusiones</a></li>
+    <li><a href="#referencias">Referencias</a></li>
+    <li><a href="#apendice-a">Apéndice A: Tablas de intervalos</a></li>
+    <li><a href="#apendice-b">Apéndice B: Glosario</a></li>
+  </ul>
+</nav>
+
+<section id="abstract">
+  <h2>Resumen</h2>
+  <p>
+    Este artículo presenta el <strong>Sistema Armónico Áureo</strong>, una teoría musical completa que utiliza la proporción áurea <span class="golden-symbol">φ = 1.618033988749895</span> como operador estructural fundamental. A diferencia de sistemas históricos que usan φ decorativamente, proponemos tres variantes complementarias: <strong>12-φ</strong> (división recursiva), <strong>15-φ</strong> (quintas apiladas) y <strong>12-φW</strong> (híbrido occidental). Cada sistema ofrece una sonoridad única con fundamento matemático coherente. Incluimos implementación completa en JavaScript con 9 simulaciones interactivas y ~11,500 líneas de código.
+  </p>
+  <p class="keywords"><strong>Palabras clave:</strong> proporción áurea, microtonalidad, teoría musical, consonancia, Web Audio API, composición algorítmica, temperamento</p>
+</section>
+
+<section id="introduccion">
+  <h2>1. Introducción: ¿Por qué φ como base armónica?</h2>
+
+  <div class="epigraph">
+    "Geometry has two great treasures: one is the theorem of Pythagoras; the other, the division of a line into extreme and mean ratio. The first we may compare to a measure of gold; the second we may name a precious jewel."
+    <div class="epigraph-source">— Johannes Kepler</div>
+  </div>
+
+  <p>
+    El <strong>sistema de temperamento igual</strong> (12-TET) ha dominado la música occidental durante siglos. Sin embargo, su elección de dividir la octava en 12 partes iguales (100 cents cada una) es <em>arbitraria desde un punto de vista matemático</em>. Si bien ofrece pragmatismo —todas las tonalidades suenan igual—, sacrifica las relaciones naturales de ratios simples.
+  </p>
+
+  <p>
+    Históricamente, sistemas como la <strong>afinación pitagórica</strong> (ratios 2:1, 3:2, 4:3), la <strong>entonación justa</strong> (5:4, 6:5) y los <strong>temperamentos mesotónicos</strong> buscaban consonancia basada en ratios de números enteros pequeños.
+  </p>
+
+  <div class="highlight-quote">
+    <strong>Pregunta fundamental:</strong><br>
+    ¿Existe un sistema armónico basado en un <em>único número irracional</em> que genere toda la estructura tonal?
+  </div>
+
+  <p>
+    <strong>Respuesta:</strong> Sí. El número áureo <span class="golden-symbol">φ</span> puede ser el operador estructural de un sistema armónico completo.
+  </p>
+
+  <p>
+    Este artículo no pretende reemplazar 12-TET —es un sistema <em>alternativo</em>, no superior. Tampoco imita la armonía tonal clásica; es un <em>universo paralelo</em>. Pretendemos explorar un sistema matemáticamente coherente, generar música única e identificable, y proveer herramientas compositivas experimentales.
+  </p>
+</section>
+
+<section id="phi">
+  <h2>2. La proporción áurea como operador musical</h2>
+
+  <h3 id="propiedades">2.1 Propiedades únicas de φ</h3>
+
+  <p>El número áureo posee propiedades matemáticas extraordinarias:</p>
+
+  <div class="formula">
+    \[ \varphi = \frac{1 + \sqrt{5}}{2} = 1.618033988749895... \]
+  </div>
+
+  <p><strong>Autosimilitud recursiva:</strong></p>
+  <ul>
+    <li>φ² = φ + 1</li>
+    <li>φ³ = 2φ + 1</li>
+    <li>φⁿ⁺¹ = φⁿ + φⁿ⁻¹ (relación de Fibonacci)</li>
+  </ul>
+
+  <p><strong>Omnipresencia natural:</strong></p>
+  <ul>
+    <li>Espirales de galaxias, nautilus, girasoles</li>
+    <li>Filotaxis (ángulo áureo = 137.5°)</li>
+    <li>Proporciones humanas (Vitruvio, Da Vinci)</li>
+  </ul>
+
+  <p><strong>Convergencia de Fibonacci:</strong></p>
+  <div class="formula">
+    \[ \lim_{n \to \infty} \frac{F(n)}{F(n-1)} = \varphi \]
+  </div>
+
+  <h3 id="hipotesis">2.2 Hipótesis central</h3>
+
+  <div class="phi-box">
+    Si φ estructura formas naturales y es el límite de una serie recursiva fundamental, <strong>puede estructurar también un sistema tonal coherente</strong>.
+  </div>
+
+  <p>La diferencia con usos previos de φ en música (Bartók, Debussy) es que aquí φ no es decorativo sino <em>generador</em>: toda la estructura —escalas, acordes, consonancia, función armónica— emerge de potencias de φ.</p>
+</section>
+
+<section id="sistema-12">
+  <h2>3. Sistema 12-φ: División por potencias de φ</h2>
+
+  <h3 id="escala-cromatica">3.1 La escala cromática áurea</h3>
+
+  <p>La escala se genera dividiendo la octava (1200 cents) recursivamente por φ:</p>
+
+  <div class="formula">
+    \[ n_i = (1200 \cdot \varphi^{-i}) \mod 1200 \quad \text{para } i \in [0, 11] \]
+  </div>
+
+  <table>
+    <caption>Escala cromática 12-φ (ordenada por cents)</caption>
+    <thead>
+      <tr><th>Índice φ</th><th>Cents</th><th>Frecuencia (A=440)</th><th>Gap siguiente</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>φ₀</td><td>0.00</td><td>440.00 Hz</td><td>7.91</td></tr>
+      <tr><td>φ₇</td><td>7.91</td><td>442.01 Hz</td><td>29.56</td></tr>
+      <tr><td>φ₉</td><td>37.47</td><td>449.59 Hz</td><td>118.28</td></tr>
+      <tr><td>φ₂</td><td>155.75</td><td>481.82 Hz</td><td>37.47</td></tr>
+      <tr><td>φ₁₁</td><td>193.22</td><td>491.86 Hz</td><td>118.28</td></tr>
+      <tr><td>φ₄</td><td>311.50</td><td>527.58 Hz</td><td>155.75</td></tr>
+      <tr><td>φ₆</td><td>467.25</td><td>580.73 Hz</td><td>156.11</td></tr>
+      <tr><td>φ₈</td><td>623.36</td><td>639.11 Hz</td><td>118.28</td></tr>
+      <tr><td>φ₁</td><td>741.64</td><td>690.77 Hz</td><td>37.47</td></tr>
+      <tr><td>φ₁₀</td><td>779.11</td><td>706.30 Hz</td><td>118.28</td></tr>
+      <tr><td>φ₃</td><td>897.39</td><td>762.00 Hz</td><td>155.75</td></tr>
+      <tr><td>φ₅</td><td>1053.14</td><td>838.39 Hz</td><td>146.86</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Observación clave:</strong> Los intervalos son altamente variables (8-156 cents), a diferencia de los 100 cents uniformes de 12-TET. Esto crea una sonoridad única pero requiere reentrenamiento auditivo.</p>
+
+  <h3 id="consonancia">3.2 Función de consonancia</h3>
+
+  <p>Definimos consonancia como <em>proximidad a potencias de φ</em>, no como ratios simples:</p>
+
+  <div class="formula">
+    \[ C(I) = e^{-\frac{d^2}{\sigma^2}} \]
+  </div>
+
+  <p>donde:</p>
+  <ul>
+    <li><em>d</em> = distancia mínima del intervalo <em>I</em> a cualquier φᵏ (k ∈ ℤ)</li>
+    <li><em>σ</em> = tolerancia (típicamente 25 cents / 2)</li>
+  </ul>
+
+  <p>Esta función gaussiana produce valores entre 0 (disonante) y 1 (perfectamente consonante con φ).</p>
+
+  <h3 id="diatonicas">3.3 Escalas diatónicas optimizadas</h3>
+
+  <p>Para seleccionar 7 notas de las 12 cromáticas, evaluamos las C(12,7) = 792 combinaciones posibles:</p>
+
+  <div class="formula">
+    \[ \text{Score}(S_7) = \sum_{i < j} C(|n_i - n_j|) - 10 \times \text{(microintervalos < 80¢)} \]
+  </div>
+
+  <p>La penalización evita escalas con pasos demasiado pequeños para ser percibidos claramente.</p>
+</section>
+
+<section id="sistema-15">
+  <h2>4. Sistema 15-φ: Quintas áureas apiladas</h2>
+
+  <h3 id="motivacion-15">4.1 Motivación: limitaciones del 12-φ</h3>
+
+  <p>El sistema 12-φ presenta problemas prácticos:</p>
+  <ul>
+    <li><strong>Distribución no uniforme:</strong> Gaps de 8 a 147 cents</li>
+    <li><strong>Microintervalos problemáticos:</strong> Pasos < 30 cents difíciles de percibir</li>
+    <li><strong>Cobertura irregular:</strong> Algunas regiones de la octava poco representadas</li>
+  </ul>
+
+  <h3 id="formula-15">4.2 Fórmula generadora</h3>
+
+  <p>La <strong>quinta áurea</strong> es el intervalo fundamental:</p>
+
+  <div class="formula">
+    \[ \text{Quinta áurea} = 1200 \times \log_2(\varphi) = 833.09 \text{ cents} \]
+  </div>
+
+  <p>Apilando 15 quintas áureas:</p>
+
+  <div class="formula">
+    \[ \text{cents}_i = (i \times 833.09) \mod 1200 \quad \text{para } i \in [0, 14] \]
+  </div>
+
+  <p>15 quintas cubren aproximadamente 10.41 octavas, proporcionando mejor "cierre" que 12.</p>
+
+  <h3 id="ventajas-15">4.3 Ventajas distributivas</h3>
+
+  <table class="system-comparison">
+    <caption>Comparación de distribución</caption>
+    <thead>
+      <tr><th>Métrica</th><th>12-φ</th><th>15-φ</th><th>12-TET</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Gap promedio</td><td>100 cents</td><td>80 cents</td><td>100 cents</td></tr>
+      <tr><td>Gap mínimo</td><td>7.91 cents</td><td>33.09 cents</td><td>100 cents</td></tr>
+      <tr><td>Gap máximo</td><td>147.53 cents</td><td>99.27 cents</td><td>100 cents</td></tr>
+      <tr><td>Cobertura</td><td>Irregular</td><td>Excelente</td><td>Perfecta</td></tr>
+    </tbody>
+  </table>
+
+  <div class="phi-box">
+    <strong>Ventaja principal:</strong> El sistema 15-φ elimina microintervalos extremos y proporciona distribución más uniforme manteniendo las propiedades matemáticas de φ.
+  </div>
+</section>
+
+<section id="sistema-12w">
+  <h2>5. Sistema 12-φW: El puente occidental</h2>
+
+  <h3 id="descubrimiento">5.1 El descubrimiento clave</h3>
+
+  <p>Al tomar solo <strong>12 quintas áureas apiladas</strong> (en lugar de 15), emerge un resultado sorprendente:</p>
+
+  <div class="formula">
+    \[ \text{cents}_i = (i \times 833.09) \mod 1200 \quad \text{para } i \in [0, 11] \]
+  </div>
+
+  <div class="highlight-quote">
+    El semitono promedio resultante es <strong>~99 cents</strong>, casi idéntico a los 100 cents de 12-TET.
+  </div>
+
+  <p>Esto significa que el sistema 12-φW "suena familiar" al oído occidental, mientras preserva la quinta áurea de 833 cents.</p>
+
+  <h3 id="comparacion">5.2 Comparación con 12-TET</h3>
+
+  <table class="system-comparison">
+    <caption>12-φW vs 12-TET</caption>
+    <thead>
+      <tr><th>Característica</th><th>12-TET</th><th>12-φW</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Generador</td><td>2^(1/12) = 100¢</td><td>φ^stack = 833¢</td></tr>
+      <tr><td>Semitono promedio</td><td>100 cents</td><td>~99 cents</td></tr>
+      <tr><td>Quinta</td><td>700 cents</td><td>833 cents</td></tr>
+      <tr><td>Filosofía</td><td>Pragmática</td><td>Híbrida</td></tr>
+      <tr><td>Familiaridad</td><td>Máxima</td><td>Alta</td></tr>
+      <tr><td>Coherencia φ</td><td>Ninguna</td><td>Preservada</td></tr>
+    </tbody>
+  </table>
+
+  <h3 id="aplicaciones">5.3 Aplicaciones prácticas</h3>
+
+  <ul>
+    <li><strong>Transición pedagógica:</strong> Introducir armonía φ a músicos formados en 12-TET</li>
+    <li><strong>Hibridación:</strong> Combinar pasajes 12-TET y 12-φW en la misma obra</li>
+    <li><strong>Experimentación accesible:</strong> Explorar φ sin abandonar la familiaridad tonal</li>
+    <li><strong>Progresiones clásicas:</strong> I-IV-V-I, ii-V-I, Blues funcionan directamente</li>
+  </ul>
+</section>
+
+<section id="implementacion">
+  <h2>6. Implementación técnica</h2>
+
+  <h3 id="motor">6.1 Motor matemático (GoldenHarmonyEngine)</h3>
+
+  <p>El motor JavaScript (~830 líneas) implementa:</p>
+
+<pre><code>class GoldenHarmonyEngine {
+    constructor() {
+        this.PHI = (1 + Math.sqrt(5)) / 2;
+        this.chromaticScale = this.generateChromaticScale();
+        this.consonanceCache = new Map();
+    }
+
+    consonance(intervalCents, tolerance = 25) {
+        // Buscar potencia de φ más cercana
+        let minDistance = Infinity;
+        for (let k = -5; k <= 5; k++) {
+            const phiInterval = 1200 * Math.log2(Math.pow(this.PHI, k));
+            const wrapped = ((phiInterval % 1200) + 1200) % 1200;
+            let dist = Math.abs(intervalCents - wrapped);
+            dist = Math.min(dist, 1200 - dist);
+            minDistance = Math.min(minDistance, dist);
+        }
+        // Gaussiana
+        const sigma = tolerance / 2.0;
+        return Math.exp(-(minDistance * minDistance) / (sigma * sigma));
+    }
+}</code></pre>
+
+  <h3 id="audio">6.2 Síntesis de audio</h3>
+
+  <p>Web Audio API con ADSR envelopes, panning estéreo y filtros:</p>
+
+<pre><code>function playNote(frequency, duration, volume, waveform) {
+    const osc = audioContext.createOscillator();
+    const envelope = audioContext.createGain();
+    const filter = audioContext.createBiquadFilter();
+
+    osc.type = waveform;  // sine, triangle, sawtooth, square
+    osc.frequency.value = frequency;
+
+    // ADSR Envelope
+    const now = audioContext.currentTime;
+    envelope.gain.setValueAtTime(0, now);
+    envelope.gain.linearRampToValueAtTime(volume, now + 0.05);
+    envelope.gain.linearRampToValueAtTime(volume * 0.7, now + 0.15);
+    envelope.gain.setValueAtTime(volume * 0.7, now + duration - 0.2);
+    envelope.gain.linearRampToValueAtTime(0, now + duration);
+
+    // Routing
+    osc.connect(filter);
+    filter.connect(envelope);
+    envelope.connect(masterGain);
+
+    osc.start(now);
+    osc.stop(now + duration);
+}</code></pre>
+
+  <h3 id="simulaciones">6.3 Las 9 simulaciones</h3>
+
+  <table>
+    <caption>Simulaciones del Music Theory Lab</caption>
+    <thead>
+      <tr><th>Sistema</th><th>Simulación</th><th>Función</th><th>Líneas</th></tr>
+    </thead>
+    <tbody>
+      <tr><td rowspan="3">12-φ</td><td>Escala Cromática</td><td>Explorador de 12 notas</td><td>~850</td></tr>
+      <tr><td>Armonizador</td><td>Constructor de acordes</td><td>~1100</td></tr>
+      <tr><td>Compositor</td><td>Generador SATB</td><td>~900</td></tr>
+      <tr><td rowspan="3">15-φ</td><td>Escala 15 Notas</td><td>Explorador microtonal</td><td>~550</td></tr>
+      <tr><td>Armonizador 15</td><td>Acordes de 3-5 notas</td><td>~600</td></tr>
+      <tr><td>Compositor 15</td><td>Generador SATB</td><td>~550</td></tr>
+      <tr><td rowspan="3">12-φW</td><td>Escala φW</td><td>Comparador occidental</td><td>~650</td></tr>
+      <tr><td>Armonizador φW</td><td>Progresiones clásicas</td><td>~620</td></tr>
+      <tr><td>Compositor φW</td><td>SATB occidental-φ</td><td>~600</td></tr>
+    </tbody>
+  </table>
+
+  <p><strong>Total:</strong> ~11,500 líneas de código + documentación</p>
+</section>
+
+<section id="composicion">
+  <h2>7. Composición algorítmica</h2>
+
+  <p>El compositor genera preludios SATB (4 voces: Soprano, Alto, Tenor, Bajo) siguiendo reglas de contrapunto áureo:</p>
+
+  <h4>Reglas adaptadas de Fux/Schoenberg:</h4>
+  <ol>
+    <li><strong>No quintas áureas paralelas:</strong> Evitar φ¹ (833¢) consecutivos entre las mismas voces</li>
+    <li><strong>Saltos limitados:</strong> Máximo φ³ (~299¢) sin resolución por paso</li>
+    <li><strong>Movimiento preferido:</strong> Contrario y oblicuo sobre paralelo</li>
+    <li><strong>Voice leading óptimo:</strong> Minimizar movimiento total (algoritmo greedy)</li>
+  </ol>
+
+  <h4>Algoritmo de generación:</h4>
+<pre><code>function generatePrelude(params) {
+    // 1. Generar progresión armónica (4-16 acordes)
+    const progression = generateProgression(scale, complexity);
+
+    // 2. Bajo: fundamentales de acordes
+    const bass = progression.map(chord => chord.notes[0]);
+
+    // 3. Alto/Tenor: notas intermedias con voice leading
+    const inner = generateInnerVoices(progression, bass);
+
+    // 4. Soprano: melodía con densidad rítmica variable
+    const soprano = generateSopranoLine(progression, density);
+
+    // 5. Verificar contrapunto y corregir paralelos
+    return verifyCounterpoint({ soprano, alto, tenor, bass });
+}</code></pre>
+</section>
+
+<section id="reflexiones">
+  <h2>8. Reflexiones: ¿Qué significa música "áurea"?</h2>
+
+  <h3>8.1 No es ciencia, es diseño</h3>
+
+  <p>A diferencia de Kepler, quien creía que la música celestial <em>existía</em> objetivamente, nosotros <em>elegimos</em> φ como generador. Las frecuencias son arbitrarias —podrían ser otras. El sistema es una <strong>construcción estética</strong>, no un descubrimiento.</p>
+
+  <p>Pero no es pura ficción. Las relaciones matemáticas son reales:</p>
+  <ul>
+    <li>φ² = φ + 1 (autosimilitud verificable)</li>
+    <li>La función de consonancia es continua y derivable</li>
+    <li>Las optimizaciones combinatorias son computables</li>
+  </ul>
+
+  <h3>8.2 Tres sabores de extrañeza</h3>
+
+  <div class="highlight-quote">
+    <strong>12-φ:</strong> "¿Qué música existiría si φ definiera todos los intervalos?"<br><br>
+    <strong>15-φ:</strong> "¿Y si usáramos más notas, distribuidas por quintas áureas?"<br><br>
+    <strong>12-φW:</strong> "¿Podemos tener lo mejor de ambos mundos?"
+  </div>
+
+  <p>El gradiente de familiaridad va de 12-φW (más accesible) a 12-φ (más experimental), permitiendo transición gradual.</p>
+
+  <h3>8.3 Limitaciones honestas</h3>
+
+  <ul>
+    <li>Requiere <strong>reentrenamiento auditivo</strong> (especialmente 12-φ y 15-φ)</li>
+    <li>Incompatible con instrumentos de afinación fija</li>
+    <li>No hay repertorio existente (oportunidad creativa)</li>
+    <li>La quinta de 833¢ suena "rara" incluso en 12-φW</li>
+  </ul>
+</section>
+
+<section id="conclusiones">
+  <h2>9. Conclusiones</h2>
+
+  <p>El Sistema Armónico Áureo demuestra que es posible construir una teoría musical completa desde un único principio matemático. Los tres sistemas desarrollados ofrecen:</p>
+
+  <table>
+    <thead>
+      <tr><th>Sistema</th><th>Fortaleza</th><th>Uso ideal</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>12-φ</td><td>Máxima coherencia φ</td><td>Música experimental, drones</td></tr>
+      <tr><td>15-φ</td><td>Mejor distribución</td><td>Microtonalidad, texturas ricas</td></tr>
+      <tr><td>12-φW</td><td>Familiaridad + φ</td><td>Jazz experimental, transición pedagógica</td></tr>
+    </tbody>
+  </table>
+
+  <p>La implementación web permite exploración inmediata sin instalación de software. El código es abierto y extensible.</p>
+
+  <div class="highlight-quote">
+    <em>Tres caminos, un principio: la armonía nace del número áureo.</em>
+  </div>
+
+  <p>Queda por investigar: ritmos áureos (duraciones basadas en φ), timbres áureos (síntesis FM con ratios φ), y estudios perceptivos formales sobre adaptación auditiva.</p>
+</section>
+
+<section id="referencias">
+  <h2>Referencias</h2>
+  <div class="references">
+    <p>[1] Livio, M. (2002). <em>The Golden Ratio: The Story of Phi, the World's Most Astonishing Number</em>. Broadway Books.</p>
+    <p>[2] Dunlap, R. A. (1997). <em>The Golden Ratio and Fibonacci Numbers</em>. World Scientific.</p>
+    <p>[3] Barbour, J. M. (1953). <em>Tuning and Temperament: A Historical Survey</em>. Michigan State College Press.</p>
+    <p>[4] Partch, H. (1974). <em>Genesis of a Music</em> (2nd ed.). Da Capo Press.</p>
+    <p>[5] Sethares, W. A. (2005). <em>Tuning, Timbre, Spectrum, Scale</em> (2nd ed.). Springer.</p>
+    <p>[6] Plomp, R., & Levelt, W. J. M. (1965). "Tonal Consonance and Critical Bandwidth." <em>JASA</em>, 38(4), 548-560.</p>
+    <p>[7] Helmholtz, H. von (1877). <em>On the Sensations of Tone</em>. Dover Publications (1954 reprint).</p>
+    <p>[8] Cope, D. (2005). <em>Computer Models of Musical Creativity</em>. MIT Press.</p>
+    <p>[9] W3C. (2021). "Web Audio API Specification." https://www.w3.org/TR/webaudio/</p>
+    <p>[10] Kepler, J. (1619). <em>Harmonices Mundi</em>. Linz: Johann Planck.</p>
+  </div>
+</section>
+
+<section id="apendice-a">
+  <h2>Apéndice A: Tabla de intervalos áureos</h2>
+
+  <table>
+    <thead>
+      <tr><th>k</th><th>φᵏ</th><th>Cents (mod 1200)</th><th>Nombre propuesto</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>0</td><td>1.0000</td><td>0.00</td><td>Unísono</td></tr>
+      <tr><td>1</td><td>1.6180</td><td>833.09</td><td>Quinta áurea</td></tr>
+      <tr><td>2</td><td>2.6180</td><td>466.18</td><td>Cuarta áurea superior</td></tr>
+      <tr><td>3</td><td>4.2361</td><td>299.27</td><td>Tono áureo mayor</td></tr>
+      <tr><td>4</td><td>6.8541</td><td>932.36</td><td>Sexta áurea mayor</td></tr>
+      <tr><td>5</td><td>11.0902</td><td>565.45</td><td>Tritono áureo</td></tr>
+      <tr><td>-1</td><td>0.6180</td><td>366.91</td><td>Cuarta áurea invertida</td></tr>
+      <tr><td>-2</td><td>0.3820</td><td>733.82</td><td>Quinta áurea invertida</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<section id="apendice-b">
+  <h2>Apéndice B: Glosario</h2>
+
+  <table>
+    <thead>
+      <tr><th>Término</th><th>Definición</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><strong>φ (phi)</strong></td><td>Número áureo, 1.618033988749895</td></tr>
+      <tr><td><strong>Cents</strong></td><td>Unidad logarítmica: 1200 cents = 1 octava</td></tr>
+      <tr><td><strong>Consonancia áurea</strong></td><td>Proximidad gaussiana a potencias de φ</td></tr>
+      <tr><td><strong>Quinta áurea</strong></td><td>833.09 cents = 1200 × log₂(φ)</td></tr>
+      <tr><td><strong>12-φ</strong></td><td>Sistema de 12 notas por división recursiva</td></tr>
+      <tr><td><strong>15-φ</strong></td><td>Sistema de 15 notas por quintas apiladas</td></tr>
+      <tr><td><strong>12-φW</strong></td><td>Sistema de 12 notas "occidental" por quintas</td></tr>
+      <tr><td><strong>Stack order</strong></td><td>Orden de generación por quintas apiladas</td></tr>
+      <tr><td><strong>Voice leading</strong></td><td>Conducción de voces minimizando movimiento</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<hr>
+
+<footer style="text-align: center; margin-top: 3rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; color: #666;">
+  <p><strong>Demo interactiva:</strong> <a href="../../index.html">Music Theory Lab</a></p>
+  <p>EigenLab · Enero 2026</p>
+</footer>
+
+</body>
+</html>

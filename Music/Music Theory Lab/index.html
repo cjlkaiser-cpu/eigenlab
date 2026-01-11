@@ -130,6 +130,12 @@
                     </svg>
                     <span class="mono">Motor JS</span>
                 </a>
+                <a href="papers/golden-harmony/ARTICLE_v1.pdf" class="inline-flex items-center gap-2 px-4 py-2 bg-orange-500/10 border border-orange-500/30 rounded-lg text-orange-400 text-sm hover:bg-orange-500/20 transition">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                    <span class="mono">Artículo PDF</span>
+                </a>
             </div>
         </section>
 
@@ -401,12 +407,486 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Sim 4: Escala de 15 Notas -->
+            <a href="escala-15-notas.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: 15-note circle mini-sim -->
+                    <div class="h-48 bg-gradient-to-br from-cyan-500/10 to-pink-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="relative w-36 h-36">
+                            <!-- Circle with 15 notes -->
+                            <div class="absolute inset-0 rounded-full border border-cyan-500/30 rotate-slow"></div>
+                            <div class="absolute inset-3 rounded-full border border-pink-500/20"></div>
+
+                            <!-- 15 notes around circle (evenly spaced for preview) -->
+                            <div class="absolute w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="top: 0%; left: 50%; transform: translate(-50%, -50%);"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/90 rounded-full pulse-pink" style="top: 4%; left: 70%; transform: translate(-50%, -50%); animation-delay: 0.07s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="top: 15%; left: 85%; transform: translate(-50%, -50%); animation-delay: 0.14s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="top: 30%; left: 95%; transform: translate(-50%, -50%); animation-delay: 0.21s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/60 rounded-full pulse-pink" style="top: 50%; left: 100%; transform: translate(-50%, -50%); animation-delay: 0.28s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="top: 70%; left: 95%; transform: translate(-50%, -50%); animation-delay: 0.35s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="top: 85%; left: 85%; transform: translate(-50%, -50%); animation-delay: 0.42s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/90 rounded-full pulse-pink" style="top: 96%; left: 70%; transform: translate(-50%, -50%); animation-delay: 0.49s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="top: 100%; left: 50%; transform: translate(-50%, -50%); animation-delay: 0.56s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/90 rounded-full pulse-pink" style="top: 96%; left: 30%; transform: translate(-50%, -50%); animation-delay: 0.63s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="top: 85%; left: 15%; transform: translate(-50%, -50%); animation-delay: 0.70s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="top: 70%; left: 5%; transform: translate(-50%, -50%); animation-delay: 0.77s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/60 rounded-full pulse-pink" style="top: 50%; left: 0%; transform: translate(-50%, -50%); animation-delay: 0.84s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="top: 30%; left: 5%; transform: translate(-50%, -50%); animation-delay: 0.91s;"></div>
+                            <div class="absolute w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="top: 15%; left: 15%; transform: translate(-50%, -50%); animation-delay: 0.98s;"></div>
+
+                            <!-- Center label -->
+                            <div class="absolute inset-0 flex items-center justify-center flex-col">
+                                <span class="text-cyan-400 text-lg font-bold mono">15</span>
+                                <span class="text-pink-400 text-xs font-serif">φ</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Microtonal</span>
+                            <span class="category-tag bg-pink-500/20 text-pink-400 border border-pink-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Escala de 15 Notas</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            15 notas por quintas aureas apiladas. Distribucion mas uniforme (~80¢) que la escala de 12. Circulo de quintas phi.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>15 Notas</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                <span>Quintas φ</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <span>~80¢ gaps</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Sim 5: Armonizador 15 Notas -->
+            <a href="armonizador-15-notas.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: Chord builder mini-sim -->
+                    <div class="h-48 bg-gradient-to-br from-cyan-500/10 to-pink-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-full px-6">
+                            <!-- Scale degrees -->
+                            <div class="flex justify-center gap-2 mb-4">
+                                <div class="w-8 h-8 bg-cyan-500/30 rounded flex items-center justify-center text-cyan-400 text-xs font-bold pulse-pink">I</div>
+                                <div class="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center text-cyan-400/70 text-xs">II</div>
+                                <div class="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center text-cyan-400/70 text-xs">III</div>
+                                <div class="w-8 h-8 bg-pink-500/30 rounded flex items-center justify-center text-pink-400 text-xs font-bold pulse-pink" style="animation-delay: 0.3s;">IV</div>
+                                <div class="w-8 h-8 bg-pink-500/30 rounded flex items-center justify-center text-pink-400 text-xs font-bold pulse-pink" style="animation-delay: 0.6s;">V</div>
+                                <div class="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center text-cyan-400/70 text-xs">VI</div>
+                                <div class="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center text-cyan-400/70 text-xs">VII</div>
+                                <div class="w-8 h-8 bg-cyan-500/20 rounded flex items-center justify-center text-cyan-400/70 text-xs">VIII</div>
+                            </div>
+
+                            <!-- Chord visualization -->
+                            <div class="flex justify-center gap-3">
+                                <div class="bg-gradient-to-br from-cyan-500 to-cyan-700 px-3 py-2 rounded text-white text-xs font-bold">I</div>
+                                <div class="bg-gradient-to-br from-pink-500 to-pink-700 px-3 py-2 rounded text-white text-xs font-bold">IV</div>
+                                <div class="bg-gradient-to-br from-pink-500 to-pink-700 px-3 py-2 rounded text-white text-xs font-bold">V</div>
+                                <div class="bg-gradient-to-br from-cyan-500 to-cyan-700 px-3 py-2 rounded text-white text-xs font-bold">I</div>
+                            </div>
+
+                            <p class="text-center text-gray-600 text-xs mt-3 mono">8 grados - triadas/tetradas</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Armonia</span>
+                            <span class="category-tag bg-pink-500/20 text-pink-400 border border-pink-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Armonizador 15 Notas</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Constructor de acordes y progresiones para la escala de 15 notas. Escalas personalizables, triadas, tetradas y pentadas.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>5-9 grados</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                                <span>Heatmap</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                                <span>Custom</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Sim 6: Compositor 15 Notas -->
+            <a href="compositor-15-notas.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: SATB mini-sim -->
+                    <div class="h-48 bg-gradient-to-br from-cyan-500/10 to-pink-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-full px-6">
+                            <!-- 4 voice lines (SATB) -->
+                            <div class="space-y-2">
+                                <!-- Soprano -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-pink-400 text-xs w-4 mono">S</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink"></div>
+                                        <div class="w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="animation-delay: 0.15s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="animation-delay: 0.3s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="animation-delay: 0.45s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="animation-delay: 0.6s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Alto -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-purple-400 text-xs w-4 mono">A</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-purple-400/80 rounded-full pulse-pink" style="animation-delay: 0.1s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full pulse-pink" style="animation-delay: 0.25s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400/70 rounded-full pulse-pink" style="animation-delay: 0.4s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full pulse-pink" style="animation-delay: 0.55s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400/80 rounded-full pulse-pink" style="animation-delay: 0.7s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Tenor -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-400 text-xs w-4 mono">T</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-blue-400 rounded-full pulse-pink" style="animation-delay: 0.05s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/70 rounded-full pulse-pink" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/80 rounded-full pulse-pink" style="animation-delay: 0.35s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400 rounded-full pulse-pink" style="animation-delay: 0.5s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/70 rounded-full pulse-pink" style="animation-delay: 0.65s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Bass -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-green-400 text-xs w-4 mono">B</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-green-400/80 rounded-full pulse-pink"></div>
+                                        <div class="w-2 h-2 bg-green-400 rounded-full pulse-pink" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-2 h-2 bg-green-400/70 rounded-full pulse-pink" style="animation-delay: 0.4s;"></div>
+                                        <div class="w-2 h-2 bg-green-400 rounded-full pulse-pink" style="animation-delay: 0.6s;"></div>
+                                        <div class="w-2 h-2 bg-green-400/80 rounded-full pulse-pink" style="animation-delay: 0.8s;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-center text-gray-600 text-xs mt-3 mono">SATB en universo 15-phi</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-cyan-500/20 text-cyan-400 border border-cyan-500/30">Composicion</span>
+                            <span class="category-tag bg-pink-500/20 text-pink-400 border border-pink-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Compositor 15 Notas</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Generador de preludios SATB para la escala de 15 notas. Escalas customizables, densidad ritmica y complejidad armonica.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>4 Voces</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                                <span>Algoritmico</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                                </svg>
+                                <span>Estereo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Sim 7: Escala 12-phiW -->
+            <a href="escala-12-phiW.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: Circle of fifths -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-yellow-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="relative w-32 h-32">
+                            <!-- Circle with 12 notes -->
+                            <div class="absolute inset-0 rounded-full border-2 border-orange-500/30 rotate-slow"></div>
+
+                            <!-- 12 notes around circle -->
+                            <div class="absolute w-3 h-3 bg-orange-400 rounded-full pulse-pink" style="top: 0%; left: 50%; transform: translate(-50%, -50%);"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/80 rounded-full pulse-pink" style="top: 7%; left: 75%; transform: translate(-50%, -50%); animation-delay: 0.08s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/70 rounded-full pulse-pink" style="top: 25%; left: 93%; transform: translate(-50%, -50%); animation-delay: 0.16s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/60 rounded-full pulse-pink" style="top: 50%; left: 100%; transform: translate(-50%, -50%); animation-delay: 0.24s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/70 rounded-full pulse-pink" style="top: 75%; left: 93%; transform: translate(-50%, -50%); animation-delay: 0.32s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/80 rounded-full pulse-pink" style="top: 93%; left: 75%; transform: translate(-50%, -50%); animation-delay: 0.40s;"></div>
+                            <div class="absolute w-3 h-3 bg-orange-400 rounded-full pulse-pink" style="top: 100%; left: 50%; transform: translate(-50%, -50%); animation-delay: 0.48s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/80 rounded-full pulse-pink" style="top: 93%; left: 25%; transform: translate(-50%, -50%); animation-delay: 0.56s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/70 rounded-full pulse-pink" style="top: 75%; left: 7%; transform: translate(-50%, -50%); animation-delay: 0.64s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/60 rounded-full pulse-pink" style="top: 50%; left: 0%; transform: translate(-50%, -50%); animation-delay: 0.72s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/70 rounded-full pulse-pink" style="top: 25%; left: 7%; transform: translate(-50%, -50%); animation-delay: 0.80s;"></div>
+                            <div class="absolute w-2 h-2 bg-orange-400/80 rounded-full pulse-pink" style="top: 7%; left: 25%; transform: translate(-50%, -50%); animation-delay: 0.88s;"></div>
+
+                            <!-- Center -->
+                            <div class="absolute inset-0 flex items-center justify-center">
+                                <span class="text-orange-400 text-sm font-bold mono">12-phiW</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Occidental</span>
+                            <span class="category-tag bg-green-500/20 text-green-400 border border-green-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Escala 12-phiW</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            12 notas por quintas phi apiladas. Semitonos de ~99c (como 12-TET) pero quinta de 833c. Puente entre occidental y aureo.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>12 Notas</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+                                </svg>
+                                <span>~99c</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/>
+                                </svg>
+                                <span>vs TET</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Sim 8: Armonizador 12-phiW -->
+            <a href="armonizador-12-phiW.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: Chord progression -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-yellow-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-full px-6">
+                            <!-- Scale degrees -->
+                            <div class="flex justify-center gap-2 mb-4">
+                                <div class="w-8 h-8 bg-orange-500/30 rounded flex items-center justify-center text-orange-400 text-xs font-bold pulse-pink">I</div>
+                                <div class="w-8 h-8 bg-orange-500/20 rounded flex items-center justify-center text-orange-400/70 text-xs">II</div>
+                                <div class="w-8 h-8 bg-orange-500/20 rounded flex items-center justify-center text-orange-400/70 text-xs">III</div>
+                                <div class="w-8 h-8 bg-pink-500/30 rounded flex items-center justify-center text-pink-400 text-xs font-bold pulse-pink" style="animation-delay: 0.3s;">IV</div>
+                                <div class="w-8 h-8 bg-pink-500/30 rounded flex items-center justify-center text-pink-400 text-xs font-bold pulse-pink" style="animation-delay: 0.6s;">V</div>
+                                <div class="w-8 h-8 bg-orange-500/20 rounded flex items-center justify-center text-orange-400/70 text-xs">VI</div>
+                                <div class="w-8 h-8 bg-orange-500/20 rounded flex items-center justify-center text-orange-400/70 text-xs">VII</div>
+                            </div>
+
+                            <!-- Chord visualization -->
+                            <div class="flex justify-center gap-3">
+                                <div class="bg-gradient-to-br from-orange-500 to-orange-700 px-3 py-2 rounded text-white text-xs font-bold">I</div>
+                                <div class="bg-gradient-to-br from-pink-500 to-pink-700 px-3 py-2 rounded text-white text-xs font-bold">IV</div>
+                                <div class="bg-gradient-to-br from-pink-500 to-pink-700 px-3 py-2 rounded text-white text-xs font-bold">V</div>
+                                <div class="bg-gradient-to-br from-orange-500 to-orange-700 px-3 py-2 rounded text-white text-xs font-bold">I</div>
+                            </div>
+
+                            <p class="text-center text-gray-600 text-xs mt-3 mono">Progresiones occidentales en phiW</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Armonia</span>
+                            <span class="category-tag bg-green-500/20 text-green-400 border border-green-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Armonizador 12-phiW</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Constructor de acordes occidentales en sistema phi. Progresiones clasicas (I-IV-V-I, ii-V-I) con quinta de 833c.
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>7 grados</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 12l3-3 3 3 4-4M8 21l4-4 4 4M3 4h18M4 4h16v12a1 1 0 01-1 1H5a1 1 0 01-1-1V4z"/>
+                                </svg>
+                                <span>Heatmap</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                                <span>Presets</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Sim 9: Compositor 12-phiW -->
+            <a href="compositor-12-phiW.html" class="card-link">
+                <div class="card bg-gray-950 rounded-2xl overflow-hidden border border-gray-900 relative">
+                    <div class="card-border"></div>
+
+                    <!-- Preview: SATB mini-sim -->
+                    <div class="h-48 bg-gradient-to-br from-orange-500/10 to-yellow-900/5 relative overflow-hidden flex items-center justify-center">
+                        <div class="w-full px-6">
+                            <!-- 4 voice lines (SATB) -->
+                            <div class="space-y-2">
+                                <!-- Soprano -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-pink-400 text-xs w-4 mono">S</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink"></div>
+                                        <div class="w-2 h-2 bg-pink-400/80 rounded-full pulse-pink" style="animation-delay: 0.15s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="animation-delay: 0.3s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400/70 rounded-full pulse-pink" style="animation-delay: 0.45s;"></div>
+                                        <div class="w-2 h-2 bg-pink-400 rounded-full pulse-pink" style="animation-delay: 0.6s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Alto -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-purple-400 text-xs w-4 mono">A</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-purple-400/80 rounded-full pulse-pink" style="animation-delay: 0.1s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full pulse-pink" style="animation-delay: 0.25s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400/70 rounded-full pulse-pink" style="animation-delay: 0.4s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400 rounded-full pulse-pink" style="animation-delay: 0.55s;"></div>
+                                        <div class="w-2 h-2 bg-purple-400/80 rounded-full pulse-pink" style="animation-delay: 0.7s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Tenor -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-blue-400 text-xs w-4 mono">T</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-blue-400 rounded-full pulse-pink" style="animation-delay: 0.05s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/70 rounded-full pulse-pink" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/80 rounded-full pulse-pink" style="animation-delay: 0.35s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400 rounded-full pulse-pink" style="animation-delay: 0.5s;"></div>
+                                        <div class="w-2 h-2 bg-blue-400/70 rounded-full pulse-pink" style="animation-delay: 0.65s;"></div>
+                                    </div>
+                                </div>
+                                <!-- Bass -->
+                                <div class="flex items-center gap-2">
+                                    <span class="text-green-400 text-xs w-4 mono">B</span>
+                                    <div class="flex-1 flex gap-1">
+                                        <div class="w-2 h-2 bg-green-400/80 rounded-full pulse-pink"></div>
+                                        <div class="w-2 h-2 bg-green-400 rounded-full pulse-pink" style="animation-delay: 0.2s;"></div>
+                                        <div class="w-2 h-2 bg-green-400/70 rounded-full pulse-pink" style="animation-delay: 0.4s;"></div>
+                                        <div class="w-2 h-2 bg-green-400 rounded-full pulse-pink" style="animation-delay: 0.6s;"></div>
+                                        <div class="w-2 h-2 bg-green-400/80 rounded-full pulse-pink" style="animation-delay: 0.8s;"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <p class="text-center text-gray-600 text-xs mt-3 mono">Bach en universo phiW</p>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <div class="flex items-center gap-2 mb-3">
+                            <span class="category-tag bg-orange-500/20 text-orange-400 border border-orange-500/30">Composicion</span>
+                            <span class="category-tag bg-green-500/20 text-green-400 border border-green-500/30">Nuevo</span>
+                        </div>
+
+                        <h3 class="text-xl font-medium mb-2 text-white">Compositor 12-phiW</h3>
+
+                        <p class="text-gray-500 text-sm mb-4 leading-relaxed">
+                            Generador SATB para sistema 12-phiW. Preludios estilo Bach con semitonos occidentales (~99c) y quinta aurea (833c).
+                        </p>
+
+                        <div class="flex items-center gap-3 text-xs text-gray-600">
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3"/>
+                                </svg>
+                                <span>4 Voces</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+                                </svg>
+                                <span>Algoritmico</span>
+                            </div>
+                            <div class="flex items-center gap-1">
+                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9a9 9 0 010 12.728M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z"/>
+                                </svg>
+                                <span>Estereo</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </section>
 
         <!-- Theory Section -->
         <section class="mt-20">
             <h3 class="text-2xl font-light text-center mb-8">
-                Fundamentos <span class="text-pink-400">Teóricos</span>
+                Fundamentos <span class="text-pink-400">Teoricos</span>
             </h3>
 
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

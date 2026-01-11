@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escala de 15 Notas - Music Theory Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(236, 72, 153, 0.5);
+        }
+
+        .canvas-container {
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #ec4899;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(236, 72, 153, 0.1), rgba(219, 39, 119, 0.05));
+            border: 1px solid rgba(236, 72, 153, 0.3);
+        }
+
+        .note-btn {
+            transition: all 0.2s;
+        }
+        .note-btn:hover {
+            transform: scale(1.05);
+        }
+        .note-btn.active {
+            box-shadow: 0 0 20px rgba(236, 72, 153, 0.6);
+            background: linear-gradient(135deg, #ec4899, #be185d);
+        }
+
+        .toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            background: #374151;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .toggle.active {
+            background: #ec4899;
+        }
+        .toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: left 0.3s;
+        }
+        .toggle.active::after {
+            left: 27px;
+        }
+
+        .stats-card {
+            background: linear-gradient(135deg, rgba(6, 182, 212, 0.1), rgba(6, 182, 212, 0.05));
+            border: 1px solid rgba(6, 182, 212, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-pink-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-pink-400 font-medium">Escala de 15 Notas</span> - Quintas Apiladas
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Base: <span id="base-display" class="text-pink-400">440</span> Hz</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Visualization Area -->
+        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-4 gap-4 mb-4">
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Notas en octava</div>
+                    <div class="text-2xl font-bold text-cyan-400 mono">15</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Quinta Aurea (phi^1)</div>
+                    <div class="text-2xl font-bold text-cyan-400 mono">833.09</div>
+                    <div class="text-xs text-gray-600">cents</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Gap promedio</div>
+                    <div class="text-2xl font-bold text-cyan-400 mono" id="avgGap">80.0</div>
+                    <div class="text-xs text-gray-600">cents</div>
+                </div>
+                <div class="stats-card rounded-lg p-3">
+                    <div class="text-xs text-gray-500 mb-1">Gap maximo</div>
+                    <div class="text-2xl font-bold text-cyan-400 mono" id="maxGap">~100</div>
+                    <div class="text-xs text-gray-600">cents</div>
+                </div>
+            </div>
+
+            <!-- Circle of Fifths Visualization -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Circulo de Quintas Aureas</h3>
+                    <div class="flex items-center gap-6">
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-600">Comparar con 12-TET</span>
+                            <div class="toggle" id="compare12Toggle" onclick="toggleCompare12()"></div>
+                        </div>
+                        <div class="flex items-center gap-3">
+                            <span class="text-xs text-gray-600">Comparar con 12-phi</span>
+                            <div class="toggle" id="comparePhiToggle" onclick="toggleComparePhi()"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="circleCanvas" width="800" height="400"></canvas>
+                </div>
+            </div>
+
+            <!-- Linear Distribution -->
+            <div>
+                <div class="flex justify-between items-center mb-2">
+                    <h3 class="text-sm font-medium text-gray-400">Distribucion Lineal (0-1200 cents)</h3>
+                    <span class="text-xs text-gray-600 mono">Altura = gap al siguiente</span>
+                </div>
+                <div class="canvas-container bg-gray-950">
+                    <canvas id="linearCanvas" width="800" height="200"></canvas>
+                </div>
+            </div>
+
+            <!-- Data Table -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Valores Exactos de la Escala de 15 Notas</h3>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-sm">
+                        <thead>
+                            <tr class="text-left text-gray-500 border-b border-gray-800">
+                                <th class="pb-2 pr-4">#</th>
+                                <th class="pb-2 pr-4">Nota</th>
+                                <th class="pb-2 pr-4 mono">Cents</th>
+                                <th class="pb-2 pr-4 mono">Stack</th>
+                                <th class="pb-2 pr-4 mono">Hz</th>
+                                <th class="pb-2 pr-4 mono">Gap</th>
+                                <th class="pb-2 mono">vs 12-TET</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tableBody" class="mono text-xs">
+                            <!-- Generated by JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-80 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-pink-400 glow-text">Controles</h2>
+
+            <!-- Play Button -->
+            <div class="mb-6">
+                <button id="playScaleBtn" class="w-full py-3 px-4 bg-pink-500/20 hover:bg-pink-500/30 text-pink-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M8 5v14l11-7z"/>
+                    </svg>
+                    <span id="playText">Tocar Escala Completa</span>
+                </button>
+            </div>
+
+            <!-- Play Fifths -->
+            <div class="mb-6">
+                <button id="playFifthsBtn" class="w-full py-2 px-4 bg-cyan-500/20 hover:bg-cyan-500/30 text-cyan-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"/>
+                        <path d="M12 6v6l4 2"/>
+                    </svg>
+                    Tocar en Orden de Quintas
+                </button>
+            </div>
+
+            <!-- Base Frequency -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Frecuencia base: <span id="freqValue" class="text-pink-400 mono">440</span> Hz
+                </label>
+                <input type="range" id="baseFreq" min="220" max="880" value="440" step="1" class="w-full">
+                <div class="flex justify-between text-xs text-gray-600 mt-1">
+                    <span>220 Hz (A3)</span>
+                    <span>880 Hz (A5)</span>
+                </div>
+            </div>
+
+            <!-- Waveform -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Forma de onda</label>
+                <select id="waveform" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="sine">Sine (Suave)</option>
+                    <option value="triangle" selected>Triangle (Calido)</option>
+                    <option value="sawtooth">Sawtooth (Brillante)</option>
+                    <option value="square">Square (Hueco)</option>
+                </select>
+            </div>
+
+            <!-- Duration -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Duracion: <span id="durationValue" class="text-cyan-400 mono">0.6</span>s
+                </label>
+                <input type="range" id="duration" min="0.2" max="2.0" step="0.1" value="0.6" class="w-full">
+            </div>
+
+            <!-- Volume -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Volumen: <span id="volumeValue" class="text-cyan-400 mono">30</span>%
+                </label>
+                <input type="range" id="volume" min="0" max="100" value="30" class="w-full">
+            </div>
+
+            <!-- Note Grid -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-pink-400 mb-4">Notas (15)</h3>
+
+            <div id="notesGrid" class="grid grid-cols-5 gap-2 mb-6">
+                <!-- Generated by JS -->
+            </div>
+
+            <button id="stopBtn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <rect x="6" y="6" width="12" height="12" stroke-width="2"/>
+                </svg>
+                Detener
+            </button>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-pink-400 mb-3">Formula Generadora</h3>
+                <div class="mono text-xs space-y-3 mb-3">
+                    <div class="text-gray-400">
+                        <div class="mb-2">Quintas aureas apiladas:</div>
+                        <div class="bg-black/30 p-2 rounded text-center">
+                            cents<sub>i</sub> = (i x 833.09) mod 1200
+                        </div>
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-pink-400">phi^1 =</span> 833.09 cents (quinta aurea)
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">15 x 833.09 =</span> 12496.35 cents
+                    </div>
+                    <div class="text-gray-400">
+                        <span class="text-cyan-400">12496.35 / 1200 =</span> 10.41 octavas
+                    </div>
+                </div>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Al apilar 15 quintas aureas, cubrimos la octava con <span class="text-pink-400">gaps mas uniformes</span> (~80-100 cents) que la escala de 12 notas (~30-150 cents).
+                </p>
+            </div>
+
+            <!-- Comparison -->
+            <hr class="border-gray-800 my-6">
+            <div class="text-xs text-gray-500 space-y-2">
+                <div class="flex justify-between">
+                    <span>12-TET semitono:</span>
+                    <span class="text-gray-400 mono">100.00 cents</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>15-phi promedio:</span>
+                    <span class="text-cyan-400 mono">80.00 cents</span>
+                </div>
+                <div class="flex justify-between">
+                    <span>12-phi promedio:</span>
+                    <span class="text-gray-400 mono">100.00 cents</span>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <!-- Load Engine -->
+    <script src="golden-harmony-engine.js"></script>
+
+    <script>
+        // ============ ENGINE ============
+        const engine = new GoldenHarmonyEngine();
+        const scale15 = engine.chromatic15Scale;
+
+        // ============ AUDIO ============
+        let audioContext = null;
+        let masterGain = null;
+        let isAudioInitialized = false;
+        let currentNotes = [];
+        let isPlaying = false;
+        let playTimeouts = [];
+
+        // ============ STATE ============
+        let compare12Mode = false;
+        let comparePhiMode = false;
+        let baseFrequency = 440;
+        let volume = 0.3;
+        let duration = 0.6;
+        let waveform = 'triangle';
+
+        // ============ CANVAS REFS ============
+        const circleCanvas = document.getElementById('circleCanvas');
+        const linearCanvas = document.getElementById('linearCanvas');
+        const circleCtx = circleCanvas.getContext('2d');
+        const linearCtx = linearCanvas.getContext('2d');
+
+        // ============ CALCULATE STATS ============
+        function calculateStats() {
+            const gaps = [];
+            for (let i = 0; i < scale15.length - 1; i++) {
+                gaps.push(scale15[i + 1].cents - scale15[i].cents);
+            }
+            // Gap from last note to octave
+            gaps.push(1200 - scale15[scale15.length - 1].cents);
+
+            const avgGap = gaps.reduce((a, b) => a + b, 0) / gaps.length;
+            const maxGap = Math.max(...gaps);
+
+            document.getElementById('avgGap').textContent = avgGap.toFixed(1);
+            document.getElementById('maxGap').textContent = maxGap.toFixed(1);
+
+            return { gaps, avgGap, maxGap };
+        }
+
+        // ============ AUDIO FUNCTIONS ============
+
+        async function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.connect(audioContext.destination);
+                    masterGain.gain.value = volume;
+                    isAudioInitialized = true;
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                    return false;
+                }
+            }
+
+            if (audioContext.state === 'suspended') {
+                try {
+                    await audioContext.resume();
+                } catch (e) {
+                    console.error('Failed to resume AudioContext:', e);
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        async function playNote(frequency, dur = duration, vol = volume) {
+            const ready = await initAudioContext();
+
+            if (!ready || !audioContext) {
+                return;
+            }
+
+            if (!frequency || frequency <= 0 || !isFinite(frequency)) {
+                return;
+            }
+
+            const now = audioContext.currentTime;
+
+            const osc = audioContext.createOscillator();
+            osc.type = waveform;
+            osc.frequency.setValueAtTime(frequency, now);
+
+            const envelope = audioContext.createGain();
+            envelope.gain.setValueAtTime(0.0001, now);
+            envelope.gain.linearRampToValueAtTime(vol, now + 0.02);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + 0.12);
+            envelope.gain.linearRampToValueAtTime(vol * 0.7, now + dur - 0.1);
+            envelope.gain.linearRampToValueAtTime(0.0001, now + dur);
+
+            osc.connect(envelope);
+            envelope.connect(masterGain);
+
+            osc.start(now);
+            osc.stop(now + dur + 0.05);
+
+            currentNotes.push({ osc, envelope });
+
+            osc.onended = () => {
+                const idx = currentNotes.findIndex(n => n.osc === osc);
+                if (idx !== -1) currentNotes.splice(idx, 1);
+                try {
+                    osc.disconnect();
+                    envelope.disconnect();
+                } catch(e) {}
+            };
+
+            return { osc, envelope };
+        }
+
+        function stopAll() {
+            playTimeouts.forEach(t => clearTimeout(t));
+            playTimeouts = [];
+
+            currentNotes.forEach(({ osc, envelope }) => {
+                try {
+                    const now = audioContext.currentTime;
+                    envelope.gain.cancelScheduledValues(now);
+                    envelope.gain.setValueAtTime(envelope.gain.value, now);
+                    envelope.gain.exponentialRampToValueAtTime(0.001, now + 0.05);
+                    osc.stop(now + 0.05);
+                } catch (e) {}
+            });
+            currentNotes = [];
+
+            isPlaying = false;
+            updatePlayButton();
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+        }
+
+        async function playScale() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+            updatePlayButton();
+
+            // Play in chromatic order (sorted by cents)
+            scale15.forEach((note, index) => {
+                const timeout = setTimeout(async () => {
+                    const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                    await playNote(freq, duration, volume);
+                    highlightNote(index);
+                }, index * (duration * 1000 + 50));
+                playTimeouts.push(timeout);
+            });
+
+            const totalTime = scale15.length * (duration * 1000 + 50);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+            }, totalTime));
+        }
+
+        async function playFifths() {
+            if (isPlaying) {
+                stopAll();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+            updatePlayButton();
+
+            // Play in stack order (order of fifths)
+            const sortedByStack = [...scale15].sort((a, b) => a.stackOrder - b.stackOrder);
+
+            sortedByStack.forEach((note, index) => {
+                const timeout = setTimeout(async () => {
+                    const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                    await playNote(freq, duration, volume);
+                    // Find the chromatic index to highlight
+                    const chromaticIdx = scale15.findIndex(n => n.stackOrder === note.stackOrder);
+                    highlightNote(chromaticIdx);
+                }, index * (duration * 1000 + 50));
+                playTimeouts.push(timeout);
+            });
+
+            const totalTime = scale15.length * (duration * 1000 + 50);
+            playTimeouts.push(setTimeout(() => {
+                isPlaying = false;
+                updatePlayButton();
+            }, totalTime));
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('playIcon');
+            const text = document.getElementById('playText');
+
+            if (isPlaying) {
+                text.textContent = 'Detener';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Tocar Escala Completa';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        function highlightNote(index) {
+            document.querySelectorAll('.note-btn').forEach(btn => btn.classList.remove('active'));
+            const btn = document.querySelector(`.note-btn[data-index="${index}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), duration * 1000 - 50);
+            }
+        }
+
+        // ============ UI GENERATION ============
+
+        function generateNoteButtons() {
+            const grid = document.getElementById('notesGrid');
+            grid.innerHTML = '';
+
+            scale15.forEach((note, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'note-btn bg-gray-900 hover:bg-gray-800 border border-gray-800 rounded-lg p-2 text-center transition';
+                btn.dataset.index = index;
+                btn.dataset.cents = note.cents;
+
+                btn.innerHTML = `
+                    <div class="text-pink-400 font-medium text-xs">${note.name}</div>
+                    <div class="text-gray-500 text-xs mono">${note.cents.toFixed(0)}</div>
+                `;
+
+                btn.onclick = async () => {
+                    const freq = engine.centsToFrequency(parseFloat(btn.dataset.cents), baseFrequency);
+                    highlightNote(index);
+                    await playNote(freq, duration, volume);
+                };
+
+                grid.appendChild(btn);
+            });
+        }
+
+        function generateTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+
+            scale15.forEach((note, index) => {
+                const freq = engine.centsToFrequency(note.cents, baseFrequency);
+                const nextNote = index < scale15.length - 1 ? scale15[index + 1] : null;
+                const gap = nextNote ? (nextNote.cents - note.cents).toFixed(1) : (1200 - note.cents).toFixed(1);
+
+                // Find closest 12-TET note
+                const closest12TET = Math.round(note.cents / 100) * 100;
+                const diff12TET = (note.cents - closest12TET).toFixed(1);
+                const diffSign = parseFloat(diff12TET) >= 0 ? '+' : '';
+
+                const row = document.createElement('tr');
+                row.className = 'border-b border-gray-900 hover:bg-gray-900/50';
+                row.innerHTML = `
+                    <td class="py-2 pr-4 text-gray-500">${index}</td>
+                    <td class="py-2 pr-4 text-pink-400 font-medium">${note.name}</td>
+                    <td class="py-2 pr-4 text-gray-300">${note.cents.toFixed(2)}</td>
+                    <td class="py-2 pr-4 text-cyan-400">#${note.stackOrder}</td>
+                    <td class="py-2 pr-4 text-gray-300">${freq.toFixed(2)}</td>
+                    <td class="py-2 pr-4 text-gray-500">${gap}</td>
+                    <td class="py-2 text-gray-600">${diffSign}${diff12TET}</td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // ============ VISUALIZATIONS ============
+
+        function drawCircle() {
+            const canvas = circleCanvas;
+            const ctx = circleCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const centerX = w / 2;
+            const centerY = h / 2;
+            const radius = Math.min(w, h) / 2 - 60;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // Circle outline
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
+            ctx.stroke();
+
+            // 12-TET comparison (if enabled)
+            if (compare12Mode) {
+                for (let i = 0; i < 12; i++) {
+                    const cents = i * 100;
+                    const angle = (cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * (radius - 25);
+                    const y = centerY + Math.sin(angle) * (radius - 25);
+
+                    ctx.fillStyle = 'rgba(99, 102, 241, 0.4)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // 12-phi comparison (if enabled)
+            if (comparePhiMode) {
+                engine.chromaticScale.forEach((note, index) => {
+                    const angle = (note.cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                    const x = centerX + Math.cos(angle) * (radius - 15);
+                    const y = centerY + Math.sin(angle) * (radius - 15);
+
+                    ctx.fillStyle = 'rgba(34, 197, 94, 0.5)';
+                    ctx.beginPath();
+                    ctx.arc(x, y, 4, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            // 15-note scale
+            scale15.forEach((note, index) => {
+                const angle = (note.cents / 1200) * Math.PI * 2 - Math.PI / 2;
+                const x = centerX + Math.cos(angle) * radius;
+                const y = centerY + Math.sin(angle) * radius;
+
+                // Line from center (colored by stack order)
+                const hue = (note.stackOrder / 15) * 360;
+                ctx.strokeStyle = `hsla(${hue}, 70%, 50%, 0.3)`;
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(centerX, centerY);
+                ctx.lineTo(x, y);
+                ctx.stroke();
+
+                // Dot
+                ctx.fillStyle = '#ec4899';
+                ctx.beginPath();
+                ctx.arc(x, y, 7, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Stack order inside dot
+                ctx.fillStyle = '#000';
+                ctx.font = 'bold 8px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(note.stackOrder.toString(), x, y);
+
+                // Label outside
+                ctx.fillStyle = '#e5e7eb';
+                ctx.font = '10px JetBrains Mono';
+                const labelR = radius + 22;
+                const labelX = centerX + Math.cos(angle) * labelR;
+                const labelY = centerY + Math.sin(angle) * labelR;
+                ctx.fillText(note.cents.toFixed(0), labelX, labelY);
+            });
+
+            // Center label
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 20px JetBrains Mono';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('15-phi', centerX, centerY);
+
+            // Legends
+            let legendY = h - 20;
+            ctx.font = '10px Inter';
+            ctx.textAlign = 'left';
+
+            ctx.fillStyle = '#ec4899';
+            ctx.fillRect(20, legendY - 8, 10, 10);
+            ctx.fillStyle = '#9ca3af';
+            ctx.fillText('15-nota phi (quintas apiladas)', 35, legendY);
+
+            if (compare12Mode) {
+                legendY -= 18;
+                ctx.fillStyle = 'rgba(99, 102, 241, 0.8)';
+                ctx.fillRect(20, legendY - 8, 10, 10);
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText('12-TET (100c equidistante)', 35, legendY);
+            }
+
+            if (comparePhiMode) {
+                legendY -= 18;
+                ctx.fillStyle = 'rgba(34, 197, 94, 0.8)';
+                ctx.fillRect(20, legendY - 8, 10, 10);
+                ctx.fillStyle = '#9ca3af';
+                ctx.fillText('12-phi (division aurea)', 35, legendY);
+            }
+        }
+
+        function drawLinear() {
+            const canvas = linearCanvas;
+            const ctx = linearCtx;
+            const w = canvas.width;
+            const h = canvas.height;
+            const padding = { left: 50, right: 20, top: 30, bottom: 30 };
+            const chartW = w - padding.left - padding.right;
+            const chartH = h - padding.top - padding.bottom;
+
+            // Clear
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            // X-axis (cents 0-1200)
+            ctx.strokeStyle = '#374151';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(padding.left, h - padding.bottom);
+            ctx.lineTo(w - padding.right, h - padding.bottom);
+            ctx.stroke();
+
+            // X-axis labels
+            ctx.fillStyle = '#6b7280';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+            for (let cents = 0; cents <= 1200; cents += 200) {
+                const x = padding.left + (cents / 1200) * chartW;
+                ctx.fillText(cents.toString(), x, h - padding.bottom + 15);
+
+                // Grid line
+                ctx.strokeStyle = '#1f2937';
+                ctx.beginPath();
+                ctx.moveTo(x, padding.top);
+                ctx.lineTo(x, h - padding.bottom);
+                ctx.stroke();
+            }
+
+            // Calculate gaps for bar heights
+            const { gaps, maxGap } = calculateStats();
+
+            // Draw notes as bars with gap height
+            scale15.forEach((note, index) => {
+                const x = padding.left + (note.cents / 1200) * chartW;
+                const gap = gaps[index];
+                const barH = (gap / 150) * chartH; // Scale to max ~150 cents
+                const y = h - padding.bottom - barH;
+
+                // Bar
+                const gradient = ctx.createLinearGradient(0, h - padding.bottom, 0, y);
+                gradient.addColorStop(0, '#be185d');
+                gradient.addColorStop(1, '#ec4899');
+                ctx.fillStyle = gradient;
+                ctx.fillRect(x - 8, y, 16, barH);
+
+                // Note name
+                ctx.fillStyle = '#e5e7eb';
+                ctx.font = '9px JetBrains Mono';
+                ctx.textAlign = 'center';
+                ctx.fillText(note.name, x, y - 5);
+
+                // Gap value
+                ctx.fillStyle = '#6b7280';
+                ctx.fillText(gap.toFixed(0), x, h - padding.bottom - barH - 15);
+            });
+
+            // 12-TET markers (if comparison on)
+            if (compare12Mode) {
+                for (let i = 0; i < 12; i++) {
+                    const cents = i * 100;
+                    const x = padding.left + (cents / 1200) * chartW;
+
+                    ctx.fillStyle = 'rgba(99, 102, 241, 0.6)';
+                    ctx.beginPath();
+                    ctx.arc(x, h - padding.bottom - 5, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            // Y-axis label
+            ctx.save();
+            ctx.translate(15, h / 2);
+            ctx.rotate(-Math.PI / 2);
+            ctx.fillStyle = '#ec4899';
+            ctx.font = 'bold 11px Inter';
+            ctx.textAlign = 'center';
+            ctx.fillText('Gap (cents)', 0, 0);
+            ctx.restore();
+        }
+
+        function render() {
+            drawCircle();
+            drawLinear();
+        }
+
+        function toggleCompare12() {
+            compare12Mode = !compare12Mode;
+            document.getElementById('compare12Toggle').classList.toggle('active', compare12Mode);
+            render();
+        }
+
+        function toggleComparePhi() {
+            comparePhiMode = !comparePhiMode;
+            document.getElementById('comparePhiToggle').classList.toggle('active', comparePhiMode);
+            render();
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('playScaleBtn').addEventListener('click', playScale);
+        document.getElementById('playFifthsBtn').addEventListener('click', playFifths);
+        document.getElementById('stopBtn').addEventListener('click', stopAll);
+
+        document.getElementById('baseFreq').addEventListener('input', (e) => {
+            baseFrequency = parseInt(e.target.value);
+            document.getElementById('freqValue').textContent = baseFrequency;
+            document.getElementById('base-display').textContent = baseFrequency;
+            generateTable();
+        });
+
+        document.getElementById('waveform').addEventListener('change', (e) => {
+            waveform = e.target.value;
+        });
+
+        document.getElementById('duration').addEventListener('input', (e) => {
+            duration = parseFloat(e.target.value);
+            document.getElementById('durationValue').textContent = duration.toFixed(1);
+        });
+
+        document.getElementById('volume').addEventListener('input', (e) => {
+            volume = parseInt(e.target.value) / 100;
+            document.getElementById('volumeValue').textContent = e.target.value;
+            if (masterGain) masterGain.gain.value = volume;
+        });
+
+        // ============ INIT ============
+
+        function init() {
+            calculateStats();
+            generateNoteButtons();
+            generateTable();
+            render();
+            console.log('Escala de 15 Notas initialized');
+            console.log('15-note scale:', scale15);
+        }
+
+        init();
+    </script>
+</body>
+</html>

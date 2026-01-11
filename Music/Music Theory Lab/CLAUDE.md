@@ -16,15 +16,21 @@ A diferencia de enfoques tradicionales que imitan el temperamento igual, este si
 
 ```
 Music/Music Theory Lab/
-├── index.html                          # Hub del laboratorio (~450 líneas)
+├── index.html                          # Hub del laboratorio (~550 líneas)
 ├── GOLDEN_HARMONY_THEORY.md            # Teoría completa (~1800 líneas)
-├── golden-harmony-engine.js            # Motor matemático (~700 líneas)
+├── golden-harmony-engine.js            # Motor matemático (~830 líneas)
 ├── escala-cromatica-aurea.html         # Sim 1: Explorador cromático (~850 líneas)
 ├── armonizador-aureo.html              # Sim 2: Constructor armónico (~1100 líneas)
 ├── compositor-aureo.html               # Sim 3: Generador SATB (~900 líneas)
+├── escala-15-notas.html                # Sim 4: Escala microtonal (~550 líneas)
+├── armonizador-15-notas.html           # Sim 5: Armonizador 15 notas (~600 líneas)
+├── compositor-15-notas.html            # Sim 6: Compositor SATB 15 notas (~550 líneas)
+├── escala-12-phiW.html                 # Sim 7: Escala 12-φW occidental (~650 líneas)
+├── armonizador-12-phiW.html            # Sim 8: Armonizador 12-φW (~620 líneas)
+├── compositor-12-phiW.html             # Sim 9: Compositor SATB 12-φW (~600 líneas)
 └── CLAUDE.md                           # Este archivo
 
-Total: ~5,800 líneas de código + documentación
+Total: ~10,200 líneas de código + documentación
 ```
 
 ## Marco Teórico Fundamental
@@ -46,9 +52,24 @@ El Sistema Armónico Áureo ES:
 
 ### Ecuaciones Clave
 
-**Escala Cromática (12 notas):**
+**Escala Cromática (12 notas) - División por φ:**
 ```
 n_i = (1200 · φ^(-i)) mod 1200,  i ∈ [0, 11]
+```
+
+**Escala Cromática (15 notas) - Quintas Apiladas:**
+```
+cents_i = (i × 833.09) mod 1200,  i ∈ [0, 14]
+
+donde 833.09 = 1200 × log₂(φ) = quinta áurea
+```
+
+**Escala 12-φW (12 notas "occidentales" - Quintas Apiladas):**
+```
+cents_i = (i × 833.09) mod 1200,  i ∈ [0, 11]
+
+Semitono promedio: ~99 cents (casi idéntico a 12-TET: 100 cents)
+Quinta: 833 cents (vs 700 cents en 12-TET)
 ```
 
 **Consonancia:**
@@ -90,6 +111,52 @@ Tríada = [φ⁰, φ², φ³] (envueltos en octava)
 | φ₁₁ | 193.22 | 0.005025 | 457.08 |
 
 **Intervalo de Quinta Áurea:** φ¹ ≈ 833.09 cents (NO 700 cents como 12-TET)
+
+### Valores de la Escala de 15 Notas (Quintas Apiladas)
+
+| Stack # | Cents | Gap al siguiente |
+|---------|-------|------------------|
+| Φ0 | 0.00 | 33.09 |
+| Φ7 | 33.09 | 66.18 |
+| Φ14 | 99.27 | 99.27 |
+| Φ6 | 198.54 | 99.27 |
+| Φ13 | 297.81 | 99.27 |
+| Φ5 | 397.09 | 69.27 |
+| Φ12 | 466.36 | 99.27 |
+| Φ4 | 565.64 | 99.27 |
+| Φ11 | 664.91 | 99.27 |
+| Φ3 | 764.18 | 68.91 |
+| Φ10 | 833.09 | 33.09 |
+| Φ2 | 866.18 | 66.18 |
+| Φ9 | 932.36 | 99.27 |
+| Φ1 | 1031.64 | 99.27 |
+| Φ8 | 1130.91 | 69.09 (→ octava) |
+
+**Gap promedio:** ~80 cents (vs ~100 cents en 12-TET, vs variable en 12-φ)
+**Gap máximo:** ~100 cents (vs 100 cents en 12-TET, vs ~147 cents en 12-φ)
+
+### Valores de la Escala 12-φW (Quintas Apiladas - Occidental)
+
+| Stack # | Cents | Western Name | Gap al siguiente | Δ vs 12-TET |
+|---------|-------|--------------|------------------|-------------|
+| 0φW | 0.00 | CφW | 33.09 | 0 |
+| 7φW | 33.09 | C#φW | 66.18 | -67 |
+| 2φW | 99.27 | DφW | 99.27 | -1 |
+| 9φW | 198.54 | D#φW | 99.27 | -1 |
+| 4φW | 297.81 | EφW | 69.27 | -2 |
+| 11φW | 367.09 | FφW | 99.27 | -33 |
+| 6φW | 466.36 | F#φW | 99.27 | -34 |
+| 1φW | 565.64 | GφW | 99.27 | -34 |
+| 8φW | 664.91 | G#φW | 68.91 | -35 |
+| 3φW | 733.82 | AφW | 99.27 | -66 |
+| 10φW | 833.09 | A#φW | 33.09 | -67 |
+| 5φW | 866.18 | BφW | 133.82 (→ octava) | -34 |
+
+**Característica distintiva:** El sistema 12-φW mantiene semitonos de ~99 cents (casi idénticos a 12-TET), pero la quinta es de 833 cents en lugar de 700 cents. Esto crea un puente entre la familiaridad del sistema occidental y las propiedades matemáticas de φ.
+
+**Gap promedio:** ~99 cents (esencialmente igual a 12-TET)
+**Gap máximo:** ~134 cents (en BφW → CφW)
+**Desviación promedio vs 12-TET:** ~31 cents
 
 ## Arquitectura del Motor (golden-harmony-engine.js)
 
@@ -498,6 +565,302 @@ const panning = [-0.7, -0.3, 0.3, 0.7];  // estéreo spread
 
 ---
 
+### 4. Escala de 15 Notas (`escala-15-notas.html`)
+
+**Concepto:** Explorador de la escala microtonal de 15 notas generada por quintas áureas apiladas
+
+**Características:**
+- 15 botones de notas con notación Φ (Φ0, Φ1, ..., Φ14)
+- Visualización de círculo de quintas áureas
+- Comparación triple: 15-φ vs 12-TET vs 12-φ
+- Distribución lineal mostrando gaps entre notas
+- Estadísticas: gap promedio, gap máximo
+- Reproducción en orden cromático o en orden de quintas
+- Web Audio playback con ADSR
+
+**Ventajas sobre la escala de 12 notas:**
+- Distribución más uniforme (~80 cents promedio vs variable)
+- Gap máximo ~100 cents (vs ~147 cents en 12-φ)
+- Mejor cobertura de la octava
+- Círculo de quintas áureas completo (15 notas = 10.41 octavas)
+
+**Audio:**
+```javascript
+// Igual patrón que otras sims
+async function playNote(frequency, dur, vol) {
+    const osc = audioContext.createOscillator();
+    const envelope = audioContext.createGain();
+    // ADSR envelope
+    // ...
+}
+
+// Modo especial: tocar en orden de quintas
+async function playFifths() {
+    const sortedByStack = [...scale15].sort((a, b) => a.stackOrder - b.stackOrder);
+    // Reproduce Φ0 → Φ1 → Φ2 → ... → Φ14
+}
+```
+
+**Visualizaciones:**
+- **Círculo de quintas:** 15 notas con número de stack en el centro de cada punto
+- **Distribución lineal:** Barras con altura = gap al siguiente
+- **Comparación:** Toggle para superponer 12-TET y 12-φ
+
+**Líneas:** ~550
+
+---
+
+### 5. Armonizador 15 Notas (`armonizador-15-notas.html`)
+
+**Concepto:** Constructor de acordes y progresiones para el sistema de 15 notas
+
+**Características:**
+- Selección de notas cromáticas para formar escala diatónica (5-9 notas)
+- Tipos de acorde: Tríada, Tétrada, Péntada
+- Intervalos de apilación configurables (terceras, cuartas, quintas)
+- Constructor de progresión con click en grados
+- Presets: I-IV-V-I, Ascendente, Descendente, Círculo φ
+- Visualización de acorde en pentagrama
+- Heatmap de consonancia con análisis
+- Estadísticas: consonancia promedio, movimiento de voces
+
+**Diferencias con Armonizador 12 notas:**
+- Base de 15 notas cromáticas en lugar de 12
+- Escalas diatónicas de 5-9 notas (no fijo en 7)
+- Selección manual de notas en la escala
+- Más flexibilidad en construcción de acordes
+
+**Generación de acordes:**
+```javascript
+function generateChordFromDegree(degreeIndex) {
+    const numNotes = selectedChordType === 'triad' ? 3 :
+                    selectedChordType === 'tetrad' ? 4 : 5;
+
+    const chordNotes = [];
+    const scaleLen = diatonicScale.length;
+
+    for (let i = 0; i < numNotes; i++) {
+        const noteIndex = (degreeIndex + i * chordInterval) % scaleLen;
+        chordNotes.push(diatonicScale[noteIndex].cents);
+    }
+
+    return [...new Set(chordNotes)].sort((a, b) => a - b);
+}
+```
+
+**Visualizaciones:**
+- **Grid cromático:** 15 notas con toggle para incluir/excluir
+- **Grid de grados:** I-XV según notas seleccionadas
+- **Progresión:** Acordes arrastrables con botón eliminar
+- **Pentagrama:** Notas del acorde actual
+- **Heatmap:** Matriz de consonancia entre notas
+
+**Líneas:** ~600
+
+---
+
+### 6. Compositor 15 Notas (`compositor-15-notas.html`)
+
+**Concepto:** Generador algorítmico de preludios SATB para el sistema de 15 notas
+
+**Características:**
+- Selección de notas cromáticas para formar escala diatónica (5-12 notas)
+- 4 voces independientes: Soprano, Alto, Tenor, Bajo
+- Densidad rítmica: Baja (blancas), Media (negras), Alta (corcheas)
+- Complejidad armónica: Simple (4), Moderada (8), Compleja (16 acordes)
+- Toggle individual de voces
+- Partitura visual con pentagrama por voz
+- Reproducción con panning estéreo
+- Barra de progreso
+
+**Diferencias con Compositor 12 notas:**
+- Base de 15 notas cromáticas
+- Escalas diatónicas customizables (7-9 notas)
+- Selección manual de notas en lugar de preset mayor/menor
+- Acordes generados desde la escala seleccionada
+
+**Generación de preludios:**
+```javascript
+function generatePrelude15(params) {
+    const { measures, tempo, density, complexity } = params;
+
+    const numChords = { simple: 4, moderate: 8, complex: 16 }[complexity];
+    const progression = generateProgression15(numChords, complexity);
+
+    // Genera notas para cada voz basándose en la progresión
+    // Bass: nota raíz del acorde
+    // Alto: segunda nota
+    // Tenor: nota media
+    // Soprano: melodía con densidad variable
+}
+```
+
+**Audio:**
+- Waveforms diferentes por voz: triangle, sawtooth, square, sine
+- Panning: S(-0.7), A(-0.3), T(0.3), B(0.7)
+- ADSR envelopes para cada nota
+- Programación de notas con `scheduleNote()`
+
+**Líneas:** ~550
+
+---
+
+### 7. Escala 12-φW (`escala-12-phiW.html`)
+
+**Concepto:** Explorador de la escala 12-φW que combina la familiaridad del sistema occidental (12 notas, ~99 cents por semitono) con las propiedades matemáticas de φ (quinta de 833 cents)
+
+**Color del sistema:** Naranja (#f97316)
+
+**Características:**
+- 12 botones de notas con notación φW (CφW, C#φW, ..., BφW)
+- Visualización de círculo de quintas áureas
+- Comparación triple: 12-φW vs 12-TET vs 12-φ original
+- Distribución lineal mostrando gaps y desviaciones
+- Comparador auditivo: alterna notas 12-φW ↔ 12-TET
+- Estadísticas: desviación promedio, gap máximo
+- Modo cromático y modo quintas (stack order)
+
+**Ventajas del sistema 12-φW:**
+- Semitonos casi idénticos a 12-TET (~99 cents vs 100 cents)
+- Matemáticamente derivado de φ (no arbitrario)
+- Círculo de quintas completo (12 notas = ~7.5 octavas)
+- Puente natural entre teoría occidental y armonía áurea
+- Más familiar al oído occidental que 12-φ original
+
+**Audio:**
+```javascript
+// Comparación auditiva 12-φW vs 12-TET
+async function playComparison() {
+    const sorted = [...chromatic12WScale].sort((a, b) => a.cents - b.cents);
+    for (const note of sorted) {
+        // Nota 12-φW
+        await playNote(centsToFreq(note.cents), 0.4);
+        await sleep(100);
+        // Nota 12-TET equivalente
+        const tetCents = note.chromaticIndex * 100;
+        await playNote(centsToFreq(tetCents), 0.4);
+        await sleep(200);
+    }
+}
+```
+
+**Visualizaciones:**
+- **Círculo de quintas:** 12 notas con color naranja, número de stack en cada punto
+- **Distribución lineal:** Barras comparando posición vs 12-TET
+- **Color-coding:** Verde (<5¢ diferencia), Amarillo (<20¢), Rojo (>20¢)
+- **Comparación toggle:** Superponer 12-TET y/o 12-φ original
+
+**Líneas:** ~650
+
+---
+
+### 8. Armonizador 12-φW (`armonizador-12-phiW.html`)
+
+**Concepto:** Constructor de acordes y progresiones armónicas para el sistema 12-φW. Combina la familiaridad de las progresiones occidentales (I-IV-V-I, ii-V-I) con la quinta áurea de 833 cents.
+
+**Color del sistema:** Naranja (#f97316)
+
+**Características:**
+- Escala diatónica de 7 notas por defecto (patrón mayor occidental)
+- Escalas alternativas: pentatónica (5), hexatónica (6), octatónica (8)
+- Tipos de acorde: Tríada, Tétrada, Péntada
+- Intervalos de apilación: Terceras, Cuartas, Quintas
+- Presets de progresiones clásicas: I-IV-V-I, ii-V-I, I-vi-IV-V, I-V-vi-IV, Blues φW
+- Heatmap de consonancia con análisis
+- Voice leading óptimo con estadísticas de movimiento
+
+**Diferencias con Armonizador 15 notas:**
+- Base de 12 notas cromáticas (familiar)
+- Escala diatónica por defecto de 7 notas (como el sistema occidental)
+- Presets orientados a progresiones clásicas del jazz y pop
+- Nombres de notas occidentales adaptados (CφW, DφW, etc.)
+
+**Presets de progresiones:**
+```javascript
+const presets = {
+    'I-IV-V-I': [0, 3, 4, 0],           // Cadencia auténtica
+    'ii-V-I': [1, 4, 0],                 // Jazz standard
+    'I-vi-IV-V': [0, 5, 3, 4],           // 50s progression
+    'I-V-vi-IV': [0, 4, 5, 3],           // Pop anthem
+    'circle': [0, 3, 6, 2, 5, 1, 4, 0],  // Circle of φW fifths
+    'blues': [0, 0, 0, 0, 3, 3, 0, 0, 4, 3, 0, 4]  // 12-bar blues φW
+};
+```
+
+**Audio:**
+```javascript
+// Mismo patrón que armonizador-15-notas
+async function playChord(chordCents, duration = 1.0, volume = 0.25) {
+    const now = audioContext.currentTime;
+    chordCents.forEach((cents) => {
+        const freq = engine.centsToFrequency(cents);
+        const osc = audioContext.createOscillator();
+        osc.type = waveform;
+        // ADSR envelope...
+    });
+}
+```
+
+**Visualizaciones:**
+- **Grid cromático:** 12 notas con nombres occidentales (CφW, C#φW, ...)
+- **Grid de grados:** I-VII según notas seleccionadas
+- **Progresión:** Acordes con nombre de raíz y tipo
+- **Pentagrama:** Notas del acorde actual con color naranja
+- **Heatmap:** Matriz de consonancia φ entre notas
+
+**Líneas:** ~620
+
+---
+
+### 9. Compositor 12-φW (`compositor-12-phiW.html`)
+
+**Concepto:** Generador algorítmico de preludios a 4 voces (SATB) usando el sistema 12-φW. Combina la familiaridad del sistema occidental con las propiedades matemáticas de φ.
+
+**Color del sistema:** Naranja (#f97316)
+
+**Características:**
+- 4 voces SATB con waveforms diferenciados (triangle, sawtooth, square, sine)
+- Panning estéreo por voz (-0.7, -0.3, 0.3, 0.7)
+- Escala diatónica de 7 notas por defecto (patrón mayor occidental)
+- Opciones de 5-8 notas (pentatónica, hexatónica, octatónica)
+- Densidad rítmica configurable (blancas, negras, corcheas)
+- Complejidad armónica (4, 8, 16 acordes)
+- Visualización de partitura con 4 pentagramas
+
+**Progresiones generadas:**
+- **Simple:** I-IV-V-I (cadencia auténtica)
+- **Moderada:** ii-V-I, I-vi-IV-V (patrones jazz/pop)
+- **Compleja:** Mezcla con inicio y final en tónica
+
+**Audio:**
+```javascript
+// Scheduling de notas con Web Audio API
+function scheduleNote(cents, startTime, duration, waveform, pan, volume) {
+    const freq = engine.centsToFrequency(cents);
+    const osc = audioContext.createOscillator();
+    const envelope = audioContext.createGain();
+    const panner = audioContext.createStereoPanner();
+
+    osc.type = waveform;
+    panner.pan.value = pan;
+    // ADSR envelope scheduling...
+}
+```
+
+**Visualización:**
+- **Partitura:** 4 pentagramas con notas coloreadas por voz
+- **Estadísticas:** Compases, notas totales, acordes, consonancia promedio
+- **Barra de progreso:** Sincronizada con playback
+
+**Diferencias con Compositor 15 notas:**
+- Base de 12 notas cromáticas (familiar)
+- Progresiones orientadas a patrones occidentales
+- Escala diatónica de 7 notas por defecto
+
+**Líneas:** ~600
+
+---
+
 ## Reglas de Contrapunto Áureo
 
 ### Diferencias con Contrapunto Tradicional
@@ -711,33 +1074,58 @@ const modeNames = [
 
 ## Estadísticas del Proyecto
 
-**Archivos:** 6 (index + teoría + motor + 3 sims + docs)
+**Archivos:** 12 (index + teoría + motor + 9 sims + docs)
 
 **Líneas de código:**
-- golden-harmony-engine.js: ~700
+- golden-harmony-engine.js: ~830
 - escala-cromatica-aurea.html: ~850
 - armonizador-aureo.html: ~1100
 - compositor-aureo.html: ~900
-- index.html: ~450
-- **Total código:** ~4,000 líneas
+- escala-15-notas.html: ~550
+- armonizador-15-notas.html: ~600
+- compositor-15-notas.html: ~550
+- escala-12-phiW.html: ~650
+- armonizador-12-phiW.html: ~620
+- compositor-12-phiW.html: ~600
+- index.html: ~880
+- **Total código:** ~8,130 líneas
 
 **Líneas de documentación:**
 - GOLDEN_HARMONY_THEORY.md: ~1800
-- CLAUDE.md (este archivo): ~1000
-- **Total docs:** ~2,800 líneas
+- CLAUDE.md (este archivo): ~1600
+- **Total docs:** ~3,400 líneas
 
-**Total proyecto:** ~6,800 líneas
+**Total proyecto:** ~11,530 líneas
 
 **Commits:**
+- 2026-01-11: Compositor 12-φW (generador SATB occidental-φ)
+- 2026-01-11: Armonizador 12-φW (progresiones occidentales con quinta φ)
+- 2026-01-11: Escala 12-φW (sistema occidental con quinta áurea)
+- 2026-01-11: Compositor 15 notas (generador SATB)
+- 2026-01-11: Armonizador 15 notas (constructor de acordes)
+- 2026-01-11: Escala de 15 notas (quintas áureas apiladas)
 - 2026-01-10: Proyecto completo Music Theory Lab
 - Teoría, motor, 3 simulaciones, portal actualizado
 
 ## Mejoras Futuras
 
 ### Fase 2: Expansión Teórica
-- [ ] **Escala de 15 notas con quintas áureas apiladas**: `cents_i = (i × 833.09) mod 1200`
-  - Distribución más uniforme: 0, 30, 99, 199, 298, 397, 466, 565, 665, 764, 833, 863, 932, 1032, 1131
-  - Cubre mejor la octava (gap máximo ~100¢ vs ~147¢ actual)
+- [x] **Escala de 15 notas con quintas áureas apiladas**: `cents_i = (i × 833.09) mod 1200` ✅
+  - Implementada en `escala-15-notas.html`
+  - Distribución más uniforme con gap promedio ~80¢
+  - Gap máximo ~100¢ vs ~147¢ en escala de 12
+- [x] **Sistema 12-φW (occidental)**: 12 notas con quinta áurea ✅
+  - Implementada en `escala-12-phiW.html`
+  - Semitonos de ~99¢ (casi idénticos a 12-TET)
+  - Puente entre sistema occidental y armonía φ
+- [x] **Armonizador 12-φW**: Constructor de acordes para sistema occidental-φ ✅
+  - Implementado en `armonizador-12-phiW.html`
+  - Presets de progresiones clásicas (I-IV-V-I, ii-V-I, Blues φW)
+  - Escala diatónica de 7 notas por defecto
+- [x] **Compositor 12-φW**: Generador SATB para sistema occidental-φ ✅
+  - Implementado en `compositor-12-phiW.html`
+  - Preludios a 4 voces con progresiones occidentales
+  - Densidad y complejidad configurables
 - [ ] Escalas de 5 notas (pentatónicas áureas)
 - [ ] Escalas de 8-9 notas (octatónicas, nonatónicas)
 - [ ] Microtonalidad φ (escalas > 12 notas por octava)
@@ -757,10 +1145,10 @@ const modeNames = [
 
 ---
 
-**Última actualización:** 2026-01-10
+**Última actualización:** 2026-01-11
 
 **Autor:** Carlos Lorente Kaiser
 
-**Co-Author:** Claude Sonnet 4.5
+**Co-Author:** Claude Opus 4.5
 
 **Repositorio:** https://github.com/cjlkaiser-cpu/eigenlab

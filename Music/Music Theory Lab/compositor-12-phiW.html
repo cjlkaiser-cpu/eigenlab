@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Compositor 12-phiW - Music Theory Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(249, 115, 22, 0.5);
+        }
+
+        .canvas-container {
+            border: 1px solid #374151;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #f97316;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 88, 12, 0.05));
+            border: 1px solid rgba(249, 115, 22, 0.3);
+        }
+
+        .voice-toggle {
+            position: relative;
+            width: 48px;
+            height: 24px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .voice-toggle::after {
+            content: '';
+            position: absolute;
+            width: 18px;
+            height: 18px;
+            background: white;
+            border-radius: 50%;
+            top: 3px;
+            left: 3px;
+            transition: left 0.3s;
+        }
+        .voice-toggle.active::after {
+            left: 27px;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #f97316, #ea580c);
+            transition: width 0.1s linear;
+        }
+
+        .scale-note {
+            transition: all 0.2s;
+        }
+        .scale-note.in-scale {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.3), rgba(234, 88, 12, 0.2));
+            border-color: rgba(249, 115, 22, 0.6);
+        }
+
+        .western-badge {
+            background: linear-gradient(135deg, rgba(249, 115, 22, 0.2), rgba(234, 88, 12, 0.1));
+            border: 1px solid rgba(249, 115, 22, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-4">
+                    <a href="index.html" class="text-gray-500 hover:text-orange-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <h1 class="text-lg font-light">
+                        <span class="text-orange-400 font-medium">Compositor</span> 12-phiW
+                        <span class="western-badge text-xs px-2 py-0.5 rounded-full ml-2">Occidental</span>
+                    </h1>
+                </div>
+                <div class="flex items-center gap-4 text-sm mono">
+                    <span class="text-gray-500">Compases: <span id="measures-display" class="text-orange-400">--</span></span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Control Panel -->
+        <aside class="w-80 border-r border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-orange-400 glow-text">Composicion phiW</h2>
+
+            <!-- Generate Button -->
+            <div class="mb-6">
+                <button id="generateBtn" class="w-full py-3 px-4 bg-orange-500/20 hover:bg-orange-500/30 text-orange-400 rounded-lg text-sm transition flex items-center justify-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                    </svg>
+                    <span id="generateText">Generar Preludio</span>
+                </button>
+            </div>
+
+            <!-- Scale Size -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Escala Diatonica</label>
+                <select id="scaleSize" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="5">5 notas (pentatonica)</option>
+                    <option value="6">6 notas (hexatonica)</option>
+                    <option value="7" selected>7 notas (heptatonica - occidental)</option>
+                    <option value="8">8 notas (octatonica)</option>
+                </select>
+            </div>
+
+            <!-- Measures -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Compases: <span id="measuresValue" class="text-pink-400 mono">16</span>
+                </label>
+                <input type="range" id="measures" min="8" max="32" step="4" value="16" class="w-full">
+            </div>
+
+            <!-- Tempo -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">
+                    Tempo: <span id="tempoValue" class="text-pink-400 mono">80</span> BPM
+                </label>
+                <input type="range" id="tempo" min="60" max="140" step="5" value="80" class="w-full">
+            </div>
+
+            <!-- Density -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Densidad Ritmica</label>
+                <select id="density" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="low">Baja (Blancas)</option>
+                    <option value="medium" selected>Media (Negras)</option>
+                    <option value="high">Alta (Corcheas)</option>
+                </select>
+            </div>
+
+            <!-- Complexity -->
+            <div class="mb-6">
+                <label class="block text-sm text-gray-400 mb-2">Complejidad Armonica</label>
+                <select id="complexity" class="w-full bg-gray-900 border border-gray-800 rounded-lg px-3 py-2 text-sm">
+                    <option value="simple">Simple (4 acordes)</option>
+                    <option value="moderate" selected>Moderada (8 acordes)</option>
+                    <option value="complex">Compleja (16 acordes)</option>
+                </select>
+            </div>
+
+            <!-- Voice Controls -->
+            <hr class="border-gray-800 my-6">
+            <h3 class="text-sm font-medium text-orange-400 mb-4">Voces SATB</h3>
+
+            <div class="grid grid-cols-2 gap-3 mb-6">
+                <div class="bg-gray-900 border border-pink-500/30 rounded-lg p-3 text-center">
+                    <div class="text-pink-400 text-sm font-medium mb-2">Soprano</div>
+                    <div class="voice-toggle active bg-pink-500" data-voice="soprano" onclick="toggleVoice(this)"></div>
+                </div>
+                <div class="bg-gray-900 border border-purple-500/30 rounded-lg p-3 text-center">
+                    <div class="text-purple-400 text-sm font-medium mb-2">Alto</div>
+                    <div class="voice-toggle active bg-purple-500" data-voice="alto" onclick="toggleVoice(this)"></div>
+                </div>
+                <div class="bg-gray-900 border border-blue-500/30 rounded-lg p-3 text-center">
+                    <div class="text-blue-400 text-sm font-medium mb-2">Tenor</div>
+                    <div class="voice-toggle active bg-blue-500" data-voice="tenor" onclick="toggleVoice(this)"></div>
+                </div>
+                <div class="bg-gray-900 border border-green-500/30 rounded-lg p-3 text-center">
+                    <div class="text-green-400 text-sm font-medium mb-2">Bajo</div>
+                    <div class="voice-toggle active bg-green-500" data-voice="bass" onclick="toggleVoice(this)"></div>
+                </div>
+            </div>
+
+            <!-- Playback -->
+            <button id="playBtn" class="w-full py-3 px-4 bg-green-500/20 hover:bg-green-500/30 text-green-400 rounded-lg text-sm transition flex items-center justify-center gap-2 mb-3">
+                <svg id="playIcon" class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z"/>
+                </svg>
+                <span id="playText">Reproducir</span>
+            </button>
+
+            <button id="stopBtn" class="w-full py-2 px-4 bg-gray-900 hover:bg-gray-800 rounded-lg text-sm transition">
+                Detener
+            </button>
+
+            <!-- Progress -->
+            <div class="h-2 bg-gray-900 rounded-full mt-4 overflow-hidden">
+                <div id="progressBar" class="progress-bar" style="width: 0%"></div>
+            </div>
+
+            <!-- Math Section -->
+            <hr class="border-gray-800 my-6">
+            <div class="math-box rounded-xl p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Sistema 12-phiW</h3>
+                <p class="text-xs text-gray-400 leading-relaxed">
+                    Genera preludios de 4 voces (SATB) usando el sistema 12-phiW. Semitonos de ~99c (occidental) con quinta aurea de 833c. Bach en universo phi.
+                </p>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+            <!-- Scale Selection -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-medium text-orange-400">Escala Cromatica 12-phiW (click para seleccionar)</h3>
+                    <span class="text-xs mono text-gray-500">En escala: <span id="inScaleCount" class="text-pink-400">7</span></span>
+                </div>
+                <div id="chromaticGrid" class="grid grid-cols-12 gap-2">
+                    <!-- Generated by JS -->
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="grid grid-cols-4 gap-4">
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <div class="text-xs text-gray-500 mb-1">Compases</div>
+                    <div id="statMeasures" class="text-2xl font-bold text-orange-400 mono">--</div>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <div class="text-xs text-gray-500 mb-1">Total Notas</div>
+                    <div id="statNotes" class="text-2xl font-bold text-pink-400 mono">--</div>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <div class="text-xs text-gray-500 mb-1">Acordes</div>
+                    <div id="statChords" class="text-2xl font-bold text-purple-400 mono">--</div>
+                </div>
+                <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                    <div class="text-xs text-gray-500 mb-1">Consonancia</div>
+                    <div id="statConsonance" class="text-2xl font-bold text-green-400 mono">--</div>
+                </div>
+            </div>
+
+            <!-- Notation Canvas -->
+            <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
+                <h3 class="text-sm font-medium text-orange-400 mb-3">Partitura SATB (12-phiW)</h3>
+                <div class="canvas-container bg-black">
+                    <canvas id="notationCanvas" width="1200" height="500"></canvas>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Load Engine -->
+    <script src="golden-harmony-engine.js"></script>
+
+    <script>
+        // ============ ENGINE ============
+        const engine = new GoldenHarmonyEngine();
+        const chromatic12W = engine.chromatic12WScale;
+
+        // ============ AUDIO ============
+        let audioContext = null;
+        let masterGain = null;
+        let isPlaying = false;
+        let playbackTimeout = null;
+        let scheduledNotes = [];
+        let progressInterval = null;
+
+        // ============ STATE ============
+        let selectedNotes = new Set();
+        let diatonicScale = [];
+        let currentPrelude = null;
+        let voiceStates = {
+            soprano: true,
+            alto: true,
+            tenor: true,
+            bass: true
+        };
+
+        // ============ CANVAS ============
+        const canvas = document.getElementById('notationCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // ============ AUDIO FUNCTIONS ============
+
+        async function initAudioContext() {
+            if (!audioContext) {
+                try {
+                    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    masterGain = audioContext.createGain();
+                    masterGain.connect(audioContext.destination);
+                    masterGain.gain.value = 0.3;
+                } catch (e) {
+                    console.error('Audio initialization failed:', e);
+                    return false;
+                }
+            }
+
+            if (audioContext.state === 'suspended') {
+                try {
+                    await audioContext.resume();
+                } catch (e) {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        function scheduleNote(cents, startTime, duration, waveform, pan, volume) {
+            const freq = engine.centsToFrequency(cents);
+            if (!freq || freq <= 0 || !isFinite(freq)) return;
+
+            const osc = audioContext.createOscillator();
+            const envelope = audioContext.createGain();
+            const panner = audioContext.createStereoPanner();
+
+            osc.type = waveform;
+            osc.frequency.setValueAtTime(freq, startTime);
+            panner.pan.value = pan;
+
+            envelope.gain.setValueAtTime(0.0001, startTime);
+            envelope.gain.linearRampToValueAtTime(volume, startTime + 0.02);
+            envelope.gain.linearRampToValueAtTime(volume * 0.8, startTime + 0.07);
+            envelope.gain.linearRampToValueAtTime(volume * 0.8, startTime + duration - 0.1);
+            envelope.gain.linearRampToValueAtTime(0.0001, startTime + duration);
+
+            osc.connect(envelope);
+            envelope.connect(panner);
+            panner.connect(masterGain);
+
+            osc.start(startTime);
+            osc.stop(startTime + duration + 0.05);
+
+            scheduledNotes.push({ osc, envelope, startTime });
+
+            osc.onended = () => {
+                const idx = scheduledNotes.findIndex(n => n.osc === osc);
+                if (idx !== -1) scheduledNotes.splice(idx, 1);
+                try { osc.disconnect(); envelope.disconnect(); panner.disconnect(); } catch(e) {}
+            };
+        }
+
+        function stopPlayback() {
+            isPlaying = false;
+            updatePlayButton();
+
+            if (playbackTimeout) {
+                clearTimeout(playbackTimeout);
+                playbackTimeout = null;
+            }
+
+            if (progressInterval) {
+                clearInterval(progressInterval);
+                progressInterval = null;
+            }
+
+            document.getElementById('progressBar').style.width = '0%';
+
+            scheduledNotes.forEach(({ osc, envelope }) => {
+                try {
+                    const now = audioContext.currentTime;
+                    envelope.gain.cancelScheduledValues(now);
+                    envelope.gain.setValueAtTime(0, now);
+                    osc.stop(now + 0.01);
+                } catch (e) {}
+            });
+            scheduledNotes = [];
+        }
+
+        async function playPrelude() {
+            if (!currentPrelude) {
+                alert('Primero genera un preludio');
+                return;
+            }
+
+            if (isPlaying) {
+                stopPlayback();
+                return;
+            }
+
+            const ready = await initAudioContext();
+            if (!ready) return;
+
+            isPlaying = true;
+            updatePlayButton();
+
+            const tempo = currentPrelude.tempo;
+            const beatDuration = 60 / tempo;
+            const totalDuration = currentPrelude.measures * 4 * beatDuration;
+            const startAudioTime = audioContext.currentTime;
+
+            const voices = ['soprano', 'alto', 'tenor', 'bass'];
+            const waveforms = ['triangle', 'sawtooth', 'square', 'sine'];
+            const panning = [-0.7, -0.3, 0.3, 0.7];
+
+            voices.forEach((voice, voiceIndex) => {
+                if (!voiceStates[voice]) return;
+
+                currentPrelude[voice].forEach(note => {
+                    const startTime = startAudioTime + note.time * beatDuration;
+                    const duration = note.duration * beatDuration;
+
+                    scheduleNote(
+                        note.cents,
+                        startTime,
+                        duration,
+                        waveforms[voiceIndex],
+                        panning[voiceIndex],
+                        0.15
+                    );
+                });
+            });
+
+            progressInterval = setInterval(() => {
+                if (!isPlaying) {
+                    clearInterval(progressInterval);
+                    return;
+                }
+
+                const elapsed = audioContext.currentTime - startAudioTime;
+                const progress = Math.min(100, (elapsed / totalDuration) * 100);
+                document.getElementById('progressBar').style.width = progress + '%';
+            }, 50);
+
+            playbackTimeout = setTimeout(() => {
+                stopPlayback();
+            }, totalDuration * 1000 + 200);
+        }
+
+        function updatePlayButton() {
+            const icon = document.getElementById('playIcon');
+            const text = document.getElementById('playText');
+
+            if (isPlaying) {
+                text.textContent = 'Pausar';
+                icon.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+            } else {
+                text.textContent = 'Reproducir';
+                icon.innerHTML = '<path d="M8 5v14l11-7z"/>';
+            }
+        }
+
+        // ============ SCALE FUNCTIONS ============
+
+        function initDefaultScale() {
+            const scaleSize = parseInt(document.getElementById('scaleSize').value);
+            selectedNotes.clear();
+
+            // Default patterns similar to Western scales
+            if (scaleSize === 7) {
+                // Major scale pattern
+                [0, 2, 4, 5, 7, 9, 11].forEach(i => selectedNotes.add(i));
+            } else if (scaleSize === 5) {
+                // Pentatonic
+                [0, 2, 4, 7, 9].forEach(i => selectedNotes.add(i));
+            } else if (scaleSize === 6) {
+                // Hexatonic
+                [0, 2, 4, 5, 7, 9].forEach(i => selectedNotes.add(i));
+            } else {
+                // Even distribution
+                const step = Math.floor(12 / scaleSize);
+                for (let i = 0; i < scaleSize && i * step < 12; i++) {
+                    selectedNotes.add(i * step);
+                }
+                while (selectedNotes.size < scaleSize && selectedNotes.size < 12) {
+                    for (let i = 0; i < 12 && selectedNotes.size < scaleSize; i++) {
+                        if (!selectedNotes.has(i)) {
+                            selectedNotes.add(i);
+                            break;
+                        }
+                    }
+                }
+            }
+
+            updateDiatonicScale();
+        }
+
+        function updateDiatonicScale() {
+            diatonicScale = chromatic12W
+                .map((note, idx) => ({ ...note, originalIndex: idx }))
+                .filter((note, idx) => selectedNotes.has(idx))
+                .sort((a, b) => a.cents - b.cents);
+
+            renderChromaticGrid();
+            document.getElementById('inScaleCount').textContent = selectedNotes.size;
+        }
+
+        function toggleNoteInScale(index) {
+            if (selectedNotes.has(index)) {
+                if (selectedNotes.size > 5) {
+                    selectedNotes.delete(index);
+                }
+            } else {
+                if (selectedNotes.size < 12) {
+                    selectedNotes.add(index);
+                }
+            }
+            updateDiatonicScale();
+        }
+
+        function renderChromaticGrid() {
+            const grid = document.getElementById('chromaticGrid');
+            grid.innerHTML = '';
+
+            chromatic12W.forEach((note, index) => {
+                const btn = document.createElement('button');
+                const isInScale = selectedNotes.has(index);
+
+                btn.className = `scale-note bg-gray-900 hover:bg-gray-800 border border-gray-700 rounded-lg p-2 text-center ${isInScale ? 'in-scale' : ''}`;
+
+                btn.innerHTML = `
+                    <div class="text-${isInScale ? 'orange' : 'gray'}-400 font-medium text-xs">${note.name}</div>
+                    <div class="text-gray-600 text-xs mono">${note.cents.toFixed(0)}</div>
+                `;
+
+                btn.onclick = () => toggleNoteInScale(index);
+                grid.appendChild(btn);
+            });
+        }
+
+        // ============ GENERATION ============
+
+        function generateTriadFromScale(rootIndex) {
+            const n = diatonicScale.length;
+            return [
+                diatonicScale[rootIndex % n].cents,
+                diatonicScale[(rootIndex + 2) % n].cents,
+                diatonicScale[(rootIndex + 4) % n].cents
+            ].sort((a, b) => a - b);
+        }
+
+        function generateProgression12W(numChords, complexity) {
+            const progression = [];
+            const n = diatonicScale.length;
+
+            if (complexity === 'simple') {
+                // I-IV-V-I Western pattern
+                const pattern = [0, 3 % n, 4 % n, 0];
+                for (let i = 0; i < numChords; i++) {
+                    const degree = pattern[i % pattern.length];
+                    progression.push({
+                        type: i === numChords - 1 ? 'tonic' : 'transition',
+                        notes: generateTriadFromScale(degree),
+                        degree: degree
+                    });
+                }
+            } else if (complexity === 'moderate') {
+                // ii-V-I and variations
+                const patterns = [
+                    [0, 3, 4, 0],
+                    [1, 4, 0],
+                    [0, 5, 3, 4]
+                ];
+                let patternIdx = 0;
+                let i = 0;
+                while (progression.length < numChords) {
+                    const pattern = patterns[patternIdx % patterns.length];
+                    const degree = pattern[i % pattern.length] % n;
+                    progression.push({
+                        type: progression.length === numChords - 1 ? 'tonic' : 'transition',
+                        notes: generateTriadFromScale(degree),
+                        degree: degree
+                    });
+                    i++;
+                    if (i >= pattern.length) {
+                        i = 0;
+                        patternIdx++;
+                    }
+                }
+            } else {
+                // Complex: mix of patterns with some randomness
+                for (let i = 0; i < numChords; i++) {
+                    let degree;
+                    if (i === 0) {
+                        degree = 0; // Start on tonic
+                    } else if (i === numChords - 2) {
+                        degree = 4 % n; // V before end
+                    } else if (i === numChords - 1) {
+                        degree = 0; // End on tonic
+                    } else {
+                        degree = Math.floor(Math.random() * n);
+                    }
+                    progression.push({
+                        type: i === numChords - 1 ? 'tonic' : 'transition',
+                        notes: generateTriadFromScale(degree),
+                        degree: degree
+                    });
+                }
+            }
+
+            return progression;
+        }
+
+        function generatePrelude12W(params) {
+            const { measures, tempo, density, complexity } = params;
+
+            const numChords = { simple: 4, moderate: 8, complex: 16 }[complexity] || 8;
+            const progression = generateProgression12W(numChords, complexity);
+
+            const bass = [];
+            const alto = [];
+            const tenor = [];
+            const soprano = [];
+
+            for (let i = 0; i < progression.length; i++) {
+                const chord = progression[i];
+                const timeOffset = i * 2;
+
+                // Bass: root note
+                bass.push({
+                    cents: chord.notes[0],
+                    duration: 2,
+                    time: timeOffset
+                });
+
+                // Alto: second note
+                alto.push({
+                    cents: chord.notes[Math.min(1, chord.notes.length - 1)],
+                    duration: 2,
+                    time: timeOffset
+                });
+
+                // Tenor: middle note
+                tenor.push({
+                    cents: chord.notes[chord.notes.length > 2 ? 1 : 0],
+                    duration: 2,
+                    time: timeOffset
+                });
+
+                // Soprano: melody with density
+                if (density === 'low') {
+                    soprano.push({
+                        cents: chord.notes[chord.notes.length - 1],
+                        duration: 2,
+                        time: timeOffset
+                    });
+                } else if (density === 'medium') {
+                    soprano.push({
+                        cents: chord.notes[chord.notes.length - 1],
+                        duration: 1,
+                        time: timeOffset
+                    });
+                    soprano.push({
+                        cents: chord.notes[Math.floor(chord.notes.length / 2)],
+                        duration: 1,
+                        time: timeOffset + 1
+                    });
+                } else {
+                    for (let j = 0; j < 4; j++) {
+                        const noteIdx = j % chord.notes.length;
+                        soprano.push({
+                            cents: chord.notes[noteIdx],
+                            duration: 0.5,
+                            time: timeOffset + j * 0.5
+                        });
+                    }
+                }
+            }
+
+            return {
+                soprano,
+                alto,
+                tenor,
+                bass,
+                progression,
+                measures,
+                tempo
+            };
+        }
+
+        function generatePrelude() {
+            const btn = document.getElementById('generateBtn');
+            const text = document.getElementById('generateText');
+
+            btn.disabled = true;
+            text.textContent = 'Generando...';
+
+            setTimeout(() => {
+                try {
+                    if (diatonicScale.length < 5) {
+                        alert('Selecciona al menos 5 notas en la escala');
+                        btn.disabled = false;
+                        text.textContent = 'Generar Preludio';
+                        return;
+                    }
+
+                    const measures = parseInt(document.getElementById('measures').value);
+                    const tempo = parseInt(document.getElementById('tempo').value);
+                    const density = document.getElementById('density').value;
+                    const complexity = document.getElementById('complexity').value;
+
+                    currentPrelude = generatePrelude12W({
+                        measures,
+                        tempo,
+                        density,
+                        complexity
+                    });
+
+                    updateStats();
+                    renderNotation();
+
+                    console.log('Prelude 12-phiW generated:', currentPrelude);
+                } catch (error) {
+                    console.error('Error generating prelude:', error);
+                    alert('Error al generar preludio');
+                }
+
+                btn.disabled = false;
+                text.textContent = 'Generar Preludio';
+            }, 100);
+        }
+
+        function updateStats() {
+            if (!currentPrelude) return;
+
+            const totalNotes = currentPrelude.soprano.length +
+                             currentPrelude.alto.length +
+                             currentPrelude.tenor.length +
+                             currentPrelude.bass.length;
+
+            document.getElementById('statMeasures').textContent = currentPrelude.measures;
+            document.getElementById('statNotes').textContent = totalNotes;
+            document.getElementById('statChords').textContent = currentPrelude.progression.length;
+            document.getElementById('measures-display').textContent = currentPrelude.measures;
+
+            let totalConsonance = 0;
+            let count = 0;
+
+            currentPrelude.progression.forEach(chord => {
+                const analysis = engine.analyzeChordConsonance(chord.notes);
+                totalConsonance += analysis.average;
+                count++;
+            });
+
+            const avgCons = count > 0 ? totalConsonance / count : 0;
+            document.getElementById('statConsonance').textContent = avgCons.toFixed(3);
+        }
+
+        // ============ NOTATION ============
+
+        function renderNotation() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!currentPrelude) {
+                ctx.fillStyle = '#6b7280';
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Genera un preludio para ver la partitura', w / 2, h / 2);
+                return;
+            }
+
+            const staffHeight = 80;
+            const staffSpacing = 25;
+            const topMargin = 50;
+
+            const voices = ['soprano', 'alto', 'tenor', 'bass'];
+            const colors = ['#ec4899', '#a78bfa', '#3b82f6', '#22c55e'];
+            const labels = ['S', 'A', 'T', 'B'];
+
+            voices.forEach((voice, voiceIndex) => {
+                const staffY = topMargin + voiceIndex * (staffHeight + staffSpacing);
+
+                // Staff lines
+                ctx.strokeStyle = '#374151';
+                ctx.lineWidth = 1;
+
+                for (let i = 0; i < 5; i++) {
+                    const y = staffY + i * 15;
+                    ctx.beginPath();
+                    ctx.moveTo(60, y);
+                    ctx.lineTo(w - 30, y);
+                    ctx.stroke();
+                }
+
+                // Voice label
+                ctx.fillStyle = colors[voiceIndex];
+                ctx.font = 'bold 20px JetBrains Mono';
+                ctx.textAlign = 'right';
+                ctx.fillText(labels[voiceIndex], 45, staffY + 35);
+
+                // Notes
+                const notes = currentPrelude[voice];
+                const pixelsPerBeat = (w - 120) / (currentPrelude.measures * 4);
+
+                notes.forEach((note) => {
+                    const x = 70 + note.time * pixelsPerBeat;
+                    const y = staffY + 60 - (note.cents / 50);
+
+                    // Note head
+                    ctx.fillStyle = colors[voiceIndex];
+                    ctx.beginPath();
+                    ctx.ellipse(x, y, 9, 7, -0.2, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Stem
+                    if (note.duration < 2) {
+                        ctx.strokeStyle = colors[voiceIndex];
+                        ctx.lineWidth = 1.5;
+                        ctx.beginPath();
+                        ctx.moveTo(x + 9, y);
+                        ctx.lineTo(x + 9, y - 30);
+                        ctx.stroke();
+
+                        if (note.duration <= 0.5) {
+                            ctx.beginPath();
+                            ctx.moveTo(x + 9, y - 30);
+                            ctx.quadraticCurveTo(x + 20, y - 20, x + 15, y - 10);
+                            ctx.stroke();
+                        }
+                    }
+                });
+            });
+
+            // Title
+            ctx.fillStyle = '#f97316';
+            ctx.font = 'bold 16px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText(`Preludio 12-phiW (${diatonicScale.length} notas)`, 20, 30);
+
+            // Tempo marking
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '12px JetBrains Mono';
+            ctx.textAlign = 'right';
+            ctx.fillText(`tempo = ${currentPrelude.tempo}`, w - 30, 30);
+
+            // Measure numbers
+            ctx.fillStyle = '#4b5563';
+            ctx.font = '10px JetBrains Mono';
+            ctx.textAlign = 'center';
+            const pixelsPerMeasure = (w - 120) / currentPrelude.measures;
+            for (let m = 1; m <= currentPrelude.measures; m += 4) {
+                const x = 70 + (m - 1) * pixelsPerMeasure;
+                ctx.fillText(m.toString(), x, h - 10);
+            }
+        }
+
+        // ============ VOICE TOGGLE ============
+
+        function toggleVoice(element) {
+            const voice = element.dataset.voice;
+            voiceStates[voice] = !voiceStates[voice];
+
+            if (voiceStates[voice]) {
+                element.classList.add('active');
+                const colors = { soprano: 'bg-pink-500', alto: 'bg-purple-500', tenor: 'bg-blue-500', bass: 'bg-green-500' };
+                element.classList.add(colors[voice]);
+            } else {
+                element.classList.remove('active');
+                element.classList.remove('bg-pink-500', 'bg-purple-500', 'bg-blue-500', 'bg-green-500');
+                element.classList.add('bg-gray-700');
+            }
+        }
+
+        // ============ EVENT LISTENERS ============
+
+        document.getElementById('generateBtn').addEventListener('click', generatePrelude);
+        document.getElementById('playBtn').addEventListener('click', playPrelude);
+        document.getElementById('stopBtn').addEventListener('click', stopPlayback);
+
+        document.getElementById('scaleSize').addEventListener('change', () => {
+            initDefaultScale();
+        });
+
+        document.getElementById('measures').addEventListener('input', (e) => {
+            document.getElementById('measuresValue').textContent = e.target.value;
+        });
+
+        document.getElementById('tempo').addEventListener('input', (e) => {
+            document.getElementById('tempoValue').textContent = e.target.value;
+        });
+
+        // ============ INIT ============
+
+        function init() {
+            initDefaultScale();
+            renderNotation();
+            console.log('Compositor 12-phiW initialized');
+            console.log('Chromatic 12W:', chromatic12W);
+        }
+
+        init();
+    </script>
+</body>
+</html>
