@@ -25,6 +25,7 @@
 #include "../include/physics/cellular_automata_3d.hpp"
 #include "../include/physics/mandelbulb.hpp"
 #include "../include/physics/electrophoresis.hpp"
+#include "../include/physics/plasma_particles.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -626,6 +627,26 @@ val getElectrophoresisPositions(const Electrophoresis& ep) {
 
 val getElectrophoresisColors(const Electrophoresis& ep) {
     return val(typed_memory_view(ep.moleculeCount() * 3, ep.colorData()));
+}
+
+// ============================================================================
+// PlasmaParticles helpers
+// ============================================================================
+
+val getPlasmaPositions(const PlasmaParticles& pp) {
+    return val(typed_memory_view(pp.particleCount() * 3, pp.positionData()));
+}
+
+val getPlasmaVelocities(const PlasmaParticles& pp) {
+    return val(typed_memory_view(pp.particleCount() * 3, pp.velocityData()));
+}
+
+val getPlasmaColors(const PlasmaParticles& pp) {
+    return val(typed_memory_view(pp.particleCount() * 3, pp.colorData()));
+}
+
+val getPlasmaCharges(const PlasmaParticles& pp) {
+    return val(typed_memory_view(pp.particleCount(), pp.chargeData()));
 }
 
 // ============================================================================
@@ -1770,6 +1791,67 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("electrophoresisPresetDNA", &electrophoresisPresetDNA);
     function("electrophoresisPresetProtein", &electrophoresisPresetProtein);
     function("electrophoresisPresetHighRes", &electrophoresisPresetHighRes);
+
+    // =========================================================================
+    // PlasmaParticles
+    // =========================================================================
+
+    // PlasmaConfig struct
+    value_object<PlasmaConfig>("PlasmaConfig")
+        .field("numParticles", &PlasmaConfig::numParticles)
+        .field("domainSize", &PlasmaConfig::domainSize)
+        .field("magneticFieldStrength", &PlasmaConfig::magneticFieldStrength)
+        .field("electricFieldStrength", &PlasmaConfig::electricFieldStrength)
+        .field("magneticFieldAngle", &PlasmaConfig::magneticFieldAngle)
+        .field("electronCharge", &PlasmaConfig::electronCharge)
+        .field("ionCharge", &PlasmaConfig::ionCharge)
+        .field("electronMass", &PlasmaConfig::electronMass)
+        .field("ionMass", &PlasmaConfig::ionMass)
+        .field("electronRatio", &PlasmaConfig::electronRatio)
+        .field("temperature", &PlasmaConfig::temperature)
+        .field("enableCoulomb", &PlasmaConfig::enableCoulomb)
+        .field("coulombStrength", &PlasmaConfig::coulombStrength)
+        .field("enableMagneticMirror", &PlasmaConfig::enableMagneticMirror)
+        .field("mirrorRatio", &PlasmaConfig::mirrorRatio)
+        .field("dt", &PlasmaConfig::dt)
+        .field("periodicBoundary", &PlasmaConfig::periodicBoundary);
+
+    // PlasmaStats struct
+    value_object<PlasmaStats>("PlasmaStats")
+        .field("totalKineticEnergy", &PlasmaStats::totalKineticEnergy)
+        .field("avgSpeed", &PlasmaStats::avgSpeed)
+        .field("maxSpeed", &PlasmaStats::maxSpeed)
+        .field("electronTemperature", &PlasmaStats::electronTemperature)
+        .field("ionTemperature", &PlasmaStats::ionTemperature)
+        .field("gyrationRadius", &PlasmaStats::gyrationRadius)
+        .field("particleCount", &PlasmaStats::particleCount)
+        .field("electronCount", &PlasmaStats::electronCount)
+        .field("ionCount", &PlasmaStats::ionCount);
+
+    // PlasmaParticles class
+    class_<PlasmaParticles>("PlasmaParticles")
+        .constructor<>()
+        .constructor<const PlasmaConfig&>()
+        .function("init", &PlasmaParticles::init)
+        .function("step", select_overload<void()>(&PlasmaParticles::step))
+        .function("stepMultiple", select_overload<void(int)>(&PlasmaParticles::step))
+        .function("setMagneticField", &PlasmaParticles::setMagneticField)
+        .function("setElectricField", &PlasmaParticles::setElectricField)
+        .function("setTemperature", &PlasmaParticles::setTemperature)
+        .function("enableCoulombInteractions", &PlasmaParticles::enableCoulombInteractions)
+        .function("enableMagneticMirror", &PlasmaParticles::enableMagneticMirror)
+        .function("presetTokamak", &PlasmaParticles::presetTokamak)
+        .function("presetAurora", &PlasmaParticles::presetAurora)
+        .function("presetCyclotron", &PlasmaParticles::presetCyclotron)
+        .function("presetMagneticBottle", &PlasmaParticles::presetMagneticBottle)
+        .function("getStats", &PlasmaParticles::getStats)
+        .function("particleCount", &PlasmaParticles::particleCount);
+
+    // Plasma helper functions
+    function("getPlasmaPositions", &getPlasmaPositions);
+    function("getPlasmaVelocities", &getPlasmaVelocities);
+    function("getPlasmaColors", &getPlasmaColors);
+    function("getPlasmaCharges", &getPlasmaCharges);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

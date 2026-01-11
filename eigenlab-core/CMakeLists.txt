@@ -25,6 +25,7 @@ set(SOURCES
     src/physics/cellular_automata_3d.cpp
     src/physics/mandelbulb.cpp
     src/physics/electrophoresis.cpp
+    src/physics/plasma_particles.cpp
     src/bindings.cpp
 )
 
