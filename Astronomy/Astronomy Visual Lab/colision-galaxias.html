@@ -393,6 +393,20 @@
         </div>
     </div>
 
+    <!-- File:// Warning -->
+    <div id="file-warning" class="loading-overlay" style="display: none;">
+        <div style="text-align: center; max-width: 400px; padding: 2rem; background: rgba(15,23,42,0.98); border: 1px solid #f59e0b; border-radius: 12px;">
+            <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+            <h2 style="color: #f59e0b; font-size: 1.25rem; margin-bottom: 0.75rem;">Servidor HTTP requerido</h2>
+            <p style="color: var(--text-secondary); font-size: 0.875rem; margin-bottom: 1rem;">WASM no funciona con <code style="background: #f59e0b20; color: #f59e0b; padding: 0.2rem 0.5rem; border-radius: 4px;">file://</code> por restricciones CORS.</p>
+            <div style="background: #000; border-radius: 8px; padding: 1rem; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #22c55e; text-align: left; margin-bottom: 1rem;">
+                cd /Users/carlos/Projects/EigenLab<br>
+                python3 -m http.server 8080
+            </div>
+            <p style="color: var(--text-secondary); font-size: 0.8rem;">Luego abre: <a href="http://localhost:8080/Astronomy/Astronomy%20Visual%20Lab/colision-galaxias.html" style="color: #22c55e;">localhost:8080/.../colision-galaxias.html</a></p>
+        </div>
+    </div>
+
     <header>
         <nav class="breadcrumb">
             <a href="../../_portal/index.html">EigenLab</a>
@@ -593,6 +607,12 @@
 
     <script src="../../_wasm/eigenlab-core.js"></script>
     <script>
+        // Check for file:// protocol
+        if (window.location.protocol === 'file:') {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('file-warning').style.display = 'flex';
+        }
+
         // Wait for DOM and WASM
         let Module = null;
         let simulator = null;
