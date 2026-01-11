@@ -29,6 +29,7 @@
 #include "../include/physics/protein_folding.hpp"
 #include "../include/physics/epidemiology.hpp"
 #include "../include/physics/saturn_rings.hpp"
+#include "../include/physics/vector_fields.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -698,6 +699,22 @@ val getSaturnColors(const SaturnRings& sr) {
 
 val getSaturnSizes(const SaturnRings& sr) {
     return val(typed_memory_view(sr.particleCount(), sr.sizeData()));
+}
+
+// ============================================================================
+// VectorFields helpers
+// ============================================================================
+
+val getVectorFieldData(const VectorFields& vf) {
+    return val(typed_memory_view(vf.gridSize() * 2, vf.vectorFieldData()));
+}
+
+val getVectorFieldParticles(const VectorFields& vf) {
+    return val(typed_memory_view(vf.particleCount() * 2, vf.particlePositionData()));
+}
+
+val getVectorFieldBrightness(const VectorFields& vf) {
+    return val(typed_memory_view(vf.particleCount(), vf.particleBrightnessData()));
 }
 
 // ============================================================================
@@ -2096,6 +2113,90 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("getSaturnPositions", &getSaturnPositions);
     function("getSaturnColors", &getSaturnColors);
     function("getSaturnSizes", &getSaturnSizes);
+
+    // =========================================================================
+    // VectorFields
+    // =========================================================================
+
+    // FieldType enum
+    enum_<FieldType>("FieldType")
+        .value("Uniform", FieldType::Uniform)
+        .value("Rotation", FieldType::Rotation)
+        .value("Source", FieldType::Source)
+        .value("Sink", FieldType::Sink)
+        .value("Dipole", FieldType::Dipole)
+        .value("Saddle", FieldType::Saddle)
+        .value("SinCos", FieldType::SinCos)
+        .value("Gradient", FieldType::Gradient)
+        .value("Custom", FieldType::Custom);
+
+    // VectorFieldConfig struct
+    value_object<VectorFieldConfig>("VectorFieldConfig")
+        .field("gridWidth", &VectorFieldConfig::gridWidth)
+        .field("gridHeight", &VectorFieldConfig::gridHeight)
+        .field("numParticles", &VectorFieldConfig::numParticles)
+        .field("domainWidth", &VectorFieldConfig::domainWidth)
+        .field("domainHeight", &VectorFieldConfig::domainHeight)
+        .field("fieldType", &VectorFieldConfig::fieldType)
+        .field("fieldStrength", &VectorFieldConfig::fieldStrength)
+        .field("centerX", &VectorFieldConfig::centerX)
+        .field("centerY", &VectorFieldConfig::centerY)
+        .field("dipoleDistance", &VectorFieldConfig::dipoleDistance)
+        .field("frequency", &VectorFieldConfig::frequency)
+        .field("dt", &VectorFieldConfig::dt)
+        .field("particleLifetime", &VectorFieldConfig::particleLifetime)
+        .field("particleSpeed", &VectorFieldConfig::particleSpeed)
+        .field("showVectors", &VectorFieldConfig::showVectors)
+        .field("showParticles", &VectorFieldConfig::showParticles)
+        .field("showStreamlines", &VectorFieldConfig::showStreamlines)
+        .field("arrowScale", &VectorFieldConfig::arrowScale);
+
+    // VectorFieldStats struct
+    value_object<VectorFieldStats>("VectorFieldStats")
+        .field("particleCount", &VectorFieldStats::particleCount)
+        .field("maxMagnitude", &VectorFieldStats::maxMagnitude)
+        .field("avgMagnitude", &VectorFieldStats::avgMagnitude)
+        .field("divergence", &VectorFieldStats::divergence)
+        .field("curl", &VectorFieldStats::curl)
+        .field("simTime", &VectorFieldStats::simTime);
+
+    // VectorFields class
+    class_<VectorFields>("VectorFields")
+        .constructor<>()
+        .constructor<const VectorFieldConfig&>()
+        .function("init", &VectorFields::init)
+        .function("step", select_overload<void()>(&VectorFields::step))
+        .function("stepMultiple", select_overload<void(int)>(&VectorFields::step))
+        .function("setFieldType", &VectorFields::setFieldType)
+        .function("setFieldStrength", &VectorFields::setFieldStrength)
+        .function("setFieldCenter", &VectorFields::setFieldCenter)
+        .function("setFrequency", &VectorFields::setFrequency)
+        .function("setDipoleDistance", &VectorFields::setDipoleDistance)
+        .function("resetParticles", &VectorFields::resetParticles)
+        .function("addParticles", &VectorFields::addParticles)
+        .function("setParticleSpeed", &VectorFields::setParticleSpeed)
+        .function("setParticleLifetime", &VectorFields::setParticleLifetime)
+        .function("setShowVectors", &VectorFields::setShowVectors)
+        .function("setShowParticles", &VectorFields::setShowParticles)
+        .function("setArrowScale", &VectorFields::setArrowScale)
+        .function("presetRotation", &VectorFields::presetRotation)
+        .function("presetSource", &VectorFields::presetSource)
+        .function("presetSink", &VectorFields::presetSink)
+        .function("presetDipole", &VectorFields::presetDipole)
+        .function("presetSaddle", &VectorFields::presetSaddle)
+        .function("presetSinCos", &VectorFields::presetSinCos)
+        .function("presetUniform", &VectorFields::presetUniform)
+        .function("presetVortexPair", &VectorFields::presetVortexPair)
+        .function("getStats", &VectorFields::getStats)
+        .function("gridWidth", &VectorFields::gridWidth)
+        .function("gridHeight", &VectorFields::gridHeight)
+        .function("gridSize", &VectorFields::gridSize)
+        .function("particleCount", &VectorFields::particleCount);
+
+    // VectorFields helper functions
+    function("getVectorFieldData", &getVectorFieldData);
+    function("getVectorFieldParticles", &getVectorFieldParticles);
+    function("getVectorFieldBrightness", &getVectorFieldBrightness);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

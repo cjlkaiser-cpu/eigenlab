@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">21</div>
+                        <div class="text-2xl font-light text-violet-400">22</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -701,6 +701,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Campos Vectoriales -->
+            <a href="../Mathematics/Math Visual Lab/campos-vectoriales.html"
+               class="sim-card block bg-gradient-to-br from-orange-950/50 to-amber-950/30 rounded-2xl overflow-hidden border border-orange-500/20 hover:border-orange-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-vectorfield" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-orange-500/20 rounded text-xs text-orange-300 mono">
+                        RK4
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded">Mathematics</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Campos Vectoriales</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Visualizacion de campos vectoriales 2D. Rotacion, fuentes, sumideros, dipolos, puntos silla.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">RK4</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Advection</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -789,7 +817,8 @@
             plasma: document.getElementById('canvas-plasma'),
             protein: document.getElementById('canvas-protein'),
             epidemic: document.getElementById('canvas-epidemic'),
-            saturn: document.getElementById('canvas-saturn')
+            saturn: document.getElementById('canvas-saturn'),
+            vectorfield: document.getElementById('canvas-vectorfield')
         };
 
         function resizeCanvases() {
@@ -2292,6 +2321,82 @@
             saturnRotation += 0.002;
         }
 
+        // Vector Fields - Particles advected by field
+        const vfParticles = [];
+        for (let i = 0; i < 60; i++) {
+            vfParticles.push({
+                x: Math.random(),
+                y: Math.random(),
+                age: Math.random() * 3
+            });
+        }
+
+        function drawVectorField() {
+            const canvas = canvases.vectorfield;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw vector field (rotation field centered)
+            const gridSize = 8;
+            const cellW = w / gridSize;
+            const cellH = h / gridSize;
+            const cx = w / 2, cy = h / 2;
+
+            ctx.strokeStyle = 'rgba(249, 115, 22, 0.3)';
+            ctx.lineWidth = 1;
+
+            for (let j = 0; j < gridSize; j++) {
+                for (let i = 0; i < gridSize; i++) {
+                    const x = (i + 0.5) * cellW;
+                    const y = (j + 0.5) * cellH;
+
+                    // Rotation field: F = (-y, x)
+                    const dx = x - cx;
+                    const dy = y - cy;
+                    const r = Math.sqrt(dx * dx + dy * dy) + 10;
+                    const vx = -dy / r * 15;
+                    const vy = dx / r * 15;
+
+                    ctx.beginPath();
+                    ctx.moveTo(x, y);
+                    ctx.lineTo(x + vx, y + vy);
+                    ctx.stroke();
+                }
+            }
+
+            // Advect and draw particles
+            vfParticles.forEach(p => {
+                // Rotation field velocity
+                const dx = p.x * w - cx;
+                const dy = p.y * h - cy;
+                const r = Math.sqrt(dx * dx + dy * dy) + 10;
+                const vx = -dy / r * 0.003;
+                const vy = dx / r * 0.003;
+
+                p.x += vx;
+                p.y += vy;
+                p.age += 0.02;
+
+                // Respawn if out of bounds or too old
+                if (p.x < 0 || p.x > 1 || p.y < 0 || p.y > 1 || p.age > 3) {
+                    p.x = Math.random();
+                    p.y = Math.random();
+                    p.age = 0;
+                }
+
+                // Draw with fade
+                const alpha = Math.min(1, p.age / 0.5) * Math.max(0, 1 - p.age / 3);
+                ctx.fillStyle = `rgba(249, 115, 22, ${alpha})`;
+                ctx.beginPath();
+                ctx.arc(p.x * w, p.y * h, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -2315,6 +2420,7 @@
             drawProtein();
             drawEpidemic();
             drawSaturn();
+            drawVectorField();
             requestAnimationFrame(animate);
         }
 
