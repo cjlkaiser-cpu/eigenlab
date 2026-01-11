@@ -24,6 +24,7 @@ set(SOURCES
     src/physics/accretion_disk.cpp
     src/physics/cellular_automata_3d.cpp
     src/physics/mandelbulb.cpp
+    src/physics/electrophoresis.cpp
     src/bindings.cpp
 )
 

@@ -24,6 +24,7 @@
 #include "../include/physics/accretion_disk.hpp"
 #include "../include/physics/cellular_automata_3d.hpp"
 #include "../include/physics/mandelbulb.hpp"
+#include "../include/physics/electrophoresis.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -613,6 +614,18 @@ val getMandelbulbNormals(const Mandelbulb& mb) {
 
 val getMandelbulbColors(const Mandelbulb& mb) {
     return val(typed_memory_view(mb.pointCount() * 3, mb.surfaceColors()));
+}
+
+// ============================================================================
+// Electrophoresis helpers
+// ============================================================================
+
+val getElectrophoresisPositions(const Electrophoresis& ep) {
+    return val(typed_memory_view(ep.moleculeCount() * 2, ep.positionData()));
+}
+
+val getElectrophoresisColors(const Electrophoresis& ep) {
+    return val(typed_memory_view(ep.moleculeCount() * 3, ep.colorData()));
 }
 
 // ============================================================================
@@ -1701,6 +1714,62 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("mandelbulbPresetSmooth", &mandelbulbPresetSmooth);
     function("mandelbulbPresetSpiky", &mandelbulbPresetSpiky);
     function("mandelbulbPresetHighDetail", &mandelbulbPresetHighDetail);
+
+    // =========================================================================
+    // Electrophoresis
+    // =========================================================================
+
+    // ElectrophoresisConfig struct
+    value_object<ElectrophoresisConfig>("ElectrophoresisConfig")
+        .field("numLanes", &ElectrophoresisConfig::numLanes)
+        .field("particlesPerLane", &ElectrophoresisConfig::particlesPerLane)
+        .field("gelWidth", &ElectrophoresisConfig::gelWidth)
+        .field("gelHeight", &ElectrophoresisConfig::gelHeight)
+        .field("wellDepth", &ElectrophoresisConfig::wellDepth)
+        .field("voltage", &ElectrophoresisConfig::voltage)
+        .field("gelConcentration", &ElectrophoresisConfig::gelConcentration)
+        .field("temperature", &ElectrophoresisConfig::temperature)
+        .field("dt", &ElectrophoresisConfig::dt);
+
+    // ElectrophoresisStats struct
+    value_object<ElectrophoresisStats>("ElectrophoresisStats")
+        .field("totalMolecules", &ElectrophoresisStats::totalMolecules)
+        .field("simulationTime", &ElectrophoresisStats::simulationTime)
+        .field("currentVoltage", &ElectrophoresisStats::currentVoltage)
+        .field("maxMigration", &ElectrophoresisStats::maxMigration)
+        .field("avgVelocity", &ElectrophoresisStats::avgVelocity);
+
+    // Electrophoresis class
+    class_<Electrophoresis>("Electrophoresis")
+        .constructor<>()
+        .constructor<const ElectrophoresisConfig&>()
+        .function("setConfig", &Electrophoresis::setConfig)
+        .function("reset", &Electrophoresis::reset)
+        .function("clear", &Electrophoresis::clear)
+        .function("loadDNALadder", &Electrophoresis::loadDNALadder)
+        .function("loadProteinLadder", &Electrophoresis::loadProteinLadder)
+        .function("loadRandomSample", &Electrophoresis::loadRandomSample)
+        .function("step", &Electrophoresis::step)
+        .function("stepMultiple", &Electrophoresis::stepMultiple)
+        .function("run", &Electrophoresis::run)
+        .function("setVoltage", &Electrophoresis::setVoltage)
+        .function("setGelConcentration", &Electrophoresis::setGelConcentration)
+        .function("setTemperature", &Electrophoresis::setTemperature)
+        .function("computeStatistics", &Electrophoresis::computeStatistics)
+        .function("stats", &Electrophoresis::stats)
+        .function("moleculeCount", &Electrophoresis::moleculeCount)
+        .function("numLanes", &Electrophoresis::numLanes)
+        .function("gelWidth", &Electrophoresis::gelWidth)
+        .function("gelHeight", &Electrophoresis::gelHeight);
+
+    // Electrophoresis helper functions
+    function("getElectrophoresisPositions", &getElectrophoresisPositions);
+    function("getElectrophoresisColors", &getElectrophoresisColors);
+
+    // Electrophoresis presets
+    function("electrophoresisPresetDNA", &electrophoresisPresetDNA);
+    function("electrophoresisPresetProtein", &electrophoresisPresetProtein);
+    function("electrophoresisPresetHighRes", &electrophoresisPresetHighRes);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

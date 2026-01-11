@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Electroforesis en Gel - EigenLab WASM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <script src="../../_wasm/eigenlab-core.js"></script>
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.2);
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 { font-size: 1.25rem; font-weight: 500; }
+        .breadcrumb { font-size: 0.75rem; color: var(--text-muted); }
+        .breadcrumb a { color: var(--accent); text-decoration: none; }
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.75rem;
+            overflow: hidden;
+            position: relative;
+        }
+        canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .controls {
+            width: 300px;
+            background: var(--bg-panel);
+            border-radius: 0.75rem;
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+            max-height: calc(100vh - 120px);
+        }
+        .control-group {
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .control-group h3 {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
+        }
+        .equation {
+            font-family: 'Times New Roman', serif;
+            font-style: italic;
+            text-align: center;
+            padding: 0.75rem;
+            background: rgba(236, 72, 153, 0.1);
+            border-radius: 0.5rem;
+            border: 1px solid var(--accent-dim);
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+        .slider-row { margin-bottom: 0.75rem; }
+        .slider-row label {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 0.25rem;
+        }
+        .slider-row label span { color: var(--accent); font-weight: 500; }
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            -webkit-appearance: none;
+            background: var(--bg-primary);
+            border-radius: 3px;
+        }
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 14px; height: 14px;
+            background: var(--accent);
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .btn-row { display: flex; gap: 0.5rem; flex-wrap: wrap; }
+        .btn {
+            flex: 1;
+            padding: 0.5rem 0.75rem;
+            background: var(--bg-primary);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+            min-width: 70px;
+        }
+        .btn:hover { background: var(--accent-dim); border-color: var(--accent); }
+        .btn.active { background: var(--accent); color: #000; }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .stat-box {
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-value { font-size: 1.1rem; font-weight: 600; color: var(--accent); }
+        .stat-label { font-size: 0.65rem; color: var(--text-muted); text-transform: uppercase; }
+        .loading {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-secondary);
+            z-index: 10;
+        }
+        .loading-spinner {
+            width: 40px; height: 40px;
+            border: 3px solid var(--bg-panel);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .preset-btn { padding: 0.4rem 0.6rem; font-size: 0.7rem; }
+        select {
+            width: 100%;
+            padding: 0.5rem;
+            background: var(--bg-primary);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-primary);
+            border-radius: 0.375rem;
+            font-size: 0.8rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a> /
+                <a href="../../_portal/wasm-labs.html">WASM Labs</a> /
+                <span>Electroforesis</span>
+            </nav>
+            <h1>Electroforesis en Gel</h1>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-muted);">
+            WASM
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <div id="loading" class="loading">
+                <div class="loading-spinner"></div>
+            </div>
+            <canvas id="canvas"></canvas>
+        </div>
+
+        <aside class="controls">
+            <div class="control-group">
+                <h3>Electroforesis</h3>
+                <div class="equation">
+                    v = qE / gamma
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 0.75rem;">
+                    Moleculas cargadas migran en campo electrico.<br>
+                    Tamano determina velocidad (menor = mas rapido).
+                </p>
+
+                <div class="slider-row">
+                    <label>Voltaje <span id="val-voltage">100</span> V</label>
+                    <input type="range" id="voltage" min="20" max="200" value="100">
+                </div>
+                <div class="slider-row">
+                    <label>Gel % <span id="val-gel">1.0</span></label>
+                    <input type="range" id="gel" min="0.5" max="2.5" step="0.1" value="1.0">
+                </div>
+                <div class="slider-row">
+                    <label>Temperatura <span id="val-temp">25</span> C</label>
+                    <input type="range" id="temperature" min="4" max="37" value="25">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Muestras</h3>
+                <select id="sample-type">
+                    <option value="dna">DNA Ladder</option>
+                    <option value="protein">Protein Ladder</option>
+                    <option value="random">Muestra Random</option>
+                </select>
+                <div class="btn-row">
+                    <button class="btn" id="btn-load">Cargar Muestra</button>
+                    <button class="btn" id="btn-clear">Limpiar</button>
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-muted); margin-top: 0.5rem;">
+                    Click en un carril para cargar muestra
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h3>Simulacion</h3>
+                <div class="slider-row">
+                    <label>Velocidad <span id="val-speed">10</span>x</label>
+                    <input type="range" id="speed" min="1" max="50" value="10">
+                </div>
+                <div class="btn-row">
+                    <button class="btn" id="btn-play">Play</button>
+                    <button class="btn" id="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets</h3>
+                <div class="btn-row">
+                    <button class="btn preset-btn active" data-preset="dna">DNA</button>
+                    <button class="btn preset-btn" data-preset="protein">Protein</button>
+                    <button class="btn preset-btn" data-preset="highres">High Res</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadisticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-molecules">0</div>
+                        <div class="stat-label">Moleculas</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-time">0.0</div>
+                        <div class="stat-label">Tiempo (s)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-migration">0.0</div>
+                        <div class="stat-label">Migracion (mm)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-value" id="stat-fps">0</div>
+                        <div class="stat-label">FPS</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script>
+        // ═══════════════════════════════════════════════════════════════════════
+        // CONFIG
+        // ═══════════════════════════════════════════════════════════════════════
+        const CONFIG = {
+            voltage: 100,
+            gelConcentration: 1.0,
+            temperature: 25,
+            speed: 10,
+            playing: false,
+            sampleType: 'dna'
+        };
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // WASM + CANVAS
+        // ═══════════════════════════════════════════════════════════════════════
+        let Module, electrophoresis;
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const loadingEl = document.getElementById('loading');
+
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════════════
+        async function initWASM() {
+            try {
+                Module = await EigenLabCore();
+
+                const config = Module.electrophoresisPresetDNA();
+                electrophoresis = new Module.Electrophoresis(config);
+
+                // Load samples in all lanes
+                for (let i = 0; i < electrophoresis.numLanes(); i++) {
+                    if (i % 2 === 0) {
+                        electrophoresis.loadDNALadder(i);
+                    } else {
+                        electrophoresis.loadRandomSample(i, 4 + Math.floor(Math.random() * 4));
+                    }
+                }
+
+                loadingEl.style.display = 'none';
+                updateStats();
+                draw();
+
+            } catch (err) {
+                console.error('WASM init error:', err);
+                loadingEl.innerHTML = '<p style="color:#ec4899;">Error cargando WASM</p>';
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // DRAWING
+        // ═══════════════════════════════════════════════════════════════════════
+        function draw() {
+            if (!electrophoresis) return;
+
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            // Clear
+            ctx.fillStyle = '#0a0a1a';
+            ctx.fillRect(0, 0, w, h);
+
+            const gelW = electrophoresis.gelWidth();
+            const gelH = electrophoresis.gelHeight();
+            const numLanes = electrophoresis.numLanes();
+
+            // Scale to fit
+            const padding = 40;
+            const scaleX = (w - padding * 2) / gelW;
+            const scaleY = (h - padding * 2) / gelH;
+            const scale = Math.min(scaleX, scaleY);
+
+            const offsetX = w / 2;
+            const offsetY = h / 2;
+
+            // Draw gel background
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(
+                offsetX - gelW * scale / 2,
+                offsetY - gelH * scale / 2,
+                gelW * scale,
+                gelH * scale
+            );
+
+            // Draw lane dividers
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            const laneWidth = gelW / numLanes;
+
+            for (let i = 1; i < numLanes; i++) {
+                const x = offsetX + (-gelW / 2 + i * laneWidth) * scale;
+                ctx.beginPath();
+                ctx.moveTo(x, offsetY - gelH * scale / 2);
+                ctx.lineTo(x, offsetY + gelH * scale / 2);
+                ctx.stroke();
+            }
+
+            // Draw wells at top
+            const wellY = -gelH / 2 + 0.15;
+            ctx.fillStyle = '#0a0a0a';
+            for (let i = 0; i < numLanes; i++) {
+                const laneX = -gelW / 2 + (i + 0.5) * laneWidth;
+                const wellWidth = laneWidth * 0.6;
+                ctx.fillRect(
+                    offsetX + laneX * scale - wellWidth * scale / 2,
+                    offsetY + wellY * scale - 0.1 * scale,
+                    wellWidth * scale,
+                    0.2 * scale
+                );
+            }
+
+            // Draw molecules
+            const positions = Module.getElectrophoresisPositions(electrophoresis);
+            const colors = Module.getElectrophoresisColors(electrophoresis);
+            const count = electrophoresis.moleculeCount();
+
+            for (let i = 0; i < count; i++) {
+                const x = positions[i * 2];
+                const y = positions[i * 2 + 1];
+                const r = colors[i * 3];
+                const g = colors[i * 3 + 1];
+                const b = colors[i * 3 + 2];
+
+                const screenX = offsetX + x * scale;
+                const screenY = offsetY - y * scale;  // Flip Y (gel runs top to bottom)
+
+                ctx.fillStyle = `rgba(${r * 255}, ${g * 255}, ${b * 255}, 0.8)`;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw labels
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'center';
+            for (let i = 0; i < numLanes; i++) {
+                const laneX = -gelW / 2 + (i + 0.5) * laneWidth;
+                const screenX = offsetX + laneX * scale;
+                ctx.fillText(`${i + 1}`, screenX, offsetY - gelH * scale / 2 - 10);
+            }
+
+            // Draw polarity labels
+            ctx.fillStyle = '#ec4899';
+            ctx.font = '12px Inter';
+            ctx.textAlign = 'left';
+            ctx.fillText('(-) Cathode', padding, padding - 10);
+            ctx.fillText('(+) Anode', padding, h - padding + 20);
+
+            // Draw scale bar
+            const scaleBarMM = 10; // 10mm
+            const scaleBarPx = (scaleBarMM / 1000) * scale * 1000;
+            ctx.strokeStyle = '#64748b';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(w - padding - 50, h - padding + 15);
+            ctx.lineTo(w - padding - 50 + scaleBarPx, h - padding + 15);
+            ctx.stroke();
+            ctx.fillStyle = '#64748b';
+            ctx.textAlign = 'center';
+            ctx.fillText('10mm', w - padding - 50 + scaleBarPx / 2, h - padding + 30);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // STATS
+        // ═══════════════════════════════════════════════════════════════════════
+        let lastTime = performance.now();
+        let frameCount = 0;
+        let fps = 0;
+
+        function updateStats() {
+            if (!electrophoresis) return;
+
+            electrophoresis.computeStatistics();
+            const stats = electrophoresis.stats();
+
+            document.getElementById('stat-molecules').textContent = stats.totalMolecules;
+            document.getElementById('stat-time').textContent = stats.simulationTime.toFixed(1);
+            document.getElementById('stat-migration').textContent = (stats.maxMigration * 10).toFixed(1);
+            document.getElementById('stat-fps').textContent = fps;
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // SIMULATION LOOP
+        // ═══════════════════════════════════════════════════════════════════════
+        let simFrame = 0;
+
+        function simulate() {
+            if (CONFIG.playing && electrophoresis) {
+                electrophoresis.stepMultiple(CONFIG.speed);
+            }
+
+            draw();
+
+            // FPS
+            frameCount++;
+            const now = performance.now();
+            if (now - lastTime >= 1000) {
+                fps = frameCount;
+                frameCount = 0;
+                lastTime = now;
+            }
+
+            // Update stats periodically
+            simFrame++;
+            if (simFrame % 10 === 0) {
+                updateStats();
+            }
+
+            requestAnimationFrame(simulate);
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // PRESETS
+        // ═══════════════════════════════════════════════════════════════════════
+        function applyPreset(name) {
+            if (!electrophoresis) return;
+
+            let config;
+            if (name === 'dna') {
+                config = Module.electrophoresisPresetDNA();
+            } else if (name === 'protein') {
+                config = Module.electrophoresisPresetProtein();
+            } else {
+                config = Module.electrophoresisPresetHighRes();
+            }
+
+            electrophoresis.setConfig(config);
+
+            // Update UI
+            CONFIG.voltage = config.voltage;
+            CONFIG.gelConcentration = config.gelConcentration;
+            CONFIG.temperature = config.temperature;
+
+            document.getElementById('voltage').value = config.voltage;
+            document.getElementById('gel').value = config.gelConcentration;
+            document.getElementById('temperature').value = config.temperature;
+
+            document.getElementById('val-voltage').textContent = Math.round(config.voltage);
+            document.getElementById('val-gel').textContent = config.gelConcentration.toFixed(1);
+            document.getElementById('val-temp').textContent = Math.round(config.temperature);
+
+            // Load samples
+            for (let i = 0; i < electrophoresis.numLanes(); i++) {
+                if (name === 'dna') {
+                    electrophoresis.loadDNALadder(i);
+                } else if (name === 'protein') {
+                    electrophoresis.loadProteinLadder(i);
+                } else {
+                    electrophoresis.loadRandomSample(i, 5);
+                }
+            }
+
+            // Update buttons
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.preset === name);
+            });
+
+            updateStats();
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // UI BINDINGS
+        // ═══════════════════════════════════════════════════════════════════════
+        function setupUI() {
+            document.getElementById('voltage').addEventListener('input', (e) => {
+                CONFIG.voltage = parseFloat(e.target.value);
+                document.getElementById('val-voltage').textContent = Math.round(CONFIG.voltage);
+                if (electrophoresis) electrophoresis.setVoltage(CONFIG.voltage);
+            });
+
+            document.getElementById('gel').addEventListener('input', (e) => {
+                CONFIG.gelConcentration = parseFloat(e.target.value);
+                document.getElementById('val-gel').textContent = CONFIG.gelConcentration.toFixed(1);
+                if (electrophoresis) electrophoresis.setGelConcentration(CONFIG.gelConcentration);
+            });
+
+            document.getElementById('temperature').addEventListener('input', (e) => {
+                CONFIG.temperature = parseFloat(e.target.value);
+                document.getElementById('val-temp').textContent = Math.round(CONFIG.temperature);
+                if (electrophoresis) electrophoresis.setTemperature(CONFIG.temperature);
+            });
+
+            document.getElementById('speed').addEventListener('input', (e) => {
+                CONFIG.speed = parseInt(e.target.value);
+                document.getElementById('val-speed').textContent = CONFIG.speed;
+            });
+
+            document.getElementById('btn-play').addEventListener('click', (e) => {
+                CONFIG.playing = !CONFIG.playing;
+                e.target.textContent = CONFIG.playing ? 'Pause' : 'Play';
+                e.target.classList.toggle('active', CONFIG.playing);
+            });
+
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                if (electrophoresis) {
+                    electrophoresis.reset();
+                    // Reload samples
+                    for (let i = 0; i < electrophoresis.numLanes(); i++) {
+                        electrophoresis.loadDNALadder(i);
+                    }
+                    updateStats();
+                }
+            });
+
+            document.getElementById('btn-load').addEventListener('click', () => {
+                if (!electrophoresis) return;
+                const type = document.getElementById('sample-type').value;
+                for (let i = 0; i < electrophoresis.numLanes(); i++) {
+                    if (type === 'dna') {
+                        electrophoresis.loadDNALadder(i);
+                    } else if (type === 'protein') {
+                        electrophoresis.loadProteinLadder(i);
+                    } else {
+                        electrophoresis.loadRandomSample(i, 4 + Math.floor(Math.random() * 4));
+                    }
+                }
+                updateStats();
+            });
+
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                if (electrophoresis) {
+                    electrophoresis.reset();
+                    updateStats();
+                }
+            });
+
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    applyPreset(btn.dataset.preset);
+                });
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════════════
+        // INIT
+        // ═══════════════════════════════════════════════════════════════════════
+        setupUI();
+        initWASM().then(() => {
+            simulate();
+        });
+    </script>
+</body>
+</html>
