@@ -26,6 +26,7 @@ set(SOURCES
     src/physics/mandelbulb.cpp
     src/physics/electrophoresis.cpp
     src/physics/plasma_particles.cpp
+    src/physics/protein_folding.cpp
     src/bindings.cpp
 )
 

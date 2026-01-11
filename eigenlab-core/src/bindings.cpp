@@ -26,6 +26,7 @@
 #include "../include/physics/mandelbulb.hpp"
 #include "../include/physics/electrophoresis.hpp"
 #include "../include/physics/plasma_particles.hpp"
+#include "../include/physics/protein_folding.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -647,6 +648,22 @@ val getPlasmaColors(const PlasmaParticles& pp) {
 
 val getPlasmaCharges(const PlasmaParticles& pp) {
     return val(typed_memory_view(pp.particleCount(), pp.chargeData()));
+}
+
+// ============================================================================
+// ProteinFolding helpers
+// ============================================================================
+
+val getProteinPositions(const ProteinFolding& pf) {
+    return val(typed_memory_view(pf.residueCount() * 3, pf.positionData()));
+}
+
+val getProteinColors(const ProteinFolding& pf) {
+    return val(typed_memory_view(pf.residueCount() * 3, pf.colorData()));
+}
+
+val getProteinBonds(const ProteinFolding& pf) {
+    return val(typed_memory_view(pf.bondCount() * 2, pf.bondIndices()));
 }
 
 // ============================================================================
@@ -1852,6 +1869,73 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("getPlasmaVelocities", &getPlasmaVelocities);
     function("getPlasmaColors", &getPlasmaColors);
     function("getPlasmaCharges", &getPlasmaCharges);
+
+    // =========================================================================
+    // ProteinFolding
+    // =========================================================================
+
+    // ResidueType enum
+    enum_<ResidueType>("ResidueType")
+        .value("Hydrophobic", ResidueType::Hydrophobic)
+        .value("Polar", ResidueType::Polar);
+
+    // ProteinConfig struct
+    value_object<ProteinConfig>("ProteinConfig")
+        .field("sequenceLength", &ProteinConfig::sequenceLength)
+        .field("bondLength", &ProteinConfig::bondLength)
+        .field("bondStiffness", &ProteinConfig::bondStiffness)
+        .field("hhContactEnergy", &ProteinConfig::hhContactEnergy)
+        .field("hpContactEnergy", &ProteinConfig::hpContactEnergy)
+        .field("ppContactEnergy", &ProteinConfig::ppContactEnergy)
+        .field("contactRadius", &ProteinConfig::contactRadius)
+        .field("temperature", &ProteinConfig::temperature)
+        .field("coolingRate", &ProteinConfig::coolingRate)
+        .field("dt", &ProteinConfig::dt)
+        .field("use3D", &ProteinConfig::use3D)
+        .field("ljEpsilon", &ProteinConfig::ljEpsilon)
+        .field("ljSigma", &ProteinConfig::ljSigma);
+
+    // ProteinStats struct
+    value_object<ProteinStats>("ProteinStats")
+        .field("totalEnergy", &ProteinStats::totalEnergy)
+        .field("bondEnergy", &ProteinStats::bondEnergy)
+        .field("contactEnergy", &ProteinStats::contactEnergy)
+        .field("ljEnergy", &ProteinStats::ljEnergy)
+        .field("numHHContacts", &ProteinStats::numHHContacts)
+        .field("numHPContacts", &ProteinStats::numHPContacts)
+        .field("radiusOfGyration", &ProteinStats::radiusOfGyration)
+        .field("endToEndDistance", &ProteinStats::endToEndDistance)
+        .field("temperature", &ProteinStats::temperature)
+        .field("stepCount", &ProteinStats::stepCount)
+        .field("isFolded", &ProteinStats::isFolded);
+
+    // ProteinFolding class
+    class_<ProteinFolding>("ProteinFolding")
+        .constructor<>()
+        .constructor<const ProteinConfig&>()
+        .function("init", &ProteinFolding::init)
+        .function("initFromSequence", &ProteinFolding::initFromSequence)
+        .function("step", select_overload<void()>(&ProteinFolding::step))
+        .function("stepMultiple", select_overload<void(int)>(&ProteinFolding::step))
+        .function("foldMonteCarlo", &ProteinFolding::foldMonteCarlo)
+        .function("foldSimulatedAnnealing", &ProteinFolding::foldSimulatedAnnealing)
+        .function("foldMolecularDynamics", &ProteinFolding::foldMolecularDynamics)
+        .function("setTemperature", &ProteinFolding::setTemperature)
+        .function("setCoolingRate", &ProteinFolding::setCoolingRate)
+        .function("setContactEnergies", &ProteinFolding::setContactEnergies)
+        .function("presetAlphaHelix", &ProteinFolding::presetAlphaHelix)
+        .function("presetBetaSheet", &ProteinFolding::presetBetaSheet)
+        .function("presetRandomCoil", &ProteinFolding::presetRandomCoil)
+        .function("presetGlobular", &ProteinFolding::presetGlobular)
+        .function("getStats", &ProteinFolding::getStats)
+        .function("getSequence", &ProteinFolding::getSequence)
+        .function("residueCount", &ProteinFolding::residueCount)
+        .function("bondCount", &ProteinFolding::bondCount);
+
+    // Protein helper functions
+    function("getProteinPositions", &getProteinPositions);
+    function("getProteinColors", &getProteinColors);
+    function("getProteinBonds", &getProteinBonds);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

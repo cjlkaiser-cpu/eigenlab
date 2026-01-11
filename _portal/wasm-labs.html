@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">18</div>
+                        <div class="text-2xl font-light text-violet-400">19</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -617,6 +617,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Plegamiento de Proteinas -->
+            <a href="../Biochemistry/Biochem Visual Lab/plegamiento-proteinas.html"
+               class="sim-card block bg-gradient-to-br from-pink-950/50 to-rose-950/30 rounded-2xl overflow-hidden border border-pink-500/20 hover:border-pink-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-protein" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-pink-500/20 rounded text-xs text-pink-300 mono">
+                        HP Model
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-pink-500/20 text-pink-400 rounded">Biochemistry</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Plegamiento de Proteínas</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Modelo HP simplificado. Monte Carlo, Simulated Annealing, Dinámica Molecular.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Lennard-Jones</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Metropolis</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -702,7 +730,8 @@
             ca3d: document.getElementById('canvas-ca3d'),
             mandelbulb: document.getElementById('canvas-mandelbulb'),
             electro: document.getElementById('canvas-electro'),
-            plasma: document.getElementById('canvas-plasma')
+            plasma: document.getElementById('canvas-plasma'),
+            protein: document.getElementById('canvas-protein')
         };
 
         function resizeCanvases() {
@@ -1891,6 +1920,117 @@
             ctx.fillText('B', cx + 12, h * 0.18);
         }
 
+        // Protein Folding - Chain of residues
+        const proteinResidues = [];
+        const numResidues = 16;
+        for (let i = 0; i < numResidues; i++) {
+            const angle = i * 0.4;
+            const r = 0.15 + i * 0.02;
+            proteinResidues.push({
+                x: 0.5 + Math.cos(angle) * r,
+                y: 0.5 + Math.sin(angle) * r,
+                vx: 0,
+                vy: 0,
+                isH: Math.random() < 0.5  // Hydrophobic vs Polar
+            });
+        }
+        let proteinTime = 0;
+
+        function drawProtein() {
+            const canvas = canvases.protein;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            proteinTime += 0.01;
+
+            // Simple dynamics: attract H to center, repel overlaps
+            const centerX = 0.5, centerY = 0.5;
+            const bondLength = 0.08;
+
+            proteinResidues.forEach((r, i) => {
+                // H residues attracted to center
+                if (r.isH) {
+                    const dx = centerX - r.x;
+                    const dy = centerY - r.y;
+                    r.vx += dx * 0.001;
+                    r.vy += dy * 0.001;
+                }
+
+                // Bond constraints (spring to neighbors)
+                if (i > 0) {
+                    const prev = proteinResidues[i - 1];
+                    const dx = prev.x - r.x;
+                    const dy = prev.y - r.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    const stretch = dist - bondLength;
+                    const f = stretch * 0.05;
+                    r.vx += dx / dist * f;
+                    r.vy += dy / dist * f;
+                }
+
+                // Apply velocity with damping
+                r.x += r.vx;
+                r.y += r.vy;
+                r.vx *= 0.95;
+                r.vy *= 0.95;
+
+                // Keep in bounds
+                r.x = Math.max(0.1, Math.min(0.9, r.x));
+                r.y = Math.max(0.1, Math.min(0.9, r.y));
+            });
+
+            // Draw bonds
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            for (let i = 1; i < proteinResidues.length; i++) {
+                const r1 = proteinResidues[i - 1];
+                const r2 = proteinResidues[i];
+                ctx.moveTo(r1.x * w, r1.y * h);
+                ctx.lineTo(r2.x * w, r2.y * h);
+            }
+            ctx.stroke();
+
+            // Draw residues
+            proteinResidues.forEach((r, i) => {
+                const x = r.x * w;
+                const y = r.y * h;
+                const size = 6;
+
+                // Color: H=orange, P=cyan
+                if (r.isH) {
+                    ctx.fillStyle = '#f97316';
+                } else {
+                    ctx.fillStyle = '#38bdf8';
+                }
+
+                // Glow
+                ctx.beginPath();
+                ctx.arc(x, y, size + 4, 0, Math.PI * 2);
+                ctx.fillStyle = r.isH ? 'rgba(249, 115, 22, 0.3)' : 'rgba(56, 189, 248, 0.3)';
+                ctx.fill();
+
+                // Residue
+                ctx.fillStyle = r.isH ? '#f97316' : '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Labels
+            ctx.fillStyle = '#22c55e';
+            ctx.font = '10px Inter';
+            ctx.fillText('N', proteinResidues[0].x * w, proteinResidues[0].y * h - 12);
+
+            ctx.fillStyle = '#ef4444';
+            const last = proteinResidues[proteinResidues.length - 1];
+            ctx.fillText('C', last.x * w, last.y * h - 12);
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -1911,6 +2051,7 @@
             drawMandelbulb();
             drawElectro();
             drawPlasma();
+            drawProtein();
             requestAnimationFrame(animate);
         }
 
