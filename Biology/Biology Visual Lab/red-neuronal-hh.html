@@ -1,0 +1,666 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Red Neuronal Hodgkin-Huxley - EigenLab WASM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.3);
+            --spike: #f59e0b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid rgba(16, 185, 129, 0.2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .breadcrumb a:hover { color: var(--accent); }
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+            cursor: crosshair;
+        }
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+        .control-group {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .control-group h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .control-row:last-child { margin-bottom: 0; }
+        .control-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .control-row span {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-top: 0.25rem;
+            accent-color: var(--accent);
+        }
+        .btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary {
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-dim);
+        }
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-dim);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .preset-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .stat-item {
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .equation {
+            background: var(--bg-primary);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-family: 'Times New Roman', serif;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        .view-btns {
+            display: flex;
+            gap: 0.5rem;
+        }
+        .view-btn {
+            flex: 1;
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-dim);
+            color: var(--text-secondary);
+            padding: 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .view-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .view-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        #loading {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-panel);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .legend {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin-top: 0.5rem;
+            font-size: 0.7rem;
+        }
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <h1>Red Neuronal Hodgkin-Huxley</h1>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a> /
+                <a href="../../_portal/wasm-labs.html">WASM Labs</a> /
+                <a href="index.html">Biology</a>
+            </nav>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">
+            WASM · Hodgkin-Huxley Model
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">
+                <div class="spinner"></div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cargando WASM...</div>
+            </div>
+        </div>
+
+        <aside class="controls">
+            <div class="control-group">
+                <h3>Modelo Hodgkin-Huxley</h3>
+                <div class="equation">
+                    C<sub>m</sub> dV/dt = I - g<sub>Na</sub>m<sup>3</sup>h(V-E<sub>Na</sub>) - g<sub>K</sub>n<sup>4</sup>(V-E<sub>K</sub>)
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.4;">
+                    Red de neuronas biologicamente realistas con canales ionicos Na+/K+.
+                    Click para estimular. Los potenciales de accion se propagan por sinapsis.
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets</h3>
+                <div class="preset-grid">
+                    <button class="preset-btn active" data-preset="small">8x8 (64)</button>
+                    <button class="preset-btn" data-preset="medium">16x16 (256)</button>
+                    <button class="preset-btn" data-preset="large">25x25 (625)</button>
+                    <button class="preset-btn" data-preset="fast">Rapido</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Visualizacion</h3>
+                <div class="view-btns">
+                    <button class="view-btn active" data-view="potential">V</button>
+                    <button class="view-btn" data-view="gateN">n</button>
+                    <button class="view-btn" data-view="gateM">m</button>
+                    <button class="view-btn" data-view="gateH">h</button>
+                </div>
+                <div class="legend">
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #3b82f6;"></div>
+                        <span>Reposo</span>
+                    </div>
+                    <div class="legend-item">
+                        <div class="legend-color" style="background: #f59e0b;"></div>
+                        <span>Spike</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parametros</h3>
+                <div class="control-row">
+                    <label>Fuerza Sinaptica</label>
+                    <span id="val-synapse">0.80</span>
+                </div>
+                <input type="range" id="slider-synapse" min="0" max="200" value="80">
+
+                <div class="control-row">
+                    <label>Corriente Estimulo</label>
+                    <span id="val-stim">10</span> uA
+                </div>
+                <input type="range" id="slider-stim" min="0" max="30" value="10">
+            </div>
+
+            <div class="control-group">
+                <h3>Estimulacion</h3>
+                <div class="btn-row">
+                    <button class="btn" id="btn-random">Random x5</button>
+                    <button class="btn btn-secondary" id="btn-clear">Limpiar</button>
+                </div>
+                <p style="font-size: 0.65rem; color: var(--text-dim); margin-top: 0.5rem;">
+                    Click en el canvas para estimular neuronas
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h3>Control</h3>
+                <div class="btn-row">
+                    <button class="btn" id="btn-play">Pausar</button>
+                    <button class="btn btn-secondary" id="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadisticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-neurons">0</div>
+                        <div class="stat-label">Neuronas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-spikes">0</div>
+                        <div class="stat-label">Spikes</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-rate">0</div>
+                        <div class="stat-label">Hz</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-time">0</div>
+                        <div class="stat-label">ms</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script src="../../eigenlab-core/build/eigenlab-core.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // State
+        // ═══════════════════════════════════════════════════════════════
+        let Module = null;
+        let sim = null;
+        let running = true;
+        let frameCount = 0;
+        let viewMode = 'potential';
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // ═══════════════════════════════════════════════════════════════
+        // Canvas Setup
+        // ═══════════════════════════════════════════════════════════════
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ═══════════════════════════════════════════════════════════════
+        // WASM Initialization
+        // ═══════════════════════════════════════════════════════════════
+        EigenLabCore().then(mod => {
+            Module = mod;
+            document.getElementById('loading').style.display = 'none';
+
+            // Create network with small preset
+            const config = Module.neuralPresetSmall();
+            sim = new Module.NeuralNetwork(config);
+
+            // Initial stimulation
+            sim.stimulateRandom(3, 15);
+
+            setupControls();
+            loop();
+        }).catch(err => {
+            console.error('WASM load error:', err);
+            document.getElementById('loading').innerHTML =
+                '<div style="color: #ef4444;">Error cargando WASM</div>' +
+                '<div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">' +
+                'Ejecuta: python3 -m http.server 8080</div>';
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // Controls
+        // ═══════════════════════════════════════════════════════════════
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const preset = btn.dataset.preset;
+                    let config;
+                    switch(preset) {
+                        case 'small': config = Module.neuralPresetSmall(); break;
+                        case 'medium': config = Module.neuralPresetMedium(); break;
+                        case 'large': config = Module.neuralPresetLarge(); break;
+                        case 'fast': config = Module.neuralPresetFast(); break;
+                    }
+
+                    if (sim) sim.delete();
+                    sim = new Module.NeuralNetwork(config);
+                    sim.stimulateRandom(3, 15);
+                });
+            });
+
+            // View mode buttons
+            document.querySelectorAll('.view-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    viewMode = btn.dataset.view;
+                });
+            });
+
+            // Parameter sliders
+            const sliderSynapse = document.getElementById('slider-synapse');
+            const sliderStim = document.getElementById('slider-stim');
+
+            sliderSynapse.addEventListener('input', () => {
+                const val = parseFloat(sliderSynapse.value) / 100;
+                document.getElementById('val-synapse').textContent = val.toFixed(2);
+                sim.setSynapseStrength(val);
+            });
+
+            sliderStim.addEventListener('input', () => {
+                const val = parseFloat(sliderStim.value);
+                document.getElementById('val-stim').textContent = val;
+                sim.setStimCurrent(val);
+            });
+
+            // Stimulation buttons
+            document.getElementById('btn-random').addEventListener('click', () => {
+                const current = parseFloat(sliderStim.value);
+                sim.stimulateRandom(5, current);
+            });
+
+            document.getElementById('btn-clear').addEventListener('click', () => {
+                sim.clearStimulation();
+            });
+
+            // Play/Pause
+            document.getElementById('btn-play').addEventListener('click', () => {
+                running = !running;
+                document.getElementById('btn-play').textContent = running ? 'Pausar' : 'Play';
+            });
+
+            // Reset
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                sim.reset();
+                sim.stimulateRandom(3, 15);
+            });
+
+            // Click to stimulate
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width;
+                const y = (e.clientY - rect.top) / rect.height;
+                const current = parseFloat(sliderStim.value);
+                sim.stimulateArea(x, y, 0.15, current);
+            });
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Rendering
+        // ═══════════════════════════════════════════════════════════════
+        function draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            // Clear
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!sim) return;
+
+            const gridW = sim.gridWidth();
+            const gridH = sim.gridHeight();
+
+            // Get data based on view mode
+            let data;
+            let minVal, maxVal;
+            switch(viewMode) {
+                case 'potential':
+                    data = Module.getNeuralPotentials(sim);
+                    minVal = -80; maxVal = 40;
+                    break;
+                case 'gateN':
+                    data = Module.getNeuralGateN(sim);
+                    minVal = 0; maxVal = 1;
+                    break;
+                case 'gateM':
+                    data = Module.getNeuralGateM(sim);
+                    minVal = 0; maxVal = 1;
+                    break;
+                case 'gateH':
+                    data = Module.getNeuralGateH(sim);
+                    minVal = 0; maxVal = 1;
+                    break;
+            }
+
+            const spikes = Module.getNeuralSpikes(sim);
+
+            // Calculate cell size
+            const padding = 40;
+            const availW = w - padding * 2;
+            const availH = h - padding * 2;
+            const cellW = availW / gridW;
+            const cellH = availH / gridH;
+            const cellSize = Math.min(cellW, cellH);
+
+            const offsetX = (w - cellSize * gridW) / 2;
+            const offsetY = (h - cellSize * gridH) / 2;
+
+            // Draw neurons
+            for (let gy = 0; gy < gridH; gy++) {
+                for (let gx = 0; gx < gridW; gx++) {
+                    const idx = gy * gridW + gx;
+                    const val = data[idx];
+                    const spike = spikes[idx];
+
+                    const x = offsetX + gx * cellSize;
+                    const y = offsetY + gy * cellSize;
+
+                    // Normalize value
+                    const t = Math.max(0, Math.min(1, (val - minVal) / (maxVal - minVal)));
+
+                    // Color based on view mode
+                    let r, g, b;
+                    if (viewMode === 'potential') {
+                        // Blue (resting) -> Green (threshold) -> Orange/Yellow (spike)
+                        if (t < 0.5) {
+                            // Blue to cyan
+                            r = Math.floor(30 + t * 80);
+                            g = Math.floor(80 + t * 150);
+                            b = Math.floor(180 - t * 80);
+                        } else {
+                            // Cyan to orange/yellow
+                            const t2 = (t - 0.5) * 2;
+                            r = Math.floor(110 + t2 * 145);
+                            g = Math.floor(230 - t2 * 72);
+                            b = Math.floor(100 - t2 * 89);
+                        }
+                    } else {
+                        // Gates: blue to green
+                        r = Math.floor(50 + t * 50);
+                        g = Math.floor(80 + t * 150);
+                        b = Math.floor(200 - t * 150);
+                    }
+
+                    // Draw cell
+                    ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                    ctx.beginPath();
+                    ctx.arc(x + cellSize/2, y + cellSize/2, cellSize * 0.4, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Spike indicator (ring)
+                    if (spike) {
+                        ctx.strokeStyle = '#f59e0b';
+                        ctx.lineWidth = 3;
+                        ctx.beginPath();
+                        ctx.arc(x + cellSize/2, y + cellSize/2, cellSize * 0.45, 0, Math.PI * 2);
+                        ctx.stroke();
+                    }
+
+                    // Glow for active neurons
+                    if (viewMode === 'potential' && val > -20) {
+                        const glow = ctx.createRadialGradient(
+                            x + cellSize/2, y + cellSize/2, 0,
+                            x + cellSize/2, y + cellSize/2, cellSize * 0.6
+                        );
+                        glow.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.4)`);
+                        glow.addColorStop(1, 'transparent');
+                        ctx.fillStyle = glow;
+                        ctx.fillRect(x, y, cellSize, cellSize);
+                    }
+                }
+            }
+
+            // Draw scale bar
+            ctx.fillStyle = '#64748b';
+            ctx.font = '11px Inter';
+            ctx.textAlign = 'left';
+
+            if (viewMode === 'potential') {
+                ctx.fillText('V (mV)', 10, 20);
+                ctx.fillText('-80', 10, h - 10);
+                ctx.fillText('+40', 10, 35);
+            } else {
+                ctx.fillText(viewMode, 10, 20);
+                ctx.fillText('0', 10, h - 10);
+                ctx.fillText('1', 10, 35);
+            }
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Main Loop
+        // ═══════════════════════════════════════════════════════════════
+        function loop() {
+            if (running && sim) {
+                // Run multiple steps per frame (HH needs small dt)
+                sim.stepMultiple(20);
+                frameCount++;
+
+                // Update stats every 5 frames
+                if (frameCount % 5 === 0) {
+                    const stats = sim.stats();
+                    document.getElementById('stat-neurons').textContent = stats.numNeurons;
+                    document.getElementById('stat-spikes').textContent = stats.numSpikes;
+                    document.getElementById('stat-rate').textContent = stats.avgFiringRate.toFixed(1);
+                    document.getElementById('stat-time').textContent = stats.simTime.toFixed(0);
+                }
+            }
+
+            draw();
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>

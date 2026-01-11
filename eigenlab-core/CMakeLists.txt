@@ -20,6 +20,7 @@ set(SOURCES
     src/physics/molecular_dynamics.cpp
     src/physics/lattice_boltzmann.cpp
     src/physics/granular_sim.cpp
+    src/physics/neural_network.cpp
     src/bindings.cpp
 )
 

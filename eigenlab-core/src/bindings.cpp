@@ -20,6 +20,7 @@
 #include "../include/physics/molecular_dynamics.hpp"
 #include "../include/physics/lattice_boltzmann.hpp"
 #include "../include/physics/granular_sim.hpp"
+#include "../include/physics/neural_network.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -533,6 +534,30 @@ val getGranularVelocities(const GranularSimulator& sim) {
 
 val getGranularTerrain(const GranularSimulator& sim) {
     return val(typed_memory_view(sim.terrainWidth(), sim.terrainData()));
+}
+
+// ============================================================================
+// NeuralNetwork helpers
+// ============================================================================
+
+val getNeuralPotentials(const NeuralNetwork& nn) {
+    return val(typed_memory_view(nn.dataSize(), nn.potentialData()));
+}
+
+val getNeuralGateN(const NeuralNetwork& nn) {
+    return val(typed_memory_view(nn.dataSize(), nn.gateNData()));
+}
+
+val getNeuralGateM(const NeuralNetwork& nn) {
+    return val(typed_memory_view(nn.dataSize(), nn.gateMData()));
+}
+
+val getNeuralGateH(const NeuralNetwork& nn) {
+    return val(typed_memory_view(nn.dataSize(), nn.gateHData()));
+}
+
+val getNeuralSpikes(const NeuralNetwork& nn) {
+    return val(typed_memory_view(nn.dataSize(), nn.spikeData()));
 }
 
 // ============================================================================
@@ -1400,6 +1425,69 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("granularPresetGravel", &granularPresetGravel);
     function("granularPresetRocks", &granularPresetRocks);
     function("granularPresetAvalanche", &granularPresetAvalanche);
+
+    // =========================================================================
+    // NeuralNetwork (Hodgkin-Huxley)
+    // =========================================================================
+
+    // NeuralConfig struct
+    value_object<NeuralConfig>("NeuralConfig")
+        .field("numNeurons", &NeuralConfig::numNeurons)
+        .field("gridWidth", &NeuralConfig::gridWidth)
+        .field("gridHeight", &NeuralConfig::gridHeight)
+        .field("C_m", &NeuralConfig::C_m)
+        .field("g_Na", &NeuralConfig::g_Na)
+        .field("g_K", &NeuralConfig::g_K)
+        .field("g_L", &NeuralConfig::g_L)
+        .field("E_Na", &NeuralConfig::E_Na)
+        .field("E_K", &NeuralConfig::E_K)
+        .field("E_L", &NeuralConfig::E_L)
+        .field("connectionProb", &NeuralConfig::connectionProb)
+        .field("synapseStrength", &NeuralConfig::synapseStrength)
+        .field("synapseDecay", &NeuralConfig::synapseDecay)
+        .field("stimCurrent", &NeuralConfig::stimCurrent)
+        .field("dt", &NeuralConfig::dt);
+
+    // NeuralStats struct
+    value_object<NeuralStats>("NeuralStats")
+        .field("numNeurons", &NeuralStats::numNeurons)
+        .field("numSpikes", &NeuralStats::numSpikes)
+        .field("avgPotential", &NeuralStats::avgPotential)
+        .field("avgFiringRate", &NeuralStats::avgFiringRate)
+        .field("activeNeurons", &NeuralStats::activeNeurons)
+        .field("simTime", &NeuralStats::simTime);
+
+    // NeuralNetwork class
+    class_<NeuralNetwork>("NeuralNetwork")
+        .constructor<>()
+        .constructor<const NeuralConfig&>()
+        .function("setConfig", &NeuralNetwork::setConfig)
+        .function("reset", &NeuralNetwork::reset)
+        .function("step", &NeuralNetwork::step)
+        .function("stepMultiple", &NeuralNetwork::stepMultiple)
+        .function("stimulateNeuron", &NeuralNetwork::stimulateNeuron)
+        .function("stimulateArea", &NeuralNetwork::stimulateArea)
+        .function("stimulateRandom", &NeuralNetwork::stimulateRandom)
+        .function("clearStimulation", &NeuralNetwork::clearStimulation)
+        .function("setSynapseStrength", &NeuralNetwork::setSynapseStrength)
+        .function("setStimCurrent", &NeuralNetwork::setStimCurrent)
+        .function("computeStatistics", &NeuralNetwork::computeStatistics)
+        .function("stats", &NeuralNetwork::stats)
+        .function("gridWidth", &NeuralNetwork::gridWidth)
+        .function("gridHeight", &NeuralNetwork::gridHeight);
+
+    // Neural helper functions
+    function("getNeuralPotentials", &getNeuralPotentials);
+    function("getNeuralGateN", &getNeuralGateN);
+    function("getNeuralGateM", &getNeuralGateM);
+    function("getNeuralGateH", &getNeuralGateH);
+    function("getNeuralSpikes", &getNeuralSpikes);
+
+    // Neural presets
+    function("neuralPresetSmall", &neuralPresetSmall);
+    function("neuralPresetMedium", &neuralPresetMedium);
+    function("neuralPresetLarge", &neuralPresetLarge);
+    function("neuralPresetFast", &neuralPresetFast);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);
