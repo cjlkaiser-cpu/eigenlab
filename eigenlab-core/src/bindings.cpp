@@ -13,6 +13,7 @@
 #include "../include/physics/fluid_solver.hpp"
 #include "../include/physics/boids.hpp"
 #include "../include/physics/galaxy.hpp"
+#include "../include/physics/galaxy_collision.hpp"
 #include "../include/physics/erosion.hpp"
 #include "../include/physics/softbody.hpp"
 
@@ -302,6 +303,40 @@ val getGalaxyPositions(const GalaxySimulator& gs) {
     }
 
     return val(typed_memory_view(positions.size(), positions.data()));
+}
+
+// ============================================================================
+// Galaxy Collision helpers
+// ============================================================================
+
+// Get collision positions as Float32Array
+val getCollisionPositions(const GalaxyCollision& gc) {
+    u32 size = gc.positionDataSize();
+    return val(typed_memory_view(size, gc.positionData()));
+}
+
+// Get collision velocities
+val getCollisionVelocities(const GalaxyCollision& gc) {
+    u32 size = gc.positionDataSize(); // Same count as positions
+    return val(typed_memory_view(size, gc.velocityData()));
+}
+
+// Get temperatures
+val getCollisionTemperatures(const GalaxyCollision& gc) {
+    u32 size = gc.positionDataSize() / 2; // Half because positions are x,y pairs
+    return val(typed_memory_view(size, gc.temperatureData()));
+}
+
+// Get trajectory 1
+val getCollisionTrajectory1(const GalaxyCollision& gc) {
+    u32 size = gc.trajectorySize() * 2;
+    return val(typed_memory_view(size, gc.trajectory1Data()));
+}
+
+// Get trajectory 2
+val getCollisionTrajectory2(const GalaxyCollision& gc) {
+    u32 size = gc.trajectorySize() * 2;
+    return val(typed_memory_view(size, gc.trajectory2Data()));
 }
 
 // ============================================================================
@@ -929,6 +964,111 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("clothPresetFlag", &cloth_presets::flag);
     function("clothPresetNet", &cloth_presets::net);
     function("clothPresetCobweb", &cloth_presets::cobweb);
+
+    // ========================================================================
+    // GalaxyCollision
+    // ========================================================================
+
+    // CollisionPreset enum
+    enum_<CollisionPreset>("CollisionPreset")
+        .value("Milkdromeda", CollisionPreset::Milkdromeda)
+        .value("Antennae", CollisionPreset::Antennae)
+        .value("Mice", CollisionPreset::Mice)
+        .value("Whirlpool", CollisionPreset::Whirlpool)
+        .value("Cartwheel", CollisionPreset::Cartwheel)
+        .value("Custom", CollisionPreset::Custom);
+
+    // CollisionConfig
+    value_object<CollisionConfig>("CollisionConfig")
+        .field("size", &CollisionConfig::size)
+        .field("gravitationalConstant", &CollisionConfig::gravitationalConstant)
+        .field("softeningLength", &CollisionConfig::softeningLength)
+        .field("timeScale", &CollisionConfig::timeScale)
+        .field("theta", &CollisionConfig::theta)
+        .field("galaxy1Stars", &CollisionConfig::galaxy1Stars)
+        .field("galaxy1Mass", &CollisionConfig::galaxy1Mass)
+        .field("galaxy1Radius", &CollisionConfig::galaxy1Radius)
+        .field("galaxy1Rotation", &CollisionConfig::galaxy1Rotation)
+        .field("galaxy1Angle", &CollisionConfig::galaxy1Angle)
+        .field("galaxy2Stars", &CollisionConfig::galaxy2Stars)
+        .field("galaxy2Mass", &CollisionConfig::galaxy2Mass)
+        .field("galaxy2Radius", &CollisionConfig::galaxy2Radius)
+        .field("galaxy2Rotation", &CollisionConfig::galaxy2Rotation)
+        .field("galaxy2Angle", &CollisionConfig::galaxy2Angle)
+        .field("separation", &CollisionConfig::separation)
+        .field("impactParameter", &CollisionConfig::impactParameter)
+        .field("approachVelocity", &CollisionConfig::approachVelocity)
+        .field("showTrajectories", &CollisionConfig::showTrajectories)
+        .field("showTidalTails", &CollisionConfig::showTidalTails)
+        .field("trajectoryLength", &CollisionConfig::trajectoryLength);
+
+    // CollisionMetrics
+    value_object<CollisionMetrics>("CollisionMetrics")
+        .field("separation", &CollisionMetrics::separation)
+        .field("closestApproach", &CollisionMetrics::closestApproach)
+        .field("separationVelocity", &CollisionMetrics::separationVelocity)
+        .field("totalEnergy", &CollisionMetrics::totalEnergy)
+        .field("kineticEnergy", &CollisionMetrics::kineticEnergy)
+        .field("potentialEnergy", &CollisionMetrics::potentialEnergy)
+        .field("bindingEnergy", &CollisionMetrics::bindingEnergy)
+        .field("tidalStrength", &CollisionMetrics::tidalStrength)
+        .field("massTransfer", &CollisionMetrics::massTransfer)
+        .field("isApproaching", &CollisionMetrics::isApproaching)
+        .field("hasMerged", &CollisionMetrics::hasMerged)
+        .field("passageCount", &CollisionMetrics::passageCount)
+        .field("simulationTime", &CollisionMetrics::simulationTime)
+        .field("timeToMerger", &CollisionMetrics::timeToMerger);
+
+    // GalaxyTracker
+    value_object<GalaxyTracker>("GalaxyTracker")
+        .field("centerOfMass", &GalaxyTracker::centerOfMass)
+        .field("velocity", &GalaxyTracker::velocity)
+        .field("totalMass", &GalaxyTracker::totalMass)
+        .field("boundMass", &GalaxyTracker::boundMass)
+        .field("tidalRadius", &GalaxyTracker::tidalRadius)
+        .field("particleCount", &GalaxyTracker::particleCount)
+        .field("blackHolePos", &GalaxyTracker::blackHolePos)
+        .field("blackHoleVel", &GalaxyTracker::blackHoleVel);
+
+    // GalaxyCollision class
+    class_<GalaxyCollision>("GalaxyCollision")
+        .constructor<>()
+        .constructor<const CollisionConfig&>()
+        .function("setConfig", &GalaxyCollision::setConfig)
+        .function("initialize", &GalaxyCollision::initialize)
+        .function("initializePreset", &GalaxyCollision::initializePreset)
+        .function("reset", &GalaxyCollision::reset)
+        .function("step", &GalaxyCollision::step)
+        .function("stepMultiple", &GalaxyCollision::stepMultiple)
+        .function("updateMetrics", &GalaxyCollision::updateMetrics)
+        .function("metrics", &GalaxyCollision::metrics)
+        .function("galaxy1", &GalaxyCollision::galaxy1)
+        .function("galaxy2", &GalaxyCollision::galaxy2)
+        .function("particleCount", &GalaxyCollision::particleCount)
+        .function("activeParticleCount", &GalaxyCollision::activeParticleCount)
+        .function("trajectorySize", &GalaxyCollision::trajectorySize)
+        .function("setGravitationalConstant", &GalaxyCollision::setGravitationalConstant)
+        .function("setSofteningLength", &GalaxyCollision::setSofteningLength)
+        .function("setTheta", &GalaxyCollision::setTheta)
+        .function("setTimeScale", &GalaxyCollision::setTimeScale)
+        .function("setGalaxy1Mass", &GalaxyCollision::setGalaxy1Mass)
+        .function("setGalaxy2Mass", &GalaxyCollision::setGalaxy2Mass)
+        .function("setApproachVelocity", &GalaxyCollision::setApproachVelocity)
+        .function("setImpactParameter", &GalaxyCollision::setImpactParameter);
+
+    // Collision helper functions
+    function("getCollisionPositions", &getCollisionPositions);
+    function("getCollisionVelocities", &getCollisionVelocities);
+    function("getCollisionTemperatures", &getCollisionTemperatures);
+    function("getCollisionTrajectory1", &getCollisionTrajectory1);
+    function("getCollisionTrajectory2", &getCollisionTrajectory2);
+
+    // Collision presets
+    function("collisionPresetMilkdromeda", &collision_presets::milkdromeda);
+    function("collisionPresetAntennae", &collision_presets::antennae);
+    function("collisionPresetMice", &collision_presets::mice);
+    function("collisionPresetWhirlpool", &collision_presets::whirlpool);
+    function("collisionPresetCartwheel", &collision_presets::cartwheel);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

@@ -13,6 +13,7 @@ set(SOURCES
     src/physics/fluid_solver.cpp
     src/physics/boids.cpp
     src/physics/galaxy.cpp
+    src/physics/galaxy_collision.cpp
     src/physics/erosion.cpp
     src/physics/softbody.cpp
     src/bindings.cpp
