@@ -28,6 +28,7 @@
 #include "../include/physics/plasma_particles.hpp"
 #include "../include/physics/protein_folding.hpp"
 #include "../include/physics/epidemiology.hpp"
+#include "../include/physics/saturn_rings.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -681,6 +682,22 @@ val getEpidemiologyColors(const Epidemiology& ep) {
 
 val getEpidemiologyStates(const Epidemiology& ep) {
     return val(typed_memory_view(ep.agentCount(), ep.stateData()));
+}
+
+// ============================================================================
+// SaturnRings helpers
+// ============================================================================
+
+val getSaturnPositions(const SaturnRings& sr) {
+    return val(typed_memory_view(sr.particleCount() * 3, sr.positionData()));
+}
+
+val getSaturnColors(const SaturnRings& sr) {
+    return val(typed_memory_view(sr.particleCount() * 3, sr.colorData()));
+}
+
+val getSaturnSizes(const SaturnRings& sr) {
+    return val(typed_memory_view(sr.particleCount(), sr.sizeData()));
 }
 
 // ============================================================================
@@ -2022,6 +2039,63 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("getEpidemiologyPositions", &getEpidemiologyPositions);
     function("getEpidemiologyColors", &getEpidemiologyColors);
     function("getEpidemiologyStates", &getEpidemiologyStates);
+
+    // =========================================================================
+    // SaturnRings
+    // =========================================================================
+
+    // SaturnRingsConfig struct
+    value_object<SaturnRingsConfig>("SaturnRingsConfig")
+        .field("numParticles", &SaturnRingsConfig::numParticles)
+        .field("saturnMass", &SaturnRingsConfig::saturnMass)
+        .field("saturnRadius", &SaturnRingsConfig::saturnRadius)
+        .field("gravitationalConstant", &SaturnRingsConfig::gravitationalConstant)
+        .field("innerRingRadius", &SaturnRingsConfig::innerRingRadius)
+        .field("outerRingRadius", &SaturnRingsConfig::outerRingRadius)
+        .field("ringThickness", &SaturnRingsConfig::ringThickness)
+        .field("enableCassiniDivision", &SaturnRingsConfig::enableCassiniDivision)
+        .field("enableEnckGap", &SaturnRingsConfig::enableEnckGap)
+        .field("enableCollisions", &SaturnRingsConfig::enableCollisions)
+        .field("enableShepherdMoons", &SaturnRingsConfig::enableShepherdMoons)
+        .field("collisionDamping", &SaturnRingsConfig::collisionDamping)
+        .field("dt", &SaturnRingsConfig::dt)
+        .field("use3D", &SaturnRingsConfig::use3D);
+
+    // SaturnRingsStats struct
+    value_object<SaturnRingsStats>("SaturnRingsStats")
+        .field("particleCount", &SaturnRingsStats::particleCount)
+        .field("avgOrbitalVelocity", &SaturnRingsStats::avgOrbitalVelocity)
+        .field("avgRadius", &SaturnRingsStats::avgRadius)
+        .field("minRadius", &SaturnRingsStats::minRadius)
+        .field("maxRadius", &SaturnRingsStats::maxRadius)
+        .field("totalEnergy", &SaturnRingsStats::totalEnergy)
+        .field("totalAngularMomentum", &SaturnRingsStats::totalAngularMomentum)
+        .field("collisionCount", &SaturnRingsStats::collisionCount);
+
+    // SaturnRings class
+    class_<SaturnRings>("SaturnRings")
+        .constructor<>()
+        .constructor<const SaturnRingsConfig&>()
+        .function("init", &SaturnRings::init)
+        .function("step", select_overload<void()>(&SaturnRings::step))
+        .function("stepMultiple", select_overload<void(int)>(&SaturnRings::step))
+        .function("setGravitationalConstant", &SaturnRings::setGravitationalConstant)
+        .function("enableCollisions", &SaturnRings::enableCollisions)
+        .function("enableShepherdMoons", &SaturnRings::enableShepherdMoons)
+        .function("setRingBounds", &SaturnRings::setRingBounds)
+        .function("setViewAngle", &SaturnRings::setViewAngle)
+        .function("setRotation", &SaturnRings::setRotation)
+        .function("presetRealistic", &SaturnRings::presetRealistic)
+        .function("presetDense", &SaturnRings::presetDense)
+        .function("presetWideRings", &SaturnRings::presetWideRings)
+        .function("presetThinRings", &SaturnRings::presetThinRings)
+        .function("getStats", &SaturnRings::getStats)
+        .function("particleCount", &SaturnRings::particleCount);
+
+    // SaturnRings helper functions
+    function("getSaturnPositions", &getSaturnPositions);
+    function("getSaturnColors", &getSaturnColors);
+    function("getSaturnSizes", &getSaturnSizes);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

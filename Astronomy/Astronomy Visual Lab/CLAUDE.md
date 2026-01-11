@@ -2,9 +2,9 @@
 
 ## Descripción
 
-El **Astronomy Visual Lab** contiene **8 simulaciones** que cubren relatividad general, cosmología, mecánica orbital, astrofísica estelar y formación galáctica. Implementa modelos astrofísicos rigurosos con Canvas 2D y WebAssembly para simulaciones N-body.
+El **Astronomy Visual Lab** contiene **9 simulaciones** que cubren relatividad general, cosmología, mecánica orbital, astrofísica estelar y formación galáctica. Implementa modelos astrofísicos rigurosos con Canvas 2D y WebAssembly para simulaciones N-body.
 
-## Simulaciones (8 Total)
+## Simulaciones (9 Total)
 
 ### RELATIVIDAD GENERAL (2)
 1. **Agujero Negro** - Métrica de Schwarzschild, órbitas relativistas
@@ -13,16 +13,17 @@ El **Astronomy Visual Lab** contiene **8 simulaciones** que cubren relatividad g
 ### COSMOLOGÍA (1)
 3. **Expansión del Universo** - Ley de Hubble, redshift, galaxias
 
-### MECÁNICA ORBITAL (2)
+### MECÁNICA ORBITAL (3)
 4. **Fases Lunares** - Geometría Sol-Tierra-Luna, período sinódico
 5. **Las Estaciones** - Órbita elíptica + oblicuidad de 23.44°
+6. **Anillos de Saturno** - Orbitas Keplerianas, División de Cassini (WASM) ⭐
 
 ### ASTROFÍSICA ESTELAR (2)
-6. **Diagrama H-R** - Clasificación estelar, 300+ estrellas generadas
-7. **Nucleosíntesis Estelar** - Estructura de cebolla, fusión nuclear
+7. **Diagrama H-R** - Clasificación estelar, 300+ estrellas generadas
+8. **Nucleosíntesis Estelar** - Estructura de cebolla, fusión nuclear
 
-### FORMACIÓN GALÁCTICA (1) ⭐
-8. **Formación de Galaxias** - Algoritmo N-body Barnes-Hut (WASM)
+### FORMACIÓN GALÁCTICA (1)
+9. **Formación de Galaxias** - Algoritmo N-body Barnes-Hut (WASM)
 
 ## Modelos Astrofísicos
 
@@ -147,6 +148,34 @@ Triple-α:    3⁴He → ¹²C + γ               ΔE = 7.27 MeV
 - H → He shell
 
 **19 elementos** con origen codificado (Big Bang, estelar, s-process, r-process)
+
+### Anillos de Saturno ⭐
+
+**Ecuaciones Keplerianas:**
+```
+v = √(GM/r)  [Velocidad orbital circular]
+T = 2π√(r³/GM)  [Período orbital]
+```
+
+**Estructura de anillos (en radios de Saturno):**
+- D Ring: 1.11-1.24 Rs (tenue)
+- C Ring: 1.24-1.53 Rs
+- B Ring: 1.53-1.95 Rs (el más denso)
+- **División de Cassini**: 1.95-2.02 Rs (resonancia 2:1 con Mimas)
+- A Ring: 2.02-2.27 Rs
+- **Gap de Encke**: ~2.21 Rs
+
+**Motor WASM:**
+- 5000+ partículas de hielo/roca
+- Colisiones elásticas con damping
+- Lunas pastoras (Mimas, perturbaciones gravitacionales)
+- Composición: 80% hielo, 20% roca
+
+**Presets:**
+1. Realista - Proporciones reales de Saturno
+2. Denso - 10,000 partículas
+3. Anillos Amplios - Sistema extendido
+4. Anillos Finos - Solo anillos principales
 
 ### Formación de Galaxias
 

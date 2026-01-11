@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">20</div>
+                        <div class="text-2xl font-light text-violet-400">21</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -673,6 +673,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Anillos de Saturno -->
+            <a href="../Astronomy/Astronomy Visual Lab/anillos-saturno.html"
+               class="sim-card block bg-gradient-to-br from-indigo-950/50 to-purple-950/30 rounded-2xl overflow-hidden border border-indigo-500/20 hover:border-indigo-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-saturn" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-indigo-500/20 rounded text-xs text-indigo-300 mono">
+                        Keplerian
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded">Astronomy</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Anillos de Saturno</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Orbitas Keplerianas de particulas de hielo. Division de Cassini, gaps, lunas pastoras.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Keplerian</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Rings</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -760,7 +788,8 @@
             electro: document.getElementById('canvas-electro'),
             plasma: document.getElementById('canvas-plasma'),
             protein: document.getElementById('canvas-protein'),
-            epidemic: document.getElementById('canvas-epidemic')
+            epidemic: document.getElementById('canvas-epidemic'),
+            saturn: document.getElementById('canvas-saturn')
         };
 
         function resizeCanvases() {
@@ -2163,6 +2192,106 @@
             }
         }
 
+        // Saturn Rings - Orbital particles
+        const saturnParticles = [];
+        for (let i = 0; i < 150; i++) {
+            const angle = Math.random() * Math.PI * 2;
+            // Ring radii in Saturn radii: 1.2 to 2.3
+            let r;
+            const rnd = Math.random();
+            if (rnd < 0.4) {
+                // B ring (dense)
+                r = 0.25 + Math.random() * 0.08;
+            } else if (rnd < 0.9) {
+                // A ring
+                r = 0.36 + Math.random() * 0.08;
+            } else {
+                // C ring
+                r = 0.2 + Math.random() * 0.04;
+            }
+            // Skip Cassini Division (0.33-0.35)
+            if (r > 0.32 && r < 0.36) r = 0.36;
+
+            saturnParticles.push({
+                angle,
+                r,
+                speed: 0.015 / Math.sqrt(r),
+                brightness: 0.5 + Math.random() * 0.5
+            });
+        }
+        let saturnRotation = 0;
+
+        function drawSaturn() {
+            const canvas = canvases.saturn;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            const cx = w / 2;
+            const cy = h / 2;
+            const scale = Math.min(w, h) * 0.4;
+            const tilt = 0.4; // View angle
+
+            // Saturn glow
+            const glow = ctx.createRadialGradient(cx, cy, scale * 0.1, cx, cy, scale * 0.25);
+            glow.addColorStop(0, 'rgba(245, 214, 155, 0.4)');
+            glow.addColorStop(1, 'transparent');
+            ctx.fillStyle = glow;
+            ctx.beginPath();
+            ctx.arc(cx, cy, scale * 0.25, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw ring particles behind Saturn
+            saturnParticles.forEach(p => {
+                p.angle += p.speed;
+                const x = Math.cos(p.angle + saturnRotation) * p.r;
+                const y = Math.sin(p.angle + saturnRotation) * p.r * Math.cos(tilt);
+
+                if (y < 0) { // Behind Saturn
+                    const screenX = cx + x * scale;
+                    const screenY = cy + y * scale;
+                    const b = Math.floor(p.brightness * 200);
+                    ctx.fillStyle = `rgba(${b + 30}, ${b + 20}, ${b}, 0.6)`;
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, 1.5, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // Saturn body
+            const saturnR = scale * 0.15;
+            const grad = ctx.createLinearGradient(cx - saturnR, cy, cx + saturnR, cy);
+            grad.addColorStop(0, '#c49660');
+            grad.addColorStop(0.3, '#f5d69b');
+            grad.addColorStop(0.7, '#f5d69b');
+            grad.addColorStop(1, '#c49660');
+            ctx.fillStyle = grad;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, saturnR, saturnR * Math.cos(tilt), 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw ring particles in front
+            saturnParticles.forEach(p => {
+                const x = Math.cos(p.angle + saturnRotation) * p.r;
+                const y = Math.sin(p.angle + saturnRotation) * p.r * Math.cos(tilt);
+
+                if (y >= 0) { // In front
+                    const screenX = cx + x * scale;
+                    const screenY = cy + y * scale;
+                    const b = Math.floor(p.brightness * 220);
+                    ctx.fillStyle = `rgb(${b + 30}, ${b + 20}, ${b})`;
+                    ctx.beginPath();
+                    ctx.arc(screenX, screenY, 2, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            saturnRotation += 0.002;
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -2185,6 +2314,7 @@
             drawPlasma();
             drawProtein();
             drawEpidemic();
+            drawSaturn();
             requestAnimationFrame(animate);
         }
 

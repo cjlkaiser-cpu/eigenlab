@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Anillos de Saturno - EigenLab WASM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --accent: #6366f1;
+            --accent-dim: rgba(99, 102, 241, 0.3);
+            --saturn-gold: #f5d69b;
+            --ring-ice: #e8e4d9;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid rgba(99, 102, 241, 0.2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .breadcrumb a:hover { color: var(--accent); }
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+        .control-group {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .control-group h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .control-row:last-child { margin-bottom: 0; }
+        .control-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .control-row span {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-top: 0.25rem;
+            accent-color: var(--accent);
+        }
+        .btn {
+            background: var(--accent);
+            color: var(--text-primary);
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary {
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-dim);
+        }
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-dim);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .preset-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .stat-item {
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .equation {
+            background: var(--bg-primary);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-family: 'Times New Roman', serif;
+            font-size: 0.85rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+        .checkbox-row input[type="checkbox"] {
+            accent-color: var(--accent);
+        }
+        .checkbox-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        #loading {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-panel);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <h1>Anillos de Saturno</h1>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a> /
+                <a href="../../_portal/wasm-labs.html">WASM Labs</a> /
+                <a href="index.html">Astronomy</a>
+            </nav>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">
+            WASM · Keplerian Orbits
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">
+                <div class="spinner"></div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cargando WASM...</div>
+            </div>
+        </div>
+
+        <aside class="controls">
+            <div class="control-group">
+                <h3>Anillos de Saturno</h3>
+                <div class="equation">
+                    v = (GM/r)<sup>1/2</sup>
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.4;">
+                    Orbitas Keplerianas de particulas de hielo y roca. Incluye Division de Cassini
+                    y gaps de resonancia orbital.
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets</h3>
+                <div class="preset-grid">
+                    <button class="preset-btn active" data-preset="realistic">Realista</button>
+                    <button class="preset-btn" data-preset="dense">Denso</button>
+                    <button class="preset-btn" data-preset="wide">Anillos Amplios</button>
+                    <button class="preset-btn" data-preset="thin">Anillos Finos</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parametros</h3>
+                <div class="control-row">
+                    <label>Angulo de Vista</label>
+                    <span id="val-angle">23</span>°
+                </div>
+                <input type="range" id="slider-angle" min="0" max="90" value="23">
+
+                <div class="control-row">
+                    <label>Rotacion</label>
+                    <span id="val-rotation">0</span>°
+                </div>
+                <input type="range" id="slider-rotation" min="0" max="360" value="0">
+
+                <div class="control-row">
+                    <label>Gravedad (G)</label>
+                    <span id="val-gravity">1.0</span>
+                </div>
+                <input type="range" id="slider-gravity" min="50" max="200" value="100">
+            </div>
+
+            <div class="control-group">
+                <h3>Opciones</h3>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="check-cassini" checked>
+                    <label for="check-cassini">Division de Cassini</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="check-encke">
+                    <label for="check-encke">Gap de Encke</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="check-collisions">
+                    <label for="check-collisions">Colisiones</label>
+                </div>
+                <div class="checkbox-row">
+                    <input type="checkbox" id="check-moons">
+                    <label for="check-moons">Lunas Pastoras</label>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Control</h3>
+                <div class="btn-row">
+                    <button class="btn" id="btn-play">Pausar</button>
+                    <button class="btn btn-secondary" id="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadisticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-particles">0</div>
+                        <div class="stat-label">Particulas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-velocity">0</div>
+                        <div class="stat-label">Vel. Orbital</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-minr">0</div>
+                        <div class="stat-label">R Interior</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-maxr">0</div>
+                        <div class="stat-label">R Exterior</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estructura de Anillos</h3>
+                <p style="font-size: 0.7rem; color: var(--text-dim); line-height: 1.4;">
+                    <strong style="color: var(--text-secondary);">D Ring:</strong> 1.11-1.24 R<sub>S</sub><br>
+                    <strong style="color: var(--text-secondary);">C Ring:</strong> 1.24-1.53 R<sub>S</sub><br>
+                    <strong style="color: var(--text-secondary);">B Ring:</strong> 1.53-1.95 R<sub>S</sub> (mas denso)<br>
+                    <strong style="color: var(--text-secondary);">Cassini:</strong> 1.95-2.02 R<sub>S</sub><br>
+                    <strong style="color: var(--text-secondary);">A Ring:</strong> 2.02-2.27 R<sub>S</sub>
+                </p>
+            </div>
+        </aside>
+    </main>
+
+    <script src="../../eigenlab-core/build/eigenlab-core.js"></script>
+    <script>
+        // State
+        let Module = null;
+        let sim = null;
+        let running = true;
+        let frameCount = 0;
+        let autoRotate = true;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // Canvas Setup
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // WASM Initialization
+        EigenLabCore().then(mod => {
+            Module = mod;
+            document.getElementById('loading').style.display = 'none';
+
+            sim = new Module.SaturnRings();
+            sim.presetRealistic();
+
+            setupControls();
+            loop();
+        }).catch(err => {
+            console.error('WASM load error:', err);
+            document.getElementById('loading').innerHTML =
+                '<div style="color: #ef4444;">Error cargando WASM</div>' +
+                '<div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">' +
+                'Ejecuta: python3 -m http.server 8080</div>';
+        });
+
+        // Controls
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const preset = btn.dataset.preset;
+                    switch(preset) {
+                        case 'realistic': sim.presetRealistic(); break;
+                        case 'dense': sim.presetDense(); break;
+                        case 'wide': sim.presetWideRings(); break;
+                        case 'thin': sim.presetThinRings(); break;
+                    }
+                });
+            });
+
+            // View angle slider
+            const sliderAngle = document.getElementById('slider-angle');
+            sliderAngle.addEventListener('input', () => {
+                const val = parseFloat(sliderAngle.value);
+                document.getElementById('val-angle').textContent = val;
+                sim.setViewAngle(val * Math.PI / 180);
+            });
+
+            // Rotation slider
+            const sliderRotation = document.getElementById('slider-rotation');
+            sliderRotation.addEventListener('input', () => {
+                const val = parseFloat(sliderRotation.value);
+                document.getElementById('val-rotation').textContent = val;
+                sim.setRotation(val * Math.PI / 180);
+                autoRotate = false;
+            });
+
+            // Gravity slider
+            const sliderGravity = document.getElementById('slider-gravity');
+            sliderGravity.addEventListener('input', () => {
+                const val = parseFloat(sliderGravity.value) / 100;
+                document.getElementById('val-gravity').textContent = val.toFixed(2);
+                sim.setGravitationalConstant(val);
+            });
+
+            // Checkboxes
+            document.getElementById('check-cassini').addEventListener('change', (e) => {
+                // Need to reinit with new config - for now just visual feedback
+            });
+
+            document.getElementById('check-collisions').addEventListener('change', (e) => {
+                sim.enableCollisions(e.target.checked);
+            });
+
+            document.getElementById('check-moons').addEventListener('change', (e) => {
+                sim.enableShepherdMoons(e.target.checked);
+            });
+
+            // Play/Pause
+            document.getElementById('btn-play').addEventListener('click', () => {
+                running = !running;
+                document.getElementById('btn-play').textContent = running ? 'Pausar' : 'Play';
+            });
+
+            // Reset
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                sim.init();
+                autoRotate = true;
+            });
+        }
+
+        // Rendering
+        function draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            // Clear with dark background
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw stars background
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+            for (let i = 0; i < 100; i++) {
+                const x = (i * 137.5) % w;
+                const y = (i * 73.1) % h;
+                const size = (i % 3) * 0.5 + 0.5;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            if (!sim) return;
+
+            const positions = Module.getSaturnPositions(sim);
+            const colors = Module.getSaturnColors(sim);
+            const sizes = Module.getSaturnSizes(sim);
+            const numParticles = sim.particleCount();
+
+            const cx = w / 2;
+            const cy = h / 2;
+            const scale = Math.min(w, h) * 0.15;
+
+            // Draw Saturn (background ellipse for tilted view)
+            const viewAngle = parseFloat(document.getElementById('slider-angle').value) * Math.PI / 180;
+            const saturnRadiusX = scale * 1.0;
+            const saturnRadiusY = scale * 1.0 * Math.cos(viewAngle);
+
+            // Saturn glow
+            const saturnGlow = ctx.createRadialGradient(cx, cy, saturnRadiusX * 0.8, cx, cy, saturnRadiusX * 1.5);
+            saturnGlow.addColorStop(0, 'rgba(245, 214, 155, 0.3)');
+            saturnGlow.addColorStop(0.5, 'rgba(245, 214, 155, 0.1)');
+            saturnGlow.addColorStop(1, 'transparent');
+            ctx.fillStyle = saturnGlow;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, saturnRadiusX * 1.5, saturnRadiusY * 1.5, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Saturn body with gradient (behind rings)
+            const saturnGrad = ctx.createLinearGradient(cx - saturnRadiusX, cy, cx + saturnRadiusX, cy);
+            saturnGrad.addColorStop(0, '#d4a574');
+            saturnGrad.addColorStop(0.3, '#f5d69b');
+            saturnGrad.addColorStop(0.5, '#f5e6c8');
+            saturnGrad.addColorStop(0.7, '#f5d69b');
+            saturnGrad.addColorStop(1, '#c49660');
+
+            // Draw Saturn's back half (behind rings)
+            ctx.fillStyle = saturnGrad;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, saturnRadiusX, saturnRadiusY, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Draw ring particles behind Saturn (negative y in view space)
+            for (let i = 0; i < numParticles; i++) {
+                const y2 = positions[i * 3 + 1];
+                if (y2 > 0) continue; // Skip particles in front
+
+                const x = positions[i * 3];
+                const z = positions[i * 3 + 2];
+
+                const screenX = cx + x * scale;
+                const screenY = cy + y2 * scale;
+
+                const r = Math.floor(colors[i * 3] * 255);
+                const g = Math.floor(colors[i * 3 + 1] * 255);
+                const b = Math.floor(colors[i * 3 + 2] * 255);
+
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.7)`;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, sizes[i] * scale * 0.5 + 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Redraw Saturn on top for proper occlusion of back rings
+            ctx.fillStyle = saturnGrad;
+            ctx.beginPath();
+            ctx.ellipse(cx, cy, saturnRadiusX, saturnRadiusY, 0, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Saturn bands
+            ctx.strokeStyle = 'rgba(194, 154, 96, 0.3)';
+            ctx.lineWidth = 2;
+            for (let i = -3; i <= 3; i++) {
+                const bandY = cy + i * saturnRadiusY * 0.2;
+                const bandWidth = Math.sqrt(1 - (i * 0.2) ** 2) * saturnRadiusX;
+                ctx.beginPath();
+                ctx.moveTo(cx - bandWidth, bandY);
+                ctx.lineTo(cx + bandWidth, bandY);
+                ctx.stroke();
+            }
+
+            // Draw ring particles in front of Saturn (positive y in view space)
+            for (let i = 0; i < numParticles; i++) {
+                const y2 = positions[i * 3 + 1];
+                if (y2 <= 0) continue; // Skip particles behind
+
+                const x = positions[i * 3];
+                const z = positions[i * 3 + 2];
+
+                const screenX = cx + x * scale;
+                const screenY = cy + y2 * scale;
+
+                const r = Math.floor(colors[i * 3] * 255);
+                const g = Math.floor(colors[i * 3 + 1] * 255);
+                const b = Math.floor(colors[i * 3 + 2] * 255);
+
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.9)`;
+                ctx.beginPath();
+                ctx.arc(screenX, screenY, sizes[i] * scale * 0.5 + 0.5, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Main Loop
+        function loop() {
+            if (running && sim) {
+                sim.stepMultiple(3);
+                frameCount++;
+
+                // Update stats every 10 frames
+                if (frameCount % 10 === 0) {
+                    const stats = sim.getStats();
+                    document.getElementById('stat-particles').textContent = stats.particleCount;
+                    document.getElementById('stat-velocity').textContent = stats.avgOrbitalVelocity.toFixed(2);
+                    document.getElementById('stat-minr').textContent = stats.minRadius.toFixed(2);
+                    document.getElementById('stat-maxr').textContent = stats.maxRadius.toFixed(2);
+                }
+            }
+
+            draw();
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>

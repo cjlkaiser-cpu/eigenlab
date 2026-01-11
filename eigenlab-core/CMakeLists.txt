@@ -28,6 +28,7 @@ set(SOURCES
     src/physics/plasma_particles.cpp
     src/physics/protein_folding.cpp
     src/physics/epidemiology.cpp
+    src/physics/saturn_rings.cpp
     src/bindings.cpp
 )
 
