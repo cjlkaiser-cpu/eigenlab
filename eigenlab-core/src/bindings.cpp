@@ -22,6 +22,7 @@
 #include "../include/physics/granular_sim.hpp"
 #include "../include/physics/neural_network.hpp"
 #include "../include/physics/accretion_disk.hpp"
+#include "../include/physics/cellular_automata_3d.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -575,6 +576,26 @@ val getAccretionVelocities(const AccretionDisk& ad) {
 
 val getAccretionTemperatures(const AccretionDisk& ad) {
     return val(typed_memory_view(ad.particleCount(), ad.temperatureData()));
+}
+
+// ============================================================================
+// CellularAutomata3D helpers
+// ============================================================================
+
+val getCA3DCells(const CellularAutomata3D& ca) {
+    return val(typed_memory_view(ca.dataSize(), ca.cellData()));
+}
+
+val getCA3DAges(const CellularAutomata3D& ca) {
+    return val(typed_memory_view(ca.dataSize(), ca.ageData()));
+}
+
+val getCA3DAlivePositions(const CellularAutomata3D& ca) {
+    return val(typed_memory_view(ca.aliveCount() * 3, ca.alivePositions()));
+}
+
+val getCA3DAliveAges(const CellularAutomata3D& ca) {
+    return val(typed_memory_view(ca.aliveCount(), ca.aliveAges()));
 }
 
 // ============================================================================
@@ -1560,6 +1581,62 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("accretionPresetBlackHole", &accretionPresetBlackHole);
     function("accretionPresetCompact", &accretionPresetCompact);
     function("accretionPresetThin", &accretionPresetThin);
+
+    // =========================================================================
+    // CellularAutomata3D
+    // =========================================================================
+
+    // CA3DConfig struct
+    value_object<CA3DConfig>("CA3DConfig")
+        .field("gridSize", &CA3DConfig::gridSize)
+        .field("birthMin", &CA3DConfig::birthMin)
+        .field("birthMax", &CA3DConfig::birthMax)
+        .field("surviveMin", &CA3DConfig::surviveMin)
+        .field("surviveMax", &CA3DConfig::surviveMax)
+        .field("periodicBoundary", &CA3DConfig::periodicBoundary)
+        .field("mooreNeighborhood", &CA3DConfig::mooreNeighborhood)
+        .field("initialDensity", &CA3DConfig::initialDensity);
+
+    // CA3DStats struct
+    value_object<CA3DStats>("CA3DStats")
+        .field("totalCells", &CA3DStats::totalCells)
+        .field("aliveCells", &CA3DStats::aliveCells)
+        .field("generation", &CA3DStats::generation)
+        .field("density", &CA3DStats::density)
+        .field("births", &CA3DStats::births)
+        .field("deaths", &CA3DStats::deaths);
+
+    // CellularAutomata3D class
+    class_<CellularAutomata3D>("CellularAutomata3D")
+        .constructor<>()
+        .constructor<const CA3DConfig&>()
+        .function("setConfig", &CellularAutomata3D::setConfig)
+        .function("reset", &CellularAutomata3D::reset)
+        .function("randomize", &CellularAutomata3D::randomize)
+        .function("clear", &CellularAutomata3D::clear)
+        .function("step", &CellularAutomata3D::step)
+        .function("stepMultiple", &CellularAutomata3D::stepMultiple)
+        .function("setCell", &CellularAutomata3D::setCell)
+        .function("getCell", &CellularAutomata3D::getCell)
+        .function("addPattern", &CellularAutomata3D::addPattern)
+        .function("setRules", &CellularAutomata3D::setRules)
+        .function("computeStatistics", &CellularAutomata3D::computeStatistics)
+        .function("stats", &CellularAutomata3D::stats)
+        .function("gridSize", &CellularAutomata3D::gridSize)
+        .function("aliveCount", &CellularAutomata3D::aliveCount)
+        .function("aliveCellCount", &CellularAutomata3D::aliveCellCount);
+
+    // CA3D helper functions
+    function("getCA3DCells", &getCA3DCells);
+    function("getCA3DAges", &getCA3DAges);
+    function("getCA3DAlivePositions", &getCA3DAlivePositions);
+    function("getCA3DAliveAges", &getCA3DAliveAges);
+
+    // CA3D presets
+    function("ca3dPresetGameOfLife", &ca3dPresetGameOfLife);
+    function("ca3dPresetCrystal", &ca3dPresetCrystal);
+    function("ca3dPresetAmoeba", &ca3dPresetAmoeba);
+    function("ca3dPresetPyramids", &ca3dPresetPyramids);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

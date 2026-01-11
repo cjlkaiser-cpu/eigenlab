@@ -22,6 +22,7 @@ set(SOURCES
     src/physics/granular_sim.cpp
     src/physics/neural_network.cpp
     src/physics/accretion_disk.cpp
+    src/physics/cellular_automata_3d.cpp
     src/bindings.cpp
 )
 

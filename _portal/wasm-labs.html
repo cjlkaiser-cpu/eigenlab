@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">14</div>
+                        <div class="text-2xl font-light text-violet-400">15</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -505,6 +505,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Automata Celular 3D -->
+            <a href="../Mathematics/Math Generative Art Lab/automata-celular-3d.html"
+               class="sim-card block bg-gradient-to-br from-orange-950/50 to-amber-950/30 rounded-2xl overflow-hidden border border-orange-500/20 hover:border-orange-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-ca3d" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-orange-500/20 rounded text-xs text-orange-300 mono">
+                        Moore/vN
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-orange-500/20 text-orange-400 rounded">Mathematics</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Automata Celular 3D</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        3D Game of Life, crecimiento cristalino, amebas, piramides. Vecindad Moore y von Neumann.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">3D Grid</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Three.js</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -586,7 +614,8 @@
             lbm: document.getElementById('canvas-lbm'),
             granular: document.getElementById('canvas-granular'),
             neural: document.getElementById('canvas-neural'),
-            accretion: document.getElementById('canvas-accretion')
+            accretion: document.getElementById('canvas-accretion'),
+            ca3d: document.getElementById('canvas-ca3d')
         };
 
         function resizeCanvases() {
@@ -1401,6 +1430,114 @@
             });
         }
 
+        // Cellular Automata 3D - 3D grid of cubes
+        const ca3dCells = [];
+        const ca3dSize = 8;
+        for (let z = 0; z < ca3dSize; z++) {
+            for (let y = 0; y < ca3dSize; y++) {
+                for (let x = 0; x < ca3dSize; x++) {
+                    ca3dCells.push({
+                        x, y, z,
+                        alive: Math.random() < 0.2,
+                        age: Math.floor(Math.random() * 10)
+                    });
+                }
+            }
+        }
+        let ca3dFrame = 0;
+
+        function drawCA3D() {
+            const canvas = canvases.ca3d;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            ca3dFrame++;
+
+            // Simple CA step every 20 frames
+            if (ca3dFrame % 20 === 0) {
+                ca3dCells.forEach(cell => {
+                    // Count neighbors
+                    let neighbors = 0;
+                    ca3dCells.forEach(other => {
+                        if (other === cell) return;
+                        const dx = Math.abs(other.x - cell.x);
+                        const dy = Math.abs(other.y - cell.y);
+                        const dz = Math.abs(other.z - cell.z);
+                        if (dx <= 1 && dy <= 1 && dz <= 1 && other.alive) {
+                            neighbors++;
+                        }
+                    });
+
+                    // 3D Life rules (simplified)
+                    if (cell.alive) {
+                        cell.alive = neighbors >= 4 && neighbors <= 6;
+                        if (cell.alive) cell.age = Math.min(15, cell.age + 1);
+                    } else {
+                        cell.alive = neighbors >= 5 && neighbors <= 7;
+                        if (cell.alive) cell.age = 1;
+                    }
+                });
+            }
+
+            // Isometric projection
+            const cellSize = Math.min(w, h) / 16;
+            const cx = w / 2;
+            const cy = h / 2;
+
+            // Sort by depth for proper rendering
+            const sorted = [...ca3dCells].filter(c => c.alive).sort((a, b) => {
+                return (a.x + a.y + a.z) - (b.x + b.y + b.z);
+            });
+
+            sorted.forEach(cell => {
+                // Isometric coordinates
+                const isoX = (cell.x - cell.z) * cellSize * 0.5;
+                const isoY = ((cell.x + cell.z) * 0.3 - cell.y) * cellSize * 0.5;
+
+                const screenX = cx + isoX;
+                const screenY = cy + isoY;
+
+                // Color by age
+                const t = cell.age / 15;
+                const hue = 25 + t * 160; // Orange to cyan
+                ctx.fillStyle = `hsl(${hue}, 70%, ${45 + t * 20}%)`;
+
+                // Draw cube (simplified as diamond)
+                const s = cellSize * 0.3;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY - s);
+                ctx.lineTo(screenX + s * 0.8, screenY);
+                ctx.lineTo(screenX, screenY + s * 0.5);
+                ctx.lineTo(screenX - s * 0.8, screenY);
+                ctx.closePath();
+                ctx.fill();
+
+                // Top face highlight
+                ctx.fillStyle = `hsl(${hue}, 70%, ${60 + t * 15}%)`;
+                ctx.beginPath();
+                ctx.moveTo(screenX, screenY - s);
+                ctx.lineTo(screenX + s * 0.8, screenY - s * 0.3);
+                ctx.lineTo(screenX, screenY + s * 0.2);
+                ctx.lineTo(screenX - s * 0.8, screenY - s * 0.3);
+                ctx.closePath();
+                ctx.fill();
+            });
+
+            // Occasionally add random cells to keep it alive
+            if (ca3dFrame % 60 === 0) {
+                const deadCells = ca3dCells.filter(c => !c.alive);
+                for (let i = 0; i < 5 && deadCells.length > 0; i++) {
+                    const idx = Math.floor(Math.random() * deadCells.length);
+                    deadCells[idx].alive = true;
+                    deadCells[idx].age = 1;
+                }
+            }
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -1417,6 +1554,7 @@
             drawGranular();
             drawNeural();
             drawAccretion();
+            drawCA3D();
             requestAnimationFrame(animate);
         }
 
