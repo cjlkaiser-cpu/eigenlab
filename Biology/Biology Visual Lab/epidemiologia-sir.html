@@ -1,0 +1,687 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Epidemiología SIR - EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #10b981;
+            --accent-dim: rgba(16, 185, 129, 0.2);
+            --border: #334155;
+            --susceptible: #38bdf8;
+            --infected: #ef4444;
+            --recovered: #22c55e;
+            --vaccinated: #a855f7;
+            --dead: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-primary);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .equation-box {
+            background: var(--bg-panel);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-group h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-value {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        button {
+            padding: 0.625rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+        }
+
+        button:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: #059669;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 0.5rem;
+        }
+
+        .stat-box {
+            background: var(--bg-panel);
+            border-radius: 6px;
+            padding: 0.5rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .stat-s { color: var(--susceptible); }
+        .stat-i { color: var(--infected); }
+        .stat-r { color: var(--recovered); }
+        .stat-v { color: var(--vaccinated); }
+        .stat-d { color: var(--dead); }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            font-size: 0.7rem;
+            padding: 0.5rem;
+            background: var(--bg-panel);
+            border-radius: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .legend-color {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            accent-color: var(--accent);
+        }
+
+        .r0-display {
+            background: var(--bg-panel);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .r0-value {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--infected);
+        }
+
+        .r0-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                max-height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Epidemiología SIR</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="index.html">Biology Visual Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">Cargando WASM...</div>
+        </div>
+
+        <aside class="controls">
+            <div class="equation-box">
+                dS/dt = -βSI &nbsp;&nbsp; dI/dt = βSI - γI &nbsp;&nbsp; dR/dt = γI
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--susceptible);"></div>
+                    <span>Susceptible</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--infected);"></div>
+                    <span>Infectado</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--recovered);"></div>
+                    <span>Recuperado</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--vaccinated);"></div>
+                    <span>Vacunado</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: var(--dead);"></div>
+                    <span>Fallecido</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parámetros de Enfermedad</h3>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Tasa Transmisión (β)</span>
+                        <span class="slider-value" id="transValue">0.30</span>
+                    </div>
+                    <input type="range" id="transmission" min="0.05" max="0.8" step="0.01" value="0.3">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Tasa Recuperación (γ)</span>
+                        <span class="slider-value" id="recoveryValue">0.05</span>
+                    </div>
+                    <input type="range" id="recovery" min="0.01" max="0.2" step="0.01" value="0.05">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Mortalidad</span>
+                        <span class="slider-value" id="mortalityValue">1%</span>
+                    </div>
+                    <input type="range" id="mortality" min="0" max="0.5" step="0.01" value="0.01">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Intervenciones</h3>
+                <label class="checkbox-row">
+                    <input type="checkbox" id="quarantineCheck">
+                    <span>Cuarentena de infectados</span>
+                </label>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Distanciamiento Social</span>
+                        <span class="slider-value" id="distancingValue">100%</span>
+                    </div>
+                    <input type="range" id="distancing" min="0.2" max="1" step="0.05" value="1">
+                </div>
+                <div class="button-grid">
+                    <button id="vaccinate50">Vacunar 50</button>
+                    <button id="vaccinate100">Vacunar 100</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets de Enfermedades</h3>
+                <div class="button-grid">
+                    <button id="presetCovid">COVID-19</button>
+                    <button id="presetFlu">Gripe</button>
+                    <button id="presetMeasles">Sarampión</button>
+                    <button id="presetEbola">Ébola</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Simulación</h3>
+                <div class="button-grid">
+                    <button id="resetBtn" class="primary">Reiniciar</button>
+                    <button id="addInfected">+5 Infectados</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>R₀ Estimado</h3>
+                <div class="r0-display">
+                    <div class="r0-value" id="r0Value">0.0</div>
+                    <div class="r0-label">Número reproductivo básico</div>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Suscept.</div>
+                        <div class="stat-value stat-s" id="statS">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Infectados</div>
+                        <div class="stat-value stat-i" id="statI">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Recuper.</div>
+                        <div class="stat-value stat-r" id="statR">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Vacunados</div>
+                        <div class="stat-value stat-v" id="statV">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Fallecidos</div>
+                        <div class="stat-value stat-d" id="statD">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Pico Infect.</div>
+                        <div class="stat-value stat-i" id="statPeak">0</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module">
+        // === CONFIG ===
+        const CONFIG = {
+            numAgents: 500,
+            worldSize: 100,
+            stepsPerFrame: 2
+        };
+
+        let Module = null;
+        let epidemic = null;
+        let paused = false;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // === CANVAS SETUP ===
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // === WASM LOADING ===
+        async function loadWASM() {
+            const script = document.createElement('script');
+            script.src = '../../_wasm/eigenlab-core.js';
+            document.head.appendChild(script);
+
+            return new Promise((resolve, reject) => {
+                script.onload = async () => {
+                    try {
+                        Module = await EigenLabCore({
+                            locateFile: (path) => '../../_wasm/' + path
+                        });
+                        resolve(Module);
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                script.onerror = reject;
+            });
+        }
+
+        // === SIMULATION ===
+        function createSimulation() {
+            const config = new Module.EpidemiologyConfig();
+            config.numAgents = CONFIG.numAgents;
+            config.worldSize = CONFIG.worldSize;
+            config.transmissionRate = parseFloat(document.getElementById('transmission').value);
+            config.recoveryRate = parseFloat(document.getElementById('recovery').value);
+            config.mortalityRate = parseFloat(document.getElementById('mortality').value);
+            config.enableQuarantine = document.getElementById('quarantineCheck').checked;
+            config.socialDistancingFactor = parseFloat(document.getElementById('distancing').value);
+            config.initialInfected = 5;
+
+            if (epidemic) epidemic.delete();
+            epidemic = new Module.Epidemiology(config);
+            config.delete();
+        }
+
+        function draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!epidemic) return;
+
+            const positions = Module.getEpidemiologyPositions(epidemic);
+            const colors = Module.getEpidemiologyColors(epidemic);
+            const count = epidemic.agentCount();
+
+            // Scale factor
+            const scale = Math.min(w, h) / CONFIG.worldSize;
+            const offsetX = (w - CONFIG.worldSize * scale) / 2;
+            const offsetY = (h - CONFIG.worldSize * scale) / 2;
+
+            // Draw boundary
+            ctx.strokeStyle = 'rgba(100, 116, 139, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(offsetX, offsetY, CONFIG.worldSize * scale, CONFIG.worldSize * scale);
+
+            // Draw agents
+            for (let i = 0; i < count; i++) {
+                const x = offsetX + positions[i * 2] * scale;
+                const y = offsetY + positions[i * 2 + 1] * scale;
+
+                const r = Math.floor(colors[i * 3] * 255);
+                const g = Math.floor(colors[i * 3 + 1] * 255);
+                const b = Math.floor(colors[i * 3 + 2] * 255);
+
+                // Glow
+                ctx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.3)`;
+                ctx.beginPath();
+                ctx.arc(x, y, 6, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Agent
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 3, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        let frameCount = 0;
+
+        function updateStats() {
+            const stats = epidemic.getStats();
+
+            document.getElementById('statS').textContent = stats.susceptible;
+            document.getElementById('statI').textContent = stats.infected + stats.quarantined;
+            document.getElementById('statR').textContent = stats.recovered;
+            document.getElementById('statV').textContent = stats.vaccinated;
+            document.getElementById('statD').textContent = stats.deaths;
+            document.getElementById('statPeak').textContent = stats.peakInfected;
+            document.getElementById('r0Value').textContent = stats.r0Estimate.toFixed(2);
+        }
+
+        // === CONTROLS ===
+        function setupControls() {
+            document.getElementById('transmission').addEventListener('input', (e) => {
+                document.getElementById('transValue').textContent = parseFloat(e.target.value).toFixed(2);
+                if (epidemic) epidemic.setTransmissionRate(parseFloat(e.target.value));
+            });
+
+            document.getElementById('recovery').addEventListener('input', (e) => {
+                document.getElementById('recoveryValue').textContent = parseFloat(e.target.value).toFixed(2);
+                if (epidemic) epidemic.setRecoveryRate(parseFloat(e.target.value));
+            });
+
+            document.getElementById('mortality').addEventListener('input', (e) => {
+                document.getElementById('mortalityValue').textContent = Math.round(parseFloat(e.target.value) * 100) + '%';
+            });
+
+            document.getElementById('distancing').addEventListener('input', (e) => {
+                document.getElementById('distancingValue').textContent = Math.round(parseFloat(e.target.value) * 100) + '%';
+                if (epidemic) epidemic.setSocialDistancing(parseFloat(e.target.value));
+            });
+
+            document.getElementById('quarantineCheck').addEventListener('change', (e) => {
+                if (epidemic) epidemic.enableQuarantine(e.target.checked);
+            });
+
+            document.getElementById('vaccinate50').addEventListener('click', () => {
+                if (epidemic) epidemic.vaccinateRandom(50);
+            });
+
+            document.getElementById('vaccinate100').addEventListener('click', () => {
+                if (epidemic) epidemic.vaccinateRandom(100);
+            });
+
+            document.getElementById('addInfected').addEventListener('click', () => {
+                if (epidemic) epidemic.introduceInfected(5);
+            });
+
+            // Presets
+            document.getElementById('presetCovid').addEventListener('click', () => {
+                if (epidemic) epidemic.presetCovid();
+                document.getElementById('transmission').value = 0.25;
+                document.getElementById('transValue').textContent = '0.25';
+                document.getElementById('recovery').value = 0.03;
+                document.getElementById('recoveryValue').textContent = '0.03';
+                document.getElementById('mortality').value = 0.02;
+                document.getElementById('mortalityValue').textContent = '2%';
+            });
+
+            document.getElementById('presetFlu').addEventListener('click', () => {
+                if (epidemic) epidemic.presetFlu();
+                document.getElementById('transmission').value = 0.2;
+                document.getElementById('transValue').textContent = '0.20';
+                document.getElementById('recovery').value = 0.1;
+                document.getElementById('recoveryValue').textContent = '0.10';
+                document.getElementById('mortality').value = 0.001;
+                document.getElementById('mortalityValue').textContent = '0%';
+            });
+
+            document.getElementById('presetMeasles').addEventListener('click', () => {
+                if (epidemic) epidemic.presetMeasles();
+                document.getElementById('transmission').value = 0.5;
+                document.getElementById('transValue').textContent = '0.50';
+                document.getElementById('recovery').value = 0.07;
+                document.getElementById('recoveryValue').textContent = '0.07';
+                document.getElementById('mortality').value = 0.002;
+                document.getElementById('mortalityValue').textContent = '0%';
+            });
+
+            document.getElementById('presetEbola').addEventListener('click', () => {
+                if (epidemic) epidemic.presetEbola();
+                document.getElementById('transmission').value = 0.15;
+                document.getElementById('transValue').textContent = '0.15';
+                document.getElementById('recovery').value = 0.04;
+                document.getElementById('recoveryValue').textContent = '0.04';
+                document.getElementById('mortality').value = 0.5;
+                document.getElementById('mortalityValue').textContent = '50%';
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                createSimulation();
+            });
+        }
+
+        // === ANIMATION LOOP ===
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!paused && epidemic) {
+                epidemic.stepMultiple(CONFIG.stepsPerFrame);
+
+                frameCount++;
+                if (frameCount % 5 === 0) {
+                    updateStats();
+                }
+            }
+
+            draw();
+        }
+
+        // === INIT ===
+        async function init() {
+            setupControls();
+
+            try {
+                await loadWASM();
+                document.getElementById('loading').style.display = 'none';
+                createSimulation();
+                updateStats();
+                animate();
+            } catch (error) {
+                console.error('Failed to load WASM:', error);
+                document.getElementById('loading').textContent = 'Error cargando simulación';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
