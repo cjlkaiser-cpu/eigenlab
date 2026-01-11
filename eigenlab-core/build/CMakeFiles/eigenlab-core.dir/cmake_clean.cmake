@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/eigenlab-core.dir/src/physics/fluid_solver.cpp.o.d"
   "CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o"
   "CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o.d"
+  "CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o"
+  "CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o.d"
   "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o"
   "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o.d"
   "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o"

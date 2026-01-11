@@ -38,21 +38,21 @@ emmake make -j4
 
 | Lab | Simulaciones | Con Guía | Estado |
 |-----|:------------:|:--------:|--------|
-| Physics Visual Lab | 22 | 4 | 🔴 Guías pendientes (+2 WASM) |
-| Physics Sound Lab | — | — | En desarrollo (generativos) |
-| Chemistry Visual Lab | 18 | 17 | ✅ Completo |
-| Biochem Visual Lab | 15 | 15 | ✅ Completo |
+| Physics Visual Lab | 27 | 5 | 🔴 22 guías pendientes |
+| Physics Sound Lab | 4 | 0 | 🔴 4 guías pendientes |
+| Chemistry Visual Lab | 18 | 17 | ✅ Casi completo (94%) |
+| Biochem Visual Lab | 16 | 16 | ✅ Completo |
 | Math Visual Lab | 27 | 27 | ✅ Completo |
-| Math Generative Art Lab | 7 | 0 | 🔴 Guías pendientes |
-| Astronomy Visual Lab | 7 | 7 | ✅ Completo (+1 WASM) |
+| Math Generative Art Lab | 7 | 0 | 🔴 7 guías pendientes |
+| Astronomy Visual Lab | 8 | 7 | ✅ Casi completo (87%) |
 | Astronomy Sound Lab | 3 | 3 | ✅ Completo |
-| Biology Visual Lab | 8 | 8 | ✅ Completo (+1 WASM) |
-| Geology Visual Lab | 7 | 7 | ✅ Completo (+1 WASM) |
-| Computation Lab | 6 | 6 | ✅ Completo |
+| Biology Visual Lab | 9 | 8 | ✅ Casi completo (88%) |
+| Geology Visual Lab | 7 | 6 | ✅ Casi completo (85%) |
+| Computation Lab | 6 | 2 | 🔴 4 guías pendientes |
 
-**Total: 120 simulaciones | 94 con guía (78%)**
+**Total: 132 simulaciones | 91 con guía (68%)**
 
-> 5 nuevas simulaciones WASM de alto rendimiento agregadas (23 Dic 2025)
+> Última actualización: 27 Dic 2025
 
 ---
 
@@ -296,25 +296,28 @@ Cada simulacion debe tener una guia en `guides/` con:
 - Conexiones con otras simulaciones
 - Limitaciones del modelo
 
-**Estado actual:**
+**Estado actual (27 Dic 2025):**
 | Lab | Guías | Sims | Estado |
 |-----|:-----:|:----:|--------|
-| Chemistry Visual Lab | 17/18 | 18 | ✅ Casi completo (falta tabla-periodica) |
 | Math Visual Lab | 27/27 | 27 | ✅ Completo |
-| Biochem Visual Lab | 15/15 | 15 | ✅ Completo |
-| Biology Visual Lab | 7/7 | 7 | ✅ Completo |
-| Geology Visual Lab | 6/6 | 6 | ✅ Completo |
-| Astronomy Visual Lab | 6/6 | 6 | ✅ Completo |
+| Biochem Visual Lab | 16/16 | 16 | ✅ Completo |
 | Astronomy Sound Lab | 3/3 | 3 | ✅ Completo |
-| Computation Lab | 6/6 | 6 | ✅ Completo |
-| Physics Visual Lab | 2/20 | 20 | 🔴 Pendiente |
-| Math Generative Art Lab | 0/7 | 7 | 🔴 Pendiente |
+| Chemistry Visual Lab | 17/18 | 18 | ✅ Casi completo (94%) |
+| Biology Visual Lab | 8/9 | 9 | ✅ Casi completo (88%) |
+| Astronomy Visual Lab | 7/8 | 8 | ✅ Casi completo (87%) |
+| Geology Visual Lab | 6/7 | 7 | ✅ Casi completo (85%) |
+| Computation Lab | 2/6 | 6 | 🔴 4 pendientes |
+| Physics Visual Lab | 5/27 | 27 | 🔴 22 pendientes |
+| Physics Sound Lab | 0/4 | 4 | 🔴 4 pendientes |
+| Math Generative Art Lab | 0/7 | 7 | 🔴 7 pendientes |
 
-**Total: 89 guías completadas** (de 115 simulaciones = 77%)
+**Total: 91 guías completadas** (de 132 simulaciones = 68%)
 
 **Próxima prioridad:**
-1. Physics Visual Lab (18 sin guía) - las más visitadas, base de todo
+1. Physics Visual Lab (22 sin guía) - las más visitadas, base de todo
 2. Math Generative Art Lab (7 sin guía) - arte generativo
+3. Physics Sound Lab (4 sin guía) - generativos musicales
+4. Computation Lab (4 sin guía) - algoritmos
 
 ---
 
@@ -330,7 +333,7 @@ Cada simulacion debe tener una guia en `guides/` con:
 ▼                                                         │
 ┌──────────┐     ┌──────────────┐     ┌───────────────┐   │
 │  GUÍAS   │────▶│  CONEXIONES  │────▶│ SIMULACIONES  │───┤
-│ (80 ya)  │     │ INTER-DISC   │     │    NUEVAS     │   │
+│ (91 ya)  │     │ INTER-DISC   │     │    NUEVAS     │   │
 └────┬─────┘     └──────┬───────┘     └───────────────┘   │
      │                  │                                  │
      │                  ▼                                  │
@@ -364,7 +367,7 @@ Cada simulacion debe tener una guia en `guides/` con:
 
 #### ACCIÓN INMEDIATA: Mapa de Demanda
 
-**Objetivo:** Parsear las 80 guías para extraer:
+**Objetivo:** Parsear las guías para extraer:
 
 | Dato | Uso |
 |------|-----|
@@ -375,23 +378,25 @@ Cada simulacion debe tener una guia en `guides/` con:
 
 **Resultado del análisis (Diciembre 2025):**
 
-#### SIMULACIONES MÁS DEMANDADAS (pendientes)
+#### SIMULACIONES MÁS DEMANDADAS
 
-| Prioridad | Simulación | Lab | Descripción |
-|:---------:|------------|-----|-------------|
-| 🟡 | `nucleosintesis.html` | Astronomy Visual | Formación de elementos en estrellas |
-| 🟡 | `vision.html` | Biology Visual | Sistema visual, óptica del ojo |
-| 🟡 | `lipidos.html` | Biochem Visual | Membranas, lípidos |
-| ⚪ | `efecto-tunel.html` | Physics Visual | Mecánica cuántica |
-| ⚪ | `circuitos.html` | Physics Visual | Circuitos eléctricos |
-| ⚪ | `entropia.html` | Physics Visual | Segunda ley, desorden |
-| ⚪ | `conveccion.html` | Physics Visual | Transferencia de calor |
-| ⚪ | `dinamica-fluidos.html` | Physics Visual | Navier-Stokes |
+✅ **Todas completadas** - Las simulaciones más solicitadas han sido implementadas.
 
 #### COMPLETADAS RECIENTEMENTE ✅
 
 | Simulación | Lab | Fecha |
 |------------|-----|-------|
+| `nucleosintesis.html` | Astronomy Visual | Dic 2025 |
+| `vision.html` | Biology Visual | Dic 2025 |
+| `lipidos.html` | Biochem Visual | Dic 2025 |
+| `efecto-tunel.html` | Physics Visual | Dic 2025 |
+| `circuitos.html` | Physics Visual | Dic 2025 |
+| `entropia.html` | Physics Visual | Dic 2025 |
+| `fluidos-2d.html` | Physics Visual | Dic 2025 (WASM) |
+| `formacion-galaxias.html` | Astronomy Visual | Dic 2025 (WASM) |
+| `boids-masivo.html` | Biology Visual | Dic 2025 (WASM) |
+| `erosion-hidraulica.html` | Geology Visual | Dic 2025 (WASM) |
+| `simulacion-tela.html` | Physics Visual | Dic 2025 (WASM) |
 | `probabilidad.html` | Math Visual | 21 Dic 2025 |
 | `funciones.html` | Math Visual | 21 Dic 2025 |
 | `geometria-3d.html` | Math Visual | 21 Dic 2025 |
@@ -670,11 +675,30 @@ Formato sugerido para propuestas:
 
 ---
 
-*Última actualización: 23 Diciembre 2025*
+*Última actualización: 27 Diciembre 2025*
 
 ---
 
 ## Changelog
+
+### 27 Diciembre 2025 - Inventario Actualizado
+
+- **Inventario completo regenerado:**
+  - 132 simulaciones totales (excluidos papers, tutoriales y documentos auxiliares)
+  - 91 guías pedagógicas (68% cobertura)
+  - CSV y Excel actualizados: `eigenlab_simulaciones.csv`, `eigenlab_simulaciones.xlsx`
+
+- **Simulaciones demandadas completadas:**
+  - `nucleosintesis.html`, `vision.html`, `lipidos.html`
+  - `efecto-tunel.html`, `circuitos.html`, `entropia.html`
+
+- **Próximas prioridades (41 guías pendientes):**
+  - Physics Visual Lab: 22 guías pendientes
+  - Math Generative Art Lab: 7 guías pendientes
+  - Physics Sound Lab: 4 guías pendientes
+  - Computation Lab: 4 guías pendientes
+
+---
 
 ### 23 Diciembre 2025 - Motor WASM de Alto Rendimiento
 

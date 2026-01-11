@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magmatismo Global - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #dc2626;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .view-mode.active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+
+        .tectonic-boundary.active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+
+        canvas {
+            border: 1px solid #374151;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100">
+    <div class="min-h-screen p-4">
+        <header class="mb-6">
+            <h1 class="text-3xl font-bold text-red-500 mb-2">Magmatismo Global</h1>
+            <p class="text-gray-400">Simulación interactiva de tectónica de placas y generación de magma</p>
+        </header>
+
+        <main class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+            <!-- Canvas Section -->
+            <section class="lg:col-span-3">
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <canvas id="simulation-canvas" class="w-full h-96 bg-gray-900"></canvas>
+                    
+                    <!-- Controls -->
+                    <div class="mt-4 flex gap-4">
+                        <button id="start-btn" class="px-4 py-2 bg-red-600 hover:bg-red-700 rounded-lg transition-colors">
+                            Iniciar Simulación
+                        </button>
+                        <button id="pause-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                            Pausar
+                        </button>
+                        <button id="reset-btn" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors">
+                            Reset
+                        </button>
+                    </div>
+
+                    <!-- View Modes -->
+                    <div class="mt-4 flex gap-2">
+                        <button class="view-mode active px-3 py-1 border border-gray-600 rounded-lg text-sm" data-view="cross-section">
+                            Corte Transversal
+                        </button>
+                        <button class="view-mode px-3 py-1 border border-gray-600 rounded-lg text-sm" data-view="map">
+                            Vista Mapa
+                        </button>
+                    </div>
+
+                    <!-- Boundary Types -->
+                    <div class="mt-4 flex gap-2">
+                        <button class="tectonic-boundary active px-3 py-1 border border-gray-600 rounded-lg text-sm" data-boundary="divergent">
+                            Divergente
+                        </button>
+                        <button class="tectonic-boundary px-3 py-1 border border-gray-600 rounded-lg text-sm" data-boundary="convergent">
+                            Convergente
+                        </button>
+                        <button class="tectonic-boundary px-3 py-1 border border-gray-600 rounded-lg text-sm" data-boundary="transform">
+                            Transformante
+                        </button>
+                        <button class="tectonic-boundary px-3 py-1 border border-gray-600 rounded-lg text-sm" data-boundary="hotspot">
+                            Hotspot
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Sidebar -->
+            <aside class="lg:col-span-1">
+                <!-- Parameters -->
+                <div class="bg-gray-800 rounded-lg p-4 mb-4">
+                    <h3 class="text-lg font-semibold mb-4 text-red-400">Parámetros</h3>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-sm text-gray-400">Temperatura del Manto</label>
+                            <input type="range" id="mantle-temp" min="1200" max="1500" value="1350" class="w-full">
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="mantle-temp-value">1350</span>°C
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-400">Tasa de Fusión</label>
+                            <input type="range" id="melting-rate" min="5" max="30" value="15" class="w-full">
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="melting-rate-value">15</span>%
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="text-sm text-gray-400">Velocidad de Ascenso</label>
+                            <input type="range" id="ascent-rate" min="1" max="10" value="5" class="w-full">
+                            <div class="text-xs text-gray-500 mt-1">
+                                <span id="ascent-rate-value">5</span> cm/año
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between">
+                            <label class="text-sm text-gray-400">Mostrar Temperatura</label>
+                            <input type="checkbox" id="show-temp" checked class="rounded">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Info Panel -->
+                <div class="bg-gray-800 rounded-lg p-4">
+                    <h3 class="text-lg font-semibold mb-4 text-red-400">Información</h3>
+                    <div id="info-panel" class="text-sm text-gray-400 space-y-2">
+                        <div>Límite: <span class="text-red-300">Divergente</span></div>
+                        <div>Magmas activos: <span class="text-red-300" id="magma-count">0</span></div>
+                        <div>Tiempo: <span class="text-red-300 mono" id="sim-time">0.0</span> Ma</div>
+                        <div>Estado: <span class="text-red-300" id="sim-status">Detenido</span></div>
+                    </div>
+                </div>
+            </aside>
+        </main>
+    </div>
+
+    <script>
+        // Enhanced Particle System with trails and glow effects
+        class ParticleSystem {
+            constructor(maxParticles = 500) {
+                this.particles = [];
+                this.maxParticles = maxParticles;
+            }
+
+            createEmitter(x, y, config) {
+                return {
+                    x, y,
+                    rate: config.rate || 5,
+                    velocity: config.velocity || { x: 0, y: -2 },
+                    color: config.color || { r: 255, g: 100, b: 0 },
+                    size: config.size || { min: 1, max: 3 },
+                    trail: config.trail || false,
+                    glow: config.glow || false
+                };
+            }
+
+            emit(emitter) {
+                for (let i = 0; i < emitter.rate; i++) {
+                    if (this.particles.length >= this.maxParticles) {
+                        this.particles.shift();
+                    }
+
+                    this.particles.push({
+                        x: emitter.x + (Math.random() - 0.5) * 10,
+                        y: emitter.y,
+                        vx: emitter.velocity.x + (Math.random() - 0.5),
+                        vy: emitter.velocity.y + Math.random() * -1,
+                        size: emitter.size.min + Math.random() * (emitter.size.max - emitter.size.min),
+                        life: 1.0,
+                        color: {...emitter.color},
+                        trail: emitter.trail ? [] : null,
+                        glow: emitter.glow
+                    });
+                }
+            }
+
+            update(dt) {
+                this.particles = this.particles.filter(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.1; // gravity
+                    particle.vx *= 0.99; // air resistance
+                    particle.life -= dt * 0.3;
+
+                    // Update trail
+                    if (particle.trail) {
+                        particle.trail.push({ 
+                            x: particle.x, 
+                            y: particle.y, 
+                            life: particle.life 
+                        });
+                        if (particle.trail.length > 15) particle.trail.shift();
+                    }
+
+                    return particle.life > 0;
+                });
+            }
+
+            render(ctx) {
+                // Render particles with enhanced effects
+                this.particles.forEach(particle => {
+                    // Draw trail
+                    if (particle.trail && particle.trail.length > 1) {
+                        ctx.strokeStyle = `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, 0.3)`;
+                        ctx.lineWidth = particle.size * 0.5;
+                        ctx.beginPath();
+                        particle.trail.forEach((point, i) => {
+                            ctx.globalAlpha = point.life * 0.3 * (i / particle.trail.length);
+                            if (i === 0) {
+                                ctx.moveTo(point.x, point.y);
+                            } else {
+                                ctx.lineTo(point.x, point.y);
+                            }
+                        });
+                        ctx.stroke();
+                    }
+
+                    // Draw glow effect
+                    if (particle.glow) {
+                        const glowGradient = ctx.createRadialGradient(
+                            particle.x, particle.y, 0,
+                            particle.x, particle.y, particle.size * 3
+                        );
+                        glowGradient.addColorStop(0, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${particle.life * 0.8})`);
+                        glowGradient.addColorStop(0.5, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${particle.life * 0.3})`);
+                        glowGradient.addColorStop(1, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, 0)`);
+                        
+                        ctx.fillStyle = glowGradient;
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    // Draw particle
+                    ctx.globalAlpha = particle.life;
+                    ctx.fillStyle = `rgb(${particle.color.r}, ${particle.color.g}, ${particle.color.b})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                ctx.globalAlpha = 1;
+            }
+        }
+
+        // Main Application State
+        const state = {
+            currentView: 'cross-section',
+            currentBoundary: 'divergent',
+            isSimulating: false,
+            isPaused: false,
+            time: 0,
+            mantleTemp: 1350,
+            meltingRate: 15,
+            ascentRate: 5,
+            showTemperature: true,
+            particles: null,
+            emitters: [],
+            magmaChambers: []
+        };
+
+        // Canvas setup
+        const canvas = document.getElementById('simulation-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            const rect = canvas.getBoundingClientRect();
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+        }
+
+        // Initialize simulation
+        function initializeSimulation() {
+            state.particles = new ParticleSystem();
+            state.emitters = [];
+            state.magmaChambers = [];
+
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Create magma chambers based on boundary type
+            if (state.currentBoundary === 'divergent') {
+                for (let i = -1; i <= 1; i++) {
+                    const chamber = {
+                        x: w/2 + i * 100,
+                        y: h * 0.6,
+                        radius: 30 + Math.random() * 20,
+                        temperature: 1300 + Math.random() * 200
+                    };
+                    state.magmaChambers.push(chamber);
+
+                    // Add particle emitter with enhanced effects
+                    state.emitters.push(state.particles.createEmitter(
+                        chamber.x, 
+                        chamber.y - chamber.radius,
+                        {
+                            rate: 3,
+                            velocity: { x: 0, y: -3 },
+                            color: { r: 255, g: 150, b: 50 },
+                            trail: true,
+                            glow: true
+                        }
+                    ));
+                }
+            } else if (state.currentBoundary === 'convergent') {
+                const chamber = {
+                    x: w/2,
+                    y: h * 0.5,
+                    radius: 40,
+                    temperature: 1400
+                };
+                state.magmaChambers.push(chamber);
+
+                state.emitters.push(state.particles.createEmitter(
+                    chamber.x,
+                    chamber.y - chamber.radius,
+                    {
+                        rate: 8,
+                        velocity: { x: (Math.random() - 0.5) * 2, y: -4 },
+                        color: { r: 255, g: 100, b: 50 },
+                        trail: true,
+                        glow: true
+                    }
+                ));
+            } else if (state.currentBoundary === 'hotspot') {
+                const chamber = {
+                    x: w/2,
+                    y: h * 0.7,
+                    radius: 50,
+                    temperature: 1500
+                };
+                state.magmaChambers.push(chamber);
+
+                state.emitters.push(state.particles.createEmitter(
+                    chamber.x,
+                    chamber.y - chamber.radius,
+                    {
+                        rate: 10,
+                        velocity: { x: 0, y: -5 },
+                        color: { r: 255, g: 50, b: 0 },
+                        trail: true,
+                        glow: true
+                    }
+                ));
+            }
+        }
+
+        // Drawing functions
+        function drawCrossSection() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Clear canvas
+            ctx.fillStyle = '#111827';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw tectonic plates
+            ctx.fillStyle = '#374151';
+            
+            if (state.currentBoundary === 'divergent') {
+                // Two plates moving apart
+                ctx.fillRect(0, h * 0.7, w/2 - 20, h * 0.3);
+                ctx.fillRect(w/2 + 20, h * 0.7, w/2 - 20, h * 0.3);
+            } else if (state.currentBoundary === 'convergent') {
+                // Overlapping plates
+                ctx.fillRect(0, h * 0.6, w, h * 0.4);
+            } else {
+                // Single plate
+                ctx.fillRect(0, h * 0.7, w, h * 0.3);
+            }
+
+            // Draw enhanced mantle with convection currents
+            const mantleGradient = ctx.createLinearGradient(0, h * 0.3, 0, h);
+            mantleGradient.addColorStop(0, '#7f1d1d');
+            mantleGradient.addColorStop(0.5, '#991b1b');
+            mantleGradient.addColorStop(1, '#b91c1c');
+            ctx.fillStyle = mantleGradient;
+            ctx.fillRect(0, h * 0.3, w, h * 0.4);
+
+            // Draw convection currents
+            if (state.isSimulating) {
+                ctx.strokeStyle = 'rgba(255, 100, 50, 0.2)';
+                ctx.lineWidth = 2;
+                
+                const convectionCount = 3;
+                for (let i = 0; i < convectionCount; i++) {
+                    const x = (i + 1) * w / (convectionCount + 1);
+                    const phase = state.time * 0.5 + i * Math.PI / convectionCount;
+                    
+                    // Convection cell
+                    ctx.beginPath();
+                    
+                    // Downward flow
+                    for (let y = h * 0.3; y < h * 0.7; y += 5) {
+                        const offset = Math.sin((y - h * 0.3) / (h * 0.4) * Math.PI + phase) * 20;
+                        if (y === h * 0.3) {
+                            ctx.moveTo(x + offset, y);
+                        } else {
+                            ctx.lineTo(x + offset, y);
+                        }
+                    }
+                    
+                    // Bottom return flow
+                    for (let x_pos = x; x_pos > x - 40; x_pos -= 5) {
+                        ctx.lineTo(x_pos, h * 0.7);
+                    }
+                    
+                    // Upward flow
+                    for (let y = h * 0.7; y > h * 0.3; y -= 5) {
+                        const offset = Math.sin((y - h * 0.3) / (h * 0.4) * Math.PI + phase + Math.PI) * 20;
+                        ctx.lineTo(x - 40 + offset, y);
+                    }
+                    
+                    ctx.stroke();
+                }
+            }
+
+            // Draw magma chambers with enhanced effects
+            state.magmaChambers.forEach((chamber, index) => {
+                // Animated pulsing effect
+                const pulse = 1 + Math.sin(state.time * 2 + index) * 0.1;
+                
+                // Multi-layer glow effect
+                for (let layer = 3; layer > 0; layer--) {
+                    const layerRadius = chamber.radius * pulse * (1 + layer * 0.3);
+                    const layerAlpha = 0.3 / layer;
+                    
+                    const glowGradient = ctx.createRadialGradient(
+                        chamber.x, chamber.y, 0,
+                        chamber.x, chamber.y, layerRadius
+                    );
+                    
+                    if (layer === 3) {
+                        glowGradient.addColorStop(0, `rgba(255, 255, 255, ${layerAlpha})`);
+                        glowGradient.addColorStop(0.2, `rgba(255, 200, 100, ${layerAlpha})`);
+                    } else {
+                        glowGradient.addColorStop(0, `rgba(255, ${150 - layer * 20}, ${50 - layer * 10}, ${layerAlpha})`);
+                        glowGradient.addColorStop(0.5, `rgba(255, ${100 - layer * 10}, 0, ${layerAlpha * 0.5})`);
+                    }
+                    glowGradient.addColorStop(1, 'rgba(255, 0, 0, 0)');
+                    
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(chamber.x, chamber.y, layerRadius, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+
+                // Core magma chamber
+                const coreGradient = ctx.createRadialGradient(
+                    chamber.x - chamber.radius * 0.3, chamber.y - chamber.radius * 0.3, 0,
+                    chamber.x, chamber.y, chamber.radius * pulse
+                );
+                coreGradient.addColorStop(0, '#ffffff');
+                coreGradient.addColorStop(0.2, '#ffaa00');
+                coreGradient.addColorStop(0.6, '#ff6600');
+                coreGradient.addColorStop(1, '#cc0000');
+                
+                ctx.fillStyle = coreGradient;
+                ctx.beginPath();
+                ctx.arc(chamber.x, chamber.y, chamber.radius * pulse, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Add bubbles for realism
+                const bubbleCount = 3;
+                for (let i = 0; i < bubbleCount; i++) {
+                    const bubbleAngle = (state.time * 2 + i * Math.PI * 2 / bubbleCount) % (Math.PI * 2);
+                    const bubbleDist = chamber.radius * 0.6;
+                    const bubbleX = chamber.x + Math.cos(bubbleAngle) * bubbleDist;
+                    const bubbleY = chamber.y + Math.sin(bubbleAngle) * bubbleDist;
+                    const bubbleSize = 3 + Math.sin(state.time * 5 + i) * 2;
+                    
+                    ctx.fillStyle = `rgba(255, 200, 100, ${0.6 + Math.sin(state.time * 3 + i) * 0.3})`;
+                    ctx.beginPath();
+                    ctx.arc(bubbleX, bubbleY, bubbleSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            });
+
+            // Draw particles
+            if (state.particles) {
+                state.particles.render(ctx);
+            }
+
+            // Draw temperature gradient overlay
+            if (state.showTemperature !== false) {
+                const tempGradient = ctx.createLinearGradient(0, 0, 0, h);
+                const normalizedTemp = (state.mantleTemp - 1200) / 300; // Normalize to 0-1
+                
+                tempGradient.addColorStop(0, 'rgba(0, 0, 255, 0.1)');  // Cold - Blue
+                tempGradient.addColorStop(0.3, 'rgba(255, 255, 0, 0.1)'); // Warm - Yellow  
+                tempGradient.addColorStop(0.7, `rgba(255, ${100 - normalizedTemp * 50}, 0, 0.2)`); // Hot - Orange/Red
+                tempGradient.addColorStop(1, `rgba(255, ${50 - normalizedTemp * 25}, 0, 0.3)`); // Very Hot - Red
+                
+                ctx.fillStyle = tempGradient;
+                ctx.fillRect(0, 0, w, h);
+            }
+
+            // Draw labels
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '12px Inter';
+            ctx.fillText('Corteza', 10, h * 0.8);
+            ctx.fillText('Manto', 10, h * 0.5);
+            
+            // Draw temperature scale
+            const scaleWidth = 20;
+            const scaleHeight = 100;
+            const scaleX = w - scaleWidth - 10;
+            const scaleGradient = ctx.createLinearGradient(0, h * 0.2, 0, h * 0.7);
+            scaleGradient.addColorStop(0, '#0000ff');
+            scaleGradient.addColorStop(0.5, '#ffff00');
+            scaleGradient.addColorStop(1, '#ff0000');
+            
+            ctx.fillStyle = scaleGradient;
+            ctx.fillRect(scaleX, h * 0.2, scaleWidth, scaleHeight);
+            
+            ctx.strokeStyle = '#9ca3af';
+            ctx.strokeRect(scaleX, h * 0.2, scaleWidth, scaleHeight);
+            
+            ctx.fillStyle = '#9ca3af';
+            ctx.font = '10px Inter';
+            ctx.fillText(`${state.mantleTemp}°C`, scaleX - 5, h * 0.2 - 5);
+            ctx.fillText('1200°C', scaleX - 5, h * 0.7 + scaleHeight + 15);
+        }
+
+        function drawMap() {
+            const w = canvas.width;
+            const h = canvas.height;
+
+            // Clear canvas
+            ctx.fillStyle = '#1e293b';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw simplified map
+            ctx.fillStyle = '#374151';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw volcanic activity points
+            state.magmaChambers.forEach((chamber, i) => {
+                const x = (i + 1) * w / (state.magmaChambers.length + 1);
+                const y = h / 2;
+
+                // Volcano symbol
+                ctx.fillStyle = '#dc2626';
+                ctx.beginPath();
+                ctx.moveTo(x, y - 20);
+                ctx.lineTo(x - 15, y + 10);
+                ctx.lineTo(x + 15, y + 10);
+                ctx.closePath();
+                ctx.fill();
+            });
+        }
+
+        // Animation loop
+        function animate() {
+            if (!state.isPaused && state.isSimulating) {
+                // Update particles
+                if (state.particles) {
+                    state.particles.update(0.016);
+
+                    // Emit new particles
+                    state.emitters.forEach(emitter => {
+                        if (Math.random() < 0.3) {
+                            state.particles.emit(emitter);
+                        }
+                    });
+                }
+
+                // Update time
+                state.time += 0.016 * state.ascentRate / 5;
+            }
+
+            // Draw current view
+            if (state.currentView === 'cross-section') {
+                drawCrossSection();
+            } else if (state.currentView === 'map') {
+                drawMap();
+            }
+
+            // Update UI
+            updateDisplays();
+
+            requestAnimationFrame(animate);
+        }
+
+        // Update UI displays
+        function updateDisplays() {
+            document.getElementById('magma-count').textContent = 
+                state.particles ? state.particles.particles.length : 0;
+            document.getElementById('sim-time').textContent = state.time.toFixed(1);
+            document.getElementById('sim-status').textContent = 
+                state.isSimulating ? (state.isPaused ? 'Pausado' : 'Activo') : 'Detenido';
+        }
+
+        // Event listeners
+        document.getElementById('start-btn').addEventListener('click', () => {
+            state.isSimulating = true;
+            state.isPaused = false;
+            if (!state.particles) {
+                initializeSimulation();
+            }
+        });
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            state.isPaused = !state.isPaused;
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            state.isSimulating = false;
+            state.isPaused = false;
+            state.time = 0;
+            initializeSimulation();
+        });
+
+        // View mode buttons
+        document.querySelectorAll('.view-mode').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-mode').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentView = btn.dataset.view;
+            });
+        });
+
+        // Boundary type buttons
+        document.querySelectorAll('.tectonic-boundary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tectonic-boundary').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentBoundary = btn.dataset.boundary;
+                initializeSimulation();
+            });
+        });
+
+        // Parameter sliders
+        document.getElementById('mantle-temp').addEventListener('input', (e) => {
+            state.mantleTemp = parseInt(e.target.value);
+            document.getElementById('mantle-temp-value').textContent = state.mantleTemp;
+        });
+
+        document.getElementById('melting-rate').addEventListener('input', (e) => {
+            state.meltingRate = parseInt(e.target.value);
+            document.getElementById('melting-rate-value').textContent = state.meltingRate;
+        });
+
+        document.getElementById('ascent-rate').addEventListener('input', (e) => {
+            state.ascentRate = parseInt(e.target.value);
+            document.getElementById('ascent-rate-value').textContent = state.ascentRate;
+        });
+
+        document.getElementById('show-temp').addEventListener('change', (e) => {
+            state.showTemperature = e.target.checked;
+        });
+
+        // Window resize
+        window.addEventListener('resize', () => {
+            resizeCanvas();
+            initializeSimulation();
+        });
+
+        // Initialize
+        resizeCanvas();
+        initializeSimulation();
+        animate();
+    </script>
+</body>
+</html>

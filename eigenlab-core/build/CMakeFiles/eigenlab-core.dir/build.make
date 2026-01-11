@@ -162,11 +162,26 @@ CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.s"
 	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy.cpp -o CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.s
 
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o: CMakeFiles/eigenlab-core.dir/flags.make
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o: CMakeFiles/eigenlab-core.dir/includes_CXX.rsp
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o: /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy_collision.cpp
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o: CMakeFiles/eigenlab-core.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o"
+	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o -MF CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o.d -o CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o -c /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy_collision.cpp
+
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing CXX source to CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.i"
+	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -E /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy_collision.cpp > CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.i
+
+CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling CXX source to assembly CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.s"
+	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -S /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy_collision.cpp -o CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.s
+
 CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o: CMakeFiles/eigenlab-core.dir/flags.make
 CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o: CMakeFiles/eigenlab-core.dir/includes_CXX.rsp
 CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o: /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/erosion.cpp
 CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o: CMakeFiles/eigenlab-core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building CXX object CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o"
 	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o -MF CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o.d -o CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o -c /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/erosion.cpp
 
 CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.i: cmake_force
@@ -181,7 +196,7 @@ CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o: CMakeFiles/eigenlab-cor
 CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o: CMakeFiles/eigenlab-core.dir/includes_CXX.rsp
 CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o: /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/softbody.cpp
 CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o: CMakeFiles/eigenlab-core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building CXX object CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o"
 	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o -MF CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o.d -o CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o -c /Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/softbody.cpp
 
 CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.i: cmake_force
@@ -196,7 +211,7 @@ CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o: CMakeFiles/eigenlab-core.dir/fl
 CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o: CMakeFiles/eigenlab-core.dir/includes_CXX.rsp
 CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o: /Users/carlos/Projects/EigenLab/eigenlab-core/src/bindings.cpp
 CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o: CMakeFiles/eigenlab-core.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building CXX object CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building CXX object CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o"
 	/opt/homebrew/Cellar/emscripten/4.0.22/libexec/em++ $(CXX_DEFINES) $(CXX_INCLUDES) $(CXX_FLAGS) -MD -MT CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o -MF CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o.d -o CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o -c /Users/carlos/Projects/EigenLab/eigenlab-core/src/bindings.cpp
 
 CMakeFiles/eigenlab-core.dir/src/bindings.cpp.i: cmake_force
@@ -215,6 +230,7 @@ eigenlab__core_OBJECTS = \
 "CMakeFiles/eigenlab-core.dir/src/physics/fluid_solver.cpp.o" \
 "CMakeFiles/eigenlab-core.dir/src/physics/boids.cpp.o" \
 "CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o" \
+"CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o" \
 "CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o" \
 "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o" \
 "CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o"
@@ -228,13 +244,14 @@ eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/fluid_solver.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/boids.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o
+eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/build.make
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/objects1.rsp
 eigenlab-core.js: CMakeFiles/eigenlab-core.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Linking CXX executable eigenlab-core.js"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/Users/carlos/Projects/EigenLab/eigenlab-core/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking CXX executable eigenlab-core.js"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/eigenlab-core.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

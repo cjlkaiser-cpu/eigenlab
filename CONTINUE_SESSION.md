@@ -1,4 +1,4 @@
-# Prompt de Continuación: Math Sound Lab - EigenLab
+	# Prompt de Continuación: Math Sound Lab - EigenLab
 
 ## Contexto del Proyecto
 

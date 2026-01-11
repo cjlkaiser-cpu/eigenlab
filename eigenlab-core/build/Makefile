@@ -318,6 +318,30 @@ src/physics/galaxy.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.s
 .PHONY : src/physics/galaxy.cpp.s
 
+src/physics/galaxy_collision.o: src/physics/galaxy_collision.cpp.o
+.PHONY : src/physics/galaxy_collision.o
+
+# target to build an object file
+src/physics/galaxy_collision.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o
+.PHONY : src/physics/galaxy_collision.cpp.o
+
+src/physics/galaxy_collision.i: src/physics/galaxy_collision.cpp.i
+.PHONY : src/physics/galaxy_collision.i
+
+# target to preprocess a source file
+src/physics/galaxy_collision.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.i
+.PHONY : src/physics/galaxy_collision.cpp.i
+
+src/physics/galaxy_collision.s: src/physics/galaxy_collision.cpp.s
+.PHONY : src/physics/galaxy_collision.s
+
+# target to generate assembly for a file
+src/physics/galaxy_collision.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.s
+.PHONY : src/physics/galaxy_collision.cpp.s
+
 src/physics/heat_diffusion.o: src/physics/heat_diffusion.cpp.o
 .PHONY : src/physics/heat_diffusion.o
 
@@ -421,6 +445,9 @@ help:
 	@echo "... src/physics/galaxy.o"
 	@echo "... src/physics/galaxy.i"
 	@echo "... src/physics/galaxy.s"
+	@echo "... src/physics/galaxy_collision.o"
+	@echo "... src/physics/galaxy_collision.i"
+	@echo "... src/physics/galaxy_collision.s"
 	@echo "... src/physics/heat_diffusion.o"
 	@echo "... src/physics/heat_diffusion.i"
 	@echo "... src/physics/heat_diffusion.s"

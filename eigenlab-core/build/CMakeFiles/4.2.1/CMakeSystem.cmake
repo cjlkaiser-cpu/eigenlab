@@ -1,6 +1,6 @@
-set(CMAKE_HOST_SYSTEM "Darwin-24.5.0")
+set(CMAKE_HOST_SYSTEM "Darwin-25.2.0")
 set(CMAKE_HOST_SYSTEM_NAME "Darwin")
-set(CMAKE_HOST_SYSTEM_VERSION "24.5.0")
+set(CMAKE_HOST_SYSTEM_VERSION "25.2.0")
 set(CMAKE_HOST_SYSTEM_PROCESSOR "arm64")
 
 include("/opt/homebrew/Cellar/emscripten/4.0.22/libexec/cmake/Modules/Platform/Emscripten.cmake")

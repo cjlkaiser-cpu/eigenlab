@@ -62,6 +62,9 @@ EigenLab/
 │   └── Astronomy Sound Lab/    # 3 sims - Pulsares, música de las esferas
 ├── Computation/
 │   └── Computation Lab/        # 6 sims - Algoritmos, estructuras de datos
+├── Music/
+│   └── Music Theory Lab/       # 3 sims - Sistema Armónico Áureo (φ) ⭐
+│       └── CLAUDE.md           # Documentación técnica detallada
 ├── README.md                   # Documentación pública
 ├── ROADMAP.md                  # Planificación futura
 └── CLAUDE.md                   # Este archivo (contexto para Claude)
@@ -81,8 +84,9 @@ EigenLab/
 | **Mathematics** | Visual (27) + Gen Art (7) + Sound (8) | 42 | Naranja | ⭐ Activo |
 | **Astronomy** | Visual (6) + Sound (3) | 9 | Índigo | ✅ Completo |
 | **Computation** | Lab (6) | 6 | Azul | ✅ Completo |
+| **Music** | Theory Lab (3) | 3 | Rosa/Magenta | ⭐ Nuevo |
 
-**Total:** ~128+ simulaciones
+**Total:** ~131+ simulaciones
 
 ### Math Sound Lab ⭐ (Nueva adición)
 
@@ -109,6 +113,28 @@ El **Math Sound Lab** es el laboratorio más reciente, completado en enero 2026 
 - Dual visualización (canvas 2D + Three.js)
 - ~7,631 líneas de código total
 
+### Music Theory Lab ⭐ (Nueva disciplina)
+
+El **Music Theory Lab** es el primer laboratorio de la nueva disciplina **Music**, completado en enero 2026 con **3 simulaciones** del Sistema Armónico Áureo.
+
+**Simulaciones:**
+1. Escala Cromática Áurea - Explorador de 12 notas generadas por φ
+2. Armonizador Áureo - Constructor de acordes y progresiones
+3. Compositor Áureo - Generador algorítmico de preludios SATB (Bach en universo φ)
+
+**Documentación detallada:** `Music/Music Theory Lab/CLAUDE.md`
+
+**Características únicas:**
+- φ (proporción áurea) como operador estructural fundamental
+- Escala cromática generada por n_i = (1200 · φ^(-i)) mod 1200
+- Consonancia definida por proximidad a potencias de φ
+- Optimización combinatoria (792 combinaciones para escala diatónica)
+- Voice leading óptimo con algoritmo greedy
+- Reglas de contrapunto áureo (no quintas φ¹ paralelas)
+- Composición algorítmica SATB en estilo Bach
+- Web Audio API con ADSR + filtros + panning estéreo
+- ~6,800 líneas totales (código + teoría completa)
+
 ## Paleta de Colores
 
 Cada disciplina tiene un color de acento distintivo usado en sus simulaciones:
@@ -124,6 +150,7 @@ Cada disciplina tiene un color de acento distintivo usado en sus simulaciones:
 | Mathematics | `--color-mathematics` | `#f97316` | Fractales, caos |
 | Astronomy | `--color-astronomy` | `#6366f1` | Órbitas, cosmología |
 | Computation | `--color-computation` | `#3b82f6` | Algoritmos, estructuras |
+| Music | `--color-music` | `#ec4899` | Armonía φ, composición |
 
 ## Métodos Numéricos Implementados
 
@@ -321,6 +348,19 @@ Cada laboratorio grande tiene su propio archivo `CLAUDE.md` con documentación t
 - Mejores prácticas de Web Audio API
 - ~950 líneas de documentación técnica
 
+### Music Theory Lab ⭐
+**Archivo:** `Music/Music Theory Lab/CLAUDE.md`
+
+**Contenido:**
+- Marco teórico del Sistema Armónico Áureo
+- Ecuaciones fundamentales (escala cromática, consonancia, optimización)
+- Arquitectura del motor (GoldenHarmonyEngine)
+- Desglose completo de 3 simulaciones
+- Reglas de contrapunto áureo
+- Patrones de Web Audio para polifonía y voice leading
+- Algoritmos de composición SATB
+- ~1000 líneas de documentación técnica
+
 ### Futuros CLAUDE.md (por crear):
 - `Physics/Physics Visual Lab/CLAUDE.md` (19 simulaciones)
 - `Chemistry/Chemistry Visual Lab/CLAUDE.md` (17 simulaciones)
@@ -460,13 +500,15 @@ git push origin main
 **Última actualización:** 2026-01-10
 
 **Estadísticas:**
-- **~128+ simulaciones** totales
-- **9 disciplinas** científicas
-- **14 laboratorios** temáticos
+- **~131+ simulaciones** totales
+- **10 disciplinas** científicas
+- **15 laboratorios** temáticos
 - **110+ nodos** en Knowledge Graph
 - **5 caminos** de aprendizaje
 
-**Laboratorio más reciente:** Math Sound Lab (8 simulaciones, enero 2026)
+**Laboratorios más recientes:**
+- Math Sound Lab (8 simulaciones, enero 2026)
+- Music Theory Lab (3 simulaciones, enero 2026) ⭐ Nueva disciplina
 
 **Commits recientes:**
 ```

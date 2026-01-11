@@ -1,0 +1,3850 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Magmatismo Global - Geology Visual Lab</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #1f2937;
+            border-radius: 4px;
+            height: 6px;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            background: #dc2626;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        input[type="range"]::-webkit-slider-thumb:hover {
+            background: #ef4444;
+        }
+
+        .math-box {
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.1), rgba(217, 119, 6, 0.05));
+            border: 1px solid rgba(220, 38, 38, 0.3);
+        }
+
+        .glow-text {
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+        }
+
+        .state-indicator {
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .view-mode {
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+
+        .view-mode:hover {
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .view-mode.active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+
+        .tectonic-boundary {
+            transition: all 0.3s;
+        }
+
+        .tectonic-boundary:hover {
+            background: rgba(220, 38, 38, 0.1);
+        }
+
+        .tectonic-boundary.active {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+
+        .magma-source {
+            animation: magma-pulse 3s infinite;
+        }
+
+        @keyframes magma-pulse {
+            0%, 100% { 
+                box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+                transform: scale(1);
+            }
+            50% { 
+                box-shadow: 0 0 40px rgba(239, 68, 68, 0.8);
+                transform: scale(1.1);
+            }
+        }
+
+        .guide-link {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 8px;
+            color: #fca5a5;
+            text-decoration: none;
+            font-size: 0.8rem;
+            transition: all 0.3s;
+            margin-top: 16px;
+        }
+
+        .guide-link:hover {
+            background: rgba(220, 38, 38, 0.2);
+            border-color: #dc2626;
+        }
+
+        .guide-icon {
+            width: 18px;
+            height: 18px;
+            background: #dc2626;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            color: white;
+            flex-shrink: 0;
+        }
+
+        .cross-section-grid {
+            background-image: 
+                linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+        }
+
+        #cross-section-canvas, #global-map-canvas {
+            cursor: grab;
+        }
+
+        #cross-section-canvas:active, #global-map-canvas:active {
+            cursor: grabbing;
+        }
+
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.9);
+            border: 1px solid rgba(220, 38, 38, 0.5);
+            border-radius: 6px;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: #fff;
+            pointer-events: none;
+            z-index: 1000;
+            display: none;
+        }
+
+        .depth-indicator {
+            background: linear-gradient(180deg, 
+                rgba(255,255,255,0.1) 0%, 
+                rgba(255,0,0,0.2) 50%, 
+                rgba(139,0,0,0.3) 100%);
+        }
+    </style>
+</head>
+<body class="bg-black text-gray-100 min-h-screen">
+    <!-- Tooltip -->
+    <div id="tooltip" class="tooltip"></div>
+
+    <!-- Header -->
+    <header class="border-b border-gray-900 bg-black/80 backdrop-blur-sm sticky top-0 z-50">
+        <div class="max-w-full mx-auto px-6 py-3">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-6">
+                    <a href="index.html" class="text-gray-500 hover:text-red-400 transition flex items-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                        </svg>
+                        Volver
+                    </a>
+                    <div class="h-4 w-px bg-gray-800"></div>
+                    <div>
+                        <h1 class="text-lg font-light">
+                            <span class="text-red-500 font-medium glow-text">Magmatismo Global</span>
+                            <span class="text-gray-600 text-sm ml-2">Del Manto al Volcán</span>
+                        </h1>
+                        <nav class="text-xs text-gray-600">
+                            <a href="../../_portal/index.html" class="hover:text-red-400 transition">EigenLab</a>
+                            <span class="mx-1">/</span>
+                            <a href="index.html" class="hover:text-red-400 transition">Geology Visual Lab</a>
+                            <span class="mx-1">/</span>
+                            <span class="text-gray-500">Magmatismo Global</span>
+                        </nav>
+                    </div>
+                </div>
+                <div class="flex items-center gap-4 text-sm">
+                    <div class="flex items-center gap-2">
+                        <span class="text-gray-500">Tiempo:</span>
+                        <span id="time-display" class="text-red-500 mono font-medium">0</span>
+                        <span class="text-gray-600">Ma</span>
+                    </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">Magma:</span>
+                    <span id="magma-generation" class="text-orange-500 mono">0</span>
+                    <span class="text-gray-600">km³/año</span>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="text-gray-500">Velocidad:</span>
+                    <span id="sim-speed-display" class="text-purple-400 mono">1.0</span>
+                    <span class="text-gray-600">x</span>
+                </div>
+                    <div id="state-indicator" class="px-3 py-1 rounded-full bg-red-500/20 text-red-400 state-indicator">
+                        Simulando
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <main class="flex h-[calc(100vh-57px)]">
+        <!-- Visualization Area -->
+        <div class="flex-1 flex flex-col">
+            <!-- View Mode Selector -->
+            <div class="border-b border-gray-900 bg-gray-950 px-4 py-2">
+                <div class="flex items-center gap-2">
+                    <button class="view-mode active px-3 py-1 rounded-lg text-sm border border-gray-700" data-view="cross-section">
+                        Corte Transversal
+                    </button>
+                    <button class="view-mode px-3 py-1 rounded-lg text-sm border border-gray-700" data-view="global-map">
+                        Mapa Global
+                    </button>
+                    <button class="view-mode px-3 py-1 rounded-lg text-sm border border-gray-700" data-view="combined">
+                        Vista Combinada
+                    </button>
+                    <div class="h-4 w-px bg-gray-800 mx-2"></div>
+                    <button class="px-3 py-1 rounded-lg text-sm border border-gray-700 hover:bg-gray-800 transition" id="zoom-in">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v6m3-3H7"/>
+                        </svg>
+                    </button>
+                    <button class="px-3 py-1 rounded-lg text-sm border border-gray-700 hover:bg-gray-800 transition" id="zoom-out">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Canvas Container -->
+            <div class="flex-1 relative overflow-hidden">
+                <canvas id="cross-section-canvas" class="w-full h-full"></canvas>
+                <canvas id="global-map-canvas" class="w-full h-full absolute inset-0" style="display: none;"></canvas>
+                
+                <!-- Depth Scale -->
+                <div id="depth-scale" class="absolute right-4 top-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-red-400 mb-2">Profundidad</div>
+                    <div class="depth-indicator h-64 w-2 rounded-full mb-2"></div>
+                    <div class="space-y-1">
+                        <div class="text-gray-500">0 km</div>
+                        <div class="text-gray-500">50 km</div>
+                        <div class="text-gray-500">100 km</div>
+                        <div class="text-gray-500">200 km</div>
+                        <div class="text-gray-500">660 km</div>
+                    </div>
+                </div>
+
+                <!-- Tectonic Context -->
+                <div class="absolute left-4 top-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-red-400 mb-2">Contexto Tectónico</div>
+                    <div id="tectonic-context" class="text-gray-300">
+                        <div>Configuración:</div>
+                        <div class="text-red-400">Dorsal Oceánica</div>
+                        <div class="text-xs text-gray-500 mt-1">Fusión por descompresión</div>
+                    </div>
+                </div>
+
+                <!-- Temperature Legend -->
+                <div class="absolute right-4 bottom-4 bg-gray-950/90 border border-gray-800 rounded-lg p-3 text-xs">
+                    <div class="font-medium text-orange-400 mb-2">Temperatura</div>
+                    <div class="space-y-1">
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-red-600"></div>
+                            <span>1400°C (Manto)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-orange-500"></div>
+                            <span>1200°C (Magma)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-yellow-600"></div>
+                            <span>800°C (Litosfera)</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="w-3 h-3 rounded-full bg-blue-600"></div>
+                            <span>25°C (Superficie)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Control Panel -->
+        <aside class="w-96 border-l border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+            <h2 class="text-lg font-medium mb-6 text-red-400 glow-text">Control de Magmatismo</h2>
+
+            <!-- Tectonic Settings -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-green-500"></span>
+                    Configuración Tectónica
+                </h3>
+
+                <div class="space-y-2">
+                    <div class="tectonic-boundary p-3 border border-gray-800 rounded-lg active" data-boundary="divergent">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-green-400 font-medium">Dorsal Oceánica</span>
+                            <span class="text-xs text-gray-600">(Mid-Atlantic Ridge)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Expansión del fondo oceánico. Fusión por descompresión del manto ascendente.</div>
+                    </div>
+                    <div class="tectonic-boundary p-3 border border-gray-800 rounded-lg" data-boundary="convergent">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-blue-400 font-medium">Zona de Subducción</span>
+                            <span class="text-xs text-gray-600">(Andes, Japón)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Placa oceánica se hunde. Fusión por deshidratación y fusión del manto.</div>
+                    </div>
+                    <div class="tectonic-boundary p-3 border border-gray-800 rounded-lg" data-boundary="hotspot">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-red-400 font-medium">Punto Caliente</span>
+                            <span class="text-xs text-gray-600">(Hawái, Yellowstone)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Pluma de manto caliente. Fusión por anomalía térmica del manto profundo.</div>
+                    </div>
+                    <div class="tectonic-boundary p-3 border border-gray-800 rounded-lg" data-boundary="continental">
+                        <div class="flex items-center gap-2 mb-1">
+                            <span class="text-yellow-400 font-medium">Rift Continental</span>
+                            <span class="text-xs text-gray-600">(East Africa)</span>
+                        </div>
+                        <div class="text-xs text-gray-500">Acorazamiento continental. Fusión litosférica delgada y manto ascendente.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magma Parameters -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-orange-500"></span>
+                    Parámetros Magmáticos
+                </h3>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Temperatura del Manto: <span id="mantle-temp-value" class="text-orange-400 mono">1350</span>°C
+                    </label>
+                    <input type="range" id="mantle-temp" min="1200" max="1500" step="10" value="1350" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>1200°C</span>
+                        <span>1500°C</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Tasa de Fusión: <span id="melting-rate-value" class="text-red-400 mono">15</span>%
+                    </label>
+                    <input type="range" id="melting-rate" min="5" max="40" step="1" value="15" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>5%</span>
+                        <span>40%</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad de Ascenso: <span id="ascent-rate-value" class="text-cyan-400 mono">5</span> cm/año
+                    </label>
+                    <input type="range" id="ascent-rate" min="1" max="20" step="1" value="5" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>1 cm/año</span>
+                        <span>20 cm/año</span>
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Velocidad de Simulación: <span id="sim-speed-value" class="text-purple-400 mono">1.0</span>x
+                    </label>
+                    <input type="range" id="sim-speed" min="0.1" max="5" step="0.1" value="1.0" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>0.1x</span>
+                        <span>5.0x</span>
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="block text-sm text-gray-400 mb-2">
+                        Contenido de Volátiles: <span id="volatile-content-value" class="text-purple-400 mono">2.0</span>%
+                    </label>
+                    <input type="range" id="volatile-content" min="0" max="8" step="0.1" value="2.0" class="w-full">
+                    <div class="flex justify-between text-xs text-gray-600 mt-1">
+                        <span>0%</span>
+                        <span>8%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Visual Controls -->
+            <div class="mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3 flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-purple-500"></span>
+                    Visualización
+                </h3>
+
+                <div class="space-y-2">
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-temperature" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-red-500">
+                        <span class="text-sm text-gray-400">Campo de temperatura</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-convection" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-orange-500">
+                        <span class="text-sm text-gray-400">Celdas de convección</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-magma-chambers" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-red-500">
+                        <span class="text-sm text-gray-400">Cámaras magmáticas</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-dikes" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-amber-500">
+                        <span class="text-sm text-gray-400">Diques y filones</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-volcanoes" checked class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-green-500">
+                        <span class="text-sm text-gray-400">Volcanes en superficie</span>
+                    </label>
+                    <label class="flex items-center gap-3 cursor-pointer">
+                        <input type="checkbox" id="show-isotopes" class="w-4 h-4 rounded bg-gray-900 border-gray-700 text-cyan-500">
+                        <span class="text-sm text-gray-400">Geoquímica de isótopos</span>
+                    </label>
+                </div>
+            </div>
+
+            <!-- Advanced Physics -->
+            <div class="math-box rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-red-400 mb-3">Modelo Termodinámico</h3>
+                <div class="mono text-xs space-y-2 text-gray-400">
+                    <div>∂T/∂t + v·∇T = κ∇²T + H/(ρcₚ)</div>
+                    <div>∂v/∂t + (v·∇)v = -∇P/ρ + ν∇²v + gα(T-T₀)</div>
+                    <div class="mt-2 text-gray-500 text-xs">
+                        κ = difusividad térmica<br>
+                        ν = viscosidad cinemática<br>
+                        α = expansividad térmica<br>
+                        H = producción de calor interno<br>
+                        <br>
+                        <span class="text-orange-400">Fusión:</span><br>
+                        T > T<sub>solidus</sub>(P, X<sub>H₂O</sub>)<br>
+                        F = (T - T<sub>solidus</sub>)/(T<sub>liquidus</sub> - T<sub>solidus</sub>)
+                    </div>
+                </div>
+            </div>
+
+            <!-- Magma Types -->
+            <div class="bg-gray-900 rounded-xl p-4 mb-6">
+                <h3 class="text-sm font-medium text-gray-300 mb-3">Tipos de Magma</h3>
+                <div class="space-y-2 text-xs">
+                    <div class="flex justify-between items-center">
+                        <span class="text-green-400">Basalto</span>
+                        <span class="text-gray-500">Dorsal, Hotspot</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-blue-400">Andesita</span>
+                        <span class="text-gray-500">Arco volcánico</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-red-400">Riolita</span>
+                        <span class="text-gray-500">Continental (evolucionado)</span>
+                    </div>
+                    <div class="flex justify-between items-center">
+                        <span class="text-yellow-400">Komatiita</span>
+                        <span class="text-gray-500">Arcaico (T > 1600°C)</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Simulation Controls -->
+            <div class="mb-6 space-y-2">
+                <button id="start-simulation" class="w-full py-2.5 px-4 bg-red-500/20 hover:bg-red-500/30 text-red-400 rounded-lg text-sm transition font-medium flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    Iniciar Simulación
+                </button>
+                <div class="flex gap-2">
+                    <button id="pause-btn" class="flex-1 py-2 px-4 bg-gray-900 hover:bg-gray-800 text-gray-300 rounded-lg text-sm transition">
+                        Pausar
+                    </button>
+                    <button id="reset-btn" class="flex-1 py-2 px-4 bg-gray-900 hover:bg-gray-800 text-gray-300 rounded-lg text-sm transition">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Keyboard shortcuts -->
+            <div class="text-xs text-gray-600 border-t border-gray-800 pt-4">
+                <div class="font-medium text-gray-500 mb-2">Atajos de teclado</div>
+                <div class="grid grid-cols-2 gap-1">
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">Space</kbd> Pausar</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">S</kbd> Iniciar</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">R</kbd> Reset</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">1-4</kbd> Límites</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">V</kbd> Vistas</span>
+                    <span><kbd class="px-1.5 py-0.5 bg-gray-800 rounded">+/-</kbd> Zoom</span>
+                </div>
+            </div>
+
+            <a href="guides/magmatismo-global.html" class="guide-link">
+                <span class="guide-icon">?</span>
+                Guía completa: tectónica, magmatismo, ciclo de las rocas
+            </a>
+        </aside>
+    </main>
+
+    <script>
+        // Simplified state for reliability
+        const state = {
+            currentView: 'cross-section',
+            currentBoundary: 'divergent',
+            isSimulating: false,
+            isPaused: false,
+            time: 0,
+            zoom: 1,
+            simulationSpeed: 1.0,
+            mantleTemp: 1350,
+            meltingRate: 15,
+            ascentRate: 5,
+            volatileContent: 2.0,
+            showTemperature: true,
+            showConvection: true,
+            showMagmaChambers: true,
+            showDikes: true,
+            showVolcanoes: true,
+            showIsotopes: false,
+            convectionCells: [],
+            magmaChambers: [],
+            dikes: [],
+            volcanoes: [],
+            temperature: null,
+            velocity: null,
+            pressure: null
+        };
+
+        // Particle system for visual effects
+        class ParticleSystem {
+            constructor() {
+                this.particles = [];
+                this.emitters = [];
+                this.maxParticles = 5000;
+            }
+
+            createEmitter(x, y, type, config) {
+                return {
+                    x, y, type, config,
+                    rate: config.rate || 10,
+                    lifetime: config.lifetime || 5,
+                    velocity: config.velocity || { x: 0, y: -1 },
+                    spread: config.spread || Math.PI / 4,
+                    color: config.color || { r: 255, g: 100, b: 0 },
+                    size: config.size || { min: 1, max: 3 }
+                };
+            }
+
+            emit(emitter) {
+                for (let i = 0; i < emitter.rate; i++) {
+                    if (this.particles.length >= this.maxParticles) {
+                        this.particles.shift();
+                    }
+
+                    const angle = -Math.PI/2 + (Math.random() - 0.5) * emitter.spread;
+                    const speed = emitter.velocity.y + Math.random() * 2;
+                    
+                    this.particles.push({
+                        x: emitter.x + (Math.random() - 0.5) * 10,
+                        y: emitter.y,
+                        vx: Math.cos(angle) * speed + (Math.random() - 0.5),
+                        vy: Math.sin(angle) * speed,
+                        size: emitter.size.min + Math.random() * (emitter.size.max - emitter.size.min),
+                        life: 1.0,
+                        lifetime: emitter.lifetime,
+                        color: {...emitter.color},
+                        rotation: Math.random() * Math.PI * 2,
+                        rotationSpeed: (Math.random() - 0.5) * 0.1,
+                        trail: []
+                    });
+                }
+            }
+
+            update(dt) {
+                this.particles = this.particles.filter(particle => {
+                    particle.x += particle.vx;
+                    particle.y += particle.vy;
+                    particle.vy += 0.15; // gravity
+                    particle.vx *= 0.99; // air resistance
+                    particle.life -= dt / particle.lifetime;
+                    particle.rotation += particle.rotationSpeed;
+
+                    // Add to trail
+                    particle.trail.push({ x: particle.x, y: particle.y, alpha: particle.life });
+                    if (particle.trail.length > 10) particle.trail.shift();
+
+                    return particle.life > 0;
+                });
+
+                // Emit from all emitters
+                this.emitters.forEach(emitter => {
+                    if (Math.random() < 0.1) {
+                        this.emit(emitter);
+                    }
+                });
+            }
+
+            render(ctx) {
+                // Render particle trails
+                this.particles.forEach(particle => {
+                    // Trail
+                    if (particle.trail.length > 1) {
+                        ctx.strokeStyle = `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, 0.3)`;
+                        ctx.lineWidth = particle.size * 0.5;
+                        ctx.beginPath();
+                        particle.trail.forEach((point, index) => {
+                            if (index === 0) {
+                                ctx.moveTo(point.x, point.y);
+                            } else {
+                                ctx.lineTo(point.x, point.y);
+                            }
+                        });
+                        ctx.stroke();
+                    }
+
+                    // Main particle with glow
+                    const glowGradient = ctx.createRadialGradient(
+                        particle.x, particle.y, 0,
+                        particle.x, particle.y, particle.size * 3
+                    );
+                    glowGradient.addColorStop(0, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${particle.life * 0.8})`);
+                    glowGradient.addColorStop(0.3, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, ${particle.life * 0.4})`);
+                    glowGradient.addColorStop(1, `rgba(${particle.color.r}, ${particle.color.g}, ${particle.color.b}, 0)`);
+                    
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size * 3, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Core
+                    ctx.fillStyle = `rgba(255, 255, 255, ${particle.life * 0.9})`;
+                    ctx.beginPath();
+                    ctx.arc(particle.x, particle.y, particle.size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+        }
+
+        // Volumetric lighting system
+        class VolumetricLighting {
+            constructor() {
+                this.lights = [];
+            }
+
+            addLight(x, y, config) {
+                this.lights.push({
+                    x, y,
+                    color: config.color || { r: 255, g: 200, b: 100 },
+                    intensity: config.intensity || 1.0,
+                    radius: config.radius || 100,
+                    type: config.type || 'point',
+                    angle: config.angle || 0,
+                    pulse: config.pulse || 0,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+
+            render(ctx, width, height) {
+                // Create volumetric lighting effect
+                this.lights.forEach(light => {
+                    const pulseIntensity = light.pulse > 0 ? 
+                        (Math.sin(light.phase) + 1) / 2 * light.pulse + (1 - light.pulse) : 1;
+                    
+                    // Multiple light rays for volumetric effect
+                    const rayCount = 24;
+                    for (let i = 0; i < rayCount; i++) {
+                        const angle = (i / rayCount) * Math.PI * 2 + light.phase * 0.1;
+                        const rayLength = light.radius * (0.3 + Math.sin(light.phase + i * 0.5) * 0.7);
+                        
+                        const gradient = ctx.createLinearGradient(
+                            light.x, light.y,
+                            light.x + Math.cos(angle) * rayLength,
+                            light.y + Math.sin(angle) * rayLength
+                        );
+                        
+                        gradient.addColorStop(0, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, ${light.intensity * pulseIntensity * 0.8})`);
+                        gradient.addColorStop(0.5, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, ${light.intensity * pulseIntensity * 0.3})`);
+                        gradient.addColorStop(1, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, 0)`);
+                        
+                        ctx.fillStyle = gradient;
+                        ctx.beginPath();
+                        ctx.moveTo(light.x, light.y);
+                        ctx.lineTo(light.x + Math.cos(angle - 0.1) * rayLength, light.y + Math.sin(angle - 0.1) * rayLength);
+                        ctx.lineTo(light.x + Math.cos(angle + 0.1) * rayLength, light.y + Math.sin(angle + 0.1) * rayLength);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+
+                    // Central glow
+                    const glowGradient = ctx.createRadialGradient(
+                        light.x, light.y, 0,
+                        light.x, light.y, light.radius
+                    );
+                    glowGradient.addColorStop(0, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, ${light.intensity * pulseIntensity * 0.9})`);
+                    glowGradient.addColorStop(0.2, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, ${light.intensity * pulseIntensity * 0.6})`);
+                    glowGradient.addColorStop(0.5, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, ${light.intensity * pulseIntensity * 0.3})`);
+                    glowGradient.addColorStop(1, `rgba(${light.color.r}, ${light.color.g}, ${light.color.b}, 0)`);
+                    
+                    ctx.fillStyle = glowGradient;
+                    ctx.beginPath();
+                    ctx.arc(light.x, light.y, light.radius * (1 + Math.sin(light.phase * 2) * 0.1), 0, Math.PI * 2);
+                    ctx.fill();
+                });
+            }
+
+            update(dt) {
+                this.lights.forEach(light => {
+                    light.phase += dt * 2;
+                });
+            }
+        }
+
+        // Layer composition system
+        class LayerCompositor {
+            constructor() {
+                this.layers = [];
+                this.compositionCanvas = document.createElement('canvas');
+                this.compositionCtx = this.compositionCanvas.getContext('2d');
+            }
+
+            addLayer(name, renderFunction, blendMode, opacity) {
+                this.layers.push({
+                    name,
+                    render: renderFunction,
+                    blendMode: blendMode || 'source-over',
+                    opacity: opacity || 1.0,
+                    enabled: true
+                });
+            }
+
+            composite(width, height) {
+                this.compositionCanvas.width = width;
+                this.compositionCanvas.height = height;
+                
+                this.compositionCtx.clearRect(0, 0, width, height);
+                
+                this.layers.forEach(layer => {
+                    if (!layer.enabled) return;
+                    
+                    this.compositionCtx.globalCompositeOperation = layer.blendMode;
+                    this.compositionCtx.globalAlpha = layer.opacity;
+                    
+                    // Create temporary canvas for this layer
+                    const tempCanvas = document.createElement('canvas');
+                    tempCanvas.width = width;
+                    tempCanvas.height = height;
+                    const tempCtx = tempCanvas.getContext('2d');
+                    
+                    // Render layer to temp canvas
+                    layer.render(tempCtx, width, height);
+                    
+                    // Composite to main canvas
+                    this.compositionCtx.drawImage(tempCanvas, 0, 0);
+                });
+                
+                return this.compositionCanvas;
+            }
+        }
+
+        // Material system
+        class MaterialSystem {
+            constructor() {
+                this.materials = new Map();
+                this.initializeMaterials();
+            }
+
+            initializeMaterials() {
+                // Rock materials
+                this.materials.set('basalt', {
+                    baseColor: { r: 60, g: 60, b: 60 },
+                    roughness: 0.8,
+                    metalness: 0.0,
+                    emissive: { r: 50, g: 20, b: 0 },
+                    texture: null
+                });
+
+                this.materials.set('andesite', {
+                    baseColor: { r: 80, g: 70, b: 65 },
+                    roughness: 0.7,
+                    metalness: 0.0,
+                    emissive: { r: 30, g: 10, b: 0 },
+                    texture: null
+                });
+
+                this.materials.set('rhyolite', {
+                    baseColor: { r: 100, g: 95, b: 90 },
+                    roughness: 0.6,
+                    metalness: 0.0,
+                    emissive: { r: 20, g: 10, b: 5 },
+                    texture: null
+                });
+
+                // Lava materials
+                this.materials.set('lava-hot', {
+                    baseColor: { r: 255, g: 100, b: 0 },
+                    roughness: 0.3,
+                    metalness: 0.8,
+                    emissive: { r: 255, g: 150, b: 50 },
+                    glow: true
+                });
+
+                this.materials.set('lava-cooling', {
+                    baseColor: { r: 200, g: 50, b: 0 },
+                    roughness: 0.5,
+                    metalness: 0.6,
+                    emissive: { r: 255, g: 100, b: 0 },
+                    glow: true
+                });
+            }
+
+            getMaterial(name) {
+                return this.materials.get(name) || this.materials.get('basalt');
+            }
+
+            renderMaterial(ctx, x, y, size, materialName, lighting = null) {
+                const material = this.getMaterial(materialName);
+                
+                // Calculate lighting if provided
+                let finalColor = { ...material.baseColor };
+                if (lighting) {
+                    const lightIntensity = Math.max(0, lighting.intensity);
+                    finalColor.r = Math.min(255, material.baseColor.r + lightIntensity * material.emissive.r);
+                    finalColor.g = Math.min(255, material.baseColor.g + lightIntensity * material.emissive.g);
+                    finalColor.b = Math.min(255, material.baseColor.b + lightIntensity * material.emissive.b);
+                }
+
+                // Render material with properties
+                if (material.glow) {
+                    // Glowing material
+                    const glowGradient = ctx.createRadialGradient(x, y, 0, x, y, size);
+                    glowGradient.addColorStop(0, `rgba(${finalColor.r}, ${finalColor.g}, ${finalColor.b}, 1)`);
+                    glowGradient.addColorStop(0.3, `rgba(${finalColor.r}, ${finalColor.g}, ${finalColor.b}, 0.8)`);
+                    glowGradient.addColorStop(0.7, `rgba(${finalColor.r}, ${finalColor.g}, ${finalColor.b}, 0.4)`);
+                    glowGradient.addColorStop(1, `rgba(${finalColor.r}, ${finalColor.g}, ${finalColor.b}, 0.1)`);
+                    
+                    ctx.fillStyle = glowGradient;
+                } else {
+                    // Standard material
+                    ctx.fillStyle = `rgb(${finalColor.r}, ${finalColor.g}, ${finalColor.b})`;
+                }
+
+                // Add roughness texture
+                if (material.roughness > 0.5) {
+                    ctx.globalAlpha = 0.3;
+                    for (let i = 0; i < 5; i++) {
+                        const offsetX = (Math.random() - 0.5) * size * 0.2;
+                        const offsetY = (Math.random() - 0.5) * size * 0.2;
+                        ctx.beginPath();
+                        ctx.arc(x + offsetX, y + offsetY, size * Math.random() * 0.3, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                }
+
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        // Wait for DOM to be ready
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize advanced systems
+            state.particleSystem = new ParticleSystem();
+            state.volumetricLighting = new VolumetricLighting();
+            state.layerCompositor = new LayerCompositor();
+            state.materialSystem = new MaterialSystem();
+
+            // Canvas setup
+            const crossSectionCanvas = document.getElementById('cross-section-canvas');
+            const globalMapCanvas = document.getElementById('global-map-canvas');
+            const crossSectionCtx = crossSectionCanvas.getContext('2d');
+            const globalMapCtx = globalMapCanvas.getContext('2d');
+            const tooltip = document.getElementById('tooltip');
+            let dpr = window.devicePixelRatio || 1;
+
+            // Resize canvases
+            function resizeCanvases() {
+            const rect = crossSectionCanvas.parentElement.getBoundingClientRect();
+            crossSectionCanvas.width = rect.width * dpr;
+            crossSectionCanvas.height = rect.height * dpr;
+            crossSectionCanvas.style.width = rect.width + 'px';
+            crossSectionCanvas.style.height = rect.height + 'px';
+            crossSectionCtx.scale(dpr, dpr);
+
+            globalMapCanvas.width = rect.width * dpr;
+            globalMapCanvas.height = rect.height * dpr;
+            globalMapCanvas.style.width = rect.width + 'px';
+            globalMapCanvas.style.height = rect.height + 'px';
+            globalMapCtx.scale(dpr, dpr);
+
+            initializeGrids();
+        }
+
+        // Initialize temperature and velocity fields
+        function initializeGrids() {
+            const w = Math.floor(crossSectionCanvas.width / dpr / 8); // 8px resolution for better detail
+            const h = Math.floor(crossSectionCanvas.height / dpr / 8);
+            
+            state.temperature = Array(h).fill().map(() => Array(w).fill(25));
+            state.velocity = Array(h).fill().map(() => Array(w).fill().map(() => ({x: 0, y: 0})));
+            state.pressure = Array(h).fill().map(() => Array(w).fill(0));
+
+            // Initialize more realistic geothermal gradient
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            
+            for (let y = 0; y < h; y++) {
+                const depth = y * 8 / 100; // pixels to km scale
+                let baseTemp = 25; // Surface temperature
+                
+                if (depth < 10) {
+                    // Crust - linear gradient
+                    baseTemp = 25 + depth * 25;
+                } else if (depth < 35) {
+                    // Lower crust - steeper gradient
+                    baseTemp = 275 + (depth - 10) * 40;
+                } else {
+                    // Mantle - adiabatic gradient
+                    const mantleDepth = depth - 35;
+                    baseTemp = 1275 + mantleDepth * 0.5; // ~0.5°C/km adiabatic
+                }
+                
+                for (let x = 0; x < w; x++) {
+                    // Add boundary-specific modifications
+                    let tempModifier = 0;
+                    
+                    if (state.currentBoundary === 'divergent') {
+                        const centerX = w / 2;
+                        const distFromCenter = Math.abs(x - centerX);
+                        if (distFromCenter < w * 0.2) {
+                            tempModifier = Math.sin(y / h * Math.PI) * config.temperature * 0.3;
+                        }
+                    } else if (state.currentBoundary === 'hotspot') {
+                        const centerX = w / 2;
+                        const distFromCenter = Math.sqrt(Math.pow(x - centerX, 2) + Math.pow(y - h * 0.7, 2));
+                        if (distFromCenter < w * 0.15) {
+                            tempModifier = Math.cos(distFromCenter / (w * 0.15) * Math.PI/2) * 200;
+                        }
+                    }
+                    
+                    state.temperature[y][x] = Math.min(baseTemp + tempModifier, config.temperature);
+                }
+            }
+        }
+
+        // Tectonic boundary configurations
+        const BOUNDARY_CONFIGS = {
+            divergent: {
+                name: 'Dorsal Oceánica',
+                description: 'Expansión del fondo oceánico',
+                magmaType: 'Basalto tholeiítico',
+                depth: 60,
+                width: 200,
+                temperature: 1400,
+                meltingMechanism: 'descompresión',
+                color: '#22c55e'
+            },
+            convergent: {
+                name: 'Zona de Subducción',
+                description: 'Placa oceánica se hunde',
+                magmaType: 'Andesita calcoalcalina',
+                depth: 100,
+                width: 150,
+                temperature: 1200,
+                meltingMechanism: 'deshidratación',
+                color: '#3b82f6'
+            },
+            hotspot: {
+                name: 'Punto Caliente',
+                description: 'Pluma de manto caliente',
+                magmaType: 'Basalto alcalino',
+                depth: 80,
+                width: 100,
+                temperature: 1450,
+                meltingMechanism: 'anomalía térmica',
+                color: '#ef4444'
+            },
+            continental: {
+                name: 'Rift Continental',
+                description: 'Acorazamiento continental',
+                magmaType: 'Basalto continental',
+                depth: 50,
+                width: 180,
+                temperature: 1300,
+                meltingMechanism: 'fusión litosférica',
+                color: '#eab308'
+            }
+        };
+
+        // Initialize convection cells
+        function initializeConvection() {
+            state.convectionCells = [];
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            const cellCount = state.currentBoundary === 'hotspot' ? 1 : 3;
+            
+            for (let i = 0; i < cellCount; i++) {
+                state.convectionCells.push({
+                    x: crossSectionCanvas.width / dpr / 2 + (i - cellCount/2) * 150,
+                    y: crossSectionCanvas.height / dpr * 0.7,
+                    radius: 80 + Math.random() * 40,
+                    strength: 0.5 + Math.random() * 0.5,
+                    phase: Math.random() * Math.PI * 2
+                });
+            }
+        }
+
+        // Enhanced physics with advanced systems
+        function updatePhysics(dt) {
+            if (!state.isSimulating || state.isPaused) return;
+
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            const w = state.temperature[0].length;
+            const h = state.temperature.length;
+            const simDt = dt * state.simulationSpeed;
+            
+            // Enhanced heat diffusion with advanced convection
+            const newTemp = state.temperature.map(row => [...row]);
+            const thermalDiffusivity = 0.2;
+            
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    // 9-point Laplacian for better heat diffusion
+                    const laplacian = (
+                        4 * state.temperature[y][x] +
+                        state.temperature[y-1][x] + state.temperature[y+1][x] +
+                        state.temperature[y][x-1] + state.temperature[y][x+1] +
+                        0.5 * (state.temperature[y-1][x-1] + state.temperature[y-1][x+1] +
+                                state.temperature[y+1][x-1] + state.temperature[y+1][x+1]) -
+                        12 * state.temperature[y][x]
+                    ) / 6;
+                    
+                    newTemp[y][x] += thermalDiffusivity * laplacian * simDt;
+                    
+                    // Advanced convective heat transport with vortices
+                    if (state.showConvection) {
+                        state.convectionCells.forEach(cell => {
+                            const dx = x * 8 - cell.x;
+                            const dy = y * 8 - cell.y;
+                            const dist = Math.sqrt(dx*dx + dy*dy);
+                            
+                            if (dist < cell.radius) {
+                                const influence = Math.cos(dist / cell.radius * Math.PI/2) * cell.strength;
+                                const angle = Math.atan2(dy, dx);
+                                const verticalFlow = Math.sin(cell.phase + dist / cell.radius * Math.PI * 2);
+                                const rotationalFlow = Math.sin(cell.phase * 3 + angle) * 0.3;
+                                
+                                const totalFlow = verticalFlow + rotationalFlow;
+                                const heatTransport = config.temperature * influence * totalFlow * 0.08;
+                                newTemp[y][x] = Math.max(25, Math.min(newTemp[y][x] + heatTransport * simDt, 1600));
+                            }
+                        });
+                    }
+                    
+                    // Heat from magma chambers with multiple effects
+                    state.magmaChambers.forEach(chamber => {
+                        const dx = x * 8 - chamber.x;
+                        const dy = y * 8 - chamber.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        
+                        if (dist < chamber.radius * 1.5) {
+                            const heatPulse = Math.sin(Date.now() / 1200 + chamber.phase) * 0.3 + 0.7;
+                            const proximityInfluence = Math.max(0, 1 - dist / (chamber.radius * 1.5));
+                            const heat = chamber.temperature * chamber.strength * 0.03 * heatPulse * proximityInfluence;
+                            
+                            // Add turbulence near chambers
+                            const turbulence = Math.sin(Date.now() / 500 + x * 0.1 + y * 0.1) * 10;
+                            newTemp[y][x] = Math.min(newTemp[y][x] + (heat + turbulence) * simDt, 1650);
+                        }
+                    });
+                }
+            }
+            
+            // Apply enhanced boundary conditions
+            for (let x = 0; x < w; x++) {
+                // Surface with day/night variation
+                newTemp[0][x] = 25 + Math.sin(Date.now() / 10000 + x * 0.1) * 5;
+                
+                // Deep mantle with slight variation
+                const mantleVariation = Math.sin(Date.now() / 5000 + x * 0.05) * 20;
+                newTemp[h-1][x] = config.temperature + mantleVariation;
+            }
+            
+            state.temperature = newTemp;
+            
+            // Update all dynamic systems
+            updateConvectionCells(simDt);
+            updateMagmaChambers(simDt);
+            updateDikes(simDt);
+            updateVolcanoes(simDt);
+            
+            // Update advanced rendering systems
+            state.particleSystem.update(simDt);
+            state.volumetricLighting.update(simDt);
+        }
+
+        function updateConvectionCells(dt) {
+            state.convectionCells.forEach(cell => {
+                // More complex convection dynamics
+                cell.phase += 0.04 * cell.strength * state.simulationSpeed;
+                cell.strength = 0.5 + Math.sin(Date.now() / 2500 + cell.phase * 2) * 0.3;
+                cell.radius = cell.radius + Math.sin(Date.now() / 3000) * 2;
+            });
+        }
+
+        function updateMagmaChambers(dt) {
+            state.magmaChambers.forEach(chamber => {
+                // Multiple oscillation modes
+                chamber.pressure = 50 + 
+                    Math.sin(Date.now() / 2000 + chamber.phase) * 20 +
+                    Math.sin(Date.now() / 800 + chamber.phase * 2) * 10;
+                
+                chamber.temperature = state.mantleTemp + 
+                    Math.sin(Date.now() / 3000 + chamber.x * 0.01) * 50 +
+                    Math.sin(Date.now() / 1500 + chamber.phase * 3) * 20;
+                
+                // Occasional pressure pulses
+                if (Math.random() < 0.001 * state.simulationSpeed) {
+                    chamber.pressure += 30;
+                }
+            });
+        }
+
+        function updateDikes(dt) {
+            state.dikes.forEach(dike => {
+                // Pulsing activity with harmonics
+                dike.activity = 0.5 + 
+                    Math.sin(Date.now() / 1000) * 0.3 +
+                    Math.sin(Date.now() / 400) * 0.2;
+                
+                // Branch dynamics
+                if (dike.branches) {
+                    dike.branches.forEach(branch => {
+                        branch.flow = 0.5 + Math.sin(Date.now() / 1200) * 0.4;
+                    });
+                }
+            });
+        }
+
+        function updateVolcanoes(dt) {
+            state.volcanoes.forEach((volcano, index) => {
+                // More realistic eruption patterns
+                if (!volcano.active) {
+                    // Dormant period before eruption
+                    volcano.pressure = Math.min(100, volcano.pressure + 0.5 * state.simulationSpeed);
+                    
+                    if (volcano.pressure >= 100) {
+                        volcano.active = true;
+                        volcano.eruptionStartTime = Date.now();
+                    }
+                } else {
+                    // Active eruption
+                    volcano.pressure = Math.max(0, volcano.pressure - 2 * state.simulationSpeed);
+                    
+                    // Calculate eruption intensity
+                    const eruptionTime = (Date.now() - volcano.eruptionStartTime) / 1000;
+                    volcano.intensity = Math.exp(-eruptionTime * 0.1) * 3;
+                    
+                    if (volcano.pressure <= 0 || eruptionTime > 10) {
+                        volcano.active = false;
+                    }
+                }
+                
+                // Update secondary vents
+                if (volcano.vents) {
+                    volcano.vents.forEach(vent => {
+                        vent.active = volcano.active && Math.random() < 0.7;
+                        vent.pressure = volcano.pressure * 0.6;
+                    });
+                }
+            });
+        }
+
+        // Ultra-cinematographic cross-section rendering
+        function drawCrossSection() {
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            
+            // Multi-layered background with atmospheric depth
+            const bgLayers = 8;
+            for (let layer = 0; layer < bgLayers; layer++) {
+                const layerY = (h / bgLayers) * layer;
+                const layerHeight = h / bgLayers;
+                const depth = layer / bgLayers;
+                
+                const bgGradient = crossSectionCtx.createLinearGradient(0, layerY, 0, layerY + layerHeight);
+                
+                if (depth < 0.3) {
+                    // Surface atmosphere
+                    const timeOffset = Date.now() / 20000;
+                    bgGradient.addColorStop(0, `hsla(220, 60%, ${10 + depth * 10}%, ${0.3 + Math.sin(timeOffset) * 0.1})`);
+                    bgGradient.addColorStop(0.5, `hsla(220, 50%, ${15 + depth * 15}%, ${0.2})`);
+                    bgGradient.addColorStop(1, `hsla(220, 40%, ${20 + depth * 20}%, ${0.1})`);
+                } else if (depth < 0.6) {
+                    // Crust layers
+                    bgGradient.addColorStop(0, `hsla(15, 45%, ${10 + depth * 20}%, ${0.4})`);
+                    bgGradient.addColorStop(0.5, `hsla(15, 35%, ${15 + depth * 25}%, ${0.3})`);
+                    bgGradient.addColorStop(1, `hsla(15, 25%, ${20 + depth * 30}%, ${0.2})`);
+                } else if (depth < 0.8) {
+                    // Upper mantle
+                    bgGradient.addColorStop(0, `hsla(25, 30%, ${20 + depth * 35}%, ${0.5})`);
+                    bgGradient.addColorStop(0.5, `hsla(25, 25%, ${25 + depth * 40}%, ${0.4})`);
+                    bgGradient.addColorStop(1, `hsla(25, 20%, ${30 + depth * 45}%, ${0.3})`);
+                } else {
+                    // Deep mantle
+                    bgGradient.addColorStop(0, `hsla(30, 20%, ${25 + depth * 40}%, ${0.6})`);
+                    bgGradient.addColorStop(0.5, `hsla(30, 15%, ${30 + depth * 45}%, ${0.5})`);
+                    bgGradient.addColorStop(1, `hsla(30, 10%, ${35 + depth * 50}%, ${0.4})`);
+                }
+                
+                crossSectionCtx.fillStyle = bgGradient;
+                crossSectionCtx.fillRect(0, layerY, w, layerHeight);
+            }
+            
+            // Atmospheric perspective effect
+            crossSectionCtx.globalAlpha = 0.15;
+            const atmGradient = crossSectionCtx.createRadialGradient(w/2, h/2, 0, w/2, h/2, Math.max(w, h) * 0.7);
+            atmGradient.addColorStop(0, 'rgba(135, 206, 235, 0.1)');
+            atmGradient.addColorStop(0.5, 'rgba(135, 206, 235, 0.05)');
+            atmGradient.addColorStop(1, 'rgba(135, 206, 235, 0)');
+            crossSectionCtx.fillStyle = atmGradient;
+            crossSectionCtx.fillRect(0, 0, w, h * 0.3);
+            crossSectionCtx.globalAlpha = 1;
+            
+            // Ultra-enhanced temperature field with volumetric rendering
+            if (state.showTemperature && state.temperature) {
+                const cellSize = 6; // Higher resolution for detail
+                const config = BOUNDARY_CONFIGS[state.currentBoundary];
+                
+                // Multi-pass rendering for volumetric effect
+                renderTemperatureField(cellSize, config);
+            }
+            
+            // Draw cinematic tectonic structure
+            drawTectonicStructure();
+            
+            // Render advanced systems in layer order
+            if (state.showConvection) {
+                renderConvectionCells();
+            }
+            
+            // Magma chambers with volumetric lighting
+            if (state.showMagmaChambers) {
+                state.volumetricLighting.render(crossSectionCtx, w, h);
+            }
+            
+            // Dikes with advanced material rendering
+            if (state.showDikes) {
+                renderAdvancedDikes();
+            }
+            
+            // Volcanoes with cinematic effects
+            if (state.volcanoes) {
+                drawVolcanoes();
+            }
+            
+            // Particle system integration
+            state.particleSystem.render(crossSectionCtx);
+
+            // Ultra-enhanced depth layers with parallax
+            drawDepthLayers();
+        }
+
+        function renderTemperatureField(cellSize, config) {
+            if (!state.temperature || state.temperature.length === 0) return;
+            
+            // Simplified but enhanced temperature rendering
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            
+            // Direct rendering without off-screen canvases for simplicity
+            for (let y = 0; y < state.temperature.length && y < h / cellSize; y++) {
+                for (let x = 0; x < state.temperature[0].length && x < w / cellSize; x++) {
+                    const temp = state.temperature[y][x];
+                    const normalized = Math.max(0, Math.min(1, (temp - 25) / (config.temperature - 25)));
+                    
+                    // Simplified but effective color mapping
+                    let r, g, b;
+                    if (normalized < 0.25) {
+                        // Deep blues
+                        r = Math.floor(normalized * 5 * 50);
+                        g = Math.floor(normalized * 5 * 100);
+                        b = Math.floor(200 + normalized * 5 * 55);
+                    } else if (normalized < 0.5) {
+                        // Blues to cyan
+                        r = Math.floor((normalized - 0.25) * 5 * 100);
+                        g = Math.floor(normalized * 5 * 155);
+                        b = 255;
+                    } else if (normalized < 0.75) {
+                        // Cyan to green
+                        r = Math.floor((normalized - 0.5) * 5 * 150);
+                        g = 255;
+                        b = Math.floor(255 - (normalized - 0.5) * 5 * 205);
+                    } else if (normalized < 0.9) {
+                        // Green to yellow
+                        r = Math.floor((normalized - 0.75) * 5 * 200);
+                        g = 255;
+                        b = Math.floor(255 - (normalized - 0.75) * 5 * 200);
+                    } else {
+                        // Yellow to red/white
+                        r = 255;
+                        g = Math.floor(255 - (normalized - 0.9) * 5 * 200);
+                        b = Math.floor(255 - (normalized - 0.9) * 5 * 255);
+                    }
+                    
+                    crossSectionCtx.fillStyle = `rgba(${r}, ${g}, ${b}, 0.9)`;
+                    crossSectionCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+        }
+                    if (y > 0 && y < state.temperature.length - 1) {
+                        gradY = state.temperature[y + 1][x] - state.temperature[y - 1][x];
+                    }
+                    
+                    // Enhanced color mapping with HDR-like range
+                    let r, g, b, a;
+                    const tempEnhanced = normalized * 1.2; // Slight over-brightening
+                    
+                    if (tempEnhanced < 0.15) {
+                        // Ultra-deep blues
+                        r = Math.floor(tempEnhanced * 6.67 * 60);
+                        g = Math.floor(tempEnhanced * 6.67 * 120);
+                        b = Math.floor(150 + tempEnhanced * 6.67 * 105);
+                        a = 0.4 + tempEnhanced * 3;
+                    } else if (tempEnhanced < 0.3) {
+                        // Deep blues to cyan
+                        r = Math.floor((tempEnhanced - 0.15) * 6.67 * 80);
+                        g = Math.floor(120 + (tempEnhanced - 0.15) * 6.67 * 135);
+                        b = Math.floor(200 + (tempEnhanced - 0.15) * 6.67 * 55);
+                        a = 0.5 + tempEnhanced * 2;
+                    } else if (tempEnhanced < 0.45) {
+                        // Cyan to green
+                        r = Math.floor((tempEnhanced - 0.3) * 6.67 * 150);
+                        g = Math.floor(255 * tempEnhanced);
+                        b = Math.floor(255 - (tempEnhanced - 0.3) * 6.67 * 205);
+                        a = 0.6 + tempEnhanced * 1.5;
+                    } else if (tempEnhanced < 0.6) {
+                        // Green to yellow
+                        r = Math.floor((tempEnhanced - 0.45) * 6.67 * 150);
+                        g = 255;
+                        b = Math.floor(255 - (tempEnhanced - 0.45) * 6.67 * 220);
+                        a = 0.7 + tempEnhanced * 1.2;
+                    } else if (tempEnhanced < 0.75) {
+                        // Yellow to orange
+                        r = 255;
+                        g = Math.floor(255 - (tempEnhanced - 0.6) * 6.67 * 155);
+                        b = Math.floor(255 - (tempEnhanced - 0.6) * 6.67 * 255);
+                        a = 0.8 + tempEnhanced * 0.8;
+                    } else if (tempEnhanced < 0.85) {
+                        // Orange to red
+                        r = 255;
+                        g = Math.floor(100 - (tempEnhanced - 0.75) * 6.67 * 100);
+                        b = Math.floor(50 - (tempEnhanced - 0.75) * 6.67 * 50);
+                        a = 0.85 + tempEnhanced * 0.5;
+                    } else {
+                        // Ultra-hot whites
+                        r = 255;
+                        g = Math.floor(255 - (tempEnhanced - 0.85) * 6.67 * 200);
+                        b = Math.floor(255 - (tempEnhanced - 0.85) * 6.67 * 200);
+                        a = 0.9 + tempEnhanced * 0.2;
+                    }
+                    
+                    tempCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+                    tempCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                    
+                    // Store normals for lighting
+                    const normalX = gradX / 255;
+                    const normalY = gradY / 255;
+                    const normalZ = Math.sqrt(Math.max(0, 1 - normalX * normalX - normalY * normalY));
+                    
+                    normalCtx.fillStyle = `rgba(${Math.floor(normalX * 127 + 127)}, ${Math.floor(normalY * 127 + 127)}, ${Math.floor(normalZ * 127 + 127)}, 1)`;
+                    normalCtx.fillRect(x * cellSize, y * cellSize, cellSize, cellSize);
+                }
+            }
+            
+            // Apply advanced post-processing effects
+            crossSectionCtx.save();
+            
+            // Temperature field with bloom effect
+            crossSectionCtx.globalCompositeOperation = 'screen';
+            crossSectionCtx.globalAlpha = 0.8;
+            crossSectionCtx.drawImage(tempCanvas, 0, 0, w * state.zoom, h * state.zoom);
+            
+            // Add subtle detail enhancement
+            crossSectionCtx.globalCompositeOperation = 'soft-light';
+            crossSectionCtx.globalAlpha = 0.3;
+            crossSectionCtx.drawImage(tempCanvas, 0, 0, w * state.zoom, h * state.zoom);
+            
+            crossSectionCtx.restore();
+            
+            // Base temperature field
+            crossSectionCtx.globalAlpha = 0.9;
+            crossSectionCtx.drawImage(tempCanvas, 0, 0, w * state.zoom, h * state.zoom);
+            crossSectionCtx.globalAlpha = 1;
+        }
+
+        function renderConvectionCells() {
+            // Render convection cells with cinematic effects
+            state.convectionCells.forEach((cell, index) => {
+                const time = Date.now() / 1000;
+                const intensity = (Math.sin(cell.phase + time * cell.strength) + 1) / 2;
+                
+                // Multi-layered convection visualization
+                for (let layer = 3; layer >= 1; layer--) {
+                    const layerRadius = cell.radius * (1 + layer * 0.3 + intensity * 0.2);
+                    const layerAlpha = (0.15 + intensity * 0.1) / layer;
+                    
+                    // Main convection cell
+                    const cellGradient = crossSectionCtx.createRadialGradient(
+                        cell.x, cell.y, 0,
+                        cell.x, cell.y, layerRadius
+                    );
+                    
+                    // Temperature-based coloring with cinematic range
+                    const temp = 1200 + Math.sin(time + index) * 100;
+                    const tempNorm = (temp - 1000) / 600;
+                    
+                    cellGradient.addColorStop(0, `hsla(${20 - tempNorm * 15}, 85%, ${60 + intensity * 20}%, ${layerAlpha * cell.strength})`);
+                    cellGradient.addColorStop(0.3, `hsla(${25 - tempNorm * 10}, 80%, ${55 + intensity * 15}%, ${layerAlpha * 0.9 * cell.strength})`);
+                    cellGradient.addColorStop(0.6, `hsla(${30 - tempNorm * 5}, 75%, ${50 + intensity * 10}%, ${layerAlpha * 0.7 * cell.strength})`);
+                    cellGradient.addColorStop(1, `hsla(${35 - tempNorm * 0}, 70%, ${45 + intensity * 5}%, ${layerAlpha * 0.5 * cell.strength})`);
+                    
+                    crossSectionCtx.fillStyle = cellGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(cell.x, cell.y, layerRadius * (1 + Math.sin(time * 2 + cell.phase) * 0.05), 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                    
+                    // Energy field visualization
+                    if (layer === 1) {
+                        const energyField = Math.sin(time * 3 + index * 0.7) * intensity;
+                        crossSectionCtx.strokeStyle = `hsla(${40 - energyField * 20}, 90%, 60%, ${0.2 + energyField * 0.3})`;
+                        crossSectionCtx.lineWidth = 2;
+                        crossSectionCtx.setLineDash([8, 4]);
+                        
+                        const spiralCount = 6;
+                        for (let spiral = 0; spiral < spiralCount; spiral++) {
+                            crossSectionCtx.beginPath();
+                            const spiralPhase = time * 2 + index * Math.PI / 3 + spiral * Math.PI / 3;
+                            
+                            for (let t = 0; t <= 1; t += 0.05) {
+                                const angle = spiralPhase + t * Math.PI * 4;
+                                const r = layerRadius * (0.2 + t * 0.7) * (1 - Math.sin(angle * 3) * 0.2);
+                                const x = cell.x + Math.cos(angle) * r;
+                                const y = cell.y + Math.sin(angle) * r * (0.7 + Math.cos(angle * 4) * 0.3);
+                                
+                                if (t === 0) {
+                                    crossSectionCtx.moveTo(x, y);
+                                } else {
+                                    crossSectionCtx.lineTo(x, y);
+                                }
+                            }
+                            crossSectionCtx.stroke();
+                        }
+                        
+                        crossSectionCtx.setLineDash([]);
+                    }
+                }
+                
+                // Heat upwelling zones
+                if (intensity > 0.5) {
+                    const upwellingCount = 4;
+                    for (let i = 0; i < upwellingCount; i++) {
+                        const angle = (i / upwellingCount) * Math.PI * 2 + cell.phase + time;
+                        const r = cell.radius * 0.3;
+                        
+                        const x = cell.x + Math.cos(angle) * r;
+                        const y = cell.y + Math.sin(angle) * r * (0.5 + Math.sin(time * 2 + angle * 3) * 0.2);
+                        
+                        const particleGradient = crossSectionCtx.createRadialGradient(x, y, 0, x, y, 8 + intensity * 4);
+                        particleGradient.addColorStop(0, `hsla(${30}, 85%, 65%, ${0.7 + intensity * 0.3})`);
+                        particleGradient.addColorStop(0.5, `hsla(${40}, 75%, 55%, ${0.4 + intensity * 0.2})`);
+                        particleGradient.addColorStop(1, `hsla(${50}, 65%, 45%, 0.1)`);
+                        
+                        crossSectionCtx.fillStyle = particleGradient;
+                        crossSectionCtx.beginPath();
+                        crossSectionCtx.arc(x, y, 8 + intensity * 4, 0, Math.PI * 2);
+                        crossSectionCtx.fill();
+                        
+                        // Particle trails
+                        if (Math.random() < 0.3) {
+                            for (let j = 0; j < 3; j++) {
+                                const trailAngle = angle + (Math.random() - 0.5) * 0.3;
+                                const trailDistance = 15 + j * 10;
+                                
+                                const trailX = x + Math.cos(trailAngle) * trailDistance;
+                                const trailY = y + Math.sin(trailAngle) * trailDistance;
+                                
+                                crossSectionCtx.fillStyle = `hsla(${35}, 70%, 50%, ${0.2 * (3 - j) / 3})`;
+                                crossSectionCtx.beginPath();
+                                crossSectionCtx.arc(trailX, trailY, 3 - j, 0, Math.PI * 2);
+                                crossSectionCtx.fill();
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        function renderAdvancedDikes() {
+            state.dikes.forEach((dike, index) => {
+                const time = Date.now() / 1000;
+                const activity = dike.activity || 0.5;
+                const intensity = (Math.sin(time + index) + 1) / 2;
+                
+                // Enhanced dike rendering with material system
+                const dikeMaterial = state.materialSystem.getMaterial('andesite');
+                
+                // Main dike structure with branches
+                const mainGradient = crossSectionCtx.createLinearGradient(
+                    dike.x1, dike.y1,
+                    dike.x2, dike.y2
+                );
+                
+                // Temperature-based coloring along dike
+                const tempStart = 1200 + Math.sin(time + index) * 100;
+                const tempEnd = 900 + Math.cos(time + index * 0.5) * 150;
+                const tempNormStart = (tempStart - 800) / 700;
+                const tempNormEnd = (tempEnd - 800) / 700;
+                
+                mainGradient.addColorStop(0, `rgb(${dikeMaterial.baseColor.r + tempNormStart * 30}, ${dikeMaterial.baseColor.g + tempNormStart * 20}, ${dikeMaterial.baseColor.b + tempNormStart * 10})`);
+                mainGradient.addColorStop(0.5, `rgb(${dikeMaterial.baseColor.r + tempNormStart * 15}, ${dikeMaterial.baseColor.g + tempNormStart * 10}, ${dikeMaterial.baseColor.b + tempNormStart * 5})`);
+                mainGradient.addColorStop(1, `rgb(${dikeMaterial.baseColor.r + tempNormEnd * 10}, ${dikeMaterial.baseColor.g + tempNormEnd * 5}, ${dikeMaterial.baseColor.b})`);
+                
+                // Width variation along dike
+                for (let segment = 0; segment <= 20; segment++) {
+                    const t = segment / 20;
+                    const x = dike.x1 + (dike.x2 - dike.x1) * t;
+                    const y = dike.y1 + (dike.y2 - dike.y1) * t;
+                    const width = dike.width * (0.8 + Math.sin(time * 2 + segment * 0.5) * 0.2 + intensity * 0.2);
+                    
+                    crossSectionCtx.strokeStyle = mainGradient;
+                    crossSectionCtx.lineWidth = width;
+                    crossSectionCtx.lineCap = 'round';
+                    crossSectionCtx.globalAlpha = 0.8 + activity * 0.2;
+                    
+                    crossSectionCtx.beginPath();
+                    if (segment === 0) {
+                        crossSectionCtx.moveTo(dike.x1, dike.y1);
+                    }
+                    
+                    const prevX = dike.x1 + (dike.x2 - dike.x1) * Math.max(0, (segment - 1) / 20);
+                    const prevY = dike.y1 + (dike.y2 - dike.y1) * Math.max(0, (segment - 1) / 20);
+                    crossSectionCtx.lineTo(prevX, prevY);
+                    crossSectionCtx.lineTo(x, y);
+                    crossSectionCtx.stroke();
+                }
+                
+                crossSectionCtx.globalAlpha = 1;
+                
+                // Render branches with enhanced materials
+                if (dike.branches) {
+                    dike.branches.forEach((branch, branchIndex) => {
+                        const branchGradient = crossSectionCtx.createLinearGradient(
+                            branch.startX, branch.startY,
+                            branch.endX, branch.endY
+                        );
+                        
+                        // Branch-specific temperature
+                        const branchTemp = 1000 + Math.sin(time * 1.5 + branchIndex) * 80;
+                        const tempNorm = (branchTemp - 800) / 400;
+                        
+                        branchGradient.addColorStop(0, `rgb(${dikeMaterial.baseColor.r + tempNorm * 20}, ${dikeMaterial.baseColor.g + tempNorm * 15}, ${dikeMaterial.baseColor.b + tempNorm * 5})`);
+                        branchGradient.addColorStop(0.5, `rgb(${dikeMaterial.baseColor.r + tempNorm * 10}, ${dikeMaterial.baseColor.g + tempNorm * 8}, ${dikeMaterial.baseColor.b})`);
+                        branchGradient.addColorStop(1, `rgb(${dikeMaterial.baseColor.r}, ${dikeMaterial.baseColor.g}, ${dikeMaterial.baseColor.b})`);
+                        
+                        crossSectionCtx.strokeStyle = branchGradient;
+                        crossSectionCtx.lineWidth = branch.width * (0.7 + Math.sin(time + branchIndex) * 0.3);
+                        crossSectionCtx.lineCap = 'round';
+                        crossSectionCtx.globalAlpha = 0.7 + activity * 0.3;
+                        
+                        crossSectionCtx.beginPath();
+                        crossSectionCtx.moveTo(branch.startX, branch.startY);
+                        crossSectionCtx.lineTo(branch.endX, branch.endY);
+                        crossSectionCtx.stroke();
+                        
+                        crossSectionCtx.globalAlpha = 1;
+                        
+                        // Branch glow effects
+                        if (activity > 0.6) {
+                            const glowGradient = crossSectionCtx.createRadialGradient(
+                                branch.endX, branch.endY, 0,
+                                branch.endX, branch.endY, branch.width * 3
+                            );
+                            glowGradient.addColorStop(0, `hsla(30, 70%, 60%, ${activity * 0.3})`);
+                            glowGradient.addColorStop(1, `hsla(40, 60%, 50%, 0)`);
+                            
+                            crossSectionCtx.fillStyle = glowGradient;
+                            crossSectionCtx.beginPath();
+                            crossSectionCtx.arc(branch.endX, branch.endY, branch.width * 3, 0, Math.PI * 2);
+                            crossSectionCtx.fill();
+                        }
+                    });
+                }
+                
+                // Magma flow visualization
+                if (activity > 0.4) {
+                    const flowGradient = crossSectionCtx.createLinearGradient(
+                        dike.x1, dike.y1,
+                        dike.x2, dike.y2
+                    );
+                    flowGradient.addColorStop(0, `rgba(255, 100, 50, ${activity * 0.6})`);
+                    flowGradient.addColorStop(0.5, `rgba(255, 150, 100, ${activity * 0.4})`);
+                    flowGradient.addColorStop(1, `rgba(255, 200, 150, ${activity * 0.2})`);
+                    
+                    crossSectionCtx.strokeStyle = flowGradient;
+                    crossSectionCtx.lineWidth = dike.width * 1.5;
+                    crossSectionCtx.lineCap = 'round';
+                    crossSectionCtx.globalAlpha = 0.6;
+                    crossSectionCtx.setLineDash([10, 5]);
+                    
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.moveTo(dike.x1, dike.y1);
+                    crossSectionCtx.lineTo(dike.x2, dike.y2);
+                    crossSectionCtx.stroke();
+                    
+                    crossSectionCtx.setLineDash([]);
+                    crossSectionCtx.globalAlpha = 1;
+                }
+                
+                // Crystalization effects
+                if (Math.random() < 0.1 * intensity) {
+                    const crystallizationPoints = 5;
+                    for (let i = 0; i < crystallizationPoints; i++) {
+                        const t = Math.random();
+                        const x = dike.x1 + (dike.x2 - dike.x1) * t;
+                        const y = dike.y1 + (dike.y2 - dike.y1) * t;
+                        
+                        const crystalGradient = crossSectionCtx.createRadialGradient(x, y, 0, x, y, 6);
+                        crystalGradient.addColorStop(0, `rgba(200, 200, 255, 0.8)`);
+                        crystalGradient.addColorStop(0.5, `rgba(150, 150, 255, 0.4)`);
+                        crystalGradient.addColorStop(1, `rgba(100, 100, 200, 0.1)`);
+                        
+                        crossSectionCtx.fillStyle = crystalGradient;
+                        crossSectionCtx.beginPath();
+                        
+                        // Crystal shape
+                        for (let j = 0; j < 6; j++) {
+                            const angle = (j / 6) * Math.PI * 2;
+                            const r = 3 + Math.sin(j * 1.7) * 1.5;
+                            const crystalX = x + Math.cos(angle) * r;
+                            const crystalY = y + Math.sin(angle) * r;
+                            
+                            if (j === 0) {
+                                crossSectionCtx.moveTo(crystalX, crystalY);
+                            } else {
+                                crossSectionCtx.lineTo(crystalX, crystalY);
+                            }
+                        }
+                        
+                        crossSectionCtx.closePath();
+                        crossSectionCtx.fill();
+                    }
+                }
+            });
+        }
+                        
+                        tempCtx.fillStyle = `rgba(${r}, ${g}, ${b}, ${a})`;
+                        tempCtx.fillRect(x * cellSize, y * cellSize, cellSize + 1, cellSize + 1);
+                    }
+                }
+                
+                // Apply smoothing effect
+                crossSectionCtx.globalAlpha = 0.9;
+                crossSectionCtx.filter = 'blur(0.5px)';
+                crossSectionCtx.drawImage(tempCanvas, 0, 0, w * state.zoom, h * state.zoom);
+                crossSectionCtx.filter = 'none';
+                crossSectionCtx.globalAlpha = 1;
+            }
+            
+            // Draw enhanced tectonic structure
+            drawTectonicStructure();
+            
+            // Draw convection cells
+            if (state.showConvection) {
+                drawConvectionCells();
+            }
+            
+            // Draw magma chambers
+            if (state.showMagmaChambers) {
+                drawMagmaChambers();
+            }
+            
+            // Draw dikes
+            if (state.showDikes) {
+                drawDikes();
+            }
+            
+            // Draw volcanoes
+            if (state.showVolcanoes) {
+                drawVolcanoes();
+            }
+            
+            // Draw simplified depth layers
+            drawDepthLayers();
+        }
+
+        // Draw enhanced tectonic structure
+        function drawTectonicStructure() {
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            const centerX = w / 2;
+            const crustDepth = h * 0.3;
+            
+            crossSectionCtx.strokeStyle = 'rgba(100, 100, 100, 0.8)';
+            crossSectionCtx.lineWidth = 3;
+            crossSectionCtx.lineCap = 'round';
+            crossSectionCtx.lineJoin = 'round';
+            
+            if (state.currentBoundary === 'divergent') {
+                // Enhanced divergent boundary
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(centerX - config.width/2, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX - config.width/4, h * 0.2, centerX - 30, h * 0.05);
+                crossSectionCtx.moveTo(centerX + config.width/2, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX + config.width/4, h * 0.2, centerX + 30, h * 0.05);
+                crossSectionCtx.stroke();
+                
+                // Enhanced mantle upwelling with pulsing
+                const pulseIntensity = (Math.sin(Date.now() / 1500) + 1) / 2;
+                const gradient = crossSectionCtx.createLinearGradient(centerX, h, centerX, crustDepth);
+                gradient.addColorStop(0, `rgba(220, 38, 38, ${0.15 + pulseIntensity * 0.1})`);
+                gradient.addColorStop(0.3, `rgba(240, 100, 50, ${0.3 + pulseIntensity * 0.2})`);
+                gradient.addColorStop(0.7, `rgba(255, 150, 50, ${0.4 + pulseIntensity * 0.2})`);
+                gradient.addColorStop(1, `rgba(255, 200, 100, ${0.5 + pulseIntensity * 0.2})`);
+                
+                crossSectionCtx.fillStyle = gradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(centerX - 40, h);
+                crossSectionCtx.quadraticCurveTo(centerX - 25, h * 0.6, centerX - 25, crustDepth);
+                crossSectionCtx.lineTo(centerX + 25, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX + 25, h * 0.6, centerX + 40, h);
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+                
+                // Add flow lines
+                crossSectionCtx.strokeStyle = 'rgba(255, 150, 50, 0.3)';
+                crossSectionCtx.lineWidth = 1;
+                for (let i = -2; i <= 2; i++) {
+                    const x = centerX + i * 15;
+                    const offset = Math.sin(Date.now() / 800 + i * 0.5) * 10;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.moveTo(x + offset, h);
+                    crossSectionCtx.quadraticCurveTo(x + offset * 0.5, h * 0.5, x, crustDepth + 20);
+                    crossSectionCtx.stroke();
+                }
+                
+            } else if (state.currentBoundary === 'convergent') {
+                // Enhanced convergent boundary
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(0, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX + config.width/4, crustDepth + 10, centerX + config.width/3, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX + config.width/2, h * 0.6, centerX + config.width * 0.6, h * 0.8);
+                crossSectionCtx.lineTo(centerX + config.width * 0.8, h);
+                crossSectionCtx.stroke();
+                
+                // Enhanced melting zone with animation
+                const meltPulse = (Math.sin(Date.now() / 1200) + 1) / 2;
+                const gradient = crossSectionCtx.createRadialGradient(
+                    centerX + config.width/2, crustDepth + 80, 0,
+                    centerX + config.width/2, crustDepth + 80, 120
+                );
+                gradient.addColorStop(0, `rgba(59, 130, 246, ${0.6 + meltPulse * 0.3})`);
+                gradient.addColorStop(0.3, `rgba(100, 150, 246, ${0.4 + meltPulse * 0.2})`);
+                gradient.addColorStop(0.7, `rgba(150, 200, 246, ${0.2 + meltPulse * 0.1})`);
+                gradient.addColorStop(1, 'rgba(200, 220, 246, 0)');
+                
+                crossSectionCtx.fillStyle = gradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(centerX + config.width/2, crustDepth + 80, 120 + meltPulse * 20, 0, Math.PI * 2);
+                crossSectionCtx.fill();
+                
+                // Add melt particles
+                crossSectionCtx.fillStyle = 'rgba(100, 150, 246, 0.6)';
+                for (let i = 0; i < 15; i++) {
+                    const angle = (Date.now() / 1000 + i * 0.3) % (Math.PI * 2);
+                    const radius = 30 + i * 5;
+                    const x = centerX + config.width/2 + Math.cos(angle) * radius;
+                    const y = crustDepth + 80 + Math.sin(angle) * radius * 0.5;
+                    const size = 2 + Math.sin(Date.now() / 500 + i) * 1;
+                    
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(x, y, size, 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                }
+                
+            } else if (state.currentBoundary === 'hotspot') {
+                // Enhanced hotspot plume with realistic shape
+                const plumePulse = (Math.sin(Date.now() / 1000) + 1) / 2;
+                const gradient = crossSectionCtx.createLinearGradient(centerX, h, centerX, 0);
+                gradient.addColorStop(0, `rgba(239, 68, 68, ${0.8 + plumePulse * 0.2})`);
+                gradient.addColorStop(0.2, `rgba(255, 100, 50, ${0.7 + plumePulse * 0.2})`);
+                gradient.addColorStop(0.5, `rgba(255, 150, 100, ${0.5 + plumePulse * 0.2})`);
+                gradient.addColorStop(0.8, `rgba(255, 200, 150, ${0.3 + plumePulse * 0.1})`);
+                gradient.addColorStop(1, `rgba(255, 220, 200, ${0.1 + plumePulse * 0.05})`);
+                
+                crossSectionCtx.fillStyle = gradient;
+                crossSectionCtx.beginPath();
+                
+                // Create more realistic plume shape
+                const segments = 20;
+                for (let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    const y = h * (1 - t);
+                    const baseWidth = 25 * (1 - t * 0.7);
+                    const wobble = Math.sin(Date.now() / 800 + t * 3) * 5 * (1 - t);
+                    
+                    const x = centerX + wobble;
+                    
+                    if (i === 0) {
+                        crossSectionCtx.moveTo(x - baseWidth, y);
+                    }
+                    crossSectionCtx.quadraticCurveTo(
+                        x - baseWidth * 0.8, y - h/segments * 0.5,
+                        x, y - h/segments
+                    );
+                }
+                
+                for (let i = segments; i >= 0; i--) {
+                    const t = i / segments;
+                    const y = h * (1 - t);
+                    const baseWidth = 25 * (1 - t * 0.7);
+                    const wobble = Math.sin(Date.now() / 800 + t * 3 + Math.PI) * 5 * (1 - t);
+                    
+                    const x = centerX + wobble;
+                    crossSectionCtx.quadraticCurveTo(
+                        x + baseWidth * 0.8, y - h/segments * 0.5,
+                        x, y - h/segments
+                    );
+                }
+                
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+                
+                // Add thermal spirals
+                crossSectionCtx.strokeStyle = 'rgba(255, 150, 100, 0.4)';
+                crossSectionCtx.lineWidth = 2;
+                for (let spiral = 0; spiral < 3; spiral++) {
+                    crossSectionCtx.beginPath();
+                    for (let i = 0; i < 50; i++) {
+                        const t = i / 50;
+                        const y = h * (1 - t * 0.8);
+                        const radius = 10 + t * 20;
+                        const angle = Date.now() / 500 + spiral * 2 * Math.PI/3 + t * 4 * Math.PI;
+                        const x = centerX + Math.cos(angle) * radius * (1 - t * 0.5);
+                        
+                        if (i === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.stroke();
+                }
+                
+            } else if (state.currentBoundary === 'continental') {
+                // Enhanced continental rift
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(centerX - config.width/2, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX - config.width/3, h * 0.15, centerX - config.width/2 - 30, h * 0.05);
+                crossSectionCtx.moveTo(centerX + config.width/2, crustDepth);
+                crossSectionCtx.quadraticCurveTo(centerX + config.width/3, h * 0.15, centerX + config.width/2 + 30, h * 0.05);
+                crossSectionCtx.stroke();
+                
+                // Enhanced stretched crust with tension lines
+                crossSectionCtx.strokeStyle = 'rgba(150, 150, 150, 0.6)';
+                crossSectionCtx.setLineDash([8, 4]);
+                crossSectionCtx.lineWidth = 2;
+                
+                // Main rift line
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(centerX - config.width/2, crustDepth);
+                crossSectionCtx.lineTo(centerX + config.width/2, crustDepth);
+                crossSectionCtx.stroke();
+                
+                // Tension cracks
+                crossSectionCtx.strokeStyle = 'rgba(100, 100, 100, 0.4)';
+                crossSectionCtx.lineWidth = 1;
+                for (let i = -3; i <= 3; i++) {
+                    const x = centerX + i * config.width / 8;
+                    const crackLength = 20 + Math.random() * 30;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.moveTo(x, crustDepth);
+                    crossSectionCtx.lineTo(x + (Math.random() - 0.5) * 10, crustDepth - crackLength);
+                    crossSectionCtx.stroke();
+                }
+                
+                crossSectionCtx.setLineDash([]);
+            }
+        }
+
+        // Draw enhanced convection cells
+        function drawConvectionCells() {
+            state.convectionCells.forEach((cell, index) => {
+                const intensity = (Math.sin(cell.phase) + 1) / 2;
+                const strength = cell.strength;
+                
+                // Draw convection cell with gradient
+                const gradient = crossSectionCtx.createRadialGradient(
+                    cell.x, cell.y, 0,
+                    cell.x, cell.y, cell.radius
+                );
+                gradient.addColorStop(0, `rgba(251, 191, 36, ${0.1 + intensity * 0.2 * strength})`);
+                gradient.addColorStop(0.5, `rgba(251, 191, 36, ${0.05 + intensity * 0.1 * strength})`);
+                gradient.addColorStop(1, 'rgba(251, 191, 36, 0)');
+                
+                crossSectionCtx.fillStyle = gradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(cell.x, cell.y, cell.radius * (1 + intensity * 0.1), 0, Math.PI * 2);
+                crossSectionCtx.fill();
+                
+                // Draw convection streamlines
+                crossSectionCtx.strokeStyle = `rgba(255, 200, 50, ${0.3 + intensity * 0.4 * strength})`;
+                crossSectionCtx.lineWidth = 1.5;
+                
+                // Create multiple spiral streamlines
+                for (let spiral = 0; spiral < 2; spiral++) {
+                    crossSectionCtx.beginPath();
+                    for (let t = 0; t <= 1; t += 0.02) {
+                        const angle = cell.phase + t * Math.PI * 3 + spiral * Math.PI;
+                        const radius = cell.radius * (0.2 + t * 0.7);
+                        const x = cell.x + Math.cos(angle) * radius;
+                        const y = cell.y + Math.sin(angle) * radius * (0.5 + Math.sin(angle * 2) * 0.5);
+                        
+                        if (t === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.stroke();
+                }
+                
+                // Draw rotation indicators
+                const arrowCount = 6;
+                for (let i = 0; i < arrowCount; i++) {
+                    const angle = (i / arrowCount) * Math.PI * 2 + cell.phase;
+                    const r = cell.radius * 0.75;
+                    const startX = cell.x + Math.cos(angle) * r;
+                    const startY = cell.y + Math.sin(angle) * r;
+                    const nextAngle = angle + 0.3 * strength;
+                    const endX = cell.x + Math.cos(nextAngle) * r;
+                    const endY = cell.y + Math.sin(nextAngle) * r;
+                    
+                    drawArrow(startX, startY, endX, endY, `rgba(255, 220, 100, ${0.5 + intensity * 0.3 * strength})`);
+                }
+                
+                // Draw heat upwelling zones
+                const upwellingCount = 3;
+                for (let i = 0; i < upwellingCount; i++) {
+                    const angle = cell.phase + (i / upwellingCount) * Math.PI * 2;
+                    const x = cell.x + Math.cos(angle) * cell.radius * 0.3;
+                    const y = cell.y + Math.sin(angle) * cell.radius * 0.3;
+                    
+                    const particleGradient = crossSectionCtx.createRadialGradient(x, y, 0, x, y, 8);
+                    particleGradient.addColorStop(0, `rgba(255, 150, 50, ${0.8 * intensity})`);
+                    particleGradient.addColorStop(1, 'rgba(255, 150, 50, 0)');
+                    
+                    crossSectionCtx.fillStyle = particleGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(x, y, 8 * intensity, 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                }
+            });
+        }
+
+        // Ultra-enhanced magma chambers with cinematic effects
+        function drawMagmaChambers() {
+            state.magmaChambers.forEach((chamber, index) => {
+                const pulseIntensity = (Math.sin(Date.now() / 600 + chamber.phase) + 1) / 2;
+                const strength = chamber.strength || 0.7;
+                const config = BOUNDARY_CONFIGS[state.currentBoundary];
+                
+                // Volumetric glow with multiple octaves
+                for (let octave = 4; octave >= 1; octave--) {
+                    const octaveRadius = chamber.radius * (1 + octave * 0.4 + pulseIntensity * 0.3);
+                    const octaveAlpha = (0.05 + pulseIntensity * 0.08) / octave;
+                    const frequency = octave * 2;
+                    
+                    const volumetricGradient = crossSectionCtx.createRadialGradient(
+                        chamber.x, chamber.y, 0,
+                        chamber.x, chamber.y, octaveRadius
+                    );
+                    
+                    // Multi-color volumetric lighting
+                    const tempRatio = chamber.temperature / 1500;
+                    const baseHue = 10 - tempRatio * 20;
+                    
+                    volumetricGradient.addColorStop(0, `hsla(${baseHue}, 95%, 70%, ${octaveAlpha * strength})`);
+                    volumetricGradient.addColorStop(0.2, `hsla(${baseHue + 15}, 92%, 68%, ${octaveAlpha * 0.9 * strength})`);
+                    volumetricGradient.addColorStop(0.4, `hsla(${baseHue + 30}, 88%, 60%, ${octaveAlpha * 0.7 * strength})`);
+                    volumetricGradient.addColorStop(0.6, `hsla(${baseHue + 45}, 82%, 52%, ${octaveAlpha * 0.5 * strength})`);
+                    volumetricGradient.addColorStop(0.8, `hsla(${baseHue + 60}, 75%, 42%, ${octaveAlpha * 0.3 * strength})`);
+                    volumetricGradient.addColorStop(1, `hsla(${baseHue + 75}, 65%, 32%, 0)`);
+                    
+                    // Add noise pattern for realism
+                    const noisePattern = (x, y) => {
+                        const noise1 = Math.sin(x * 0.01 + Date.now() * 0.001) * Math.cos(y * 0.01);
+                        const noise2 = Math.cos(x * 0.02 - Date.now() * 0.0005) * Math.sin(y * 0.02);
+                        return (noise1 + noise2) * 0.5 + 0.5;
+                    };
+                    
+                    crossSectionCtx.fillStyle = volumetricGradient;
+                    crossSectionCtx.save();
+                    crossSectionCtx.globalCompositeOperation = 'screen';
+                    crossSectionCtx.globalAlpha = 0.8;
+                    
+                    // Render with noise distortion
+                    crossSectionCtx.beginPath();
+                    const segments = 64;
+                    for (let i = 0; i <= segments; i++) {
+                        const angle = (i / segments) * Math.PI * 2;
+                        const noise = noisePattern(angle, pulseIntensity);
+                        const radiusModifier = (noise - 0.5) * octaveRadius * 0.1;
+                        const x = chamber.x + Math.cos(angle) * (octaveRadius + radiusModifier);
+                        const y = chamber.y + Math.sin(angle) * (octaveRadius + radiusModifier);
+                        
+                        if (i === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.closePath();
+                    crossSectionCtx.fill();
+                    crossSectionCtx.restore();
+                }
+                
+                // Core magma with advanced material rendering
+                const coreGradient = crossSectionCtx.createRadialGradient(
+                    chamber.x - chamber.radius * 0.3, chamber.y - chamber.radius * 0.3, 0,
+                    chamber.x, chamber.y, chamber.radius * 0.9
+                );
+                
+                // Temperature-based coloring with material properties
+                const tempRatio = chamber.temperature / 1500;
+                const material = state.materialSystem.getMaterial(
+                    tempRatio > 0.8 ? 'lava-hot' : 
+                    tempRatio > 0.5 ? 'lava-cooling' : 'basalt'
+                );
+                
+                coreGradient.addColorStop(0, `hsl(${10 - tempRatio * 20}, 98%, 75%)`);
+                coreGradient.addColorStop(0.2, `hsl(${15 - tempRatio * 15}, 95%, 65%)`);
+                coreGradient.addColorStop(0.5, `hsl(${20 - tempRatio * 10}, 90%, 55%)`);
+                coreGradient.addColorStop(0.8, `hsl(${25 - tempRatio * 5}, 85%, 45%)`);
+                coreGradient.addColorStop(1, `hsl(${30}, 80%, 35%)`);
+                
+                crossSectionCtx.fillStyle = coreGradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(chamber.x, chamber.y, 
+                                    chamber.radius * (0.9 + pulseIntensity * 0.1), 0, Math.PI * 2);
+                crossSectionCtx.fill();
+                
+                // Advanced convection with multiple current systems
+                crossSectionCtx.strokeStyle = `hsla(${30 - tempRatio * 15}, 80%, 60%, ${0.2 + pulseIntensity * 0.3})`;
+                crossSectionCtx.lineWidth = 2.5;
+                crossSectionCtx.lineCap = 'round';
+                
+                // Primary convection cells
+                for (let cell = 0; cell < 3; cell++) {
+                    crossSectionCtx.beginPath();
+                    const cellPhase = chamber.phase + cell * Math.PI * 2 / 3;
+                    
+                    for (let t = 0; t <= 1; t += 0.02) {
+                        const angle = cellPhase + t * Math.PI * 2;
+                        const r = chamber.radius * (0.15 + t * 0.75);
+                        
+                        // Complex flow pattern
+                        const flowComplexity = Math.sin(angle * 3 + cellPhase) * 0.1;
+                        const verticalModulation = Math.sin(angle * 2 + cellPhase * 2) * 0.2;
+                        
+                        const x = chamber.x + Math.cos(angle) * r;
+                        const y = chamber.y + Math.sin(angle) * r * (0.6 + verticalModulation + flowComplexity);
+                        
+                        if (t === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.stroke();
+                }
+                
+                // Secondary turbulent flow
+                crossSectionCtx.strokeStyle = `hsla(${35 - tempRatio * 10}, 75%, 55%, ${0.15 + pulseIntensity * 0.2})`;
+                crossSectionCtx.lineWidth = 1.5;
+                
+                for (let vortex = 0; vortex < 6; vortex++) {
+                    const vortexPhase = chamber.phase * 2 + vortex * Math.PI / 3;
+                    const vortexX = chamber.x + Math.cos(vortexPhase) * chamber.radius * 0.3;
+                    const vortexY = chamber.y + Math.sin(vortexPhase) * chamber.radius * 0.3;
+                    
+                    crossSectionCtx.beginPath();
+                    for (let t = 0; t <= 1; t += 0.03) {
+                        const spiralAngle = vortexPhase + t * Math.PI * 3;
+                        const spiralRadius = t * chamber.radius * 0.25 * (1 - t * 0.5);
+                        
+                        const x = vortexX + Math.cos(spiralAngle) * spiralRadius;
+                        const y = vortexY + Math.sin(spiralAngle) * spiralRadius;
+                        
+                        if (t === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.stroke();
+                }
+                
+                // Ultra-advanced bubble system with physics
+                const bubbleCount = 12 + Math.floor(strength * 8);
+                for (let i = 0; i < bubbleCount; i++) {
+                    const bubblePhase = Date.now() / 350 + i * 0.6 + chamber.phase * 0.5;
+                    const bubbleTemp = chamber.temperature + Math.sin(bubblePhase * 2) * 50;
+                    const bubbleTempRatio = bubbleTemp / 1500;
+                    
+                    // Realistic bubble motion
+                    const ascentVelocity = 2 + bubbleTempRatio * 3;
+                    const wobbleAmplitude = 0.3 + (1 - bubbleTempRatio) * 0.4;
+                    const bubbleR = chamber.radius * (0.2 + Math.random() * 0.6);
+                    
+                    const bubbleX = chamber.x + Math.cos(bubblePhase) * bubbleR + 
+                                      Math.sin(bubblePhase * 3) * bubbleR * wobbleAmplitude;
+                    const bubbleY = chamber.y + Math.sin(bubblePhase * 1.2) * bubbleR * 0.7 - 
+                                      Math.random() * bubbleR * 0.3;
+                    
+                    // Dynamic bubble size based on pressure and temperature
+                    const bubbleSize = 1.5 + bubbleTempRatio * 2 + 
+                                       Math.sin(bubblePhase * 4) * 1.5 + 
+                                       pulseIntensity * 2;
+                    
+                    // Multi-layered bubble rendering
+                    const bubbleGradient = crossSectionCtx.createRadialGradient(
+                        bubbleX - bubbleSize * 0.4, bubbleY - bubbleSize * 0.4, 0,
+                        bubbleX, bubbleY, bubbleSize
+                    );
+                    
+                    // Temperature-dependent bubble colors
+                    if (bubbleTempRatio > 0.8) {
+                        // Very hot - white to yellow
+                        bubbleGradient.addColorStop(0, `rgba(255, 255, 255, ${0.6 + pulseIntensity * 0.3})`);
+                        bubbleGradient.addColorStop(0.3, `rgba(255, 250, 200, ${0.4 + pulseIntensity * 0.2})`);
+                        bubbleGradient.addColorStop(0.7, `rgba(255, 200, 100, ${0.2 + pulseIntensity * 0.1})`);
+                        bubbleGradient.addColorStop(1, `rgba(255, 150, 50, 0)`);
+                    } else if (bubbleTempRatio > 0.5) {
+                        // Medium hot - yellow to orange
+                        bubbleGradient.addColorStop(0, `rgba(255, 250, 200, ${0.5 + pulseIntensity * 0.2})`);
+                        bubbleGradient.addColorStop(0.4, `rgba(255, 200, 100, ${0.3 + pulseIntensity * 0.15})`);
+                        bubbleGradient.addColorStop(0.8, `rgba(255, 150, 50, ${0.15 + pulseIntensity * 0.1})`);
+                        bubbleGradient.addColorStop(1, `rgba(200, 100, 0, 0)`);
+                    } else {
+                        // Cooler - orange to red
+                        bubbleGradient.addColorStop(0, `rgba(255, 200, 100, ${0.4 + pulseIntensity * 0.2})`);
+                        bubbleGradient.addColorStop(0.5, `rgba(255, 150, 50, ${0.25 + pulseIntensity * 0.15})`);
+                        bubbleGradient.addColorStop(1, `rgba(150, 50, 0, 0.1)`);
+                    }
+                    
+                    crossSectionCtx.fillStyle = bubbleGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(bubbleX, bubbleY, bubbleSize, 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                    
+                    // Bubble reflection for realism
+                    const reflectionGradient = crossSectionCtx.createRadialGradient(
+                        bubbleX - bubbleSize * 0.3, bubbleY - bubbleSize * 0.3, 0,
+                        bubbleX - bubbleSize * 0.3, bubbleY - bubbleSize * 0.3, bubbleSize * 0.4
+                    );
+                    reflectionGradient.addColorStop(0, `rgba(255, 255, 255, ${0.8 + pulseIntensity * 0.2})`);
+                    reflectionGradient.addColorStop(1, `rgba(255, 255, 255, 0)`);
+                    
+                    crossSectionCtx.fillStyle = reflectionGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(bubbleX - bubbleSize * 0.3, bubbleY - bubbleSize * 0.3, 
+                                       bubbleSize * 0.4, 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                }
+                
+                // Advanced boundary effects
+                const boundaryGradient = crossSectionCtx.createRadialGradient(
+                    chamber.x, chamber.y, chamber.radius * 0.95,
+                    chamber.x, chamber.y, chamber.radius * 1.2
+                );
+                boundaryGradient.addColorStop(0, `hsla(${25 + tempRatio * 20}, 70%, 40%, ${0.3 + pulseIntensity * 0.2})`);
+                boundaryGradient.addColorStop(0.5, `hsla(${30 + tempRatio * 15}, 65%, 35%, ${0.2 + pulseIntensity * 0.1})`);
+                boundaryGradient.addColorStop(1, `hsla(${35 + tempRatio * 10}, 60%, 30%, 0)`);
+                
+                crossSectionCtx.strokeStyle = boundaryGradient;
+                crossSectionCtx.lineWidth = 3;
+                crossSectionCtx.setLineDash([8, 4, 2, 4]);
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(chamber.x, chamber.y, chamber.radius, 0, Math.PI * 2);
+                crossSectionCtx.stroke();
+                crossSectionCtx.setLineDash([]);
+            });
+        }
+                
+                // Main chamber with texture
+                const chamberGradient = crossSectionCtx.createRadialGradient(
+                    chamber.x - chamber.radius * 0.2, chamber.y - chamber.radius * 0.2, 0,
+                    chamber.x, chamber.y, chamber.radius
+                );
+                
+                const baseHue = 10 - chamber.temperature/200;
+                chamberGradient.addColorStop(0, `hsl(${baseHue}, 95%, 70%)`);
+                chamberGradient.addColorStop(0.3, `hsl(${baseHue + 5}, 90%, 60%)`);
+                chamberGradient.addColorStop(0.7, `hsl(${baseHue + 10}, 80%, 50%)`);
+                chamberGradient.addColorStop(1, `hsl(${baseHue + 15}, 70%, 40%)`);
+                
+                crossSectionCtx.fillStyle = chamberGradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(chamber.x, chamber.y, chamber.radius * (0.9 + pulseIntensity * 0.1), 0, Math.PI * 2);
+                crossSectionCtx.fill();
+                
+                // Internal convection currents
+                crossSectionCtx.strokeStyle = `hsla(${baseHue + 20}, 85%, 65%, ${0.3 + pulseIntensity * 0.2})`;
+                crossSectionCtx.lineWidth = 2;
+                
+                for (let current = 0; current < 2; current++) {
+                    crossSectionCtx.beginPath();
+                    for (let t = 0; t <= 1; t += 0.05) {
+                        const angle = chamber.phase + t * Math.PI * 2 + current * Math.PI;
+                        const r = chamber.radius * (0.2 + t * 0.6);
+                        const x = chamber.x + Math.cos(angle) * r;
+                        const y = chamber.y + Math.sin(angle) * r * (0.7 + Math.sin(angle * 3) * 0.3);
+                        
+                        if (t === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    crossSectionCtx.stroke();
+                }
+                
+                // Enhanced bubble system
+                const bubbleCount = 8 + Math.floor(strength * 7);
+                for (let i = 0; i < bubbleCount; i++) {
+                    const bubblePhase = Date.now() / 400 + i * 0.7;
+                    const r = chamber.radius * (0.3 + Math.random() * 0.5);
+                    const bubbleX = chamber.x + Math.cos(bubblePhase) * r;
+                    const bubbleY = chamber.y + Math.sin(bubblePhase * 1.3) * r * 0.7;
+                    const bubbleSize = 2 + Math.sin(bubblePhase * 2) * 3 + pulseIntensity * 2;
+                    
+                    // Bubble with highlight
+                    const bubbleGradient = crossSectionCtx.createRadialGradient(
+                        bubbleX - bubbleSize * 0.3, bubbleY - bubbleSize * 0.3, 0,
+                        bubbleX, bubbleY, bubbleSize
+                    );
+                    bubbleGradient.addColorStop(0, `rgba(255, 255, 255, ${0.4 + pulseIntensity * 0.2})`);
+                    bubbleGradient.addColorStop(0.5, `rgba(255, 200, 150, ${0.2 + pulseIntensity * 0.1})`);
+                    bubbleGradient.addColorStop(1, `rgba(255, 150, 100, 0.1)`);
+                    
+                    crossSectionCtx.fillStyle = bubbleGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(bubbleX, bubbleY, bubbleSize, 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                }
+                
+                // Chamber boundary with crystallization effect
+                crossSectionCtx.strokeStyle = `hsla(${baseHue + 25}, 75%, 35%, ${0.4 + pulseIntensity * 0.2})`;
+                crossSectionCtx.lineWidth = 2;
+                crossSectionCtx.setLineDash([5, 3]);
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(chamber.x, chamber.y, chamber.radius, 0, Math.PI * 2);
+                crossSectionCtx.stroke();
+                crossSectionCtx.setLineDash([]);
+            });
+        }
+
+        // Draw dikes
+        function drawDikes() {
+            state.dikes.forEach(dike => {
+                const gradient = crossSectionCtx.createLinearGradient(
+                    dike.x1, dike.y1, dike.x2, dike.y2
+                );
+                gradient.addColorStop(0, `rgba(217, 119, 6, ${0.8})`);
+                gradient.addColorStop(0.5, `rgba(217, 119, 6, ${0.6})`);
+                gradient.addColorStop(1, `rgba(217, 119, 6, ${0.4})`);
+                
+                crossSectionCtx.strokeStyle = gradient;
+                crossSectionCtx.lineWidth = dike.width;
+                crossSectionCtx.lineCap = 'round';
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(dike.x1, dike.y1);
+                crossSectionCtx.lineTo(dike.x2, dike.y2);
+                crossSectionCtx.stroke();
+            });
+        }
+
+        // Ultra-cinematographic volcanoes rendering
+        function drawVolcanoes() {
+            state.volcanoes.forEach((volcano, volcanoIndex) => {
+                const isActive = volcano.active || (volcano.intensity && volcano.intensity > 0);
+                const intensity = volcano.intensity || (isActive ? (Math.sin(Date.now() / 250) + 1) / 2 : 0);
+                
+                // Multi-layered volcano cone with advanced materials
+                const material = state.materialSystem.getMaterial(volcano.material || 'andesite');
+                
+                // Base cone with geological layers
+                for (let layer = 0; layer < 5; layer++) {
+                    const layerHeight = volcano.height * (1 - layer * 0.15);
+                    const layerWidth = volcano.width * (0.6 + layer * 0.1);
+                    const layerY = volcano.y - layer * volcano.height * 0.2;
+                    
+                    // Material-based coloring per layer
+                    const tempModulation = layer * 0.1;
+                    const layerGradient = crossSectionCtx.createLinearGradient(
+                        volcano.x - layerWidth/2, layerY,
+                        volcano.x, volcano.y - volcano.height
+                    );
+                    
+                    layerGradient.addColorStop(0, `rgb(${material.baseColor.r - layer * 10}, ${material.baseColor.g - layer * 8}, ${material.baseColor.b - layer * 6})`);
+                    layerGradient.addColorStop(0.5, `rgb(${material.baseColor.r - layer * 5}, ${material.baseColor.g - layer * 4}, ${material.baseColor.b - layer * 3})`);
+                    layerGradient.addColorStop(1, `rgb(${material.baseColor.r}, ${material.baseColor.g}, ${material.baseColor.b})`);
+                    
+                    crossSectionCtx.fillStyle = layerGradient;
+                    crossSectionCtx.beginPath();
+                    
+                    // Complex cone geometry with erosion
+                    const segments = 40;
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = volcano.x - layerWidth/2 + layerWidth * t;
+                        const baseY = volcano.y;
+                        const peakY = volcano.y - volcano.height;
+                        
+                        // Multiple erosion patterns
+                        const primaryErosion = Math.sin(t * Math.PI * 4) * 3;
+                        const secondaryErosion = Math.sin(t * Math.PI * 7 + 1) * 1.5;
+                        const tertiaryErosion = Math.sin(t * Math.PI * 11 + 2) * 0.8;
+                        
+                        const totalErosion = primaryErosion + secondaryErosion + tertiaryErosion;
+                        const y = baseY + (peakY - baseY) * Math.sin(t * Math.PI/2) + totalErosion;
+                        
+                        if (i === 0) {
+                            crossSectionCtx.moveTo(x, y);
+                        } else {
+                            crossSectionCtx.lineTo(x, y);
+                        }
+                    }
+                    
+                    crossSectionCtx.closePath();
+                    crossSectionCtx.fill();
+                    
+                    // Add rock texture
+                    if (layer < 3) {
+                        crossSectionCtx.globalAlpha = 0.3;
+                        crossSectionCtx.fillStyle = `rgba(${material.baseColor.r - 20}, ${material.baseColor.g - 20}, ${material.baseColor.b - 20}, 0.5)`;
+                        
+                        for (let rock = 0; rock < 20; rock++) {
+                            const rockX = volcano.x + (Math.random() - 0.5) * layerWidth;
+                            const rockY = layerY + Math.random() * volcano.height * 0.1;
+                            const rockSize = 1 + Math.random() * 3;
+                            
+                            crossSectionCtx.beginPath();
+                            crossSectionCtx.arc(rockX, rockY, rockSize, 0, Math.PI * 2);
+                            crossSectionCtx.fill();
+                        }
+                        crossSectionCtx.globalAlpha = 1;
+                    }
+                }
+                
+                // Advanced crater system
+                drawAdvancedCrater(volcano, intensity);
+                
+                // Cinematographic eruption if active
+                if (isActive) {
+                    drawCinematographicEruption(volcano, intensity);
+                }
+                
+                // Secondary vents with individual eruptions
+                if (volcano.vents) {
+                    volcano.vents.forEach((vent, ventIndex) => {
+                        if (vent.active) {
+                            const ventIntensity = vent.intensity || intensity * 0.7;
+                            drawVentEruption(vent, ventIntensity);
+                        }
+                    });
+                }
+                
+                // Advanced snow cap system
+                if (volcano.height > 70) {
+                    drawAdvancedSnowCap(volcano, intensity);
+                }
+                
+                // Lava flows down slopes
+                if (volcano.lavaFlows) {
+                    drawAdvancedLavaFlows(volcano, intensity);
+                }
+                
+                // Rockfall and debris
+                if (isActive && Math.random() < 0.1) {
+                    drawRockfall(volcano, intensity);
+                }
+            });
+        }
+
+        function drawAdvancedCrater(volcano, intensity) {
+            const craterGradient = crossSectionCtx.createRadialGradient(
+                volcano.x, volcano.y - volcano.height, 0,
+                volcano.x, volcano.y - volcano.height, volcano.width/8
+            );
+            
+            // Multi-colored crater with temperature zones
+            craterGradient.addColorStop(0, `rgba(${50 + intensity * 100}, ${20 + intensity * 50}, ${10 + intensity * 20}, 0.9)`);
+            craterGradient.addColorStop(0.3, `rgba(${70 + intensity * 80}, ${30 + intensity * 40}, ${15 + intensity * 15}, 0.7)`);
+            craterGradient.addColorStop(0.6, `rgba(${100 + intensity * 60}, ${50 + intensity * 30}, ${20 + intensity * 10}, 0.5)`);
+            craterGradient.addColorStop(1, `rgba(${150 + intensity * 40}, ${80 + intensity * 20}, ${30}, 0.3)`);
+            
+            crossSectionCtx.fillStyle = craterGradient;
+            crossSectionCtx.beginPath();
+            crossSectionCtx.arc(volcano.x, volcano.y - volcano.height, volcano.width/8, 0, Math.PI * 2);
+            crossSectionCtx.fill();
+            
+            // Inner glow with pulsation
+            if (intensity > 0.3) {
+                const glowGradient = crossSectionCtx.createRadialGradient(
+                    volcano.x, volcano.y - volcano.height, 0,
+                    volcano.x, volcano.y - volcano.height, volcano.width/6
+                );
+                
+                const pulsePhase = Date.now() / 200;
+                const pulseValue = (Math.sin(pulsePhase) + 1) / 2;
+                
+                glowGradient.addColorStop(0, `rgba(255, ${200 + pulseValue * 55}, ${100 + pulseValue * 100}, ${0.8 + intensity * 0.2})`);
+                glowGradient.addColorStop(0.4, `rgba(255, ${150 + pulseValue * 50}, ${50 + pulseValue * 50}, ${0.5 + intensity * 0.3})`);
+                glowGradient.addColorStop(0.8, `rgba(255, ${100 + pulseValue * 30}, ${20}, ${0.2 + intensity * 0.2})`);
+                glowGradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                
+                crossSectionCtx.fillStyle = glowGradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(volcano.x, volcano.y - volcano.height, 
+                                 volcano.width/6 * (1 + pulseValue * 0.2), 0, Math.PI * 2);
+                crossSectionCtx.fill();
+            }
+        }
+
+        function drawCinematographicEruption(volcano, intensity) {
+            // Multi-layered eruption column
+            const columnBase = volcano.y - volcano.height;
+            const columnHeight = 120 + intensity * 60;
+            const columnWidth = volcano.width/4 * (1 + intensity * 0.8);
+            
+            // Main eruption plume
+            for (let plumeLayer = 0; plumeLayer < 3; plumeLayer++) {
+                const layerOffset = plumeLayer * 30;
+                const layerAlpha = (0.8 - plumeLayer * 0.2) * intensity;
+                const layerWidth = columnWidth * (1 + plumeLayer * 0.3);
+                const layerHeight = columnHeight - layerOffset;
+                
+                const eruptionGradient = crossSectionCtx.createLinearGradient(
+                    volcano.x, columnBase - layerOffset,
+                    volcano.x, columnBase - layerHeight
+                );
+                
+                // Temperature-based coloring
+                const temp = 1500 - plumeLayer * 200;
+                const r = Math.min(255, temp / 6);
+                const g = Math.min(255, temp / 12);
+                const b = Math.min(255, temp / 20);
+                
+                eruptionGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${layerAlpha})`);
+                eruptionGradient.addColorStop(0.3, `rgba(${r * 0.8}, ${g * 0.8}, ${b * 0.8}, ${layerAlpha * 0.8})`);
+                eruptionGradient.addColorStop(0.7, `rgba(${r * 0.6}, ${g * 0.6}, ${b * 0.6}, ${layerAlpha * 0.6})`);
+                eruptionGradient.addColorStop(1, `rgba(${r * 0.4}, ${g * 0.4}, ${b * 0.4}, ${layerAlpha * 0.4})`);
+                
+                crossSectionCtx.fillStyle = eruptionGradient;
+                crossSectionCtx.beginPath();
+                
+                // Complex plume shape with turbulence
+                const segments = 60;
+                for (let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    const y = columnBase - layerOffset - t * layerHeight;
+                    
+                    // Multiple turbulence frequencies
+                    const primaryTurbulence = Math.sin(Date.now() / 150 + t * 8) * intensity * 15;
+                    const secondaryTurbulence = Math.cos(Date.now() / 100 + t * 12) * intensity * 8;
+                    const tertiaryTurbulence = Math.sin(Date.now() / 80 + t * 16) * intensity * 5;
+                    
+                    const totalTurbulence = primaryTurbulence + secondaryTurbulence + tertiaryTurbulence;
+                    const spread = t * t * layerWidth * (1 + plumeLayer * 0.5);
+                    const wobble = totalTurbulence;
+                    
+                    crossSectionCtx.lineTo(volcano.x + wobble, y);
+                }
+                
+                for (let i = segments; i >= 0; i--) {
+                    const t = i / segments;
+                    const y = columnBase - layerOffset - t * layerHeight;
+                    
+                    const primaryTurbulence = Math.cos(Date.now() / 150 + t * 8 + Math.PI) * intensity * 15;
+                    const secondaryTurbulence = Math.sin(Date.now() / 100 + t * 12 + Math.PI) * intensity * 8;
+                    const tertiaryTurbulence = Math.cos(Date.now() / 80 + t * 16 + Math.PI) * intensity * 5;
+                    
+                    const totalTurbulence = primaryTurbulence + secondaryTurbulence + tertiaryTurbulence;
+                    const spread = t * t * layerWidth * (1 + plumeLayer * 0.5);
+                    const wobble = totalTurbulence;
+                    
+                    crossSectionCtx.lineTo(volcano.x + spread + wobble, y);
+                }
+                
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+            }
+            
+            // Lightning effects for intense eruptions
+            if (intensity > 0.7 && Math.random() < 0.02) {
+                drawVolcanicLightning(volcano, intensity);
+            }
+        }
+
+        function drawVentEruption(vent, intensity) {
+            const ventGradient = crossSectionCtx.createLinearGradient(
+                vent.x, vent.y,
+                vent.x, vent.y - 40
+            );
+            
+            ventGradient.addColorStop(0, `rgba(255, ${150 + intensity * 50}, ${50 + intensity * 50}, ${0.7 * intensity})`);
+            ventGradient.addColorStop(0.5, `rgba(255, ${100 + intensity * 30}, ${30 + intensity * 30}, ${0.4 * intensity})`);
+            ventGradient.addColorStop(1, `rgba(255, ${50 + intensity * 20}, ${10 + intensity * 10}, ${0.1 * intensity})`);
+            
+            crossSectionCtx.fillStyle = ventGradient;
+            crossSectionCtx.beginPath();
+            
+            const segments = 20;
+            for (let i = 0; i <= segments; i++) {
+                const t = i / segments;
+                const x = vent.x + (Math.random() - 0.5) * 10;
+                const y = vent.y - t * 40;
+                
+                if (i === 0) {
+                    crossSectionCtx.moveTo(x, y);
+                } else {
+                    crossSectionCtx.lineTo(x, y);
+                }
+            }
+            
+            crossSectionCtx.closePath();
+            crossSectionCtx.fill();
+        }
+
+        function drawAdvancedSnowCap(volcano, intensity) {
+            const snowLayers = 4;
+            
+            for (let layer = 0; layer < snowLayers; layer++) {
+                const layerHeight = volcano.height + 20 + layer * 15;
+                const layerWidth = volcano.width * (0.4 + layer * 0.1);
+                const layerY = volcano.y - volcano.height - layer * 5;
+                
+                const snowGradient = crossSectionCtx.createLinearGradient(
+                    0, layerY,
+                    0, layerY + layerHeight
+                );
+                
+                // Temperature-based snow coloring
+                const temp = 273 - layer * 10;
+                const r = Math.min(255, temp * 1.2);
+                const g = Math.min(255, temp * 1.4);
+                const b = Math.min(255, temp * 1.8);
+                
+                snowGradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, ${0.8 - layer * 0.1})`);
+                snowGradient.addColorStop(0.5, `rgba(${r}, ${g}, ${b}, ${0.6 - layer * 0.08})`);
+                snowGradient.addColorStop(1, `rgba(${r}, ${g}, ${b}, ${0.4 - layer * 0.06})`);
+                
+                crossSectionCtx.fillStyle = snowGradient;
+                crossSectionCtx.beginPath();
+                
+                // Snow accumulation with wind effects
+                const segments = 30;
+                for (let i = 0; i <= segments; i++) {
+                    const t = i / segments;
+                    const x = volcano.x - layerWidth/2 + layerWidth * t;
+                    const windEffect = Math.sin(Date.now() / 2000 + t * 3) * 2 * (snowLayers - layer);
+                    const irregularity = Math.sin(t * Math.PI * 5) * 3;
+                    
+                    const y = layerY - windEffect + irregularity;
+                    
+                    if (i === 0) {
+                        crossSectionCtx.moveTo(x, y);
+                    } else {
+                        crossSectionCtx.lineTo(x, y);
+                    }
+                }
+                
+                crossSectionCtx.lineTo(volcano.x + volcano.width/6, volcano.y - volcano.height);
+                crossSectionCtx.lineTo(volcano.x - volcano.width/6, volcano.y - volcano.height);
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+                
+                // Ice crystalline effects
+                if (layer === 0) {
+                    crossSectionCtx.fillStyle = `rgba(255, 255, 255, ${0.3})`;
+                    for (let crystal = 0; crystal < 15; crystal++) {
+                        const crystalX = volcano.x + (Math.random() - 0.5) * layerWidth;
+                        const crystalY = layerY + Math.random() * 10;
+                        const crystalSize = 2 + Math.random() * 3;
+                        
+                        crossSectionCtx.beginPath();
+                        for (let i = 0; i < 6; i++) {
+                            const angle = (i / 6) * Math.PI * 2;
+                            const r = crystalSize * (0.5 + Math.random() * 0.5);
+                            const x = crystalX + Math.cos(angle) * r;
+                            const y = crystalY + Math.sin(angle) * r;
+                            
+                            if (i === 0) {
+                                crossSectionCtx.moveTo(x, y);
+                            } else {
+                                crossSectionCtx.lineTo(x, y);
+                            }
+                        }
+                        crossSectionCtx.closePath();
+                        crossSectionCtx.fill();
+                    }
+                }
+            }
+        }
+
+        function drawAdvancedLavaFlows(volcano, intensity) {
+            if (!volcano.lavaFlows) return;
+            
+            volcano.lavaFlows.forEach((flow, flowIndex) => {
+                // Multiple flow channels
+                for (let channel = 0; channel < flow.channels; channel++) {
+                    const flowGradient = crossSectionCtx.createLinearGradient(
+                        flow.startX[channel], flow.startY[channel],
+                        flow.endX[channel], flow.endY[channel]
+                    );
+                    
+                    // Temperature gradient along flow
+                    flowGradient.addColorStop(0, `rgba(255, ${150 + intensity * 50}, ${50 + intensity * 30}, 0.9)`);
+                    flowGradient.addColorStop(0.5, `rgba(200, ${100 + intensity * 30}, ${30 + intensity * 20}, 0.8)`);
+                    flowGradient.addColorStop(1, `rgba(150, ${50 + intensity * 20}, ${20 + intensity * 10}, 0.6)`);
+                    
+                    crossSectionCtx.fillStyle = flowGradient;
+                    crossSectionCtx.beginPath();
+                    
+                    // Complex flow path
+                    const segments = 30;
+                    for (let i = 0; i <= segments; i++) {
+                        const t = i / segments;
+                        const x = flow.startX[channel] + (flow.endX[channel] - flow.startX[channel]) * t;
+                        const baseY = flow.startY[channel] + (flow.endY[channel] - flow.startY[channel]) * t;
+                        
+                        // Natural flow meandering
+                        const meanderAmplitude = Math.sin(t * Math.PI * 2 + flow.phase[channel]) * 10;
+                        const meanderFrequency = Math.sin(t * Math.PI * 4) * 5;
+                        
+                        const y = baseY + meanderAmplitude + meanderFrequency;
+                        
+                        // Flow width variation
+                        const widthVariation = Math.sin(t * Math.PI * 6) * flow.widthVariation || 3;
+                        const flowWidth = flow.width[channel] + widthVariation;
+                        
+                        if (i === 0) {
+                            crossSectionCtx.moveTo(x - flowWidth/2, y);
+                        } else {
+                            crossSectionCtx.lineTo(x - flowWidth/2, y);
+                        }
+                    }
+                    
+                    for (let i = segments; i >= 0; i--) {
+                        const t = i / segments;
+                        const x = flow.startX[channel] + (flow.endX[channel] - flow.startX[channel]) * t;
+                        const baseY = flow.startY[channel] + (flow.endY[channel] - flow.startY[channel]) * t;
+                        
+                        const meanderAmplitude = Math.sin(t * Math.PI * 2 + flow.phase[channel]) * 10;
+                        const meanderFrequency = Math.sin(t * Math.PI * 4) * 5;
+                        
+                        const y = baseY + meanderAmplitude + meanderFrequency;
+                        const widthVariation = Math.sin(t * Math.PI * 6) * flow.widthVariation || 3;
+                        const flowWidth = flow.width[channel] + widthVariation;
+                        
+                        crossSectionCtx.lineTo(x + flowWidth/2, y);
+                    }
+                    
+                    crossSectionCtx.closePath();
+                    crossSectionCtx.fill();
+                    
+                    // Lava surface texture
+                    crossSectionCtx.fillStyle = `rgba(255, ${200 + intensity * 30}, ${100}, 0.4)`;
+                    for (let texture = 0; texture < 20; texture++) {
+                        const textureX = flow.startX[channel] + (flow.endX[channel] - flow.startX[channel]) * Math.random();
+                        const textureY = flow.startY[channel] + (flow.endY[channel] - flow.startY[channel]) * Math.random();
+                        
+                        crossSectionCtx.beginPath();
+                        crossSectionCtx.arc(textureX, textureY, 2, 0, Math.PI * 2);
+                        crossSectionCtx.fill();
+                    }
+                }
+            });
+        }
+
+        function drawVolcanicLightning(volcano, intensity) {
+            if (Math.random() > 0.3) return;
+            
+            const lightningPath = [];
+            let currentX = volcano.x;
+            let currentY = volcano.y - volcano.height - 50;
+            const targetY = volcano.y - volcano.height - 200 - Math.random() * 100;
+            
+            // Generate lightning path
+            while (currentY > targetY) {
+                lightningPath.push({ x: currentX, y: currentY });
+                currentX += (Math.random() - 0.5) * 30;
+                currentY -= Math.random() * 40 + 10;
+            }
+            
+            // Draw lightning with glow
+            crossSectionCtx.strokeStyle = `rgba(255, 255, 200, ${0.9})`;
+            crossSectionCtx.lineWidth = 3;
+            crossSectionCtx.shadowColor = `rgba(255, 255, 200, ${0.8})`;
+            crossSectionCtx.shadowBlur = 10;
+            
+            crossSectionCtx.beginPath();
+            lightningPath.forEach((point, index) => {
+                if (index === 0) {
+                    crossSectionCtx.moveTo(point.x, point.y);
+                } else {
+                    crossSectionCtx.lineTo(point.x, point.y);
+                }
+            });
+            crossSectionCtx.stroke();
+            
+            // Branch lightning
+            for (let i = 1; i < lightningPath.length - 1; i += 5) {
+                if (Math.random() < 0.3) {
+                    const branchStart = lightningPath[i];
+                    const branchLength = 20 + Math.random() * 30;
+                    const branchEnd = {
+                        x: branchStart.x + (Math.random() - 0.5) * branchLength,
+                        y: branchStart.y - Math.random() * branchLength
+                    };
+                    
+                    crossSectionCtx.lineWidth = 1;
+                    crossSectionCtx.strokeStyle = `rgba(255, 255, 200, ${0.6})`;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.moveTo(branchStart.x, branchStart.y);
+                    crossSectionCtx.lineTo(branchEnd.x, branchEnd.y);
+                    crossSectionCtx.stroke();
+                }
+            }
+            
+            crossSectionCtx.shadowBlur = 0;
+        }
+
+        function drawRockfall(volcano, intensity) {
+            if (Math.random() > 0.5) return;
+            
+            const rockCount = 3 + Math.floor(intensity * 5);
+            
+            for (let i = 0; i < rockCount; i++) {
+                const startX = volcano.x + (Math.random() - 0.5) * volcano.width/2;
+                const startY = volcano.y - volcano.height;
+                
+                const rockGradient = crossSectionCtx.createRadialGradient(
+                    startX, startY, 0,
+                    startX, startY, 8
+                );
+                rockGradient.addColorStop(0, `rgba(100, 80, 60, 0.9)`);
+                rockGradient.addColorStop(0.5, `rgba(80, 60, 40, 0.8)`);
+                rockGradient.addColorStop(1, `rgba(60, 40, 20, 0.6)`);
+                
+                crossSectionCtx.fillStyle = rockGradient;
+                crossSectionCtx.beginPath();
+                
+                // Irregular rock shape
+                const vertices = 6 + Math.floor(Math.random() * 4);
+                for (let v = 0; v < vertices; v++) {
+                    const angle = (v / vertices) * Math.PI * 2;
+                    const radius = 4 + Math.random() * 4;
+                    const x = startX + Math.cos(angle) * radius;
+                    const y = startY + Math.sin(angle) * radius;
+                    
+                    if (v === 0) {
+                        crossSectionCtx.moveTo(x, y);
+                    } else {
+                        crossSectionCtx.lineTo(x, y);
+                    }
+                }
+                
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+            }
+        }
+                }
+                
+                crossSectionCtx.closePath();
+                crossSectionCtx.fill();
+                
+                // Enhanced crater
+                const craterGradient = crossSectionCtx.createRadialGradient(
+                    volcano.x, volcano.y - volcano.height, 0,
+                    volcano.x, volcano.y - volcano.height, volcano.width/6
+                );
+                craterGradient.addColorStop(0, '#1a0a0a');
+                craterGradient.addColorStop(0.5, '#2a1510');
+                craterGradient.addColorStop(1, '#3a2015');
+                
+                crossSectionCtx.fillStyle = craterGradient;
+                crossSectionCtx.beginPath();
+                crossSectionCtx.arc(volcano.x, volcano.y - volcano.height, volcano.width/6, 0, Math.PI * 2);
+                crossSectionCtx.fill();
+                
+                // Add lava flows if active
+                if (volcano.active) {
+                    const intensity = (Math.sin(Date.now() / 300) + 1) / 2;
+                    
+                    // Enhanced eruption column
+                    const eruptionGradient = crossSectionCtx.createLinearGradient(
+                        volcano.x, volcano.y - volcano.height,
+                        volcano.x, volcano.y - volcano.height - 80
+                    );
+                    eruptionGradient.addColorStop(0, `rgba(255, 100, 0, ${0.8 + intensity * 0.2})`);
+                    eruptionGradient.addColorStop(0.3, `rgba(255, 150, 50, ${0.6 + intensity * 0.3})`);
+                    eruptionGradient.addColorStop(0.6, `rgba(255, 200, 100, ${0.4 + intensity * 0.2})`);
+                    eruptionGradient.addColorStop(1, `rgba(255, 220, 150, ${0.2 + intensity * 0.1})`);
+                    
+                    crossSectionCtx.fillStyle = eruptionGradient;
+                    crossSectionCtx.beginPath();
+                    
+                    // Create realistic eruption column shape
+                    const columnBase = volcano.y - volcano.height;
+                    const columnHeight = 80 + intensity * 40;
+                    const columnWidth = volcano.width/4 * (1 + intensity * 0.5);
+                    
+                    crossSectionCtx.moveTo(volcano.x - columnWidth * 0.3, columnBase);
+                    
+                    for (let t = 0; t <= 1; t += 0.05) {
+                        const y = columnBase - t * columnHeight;
+                        const spread = t * t * columnWidth * 0.8;
+                        const wobble = Math.sin(Date.now() / 200 + t * 5) * spread * 0.2;
+                        crossSectionCtx.lineTo(volcano.x + wobble, y);
+                    }
+                    
+                    for (let t = 1; t >= 0; t -= 0.05) {
+                        const y = columnBase - t * columnHeight;
+                        const spread = t * t * columnWidth * 0.8;
+                        const wobble = Math.sin(Date.now() / 200 + t * 5 + Math.PI) * spread * 0.2;
+                        crossSectionCtx.lineTo(volcano.x + spread + wobble, y);
+                    }
+                    
+                    crossSectionCtx.closePath();
+                    crossSectionCtx.fill();
+                    
+                    // Add eruption particles
+                    const particleCount = 15 + Math.floor(intensity * 10);
+                    for (let i = 0; i < particleCount; i++) {
+                        const particlePhase = Date.now() / 150 + i * 0.3;
+                        const px = volcano.x + Math.sin(particlePhase) * columnWidth;
+                        const py = columnBase - Math.random() * columnHeight;
+                        const size = 2 + Math.random() * 4;
+                        const particleAlpha = 0.6 + Math.random() * 0.4;
+                        
+                        const particleGradient = crossSectionCtx.createRadialGradient(px, py, 0, px, py, size);
+                        particleGradient.addColorStop(0, `rgba(255, 200, 100, ${particleAlpha})`);
+                        particleGradient.addColorStop(0.5, `rgba(255, 150, 50, ${particleAlpha * 0.6})`);
+                        particleGradient.addColorStop(1, `rgba(255, 100, 0, 0)`);
+                        
+                        crossSectionCtx.fillStyle = particleGradient;
+                        crossSectionCtx.beginPath();
+                        crossSectionCtx.arc(px, py, size, 0, Math.PI * 2);
+                        crossSectionCtx.fill();
+                    }
+                    
+                    // Lava glow in crater
+                    const glowGradient = crossSectionCtx.createRadialGradient(
+                        volcano.x, volcano.y - volcano.height, 0,
+                        volcano.x, volcano.y - volcano.height, volcano.width/4
+                    );
+                    glowGradient.addColorStop(0, `rgba(255, 200, 100, ${0.9 + intensity * 0.1})`);
+                    glowGradient.addColorStop(0.3, `rgba(255, 150, 50, ${0.7 + intensity * 0.2})`);
+                    glowGradient.addColorStop(0.7, `rgba(255, 100, 0, ${0.5 + intensity * 0.2})`);
+                    glowGradient.addColorStop(1, 'rgba(255, 50, 0, 0)');
+                    
+                    crossSectionCtx.fillStyle = glowGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.arc(volcano.x, volcano.y - volcano.height, 
+                                     volcano.width/4 * (1 + intensity * 0.3), 0, Math.PI * 2);
+                    crossSectionCtx.fill();
+                }
+                
+                // Add snow cap for high volcanoes
+                if (volcano.height > 60) {
+                    const snowGradient = crossSectionCtx.createLinearGradient(
+                        0, volcano.y - volcano.height + 10,
+                        0, volcano.y - volcano.height + 30
+                    );
+                    snowGradient.addColorStop(0, 'rgba(255, 255, 255, 0.7)');
+                    snowGradient.addColorStop(0.5, 'rgba(240, 240, 240, 0.5)');
+                    snowGradient.addColorStop(1, 'rgba(220, 220, 220, 0.2)');
+                    
+                    crossSectionCtx.fillStyle = snowGradient;
+                    crossSectionCtx.beginPath();
+                    crossSectionCtx.moveTo(volcano.x - volcano.width/2 - 15, volcano.y - volcano.height + 25);
+                    crossSectionCtx.quadraticCurveTo(volcano.x, volcano.y - volcano.height - 5, 
+                                                     volcano.x + volcano.width/2 + 15, volcano.y - volcano.height + 25);
+                    crossSectionCtx.lineTo(volcano.x + volcano.width/6, volcano.y - volcano.height);
+                    crossSectionCtx.lineTo(volcano.x - volcano.width/6, volcano.y - volcano.height);
+                    crossSectionCtx.closePath();
+                    crossSectionCtx.fill();
+                }
+            });
+        }
+
+        // Draw enhanced depth layers
+        function drawDepthLayers() {
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            const layers = [
+                { depth: 0, name: 'Superficie', color: 'rgba(59, 130, 246, 0.1)', textColor: 'rgba(147, 197, 253, 0.8)' },
+                { depth: h * 0.1, name: 'Corteza Superior', color: 'rgba(156, 163, 175, 0.05)', textColor: 'rgba(203, 213, 225, 0.8)' },
+                { depth: h * 0.3, name: 'Corteza Inferior', color: 'rgba(107, 114, 128, 0.05)', textColor: 'rgba(163, 174, 192, 0.8)' },
+                { depth: h * 0.6, name: 'Manto Superior', color: 'rgba(217, 119, 6, 0.03)', textColor: 'rgba(252, 211, 77, 0.8)' },
+                { depth: h * 0.85, name: 'Manto Inferior', color: 'rgba(180, 83, 9, 0.03)', textColor: 'rgba(251, 191, 36, 0.8)' }
+            ];
+            
+            // Draw layer backgrounds
+            layers.forEach((layer, index) => {
+                if (index === 0) return; // Skip surface
+                
+                const prevDepth = index === 1 ? 0 : layers[index - 1].depth;
+                
+                const layerGradient = crossSectionCtx.createLinearGradient(0, prevDepth, 0, layer.depth);
+                layerGradient.addColorStop(0, 'transparent');
+                layerGradient.addColorStop(0.1, layer.color);
+                layerGradient.addColorStop(0.9, layer.color);
+                layerGradient.addColorStop(1, 'transparent');
+                
+                crossSectionCtx.fillStyle = layerGradient;
+                crossSectionCtx.fillRect(0, prevDepth, w, layer.depth - prevDepth);
+            });
+            
+            // Draw enhanced layer lines
+            crossSectionCtx.strokeStyle = 'rgba(255, 255, 255, 0.15)';
+            crossSectionCtx.lineWidth = 2;
+            crossSectionCtx.setLineDash([10, 5]);
+            
+            layers.forEach(layer => {
+                crossSectionCtx.beginPath();
+                crossSectionCtx.moveTo(0, layer.depth);
+                crossSectionCtx.lineTo(w, layer.depth);
+                crossSectionCtx.stroke();
+            });
+            
+            crossSectionCtx.setLineDash([]);
+            
+            // Draw enhanced labels
+            crossSectionCtx.font = 'bold 11px JetBrains Mono';
+            layers.forEach((layer, index) => {
+                crossSectionCtx.fillStyle = layer.textColor;
+                crossSectionCtx.strokeStyle = 'rgba(0, 0, 0, 0.5)';
+                crossSectionCtx.lineWidth = 3;
+                
+                const text = layer.name;
+                const textMetrics = crossSectionCtx.measureText(text);
+                const textX = 15;
+                const textY = layer.depth - 8;
+                
+                // Draw text background
+                crossSectionCtx.strokeText(text, textX, textY);
+                crossSectionCtx.fillText(text, textX, textY);
+                
+                // Add depth annotation
+                const depthKm = Math.floor(layer.depth / h * 660); // Convert to km
+                const depthText = `${depthKm} km`;
+                crossSectionCtx.font = '9px JetBrains Mono';
+                crossSectionCtx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+                crossSectionCtx.fillText(depthText, textX, textY + 12);
+            });
+        }
+
+        // Draw arrow helper
+        function drawArrow(x1, y1, x2, y2, color) {
+            const headlen = 8;
+            const angle = Math.atan2(y2 - y1, x2 - x1);
+            
+            crossSectionCtx.strokeStyle = color;
+            crossSectionCtx.fillStyle = color;
+            crossSectionCtx.lineWidth = 2;
+            
+            // Draw line
+            crossSectionCtx.beginPath();
+            crossSectionCtx.moveTo(x1, y1);
+            crossSectionCtx.lineTo(x2, y2);
+            crossSectionCtx.stroke();
+            
+            // Draw arrowhead
+            crossSectionCtx.beginPath();
+            crossSectionCtx.moveTo(x2, y2);
+            crossSectionCtx.lineTo(x2 - headlen * Math.cos(angle - Math.PI/6), y2 - headlen * Math.sin(angle - Math.PI/6));
+            crossSectionCtx.lineTo(x2 - headlen * Math.cos(angle + Math.PI/6), y2 - headlen * Math.sin(angle + Math.PI/6));
+            crossSectionCtx.closePath();
+            crossSectionCtx.fill();
+        }
+
+        // Update displays
+        function updateDisplays() {
+            document.getElementById('time-display').textContent = Math.floor(state.time);
+            document.getElementById('magma-generation').textContent = Math.floor(state.meltingRate * state.ascentRate * 0.1);
+            document.getElementById('sim-speed-display').textContent = state.simulationSpeed.toFixed(1);
+            
+            // Update tectonic context
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            document.getElementById('tectonic-context').innerHTML = `
+                <div>Configuración:</div>
+                <div class="text-red-400">${config.name}</div>
+                <div class="text-xs text-gray-500 mt-1">${config.description}</div>
+                <div class="text-xs text-orange-400 mt-1">Fusión por ${config.meltingMechanism}</div>
+            `;
+        }
+
+        // Initialize simulation with advanced systems
+        function initializeSimulation() {
+            initializeGrids();
+            initializeConvection();
+            
+            // Clear and reset systems
+            state.particleSystem.particles = [];
+            state.particleSystem.emitters = [];
+            state.volumetricLighting.lights = [];
+            
+            // Create magma chambers based on boundary type
+            state.magmaChambers = [];
+            state.dikes = [];
+            state.volcanoes = [];
+            
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            const config = BOUNDARY_CONFIGS[state.currentBoundary];
+            
+            if (state.currentBoundary === 'divergent') {
+                // Enhanced divergent boundary setup
+                for (let i = -1; i <= 1; i++) {
+                    const chamber = {
+                        x: w/2 + i * 120,
+                        y: h * 0.4,
+                        radius: 40 + Math.random() * 25,
+                        temperature: config.temperature,
+                        pressure: 50 + Math.random() * 20,
+                        phase: Math.random() * Math.PI * 2,
+                        strength: 0.6 + Math.random() * 0.4
+                    };
+                    state.magmaChambers.push(chamber);
+                    
+                    // Add volumetric light to each chamber
+                    state.volumetricLighting.addLight(chamber.x, chamber.y, {
+                        color: { r: 255, g: 150, b: 50 },
+                        intensity: 1.2,
+                        radius: chamber.radius * 2,
+                        pulse: 0.8
+                    });
+                    
+                    // Add particle emitter
+                    state.particleSystem.emitters.push(
+                        state.particleSystem.createEmitter(chamber.x, chamber.y - chamber.radius, 'heat', {
+                            rate: 3,
+                            lifetime: 4,
+                            velocity: { x: 0, y: -2 },
+                            spread: Math.PI / 6,
+                            color: { r: 255, g: 100, b: 0 },
+                            size: { min: 2, max: 5 }
+                        })
+                    );
+                }
+                
+                // Enhanced volcanoes
+                for (let i = -1; i <= 1; i++) {
+                    const volcano = {
+                        x: w/2 + i * 120,
+                        y: h * 0.25,
+                        width: 50,
+                        height: 70,
+                        active: Math.random() > 0.3,
+                        material: 'basalt'
+                    };
+                    state.volcanoes.push(volcano);
+                    
+                    // Add eruption emitter
+                    if (volcano.active) {
+                        state.particleSystem.emitters.push(
+                            state.particleSystem.createEmitter(volcano.x, volcano.y - volcano.height, 'eruption', {
+                                rate: 8,
+                                lifetime: 6,
+                                velocity: { x: 0, y: -4 },
+                                spread: Math.PI / 3,
+                                color: { r: 255, g: 120, b: 0 },
+                                size: { min: 3, max: 8 }
+                            })
+                        );
+                    }
+                }
+                
+            } else if (state.currentBoundary === 'convergent') {
+                // Enhanced convergent boundary
+                const chamber = {
+                    x: w/2 + config.width/2,
+                    y: h * 0.55,
+                    radius: 60,
+                    temperature: config.temperature,
+                    pressure: 100,
+                    phase: 0,
+                    strength: 0.9
+                };
+                state.magmaChambers.push(chamber);
+                
+                // Intense volumetric light for deep chamber
+                state.volumetricLighting.addLight(chamber.x, chamber.y, {
+                    color: { r: 100, g: 150, b: 255 },
+                    intensity: 1.5,
+                    radius: chamber.radius * 2.5,
+                    pulse: 0.6
+                });
+                
+                // Particle emitters for melting zone
+                for (let i = 0; i < 3; i++) {
+                    state.particleSystem.emitters.push(
+                        state.particleSystem.createEmitter(
+                            chamber.x + (i - 1) * 40,
+                            chamber.y - 30,
+                            'melting',
+                            {
+                                rate: 5,
+                                lifetime: 3,
+                                velocity: { x: (Math.random() - 0.5) * 2, y: -1.5 },
+                                spread: Math.PI / 4,
+                                color: { r: 100, g: 200, b: 255 },
+                                size: { min: 2, max: 4 }
+                            }
+                        )
+                    );
+                }
+                
+                // Enhanced dikes with multiple branches
+                const mainDike = {
+                    x1: chamber.x,
+                    y1: chamber.y,
+                    x2: chamber.x + 180,
+                    y2: h * 0.28,
+                    width: 12,
+                    branches: []
+                };
+                
+                // Add branches
+                for (let i = 0; i < 2; i++) {
+                    mainDike.branches.push({
+                        startX: chamber.x + 60 + i * 40,
+                        startY: chamber.y - 30 - i * 20,
+                        endX: chamber.x + 120 + i * 30,
+                        endY: h * 0.32 + i * 10,
+                        width: 6
+                    });
+                }
+                
+                state.dikes.push(mainDike);
+                
+                // Advanced volcano with multiple vents
+                const volcano = {
+                    x: chamber.x + 180,
+                    y: h * 0.28,
+                    width: 80,
+                    height: 100,
+                    active: true,
+                    material: 'andesite',
+                    vents: []
+                };
+                
+                // Add secondary vents
+                for (let i = 0; i < 2; i++) {
+                    volcano.vents.push({
+                        x: volcano.x + (i - 0.5) * volcano.width * 0.6,
+                        y: volcano.y - volcano.height + 10 + i * 15,
+                        active: Math.random() > 0.5
+                    });
+                }
+                
+                state.volcanoes.push(volcano);
+                
+                // Intense eruption emitter
+                state.particleSystem.emitters.push(
+                    state.particleSystem.createEmitter(volcano.x, volcano.y - volcano.height, 'stratovolcano', {
+                        rate: 15,
+                        lifetime: 8,
+                        velocity: { x: 0, y: -6 },
+                        spread: Math.PI / 2,
+                        color: { r: 200, g: 80, b: 0 },
+                        size: { min: 4, max: 12 }
+                    })
+                );
+                
+            } else if (state.currentBoundary === 'hotspot') {
+                // Enhanced hotspot with mantle plume
+                const chamber = {
+                    x: w/2,
+                    y: h * 0.75,
+                    radius: 80,
+                    temperature: config.temperature + 100,
+                    pressure: 80,
+                    phase: 0,
+                    strength: 1.0
+                };
+                state.magmaChambers.push(chamber);
+                
+                // Massive volumetric light for hotspot
+                state.volumetricLighting.addLight(chamber.x, chamber.y, {
+                    color: { r: 255, g: 50, b: 50 },
+                    intensity: 2.0,
+                    radius: chamber.radius * 3,
+                    pulse: 1.0
+                });
+                
+                // Plume particle emitters
+                for (let i = 0; i < 8; i++) {
+                    const angle = (i / 8) * Math.PI * 2;
+                    const distance = chamber.radius * 0.8;
+                    
+                    state.particleSystem.emitters.push(
+                        state.particleSystem.createEmitter(
+                            chamber.x + Math.cos(angle) * distance,
+                            chamber.y + Math.sin(angle) * distance,
+                            'plume',
+                            {
+                                rate: 4,
+                                lifetime: 10,
+                                velocity: { x: Math.cos(angle) * 0.5, y: -2.5 },
+                                spread: Math.PI / 8,
+                                color: { r: 255, g: 80, b: 20 },
+                                size: { min: 3, max: 6 }
+                            }
+                        )
+                    );
+                }
+                
+                // Enhanced dike system
+                state.dikes.push({
+                    x1: chamber.x,
+                    y1: chamber.y,
+                    x2: w/2,
+                    y2: h * 0.32,
+                    width: 20,
+                    branches: [
+                        { startX: w/2 - 30, startY: h * 0.5, endX: w/2 - 60, endY: h * 0.35, width: 10 },
+                        { startX: w/2 + 30, startY: h * 0.5, endX: w/2 + 60, endY: h * 0.35, width: 10 }
+                    ]
+                });
+                
+                // Large shield volcano
+                const volcano = {
+                    x: w/2,
+                    y: h * 0.32,
+                    width: 160,
+                    height: 50,
+                    active: true,
+                    material: 'lava-hot',
+                    lavaFlow: []
+                };
+                
+                state.volcanoes.push(volcano);
+                
+                // Continuous lava flow emitter
+                state.particleSystem.emitters.push(
+                    state.particleSystem.createEmitter(volcano.x, volcano.y, 'lava-flow', {
+                        rate: 10,
+                        lifetime: 12,
+                        velocity: { x: (Math.random() - 0.5) * 3, y: 0.5 },
+                        spread: Math.PI,
+                        color: { r: 255, g: 150, b: 50 },
+                        size: { min: 5, max: 10 }
+                    })
+                );
+                
+            } else if (state.currentBoundary === 'continental') {
+                // Enhanced continental rift
+                for (let i = -2; i <= 2; i++) {
+                    const chamber = {
+                        x: w/2 + i * 80,
+                        y: h * 0.38,
+                        radius: 25 + Math.random() *20,
+                        temperature: config.temperature,
+                        pressure: 30 + Math.random() * 20,
+                        phase: Math.random() * Math.PI * 2,
+                        strength: 0.4 + Math.random() * 0.3
+                    };
+                    state.magmaChambers.push(chamber);
+                    
+                    // Moderate lights for rift chambers
+                    state.volumetricLighting.addLight(chamber.x, chamber.y, {
+                        color: { r: 200, g: 100, b: 50 },
+                        intensity: 0.8,
+                        radius: chamber.radius * 1.5,
+                        pulse: 0.4
+                    });
+                    
+                    // Small particle emitters
+                    if (Math.random() > 0.5) {
+                        state.particleSystem.emitters.push(
+                            state.particleSystem.createEmitter(chamber.x, chamber.y - chamber.radius, 'rift', {
+                                rate: 2,
+                                lifetime: 5,
+                                velocity: { x: 0, y: -1 },
+                                spread: Math.PI / 6,
+                                color: { r: 255, g: 120, b: 30 },
+                                size: { min: 2, max: 4 }
+                            })
+                        );
+                    }
+                }
+            }
+        }
+                
+                // Volcanoes
+                for (let i = -1; i <= 1; i++) {
+                    state.volcanoes.push({
+                        x: w/2 + i * 100,
+                        y: h * 0.3,
+                        width: 40,
+                        height: 60,
+                        active: Math.random() > 0.5
+                    });
+                }
+                
+            } else if (state.currentBoundary === 'convergent') {
+                // Deep magma chambers
+                state.magmaChambers.push({
+                    x: w/2 + config.width/2,
+                    y: h * 0.5,
+                    radius: 50,
+                    temperature: config.temperature,
+                    pressure: 100,
+                    phase: 0
+                });
+                
+                // Dikes feeding volcanoes
+                state.dikes.push({
+                    x1: w/2 + config.width/2,
+                    y1: h * 0.5,
+                    x2: w/2 + config.width/2 + 150,
+                    y2: h * 0.3,
+                    width: 8
+                });
+                
+                // Volcanoes
+                state.volcanoes.push({
+                    x: w/2 + config.width/2 + 150,
+                    y: h * 0.3,
+                    width: 60,
+                    height: 80,
+                    active: true
+                });
+                
+            } else if (state.currentBoundary === 'hotspot') {
+                // Single deep chamber
+                state.magmaChambers.push({
+                    x: w/2,
+                    y: h * 0.7,
+                    radius: 60,
+                    temperature: config.temperature,
+                    pressure: 80,
+                    phase: 0
+                });
+                
+                // Diapir
+                state.dikes.push({
+                    x1: w/2,
+                    y1: h * 0.7,
+                    x2: w/2,
+                    y2: h * 0.35,
+                    width: 15
+                });
+                
+                // Shield volcano
+                state.volcanoes.push({
+                    x: w/2,
+                    y: h * 0.35,
+                    width: 120,
+                    height: 40,
+                    active: true
+                });
+                
+            } else if (state.currentBoundary === 'continental') {
+                // Multiple shallow chambers
+                for (let i = -2; i <= 2; i++) {
+                    state.magmaChambers.push({
+                        x: w/2 + i * 60,
+                        y: h * 0.35,
+                        radius: 20 + Math.random() * 15,
+                        temperature: config.temperature,
+                        pressure: 30 + Math.random() * 20,
+                        phase: Math.random() * Math.PI * 2
+                    });
+                }
+            }
+        }
+
+        // Start simulation
+        function startSimulation() {
+            state.isSimulating = true;
+            state.isPaused = false;
+            state.time = 0;
+            document.getElementById('state-indicator').textContent = 'Simulando';
+            document.getElementById('state-indicator').className = 'px-3 py-1 rounded-full bg-red-500/20 text-red-400 state-indicator';
+            initializeSimulation();
+        }
+
+        // Draw global map
+        function drawGlobalMap() {
+            const w = globalMapCanvas.width / dpr;
+            const h = globalMapCanvas.height / dpr;
+            
+            // Clear and draw world map background
+            const bgGradient = globalMapCtx.createLinearGradient(0, 0, w, h);
+            bgGradient.addColorStop(0, '#0a1628');
+            bgGradient.addColorStop(0.5, '#1e293b');
+            bgGradient.addColorStop(1, '#0f172a');
+            globalMapCtx.fillStyle = bgGradient;
+            globalMapCtx.fillRect(0, 0, w, h);
+            
+            // Draw simplified world map
+            globalMapCtx.fillStyle = '#1a472a';
+            globalMapCtx.strokeStyle = '#2d6a4f';
+            globalMapCtx.lineWidth = 2;
+            
+            // Continents (simplified)
+            const continents = [
+                // North America
+                { x: w * 0.2, y: h * 0.3, w: w * 0.15, h: h * 0.2 },
+                // South America
+                { x: w * 0.25, y: h * 0.55, w: w * 0.08, h: h * 0.25 },
+                // Africa
+                { x: w * 0.5, y: h * 0.4, w: w * 0.1, h: h * 0.2 },
+                // Europe
+                { x: w * 0.48, y: h * 0.25, w: w * 0.08, h: h * 0.1 },
+                // Asia
+                { x: w * 0.6, y: h * 0.3, w: w * 0.2, h: h * 0.15 },
+                // Australia
+                { x: w * 0.7, y: h * 0.65, w: w * 0.06, h: h * 0.08 }
+            ];
+            
+            continents.forEach(continent => {
+                globalMapCtx.beginPath();
+                globalMapCtx.ellipse(continent.x, continent.y, continent.w/2, continent.h/2, 0, 0, Math.PI * 2);
+                globalMapCtx.fill();
+                globalMapCtx.stroke();
+            });
+            
+            // Draw plate boundaries
+            globalMapCtx.strokeStyle = '#dc2626';
+            globalMapCtx.lineWidth = 3;
+            globalMapCtx.setLineDash([10, 5]);
+            
+            // Divergent boundaries
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(w * 0.35, h * 0.4); // Mid-Atlantic
+            globalMapCtx.quadraticCurveTo(w * 0.4, h * 0.5, w * 0.45, h * 0.6);
+            globalMapCtx.stroke();
+            
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(w * 0.15, h * 0.8); // Pacific
+            globalMapCtx.lineTo(w * 0.85, h * 0.8);
+            globalMapCtx.stroke();
+            
+            // Convergent boundaries
+            globalMapCtx.strokeStyle = '#3b82f6';
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(w * 0.1, h * 0.4); // West coast Americas
+            globalMapCtx.quadraticCurveTo(w * 0.15, h * 0.5, w * 0.25, h * 0.7);
+            globalMapCtx.stroke();
+            
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(w * 0.8, h * 0.3); // East Asia
+            globalMapCtx.quadraticCurveTo(w * 0.85, h * 0.4, w * 0.8, h * 0.6);
+            globalMapCtx.stroke();
+            
+            // Draw volcanoes
+            state.volcanoes.forEach((volcano, index) => {
+                const mapX = w * 0.2 + index * w * 0.6 / state.volcanoes.length;
+                const mapY = h * (0.2 + Math.random() * 0.6);
+                
+                // Volcano marker
+                const pulseIntensity = (Math.sin(Date.now() / 1000 + index) + 1) / 2;
+                globalMapCtx.fillStyle = `rgba(239, 68, 68, ${0.5 + pulseIntensity * 0.5})`;
+                globalMapCtx.beginPath();
+                globalMapCtx.arc(mapX, mapY, 8 + pulseIntensity * 4, 0, Math.PI * 2);
+                globalMapCtx.fill();
+                
+                // Volcano icon
+                globalMapCtx.fillStyle = '#dc2626';
+                globalMapCtx.beginPath();
+                globalMapCtx.moveTo(mapX - 4, mapY + 2);
+                globalMapCtx.lineTo(mapX, mapY - 6);
+                globalMapCtx.lineTo(mapX + 4, mapY + 2);
+                globalMapCtx.closePath();
+                globalMapCtx.fill();
+            });
+            
+            // Draw hotspots
+            const hotspots = [
+                { x: w * 0.15, y: h * 0.65, name: 'Hawaii' },
+                { x: w * 0.25, y: h * 0.35, name: 'Yellowstone' },
+                { x: w * 0.55, y: h * 0.8, name: 'Réunion' }
+            ];
+            
+            hotspots.forEach(hotspot => {
+                const pulseIntensity = (Math.sin(Date.now() / 800) + 1) / 2;
+                
+                // Hotspot glow
+                const gradient = globalMapCtx.createRadialGradient(
+                    hotspot.x, hotspot.y, 0,
+                    hotspot.x, hotspot.y, 20
+                );
+                gradient.addColorStop(0, `rgba(239, 68, 68, ${0.6 + pulseIntensity * 0.4})`);
+                gradient.addColorStop(0.5, `rgba(239, 68, 68, ${0.3 + pulseIntensity * 0.2})`);
+                gradient.addColorStop(1, 'rgba(239, 68, 68, 0)');
+                
+                globalMapCtx.fillStyle = gradient;
+                globalMapCtx.beginPath();
+                globalMapCtx.arc(hotspot.x, hotspot.y, 20, 0, Math.PI * 2);
+                globalMapCtx.fill();
+                
+                // Hotspot center
+                globalMapCtx.fillStyle = '#ef4444';
+                globalMapCtx.beginPath();
+                globalMapCtx.arc(hotspot.x, hotspot.y, 5, 0, Math.PI * 2);
+                globalMapCtx.fill();
+                
+                // Label
+                globalMapCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                globalMapCtx.font = '10px Inter';
+                globalMapCtx.fillText(hotspot.name, hotspot.x - 20, hotspot.y + 25);
+            });
+            
+            globalMapCtx.setLineDash([]);
+            
+            // Legend
+            const legendY = h - 100;
+            globalMapCtx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+            globalMapCtx.fillRect(10, legendY, 200, 90);
+            
+            globalMapCtx.font = '10px Inter';
+            globalMapCtx.fillStyle = '#fff';
+            globalMapCtx.fillText('Líneas: Divergentes', 20, legendY + 20);
+            globalMapCtx.strokeStyle = '#dc2626';
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(15, legendY + 30);
+            globalMapCtx.lineTo(35, legendY + 30);
+            globalMapCtx.stroke();
+            
+            globalMapCtx.fillText('Líneas: Convergentes', 20, legendY + 45);
+            globalMapCtx.strokeStyle = '#3b82f6';
+            globalMapCtx.beginPath();
+            globalMapCtx.moveTo(15, legendY + 55);
+            globalMapCtx.lineTo(35, legendY + 55);
+            globalMapCtx.stroke();
+            
+            globalMapCtx.fillText('● Volcanes activos', 20, legendY + 70);
+            globalMapCtx.fillStyle = '#dc2626';
+            globalMapCtx.beginPath();
+            globalMapCtx.arc(25, legendY + 75, 3, 0, Math.PI * 2);
+            globalMapCtx.fill();
+        }
+
+        // Draw combined view
+        function drawCombinedView() {
+            // Split screen
+            const w = crossSectionCanvas.width / dpr;
+            const h = crossSectionCanvas.height / dpr;
+            
+            // Left side - cross section
+            crossSectionCtx.save();
+            crossSectionCtx.beginPath();
+            crossSectionCtx.rect(0, 0, w/2, h);
+            crossSectionCtx.clip();
+            drawCrossSection();
+            crossSectionCtx.restore();
+            
+            // Right side - global map
+            globalMapCtx.save();
+            globalMapCtx.clearRect(0, 0, w, h);
+            globalMapCtx.translate(w/2, 0);
+            globalMapCtx.scale(0.5, 1);
+            drawGlobalMap();
+            globalMapCtx.restore();
+            
+            // Draw divider
+            crossSectionCtx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+            crossSectionCtx.lineWidth = 2;
+            crossSectionCtx.beginPath();
+            crossSectionCtx.moveTo(w/2, 0);
+            crossSectionCtx.lineTo(w/2, h);
+            crossSectionCtx.stroke();
+            
+            // Labels
+            crossSectionCtx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+            crossSectionCtx.font = 'bold 14px Inter';
+            crossSectionCtx.fillText('Corte Transversal', 10, 30);
+            crossSectionCtx.fillText('Mapa Global', w/2 + 10, 30);
+        }
+
+            // Ultra-optimized animation loop
+        function animate() {
+            const frameTime = 16.67; // Target 60 FPS
+            const now = performance.now();
+            
+            updatePhysics(0.01667); // Fixed timestep for physics consistency
+            
+            // Render based on current view
+            if (state.currentView === 'cross-section') {
+                drawCrossSection();
+            } else if (state.currentView === 'global-map') {
+                drawGlobalMap();
+            } else if (state.currentView === 'combined') {
+                drawCombinedView();
+            }
+            
+            // Update time with simulation speed
+            if (state.isSimulating) {
+                state.time += frameTime * state.simulationSpeed / 1000;
+                updateDisplays();
+            }
+            
+            // Frame rate monitoring
+            const deltaTime = now - (window.lastFrameTime || now);
+            window.fps = 1000 / deltaTime;
+            window.lastFrameTime = now;
+            
+            requestAnimationFrame(animate);
+        }
+
+        // Event listeners
+        document.querySelectorAll('.view-mode').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.view-mode').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentView = btn.dataset.view;
+                
+                // Show/hide appropriate canvas
+                if (state.currentView === 'cross-section') {
+                    crossSectionCanvas.style.display = 'block';
+                    globalMapCanvas.style.display = 'none';
+                } else if (state.currentView === 'global-map') {
+                    crossSectionCanvas.style.display = 'none';
+                    globalMapCanvas.style.display = 'block';
+                } else {
+                    // Combined view - both visible
+                    crossSectionCanvas.style.display = 'block';
+                    globalMapCanvas.style.display = 'block';
+                }
+            });
+        });
+
+        document.querySelectorAll('.tectonic-boundary').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tectonic-boundary').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                state.currentBoundary = btn.dataset.boundary;
+                if (state.isSimulating) {
+                    initializeSimulation();
+                }
+                updateDisplays();
+            });
+        });
+
+        document.getElementById('mantle-temp').addEventListener('input', (e) => {
+            state.mantleTemp = parseInt(e.target.value);
+            document.getElementById('mantle-temp-value').textContent = state.mantleTemp;
+        });
+
+        document.getElementById('melting-rate').addEventListener('input', (e) => {
+            state.meltingRate = parseInt(e.target.value);
+            document.getElementById('melting-rate-value').textContent = state.meltingRate;
+        });
+
+        document.getElementById('ascent-rate').addEventListener('input', (e) => {
+            state.ascentRate = parseInt(e.target.value);
+            document.getElementById('ascent-rate-value').textContent = state.ascentRate;
+        });
+
+        document.getElementById('sim-speed').addEventListener('input', (e) => {
+            state.simulationSpeed = parseFloat(e.target.value);
+            document.getElementById('sim-speed-value').textContent = state.simulationSpeed.toFixed(1);
+        });
+
+        document.getElementById('volatile-content').addEventListener('input', (e) => {
+            state.volatileContent = parseFloat(e.target.value);
+            document.getElementById('volatile-content-value').textContent = state.volatileContent.toFixed(1);
+        });
+
+        document.getElementById('show-temperature').addEventListener('change', (e) => {
+            state.showTemperature = e.target.checked;
+        });
+
+        document.getElementById('show-convection').addEventListener('change', (e) => {
+            state.showConvection = e.target.checked;
+        });
+
+        document.getElementById('show-magma-chambers').addEventListener('change', (e) => {
+            state.showMagmaChambers = e.target.checked;
+        });
+
+        document.getElementById('show-dikes').addEventListener('change', (e) => {
+            state.showDikes = e.target.checked;
+        });
+
+        document.getElementById('show-volcanoes').addEventListener('change', (e) => {
+            state.showVolcanoes = e.target.checked;
+        });
+
+        document.getElementById('show-isotopes').addEventListener('change', (e) => {
+            state.showIsotopes = e.target.checked;
+        });
+
+        document.getElementById('start-simulation').addEventListener('click', startSimulation);
+
+        document.getElementById('pause-btn').addEventListener('click', () => {
+            if (state.isSimulating) {
+                state.isPaused = !state.isPaused;
+                document.getElementById('pause-btn').textContent = state.isPaused ? 'Reanudar' : 'Pausar';
+                document.getElementById('state-indicator').textContent = state.isPaused ? 'Pausado' : 'Simulando';
+            }
+        });
+
+        document.getElementById('reset-btn').addEventListener('click', () => {
+            state.isSimulating = false;
+            state.isPaused = false;
+            state.time = 0;
+            state.magmaChambers = [];
+            state.dikes = [];
+            state.volcanoes = [];
+            state.convectionCells = [];
+            document.getElementById('pause-btn').textContent = 'Pausar';
+            document.getElementById('state-indicator').textContent = 'Listo';
+            document.getElementById('state-indicator').className = 'px-3 py-1 rounded-full bg-gray-500/20 text-gray-400';
+            initializeGrids();
+            updateDisplays();
+        });
+
+        document.getElementById('zoom-in').addEventListener('click', () => {
+            state.zoom = Math.min(state.zoom * 1.2, 3);
+        });
+
+        document.getElementById('zoom-out').addEventListener('click', () => {
+            state.zoom = Math.max(state.zoom / 1.2, 0.5);
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (state.isSimulating) {
+                    state.isPaused = !state.isPaused;
+                    document.getElementById('pause-btn').textContent = state.isPaused ? 'Reanudar' : 'Pausar';
+                }
+            } else if (e.code === 'KeyS') {
+                startSimulation();
+            } else if (e.code === 'KeyR') {
+                document.getElementById('reset-btn').click();
+            } else if (e.code === 'Digit1') {
+                document.querySelector('[data-boundary="divergent"]').click();
+            } else if (e.code === 'Digit2') {
+                document.querySelector('[data-boundary="convergent"]').click();
+            } else if (e.code === 'Digit3') {
+                document.querySelector('[data-boundary="hotspot"]').click();
+            } else if (e.code === 'Digit4') {
+                document.querySelector('[data-boundary="continental"]').click();
+            } else if (e.code === 'KeyV') {
+                const views = ['cross-section', 'global-map', 'combined'];
+                const currentIndex = views.indexOf(state.currentView);
+                const nextView = views[(currentIndex + 1) % views.length];
+                document.querySelector(`[data-view="${nextView}"]`).click();
+            } else if (e.code === 'Equal' || e.code === 'NumpadAdd') {
+                document.getElementById('zoom-in').click();
+            } else if (e.code === 'Minus' || e.code === 'NumpadSubtract') {
+                document.getElementById('zoom-out').click();
+            }
+        });
+
+        // Mouse interaction for tooltips
+        crossSectionCanvas.addEventListener('mousemove', (e) => {
+            const rect = crossSectionCanvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            // Check if hovering over features
+            let tooltipText = null;
+            
+            state.magmaChambers.forEach(chamber => {
+                const dist = Math.sqrt(Math.pow(x - chamber.x, 2) + Math.pow(y - chamber.y, 2));
+                if (dist < chamber.radius) {
+                    tooltipText = `
+                        <div><strong>Cámara Magmática</strong></div>
+                        <div>Temperatura: ${Math.floor(chamber.temperature)}°C</div>
+                        <div>Presión: ${Math.floor(chamber.pressure)} MPa</div>
+                        <div>Volumen: ${Math.floor(Math.PI * chamber.radius * chamber.radius / 100)} km³</div>
+                    `;
+                }
+            });
+            
+            if (tooltipText) {
+                tooltip.innerHTML = tooltipText;
+                tooltip.style.display = 'block';
+                tooltip.style.left = e.clientX + 10 + 'px';
+                tooltip.style.top = e.clientY - 30 + 'px';
+            } else {
+                tooltip.style.display = 'none';
+            }
+        });
+
+        crossSectionCanvas.addEventListener('mouseleave', () => {
+            tooltip.style.display = 'none';
+        });
+
+            // Performance monitoring
+            window.fps = 0;
+            window.lastFrameTime = 0;
+            
+            // Initialize with performance optimization
+            window.addEventListener('resize', () => {
+                resizeCanvases();
+            });
+            
+            resizeCanvases();
+            initializeGrids();
+            initializeSimulation();
+            updateDisplays();
+            
+            // Start animation with performance monitoring
+            animate();
+        });
+</body>
+</html>

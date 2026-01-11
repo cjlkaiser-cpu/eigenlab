@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/erosion.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/erosion.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/fluid_solver.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/fluid_solver.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/fluid_solver.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/galaxy.cpp.o.d"
+  "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/galaxy_collision.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/galaxy_collision.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/heat_diffusion.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/particle_system.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/softbody.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o.d"

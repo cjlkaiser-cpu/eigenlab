@@ -591,12 +591,19 @@
         </div>
     </aside>
 
-    <script type="module">
-        // Import WASM module
-        const EigenLabCore = await import('../../_wasm/eigenlab-core.js').then(m => m.default);
+    <script src="../../_wasm/eigenlab-core.js"></script>
+    <script>
+        // Wait for DOM and WASM
+        let Module = null;
+        let simulator = null;
 
-        // Initialize module
-        const Module = await EigenLabCore();
+        async function initWASM() {
+            Module = await EigenLabCore();
+            console.log('EigenLab WASM loaded');
+            initSimulation();
+        }
+
+        function initSimulation() {
 
         // Hide loading
         document.getElementById('loading').classList.add('hidden');
@@ -621,7 +628,6 @@
         window.addEventListener('resize', resizeCanvas);
 
         // State
-        let simulator = null;
         let paused = false;
         let currentPreset = 'milkdromeda';
         let showTrajectories = true;
@@ -964,6 +970,10 @@
         document.getElementById('show-glow').addEventListener('change', (e) => {
             showGlow = e.target.checked;
         });
+        }
+
+        // Initialize when DOM is ready
+        initWASM();
     </script>
 </body>
 </html>
