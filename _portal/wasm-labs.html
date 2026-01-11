@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">11</div>
+                        <div class="text-2xl font-light text-violet-400">12</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -421,6 +421,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Avalancha Granular -->
+            <a href="../Geology/Geology Visual Lab/avalancha.html"
+               class="sim-card block bg-gradient-to-br from-amber-950/50 to-yellow-950/30 rounded-2xl overflow-hidden border border-amber-500/20 hover:border-amber-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-granular" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-amber-500/20 rounded text-xs text-amber-300 mono">
+                        PBD
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded">Geology</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Avalancha Granular</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Arena, grava, rocas. Friccion estatica/dinamica, angulo de reposo emergente.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Spatial Hash</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Friction</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -499,7 +527,8 @@
             gas: document.getElementById('canvas-gas'),
             wave: document.getElementById('canvas-wave'),
             molecular: document.getElementById('canvas-molecular'),
-            lbm: document.getElementById('canvas-lbm')
+            lbm: document.getElementById('canvas-lbm'),
+            granular: document.getElementById('canvas-granular')
         };
 
         function resizeCanvases() {
@@ -1011,6 +1040,109 @@
             ctx.fill();
         }
 
+        // Granular/Avalanche - Falling sand particles
+        const granularParticles = [];
+        for (let i = 0; i < 80; i++) {
+            granularParticles.push({
+                x: 0.3 + Math.random() * 0.4,
+                y: 0.9 + Math.random() * 0.3,
+                vx: (Math.random() - 0.5) * 0.005,
+                vy: 0,
+                settled: false
+            });
+        }
+
+        function drawGranular() {
+            const canvas = canvases.granular;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+
+            ctx.fillStyle = '#0a0805';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw terrain (ramp)
+            ctx.beginPath();
+            ctx.moveTo(0, h);
+            ctx.lineTo(0, h * 0.85);
+            ctx.lineTo(w * 0.7, h * 0.5);
+            ctx.lineTo(w, h * 0.5);
+            ctx.lineTo(w, h);
+            ctx.closePath();
+
+            const terrainGrad = ctx.createLinearGradient(0, h, 0, h * 0.5);
+            terrainGrad.addColorStop(0, '#5c4033');
+            terrainGrad.addColorStop(1, '#8b6914');
+            ctx.fillStyle = terrainGrad;
+            ctx.fill();
+
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Update and draw particles
+            granularParticles.forEach(p => {
+                if (!p.settled) {
+                    // Gravity
+                    p.vy += 0.0008;
+                    p.vy *= 0.99;
+                    p.vx *= 0.99;
+
+                    p.x += p.vx;
+                    p.y -= p.vy;
+
+                    // Terrain collision (simplified ramp)
+                    const terrainY = p.x < 0.7 ? 0.85 - (p.x / 0.7) * 0.35 : 0.5;
+                    if (p.y < terrainY + 0.02) {
+                        p.y = terrainY + 0.02;
+                        p.vy *= -0.1;
+                        p.vx += 0.002; // Slide down
+                        if (Math.abs(p.vy) < 0.001 && p.x > 0.65) {
+                            p.settled = true;
+                        }
+                    }
+
+                    // Walls
+                    if (p.x < 0.05) { p.x = 0.05; p.vx *= -0.5; }
+                    if (p.x > 0.95) { p.x = 0.95; p.vx *= -0.5; }
+
+                    // Reset if off screen
+                    if (p.y > 1.2) {
+                        p.x = 0.15 + Math.random() * 0.15;
+                        p.y = 0.95 + Math.random() * 0.1;
+                        p.vx = (Math.random() - 0.5) * 0.005;
+                        p.vy = 0;
+                        p.settled = false;
+                    }
+                }
+
+                // Color by speed
+                const speed = Math.sqrt(p.vx * p.vx + p.vy * p.vy);
+                const t = Math.min(1, speed * 50);
+                const r = Math.floor(210 + t * 45);
+                const g = Math.floor(180 - t * 80);
+                const b = Math.floor(140 - t * 100);
+
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath();
+                ctx.arc(p.x * w, (1 - p.y) * h, 3, 0, Math.PI * 2);
+                ctx.fill();
+            });
+
+            // Occasionally reset some settled particles
+            if (Math.random() < 0.02) {
+                const settled = granularParticles.filter(p => p.settled);
+                if (settled.length > 20) {
+                    const p = settled[Math.floor(Math.random() * settled.length)];
+                    p.x = 0.15 + Math.random() * 0.15;
+                    p.y = 0.95 + Math.random() * 0.1;
+                    p.vx = (Math.random() - 0.5) * 0.005;
+                    p.vy = 0;
+                    p.settled = false;
+                }
+            }
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -1024,6 +1156,7 @@
             drawWave();
             drawMolecular();
             drawLBM();
+            drawGranular();
             requestAnimationFrame(animate);
         }
 

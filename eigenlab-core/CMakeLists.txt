@@ -19,6 +19,7 @@ set(SOURCES
     src/physics/wave_solver.cpp
     src/physics/molecular_dynamics.cpp
     src/physics/lattice_boltzmann.cpp
+    src/physics/granular_sim.cpp
     src/bindings.cpp
 )
 

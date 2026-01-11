@@ -19,6 +19,7 @@
 #include "../include/physics/wave_solver.hpp"
 #include "../include/physics/molecular_dynamics.hpp"
 #include "../include/physics/lattice_boltzmann.hpp"
+#include "../include/physics/granular_sim.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -516,6 +517,22 @@ val getLBMVorticity(const LatticeBoltzmann& lbm) {
 // Get obstacle mask as Uint8Array
 val getLBMObstacles(const LatticeBoltzmann& lbm) {
     return val(typed_memory_view(lbm.dataSize(), lbm.obstacleData()));
+}
+
+// ============================================================================
+// GranularSimulator helpers
+// ============================================================================
+
+val getGranularPositions(const GranularSimulator& sim) {
+    return val(typed_memory_view(sim.positionDataSize(), sim.positionData()));
+}
+
+val getGranularVelocities(const GranularSimulator& sim) {
+    return val(typed_memory_view(sim.positionDataSize(), sim.velocityData()));
+}
+
+val getGranularTerrain(const GranularSimulator& sim) {
+    return val(typed_memory_view(sim.terrainWidth(), sim.terrainData()));
 }
 
 // ============================================================================
@@ -1321,6 +1338,68 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("lbmPresetChannel", &lbmPresetChannel);
     function("lbmPresetHighReynolds", &lbmPresetHighReynolds);
     function("lbmPresetLowViscosity", &lbmPresetLowViscosity);
+
+    // =========================================================================
+    // GranularSimulator
+    // =========================================================================
+
+    // GranularConfig struct
+    value_object<GranularConfig>("GranularConfig")
+        .field("numParticles", &GranularConfig::numParticles)
+        .field("boxWidth", &GranularConfig::boxWidth)
+        .field("boxHeight", &GranularConfig::boxHeight)
+        .field("particleRadius", &GranularConfig::particleRadius)
+        .field("gravity", &GranularConfig::gravity)
+        .field("staticFriction", &GranularConfig::staticFriction)
+        .field("dynamicFriction", &GranularConfig::dynamicFriction)
+        .field("restitution", &GranularConfig::restitution)
+        .field("damping", &GranularConfig::damping)
+        .field("dt", &GranularConfig::dt);
+
+    // GranularStats struct
+    value_object<GranularStats>("GranularStats")
+        .field("numParticles", &GranularStats::numParticles)
+        .field("kineticEnergy", &GranularStats::kineticEnergy)
+        .field("avgSpeed", &GranularStats::avgSpeed)
+        .field("activeParticles", &GranularStats::activeParticles)
+        .field("pileHeight", &GranularStats::pileHeight);
+
+    // GranularSimulator class
+    class_<GranularSimulator>("GranularSimulator")
+        .constructor<>()
+        .constructor<const GranularConfig&>()
+        .function("setConfig", &GranularSimulator::setConfig)
+        .function("reset", &GranularSimulator::reset)
+        .function("clear", &GranularSimulator::clear)
+        .function("step", &GranularSimulator::step)
+        .function("stepMultiple", &GranularSimulator::stepMultiple)
+        .function("setTerrainHeight", &GranularSimulator::setTerrainHeight)
+        .function("clearTerrain", &GranularSimulator::clearTerrain)
+        .function("addRamp", &GranularSimulator::addRamp)
+        .function("addFunnel", &GranularSimulator::addFunnel)
+        .function("addPile", &GranularSimulator::addPile)
+        .function("spawnParticles", &GranularSimulator::spawnParticles)
+        .function("spawnStream", &GranularSimulator::spawnStream)
+        .function("setGravity", &GranularSimulator::setGravity)
+        .function("setFriction", &GranularSimulator::setFriction)
+        .function("setRestitution", &GranularSimulator::setRestitution)
+        .function("computeStatistics", &GranularSimulator::computeStatistics)
+        .function("stats", &GranularSimulator::stats)
+        .function("particleCount", &GranularSimulator::particleCount)
+        .function("terrainWidth", &GranularSimulator::terrainWidth)
+        .function("boxWidth", &GranularSimulator::boxWidth)
+        .function("boxHeight", &GranularSimulator::boxHeight);
+
+    // Granular helper functions
+    function("getGranularPositions", &getGranularPositions);
+    function("getGranularVelocities", &getGranularVelocities);
+    function("getGranularTerrain", &getGranularTerrain);
+
+    // Granular presets
+    function("granularPresetSand", &granularPresetSand);
+    function("granularPresetGravel", &granularPresetGravel);
+    function("granularPresetRocks", &granularPresetRocks);
+    function("granularPresetAvalanche", &granularPresetAvalanche);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

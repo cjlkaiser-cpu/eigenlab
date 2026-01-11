@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avalancha Granular - EigenLab WASM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --accent: #d97706;
+            --accent-dim: rgba(217, 119, 6, 0.3);
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-dim: #64748b;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        .header {
+            background: var(--bg-secondary);
+            border-bottom: 1px solid rgba(217, 119, 6, 0.2);
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 500;
+            color: var(--accent);
+        }
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-dim);
+        }
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+        }
+        .breadcrumb a:hover { color: var(--accent); }
+        .main {
+            flex: 1;
+            display: flex;
+            gap: 1rem;
+            padding: 1rem;
+        }
+        .canvas-container {
+            flex: 1;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            overflow: hidden;
+            position: relative;
+        }
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-radius: 0.5rem;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            overflow-y: auto;
+        }
+        .control-group {
+            background: var(--bg-panel);
+            border-radius: 0.5rem;
+            padding: 1rem;
+        }
+        .control-group h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+        }
+        .control-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.5rem;
+        }
+        .control-row:last-child { margin-bottom: 0; }
+        .control-row label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+        .control-row span {
+            font-size: 0.8rem;
+            color: var(--accent);
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+            margin-top: 0.25rem;
+            accent-color: var(--accent);
+        }
+        .btn {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border: none;
+            padding: 0.6rem 1rem;
+            border-radius: 0.375rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        .btn-secondary {
+            background: var(--bg-panel);
+            color: var(--text-primary);
+            border: 1px solid var(--accent-dim);
+        }
+        .btn-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .preset-btn {
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-dim);
+            color: var(--text-secondary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .preset-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .preset-btn.active {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+        .stat-item {
+            background: var(--bg-primary);
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+        .stat-label {
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+        }
+        .equation {
+            background: var(--bg-primary);
+            padding: 0.75rem;
+            border-radius: 0.375rem;
+            font-family: 'Times New Roman', serif;
+            font-size: 0.9rem;
+            text-align: center;
+            color: var(--text-secondary);
+        }
+        .terrain-btns {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+        .terrain-btn {
+            flex: 1;
+            min-width: 60px;
+            background: var(--bg-primary);
+            border: 1px solid var(--accent-dim);
+            color: var(--text-secondary);
+            padding: 0.4rem;
+            border-radius: 0.375rem;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+        .terrain-btn:hover {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        #loading {
+            position: absolute;
+            inset: 0;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 1rem;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid var(--bg-panel);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div>
+            <h1>Avalancha Granular</h1>
+            <nav class="breadcrumb">
+                <a href="../../_portal/index.html">EigenLab</a> /
+                <a href="../../_portal/wasm-labs.html">WASM Labs</a> /
+                <a href="index.html">Geology</a>
+            </nav>
+        </div>
+        <div style="font-size: 0.75rem; color: var(--text-dim);">
+            WASM · Position-Based Dynamics
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">
+                <div class="spinner"></div>
+                <div style="color: var(--text-secondary); font-size: 0.9rem;">Cargando WASM...</div>
+            </div>
+        </div>
+
+        <aside class="controls">
+            <div class="control-group">
+                <h3>Fisica Granular</h3>
+                <div class="equation">
+                    F<sub>friction</sub> = μ · N
+                </div>
+                <p style="font-size: 0.7rem; color: var(--text-dim); margin-top: 0.5rem; line-height: 1.4;">
+                    Simulacion de materiales granulares con friccion estatica/dinamica.
+                    El angulo de reposo emerge naturalmente de las interacciones.
+                </p>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets</h3>
+                <div class="preset-grid">
+                    <button class="preset-btn active" data-preset="sand">Arena</button>
+                    <button class="preset-btn" data-preset="gravel">Grava</button>
+                    <button class="preset-btn" data-preset="rocks">Rocas</button>
+                    <button class="preset-btn" data-preset="avalanche">Avalancha</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Terreno</h3>
+                <div class="terrain-btns">
+                    <button class="terrain-btn" id="btn-ramp">Rampa</button>
+                    <button class="terrain-btn" id="btn-funnel">Embudo</button>
+                    <button class="terrain-btn" id="btn-pile">Pila</button>
+                    <button class="terrain-btn" id="btn-clear-terrain">Limpiar</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parametros</h3>
+                <div class="control-row">
+                    <label>Gravedad</label>
+                    <span id="val-gravity">25</span>
+                </div>
+                <input type="range" id="slider-gravity" min="5" max="50" value="25">
+
+                <div class="control-row">
+                    <label>Friccion Estatica</label>
+                    <span id="val-static">0.70</span>
+                </div>
+                <input type="range" id="slider-static" min="0" max="100" value="70">
+
+                <div class="control-row">
+                    <label>Friccion Dinamica</label>
+                    <span id="val-dynamic">0.50</span>
+                </div>
+                <input type="range" id="slider-dynamic" min="0" max="100" value="50">
+
+                <div class="control-row">
+                    <label>Restitucion</label>
+                    <span id="val-restitution">0.10</span>
+                </div>
+                <input type="range" id="slider-restitution" min="0" max="100" value="10">
+            </div>
+
+            <div class="control-group">
+                <h3>Spawn</h3>
+                <div class="control-row">
+                    <label>Tasa de spawn</label>
+                    <span id="val-rate">50</span>/s
+                </div>
+                <input type="range" id="slider-rate" min="0" max="200" value="50">
+                <div class="btn-row" style="margin-top: 0.5rem;">
+                    <button class="btn" id="btn-spawn">Spawn x100</button>
+                    <button class="btn btn-secondary" id="btn-stream">Stream</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Control</h3>
+                <div class="btn-row">
+                    <button class="btn" id="btn-play">Pausar</button>
+                    <button class="btn btn-secondary" id="btn-reset">Reset</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadisticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-particles">0</div>
+                        <div class="stat-label">Particulas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-active">0</div>
+                        <div class="stat-label">Activas</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-energy">0</div>
+                        <div class="stat-label">Energia</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="stat-height">0</div>
+                        <div class="stat-label">Altura Max</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script src="../../eigenlab-core/build/eigenlab-core.js"></script>
+    <script>
+        // ═══════════════════════════════════════════════════════════════
+        // State
+        // ═══════════════════════════════════════════════════════════════
+        let Module = null;
+        let sim = null;
+        let running = true;
+        let streaming = false;
+        let frameCount = 0;
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // ═══════════════════════════════════════════════════════════════
+        // Canvas Setup
+        // ═══════════════════════════════════════════════════════════════
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // ═══════════════════════════════════════════════════════════════
+        // WASM Initialization
+        // ═══════════════════════════════════════════════════════════════
+        EigenLabCore().then(mod => {
+            Module = mod;
+            document.getElementById('loading').style.display = 'none';
+
+            // Create simulator with sand preset
+            const config = Module.granularPresetSand();
+            sim = new Module.GranularSimulator(config);
+
+            // Add initial terrain
+            sim.addRamp(10, 5, 50, 40);
+
+            // Initial spawn
+            sim.spawnParticles(30, 60, 200, 5);
+
+            setupControls();
+            loop();
+        }).catch(err => {
+            console.error('WASM load error:', err);
+            document.getElementById('loading').innerHTML =
+                '<div style="color: #ef4444;">Error cargando WASM</div>' +
+                '<div style="font-size: 0.75rem; color: var(--text-dim); margin-top: 0.5rem;">' +
+                'Ejecuta: python3 -m http.server 8080</div>';
+        });
+
+        // ═══════════════════════════════════════════════════════════════
+        // Controls
+        // ═══════════════════════════════════════════════════════════════
+        function setupControls() {
+            // Presets
+            document.querySelectorAll('.preset-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+
+                    const preset = btn.dataset.preset;
+                    let config;
+                    switch(preset) {
+                        case 'sand': config = Module.granularPresetSand(); break;
+                        case 'gravel': config = Module.granularPresetGravel(); break;
+                        case 'rocks': config = Module.granularPresetRocks(); break;
+                        case 'avalanche': config = Module.granularPresetAvalanche(); break;
+                    }
+
+                    if (sim) sim.delete();
+                    sim = new Module.GranularSimulator(config);
+                    sim.addRamp(10, 5, 50, 40);
+                    sim.spawnParticles(30, 60, 200, 5);
+
+                    // Update UI
+                    updateSlidersFromConfig(config);
+                });
+            });
+
+            // Terrain buttons
+            document.getElementById('btn-ramp').addEventListener('click', () => {
+                sim.addRamp(20, 5, 80, 35);
+            });
+            document.getElementById('btn-funnel').addEventListener('click', () => {
+                sim.addFunnel(50, 45, 60, 10);
+            });
+            document.getElementById('btn-pile').addEventListener('click', () => {
+                sim.addPile(50, 5, 30, 25);
+            });
+            document.getElementById('btn-clear-terrain').addEventListener('click', () => {
+                sim.clearTerrain();
+            });
+
+            // Parameter sliders
+            const sliderGravity = document.getElementById('slider-gravity');
+            const sliderStatic = document.getElementById('slider-static');
+            const sliderDynamic = document.getElementById('slider-dynamic');
+            const sliderRestitution = document.getElementById('slider-restitution');
+            const sliderRate = document.getElementById('slider-rate');
+
+            sliderGravity.addEventListener('input', () => {
+                const val = parseFloat(sliderGravity.value);
+                document.getElementById('val-gravity').textContent = val;
+                sim.setGravity(val);
+            });
+
+            sliderStatic.addEventListener('input', () => {
+                const val = parseFloat(sliderStatic.value) / 100;
+                document.getElementById('val-static').textContent = val.toFixed(2);
+                sim.setFriction(val, parseFloat(sliderDynamic.value) / 100);
+            });
+
+            sliderDynamic.addEventListener('input', () => {
+                const val = parseFloat(sliderDynamic.value) / 100;
+                document.getElementById('val-dynamic').textContent = val.toFixed(2);
+                sim.setFriction(parseFloat(sliderStatic.value) / 100, val);
+            });
+
+            sliderRestitution.addEventListener('input', () => {
+                const val = parseFloat(sliderRestitution.value) / 100;
+                document.getElementById('val-restitution').textContent = val.toFixed(2);
+                sim.setRestitution(val);
+            });
+
+            sliderRate.addEventListener('input', () => {
+                document.getElementById('val-rate').textContent = sliderRate.value;
+            });
+
+            // Spawn buttons
+            document.getElementById('btn-spawn').addEventListener('click', () => {
+                sim.spawnParticles(50, 70, 100, 8);
+            });
+
+            document.getElementById('btn-stream').addEventListener('click', () => {
+                streaming = !streaming;
+                const btn = document.getElementById('btn-stream');
+                if (streaming) {
+                    btn.textContent = 'Parar';
+                    btn.classList.remove('btn-secondary');
+                    const rate = parseFloat(document.getElementById('slider-rate').value);
+                    sim.spawnStream(50, 75, rate);
+                } else {
+                    btn.textContent = 'Stream';
+                    btn.classList.add('btn-secondary');
+                    sim.spawnStream(0, 0, 0);
+                }
+            });
+
+            // Play/Pause
+            document.getElementById('btn-play').addEventListener('click', () => {
+                running = !running;
+                document.getElementById('btn-play').textContent = running ? 'Pausar' : 'Play';
+            });
+
+            // Reset
+            document.getElementById('btn-reset').addEventListener('click', () => {
+                sim.reset();
+                sim.addRamp(10, 5, 50, 40);
+                sim.spawnParticles(30, 60, 200, 5);
+                streaming = false;
+                document.getElementById('btn-stream').textContent = 'Stream';
+                document.getElementById('btn-stream').classList.add('btn-secondary');
+            });
+
+            // Click to spawn
+            canvas.addEventListener('click', (e) => {
+                const rect = canvas.getBoundingClientRect();
+                const x = (e.clientX - rect.left) / rect.width * sim.boxWidth();
+                const y = (1 - (e.clientY - rect.top) / rect.height) * sim.boxHeight();
+                sim.spawnParticles(x, y, 50, 3);
+            });
+        }
+
+        function updateSlidersFromConfig(config) {
+            document.getElementById('slider-gravity').value = config.gravity;
+            document.getElementById('val-gravity').textContent = config.gravity;
+
+            document.getElementById('slider-static').value = config.staticFriction * 100;
+            document.getElementById('val-static').textContent = config.staticFriction.toFixed(2);
+
+            document.getElementById('slider-dynamic').value = config.dynamicFriction * 100;
+            document.getElementById('val-dynamic').textContent = config.dynamicFriction.toFixed(2);
+
+            document.getElementById('slider-restitution').value = config.restitution * 100;
+            document.getElementById('val-restitution').textContent = config.restitution.toFixed(2);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Rendering
+        // ═══════════════════════════════════════════════════════════════
+        function draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            // Clear
+            ctx.fillStyle = '#0a0805';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!sim) return;
+
+            const boxW = sim.boxWidth();
+            const boxH = sim.boxHeight();
+            const scaleX = w / boxW;
+            const scaleY = h / boxH;
+            const scale = Math.min(scaleX, scaleY);
+            const offsetX = (w - boxW * scale) / 2;
+            const offsetY = (h - boxH * scale) / 2;
+
+            // Draw terrain
+            const terrainData = Module.getGranularTerrain(sim);
+            const terrainWidth = sim.terrainWidth();
+
+            ctx.beginPath();
+            ctx.moveTo(offsetX, h - offsetY);
+
+            for (let i = 0; i < terrainWidth; i++) {
+                const x = offsetX + (i / (terrainWidth - 1)) * boxW * scale;
+                const y = h - offsetY - terrainData[i] * scale;
+                ctx.lineTo(x, y);
+            }
+
+            ctx.lineTo(offsetX + boxW * scale, h - offsetY);
+            ctx.closePath();
+
+            const terrainGrad = ctx.createLinearGradient(0, h, 0, h - 50 * scale);
+            terrainGrad.addColorStop(0, '#5c4033');
+            terrainGrad.addColorStop(0.5, '#8b6914');
+            terrainGrad.addColorStop(1, '#a67c00');
+            ctx.fillStyle = terrainGrad;
+            ctx.fill();
+
+            ctx.strokeStyle = '#d97706';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Draw particles
+            const positions = Module.getGranularPositions(sim);
+            const velocities = Module.getGranularVelocities(sim);
+            const numParticles = sim.particleCount();
+
+            for (let i = 0; i < numParticles; i++) {
+                const px = positions[i * 2];
+                const py = positions[i * 2 + 1];
+                const vx = velocities[i * 2];
+                const vy = velocities[i * 2 + 1];
+
+                const x = offsetX + px * scale;
+                const y = h - offsetY - py * scale;
+
+                // Color by speed
+                const speed = Math.sqrt(vx * vx + vy * vy);
+                const t = Math.min(1, speed / 20);
+
+                // Sand color gradient: slow=tan, fast=orange/yellow
+                const r = Math.floor(210 + t * 45);
+                const g = Math.floor(180 - t * 80);
+                const b = Math.floor(140 - t * 100);
+
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 2.5 * scale / 2, 0, Math.PI * 2);
+                ctx.fill();
+            }
+
+            // Draw box boundaries
+            ctx.strokeStyle = 'rgba(217, 119, 6, 0.3)';
+            ctx.lineWidth = 1;
+            ctx.strokeRect(offsetX, offsetY, boxW * scale, boxH * scale);
+        }
+
+        // ═══════════════════════════════════════════════════════════════
+        // Main Loop
+        // ═══════════════════════════════════════════════════════════════
+        function loop() {
+            if (running && sim) {
+                sim.stepMultiple(3);
+                frameCount++;
+
+                // Update stats every 10 frames
+                if (frameCount % 10 === 0) {
+                    const stats = sim.stats();
+                    document.getElementById('stat-particles').textContent = stats.numParticles;
+                    document.getElementById('stat-active').textContent = stats.activeParticles;
+                    document.getElementById('stat-energy').textContent = stats.kineticEnergy.toFixed(0);
+                    document.getElementById('stat-height').textContent = stats.pileHeight.toFixed(1);
+                }
+            }
+
+            draw();
+            requestAnimationFrame(loop);
+        }
+    </script>
+</body>
+</html>
