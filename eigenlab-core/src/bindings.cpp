@@ -23,6 +23,7 @@
 #include "../include/physics/neural_network.hpp"
 #include "../include/physics/accretion_disk.hpp"
 #include "../include/physics/cellular_automata_3d.hpp"
+#include "../include/physics/mandelbulb.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -596,6 +597,22 @@ val getCA3DAlivePositions(const CellularAutomata3D& ca) {
 
 val getCA3DAliveAges(const CellularAutomata3D& ca) {
     return val(typed_memory_view(ca.aliveCount(), ca.aliveAges()));
+}
+
+// ============================================================================
+// Mandelbulb helpers
+// ============================================================================
+
+val getMandelbulbPoints(const Mandelbulb& mb) {
+    return val(typed_memory_view(mb.pointCount() * 3, mb.surfacePoints()));
+}
+
+val getMandelbulbNormals(const Mandelbulb& mb) {
+    return val(typed_memory_view(mb.pointCount() * 3, mb.surfaceNormals()));
+}
+
+val getMandelbulbColors(const Mandelbulb& mb) {
+    return val(typed_memory_view(mb.pointCount() * 3, mb.surfaceColors()));
 }
 
 // ============================================================================
@@ -1637,6 +1654,53 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("ca3dPresetCrystal", &ca3dPresetCrystal);
     function("ca3dPresetAmoeba", &ca3dPresetAmoeba);
     function("ca3dPresetPyramids", &ca3dPresetPyramids);
+
+    // =========================================================================
+    // Mandelbulb
+    // =========================================================================
+
+    // MandelbulbConfig struct
+    value_object<MandelbulbConfig>("MandelbulbConfig")
+        .field("resolution", &MandelbulbConfig::resolution)
+        .field("maxIterations", &MandelbulbConfig::maxIterations)
+        .field("power", &MandelbulbConfig::power)
+        .field("bailout", &MandelbulbConfig::bailout)
+        .field("zoom", &MandelbulbConfig::zoom)
+        .field("threshold", &MandelbulbConfig::threshold);
+
+    // MandelbulbStats struct
+    value_object<MandelbulbStats>("MandelbulbStats")
+        .field("pointCount", &MandelbulbStats::pointCount)
+        .field("resolution", &MandelbulbStats::resolution)
+        .field("power", &MandelbulbStats::power)
+        .field("maxIterations", &MandelbulbStats::maxIterations);
+
+    // Mandelbulb class
+    class_<Mandelbulb>("Mandelbulb")
+        .constructor<>()
+        .constructor<const MandelbulbConfig&>()
+        .function("setConfig", &Mandelbulb::setConfig)
+        .function("generate", &Mandelbulb::generate)
+        .function("setPower", &Mandelbulb::setPower)
+        .function("setMaxIterations", &Mandelbulb::setMaxIterations)
+        .function("setResolution", &Mandelbulb::setResolution)
+        .function("setZoom", &Mandelbulb::setZoom)
+        .function("distanceEstimate", &Mandelbulb::distanceEstimate)
+        .function("iterationCount", &Mandelbulb::iterationCount)
+        .function("computeStatistics", &Mandelbulb::computeStatistics)
+        .function("stats", &Mandelbulb::stats)
+        .function("pointCount", &Mandelbulb::pointCount);
+
+    // Mandelbulb helper functions
+    function("getMandelbulbPoints", &getMandelbulbPoints);
+    function("getMandelbulbNormals", &getMandelbulbNormals);
+    function("getMandelbulbColors", &getMandelbulbColors);
+
+    // Mandelbulb presets
+    function("mandelbulbPresetClassic", &mandelbulbPresetClassic);
+    function("mandelbulbPresetSmooth", &mandelbulbPresetSmooth);
+    function("mandelbulbPresetSpiky", &mandelbulbPresetSpiky);
+    function("mandelbulbPresetHighDetail", &mandelbulbPresetHighDetail);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

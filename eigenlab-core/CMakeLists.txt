@@ -23,6 +23,7 @@ set(SOURCES
     src/physics/neural_network.cpp
     src/physics/accretion_disk.cpp
     src/physics/cellular_automata_3d.cpp
+    src/physics/mandelbulb.cpp
     src/bindings.cpp
 )
 
