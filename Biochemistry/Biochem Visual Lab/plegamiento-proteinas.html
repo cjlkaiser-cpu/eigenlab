@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plegamiento de Proteínas - EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #030712;
+            --bg-secondary: #0f172a;
+            --bg-panel: #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --accent: #ec4899;
+            --accent-dim: rgba(236, 72, 153, 0.2);
+            --border: #334155;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header {
+            padding: 1rem 1.5rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .breadcrumb {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover {
+            color: var(--accent);
+        }
+
+        .main {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background: var(--bg-primary);
+        }
+
+        #canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .controls {
+            width: 320px;
+            background: var(--bg-secondary);
+            border-left: 1px solid var(--border);
+            padding: 1.5rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .equation-box {
+            background: var(--bg-panel);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            font-family: 'Times New Roman', serif;
+            font-size: 1rem;
+            border: 1px solid var(--border);
+        }
+
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .control-group h3 {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-secondary);
+        }
+
+        .slider-row {
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        .slider-header {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.875rem;
+        }
+
+        .slider-value {
+            color: var(--accent);
+            font-weight: 500;
+        }
+
+        input[type="range"] {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: var(--bg-panel);
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent);
+            cursor: pointer;
+        }
+
+        .button-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.5rem;
+        }
+
+        button {
+            padding: 0.625rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid var(--border);
+            background: var(--bg-panel);
+            color: var(--text-primary);
+        }
+
+        button:hover {
+            background: var(--accent-dim);
+            border-color: var(--accent);
+        }
+
+        button.primary {
+            background: var(--accent);
+            color: var(--bg-primary);
+            border-color: var(--accent);
+        }
+
+        button.primary:hover {
+            background: #db2777;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 0.75rem;
+        }
+
+        .stat-box {
+            background: var(--bg-panel);
+            border-radius: 6px;
+            padding: 0.75rem;
+            text-align: center;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            margin-bottom: 0.25rem;
+        }
+
+        .stat-value {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--accent);
+        }
+
+        .sequence-box {
+            background: var(--bg-panel);
+            border-radius: 6px;
+            padding: 0.75rem;
+            font-family: monospace;
+            font-size: 0.8rem;
+            word-break: break-all;
+            line-height: 1.6;
+        }
+
+        .sequence-box .H {
+            color: #f97316;
+            font-weight: bold;
+        }
+
+        .sequence-box .P {
+            color: #38bdf8;
+        }
+
+        .legend {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.75rem;
+            justify-content: center;
+            padding: 0.5rem;
+            background: var(--bg-panel);
+            border-radius: 6px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .legend-color {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+
+        .hydrophobic-color { background: #f97316; }
+        .polar-color { background: #38bdf8; }
+
+        .status-indicator {
+            padding: 0.5rem;
+            border-radius: 6px;
+            text-align: center;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-folded {
+            background: rgba(34, 197, 94, 0.2);
+            color: #22c55e;
+        }
+
+        .status-unfolded {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+        #loading {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        @media (max-width: 900px) {
+            .main {
+                flex-direction: column;
+            }
+            .controls {
+                width: 100%;
+                border-left: none;
+                border-top: 1px solid var(--border);
+                max-height: 50vh;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Plegamiento de Proteínas</h1>
+        <nav class="breadcrumb">
+            <a href="../../_portal/index.html">EigenLab</a> /
+            <a href="index.html">Biochem Visual Lab</a>
+        </nav>
+    </header>
+
+    <main class="main">
+        <div class="canvas-container">
+            <canvas id="canvas"></canvas>
+            <div id="loading">Cargando WASM...</div>
+        </div>
+
+        <aside class="controls">
+            <div class="equation-box">
+                E = E<sub>bond</sub> + E<sub>LJ</sub> + E<sub>HP</sub>
+            </div>
+
+            <div class="legend">
+                <div class="legend-item">
+                    <div class="legend-color hydrophobic-color"></div>
+                    <span>Hidrofobico (H)</span>
+                </div>
+                <div class="legend-item">
+                    <div class="legend-color polar-color"></div>
+                    <span>Polar (P)</span>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Secuencia</h3>
+                <div class="sequence-box" id="sequenceDisplay">
+                    Cargando...
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Parámetros</h3>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Temperatura</span>
+                        <span class="slider-value" id="tempValue">1.0</span>
+                    </div>
+                    <input type="range" id="temp" min="0.01" max="5" step="0.01" value="1">
+                </div>
+                <div class="slider-row">
+                    <div class="slider-header">
+                        <span>Energía H-H</span>
+                        <span class="slider-value" id="hhValue">-1.0</span>
+                    </div>
+                    <input type="range" id="hhEnergy" min="-5" max="0" step="0.1" value="-1">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Presets de Secuencia</h3>
+                <div class="button-grid">
+                    <button id="presetHelix">α-Hélice</button>
+                    <button id="presetSheet">β-Lámina</button>
+                    <button id="presetCoil">Random Coil</button>
+                    <button id="presetGlobular">Globular</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Método de Plegamiento</h3>
+                <div class="button-grid">
+                    <button id="foldMD" class="primary">Dinámica Molecular</button>
+                    <button id="foldMC">Monte Carlo</button>
+                    <button id="foldSA">Simulated Annealing</button>
+                    <button id="resetBtn">Reiniciar</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estado</h3>
+                <div class="status-indicator" id="foldStatus">
+                    Sin plegar
+                </div>
+            </div>
+
+            <div class="control-group">
+                <h3>Estadísticas</h3>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div class="stat-label">Energía Total</div>
+                        <div class="stat-value" id="statEnergy">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Contactos H-H</div>
+                        <div class="stat-value" id="statHH">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Radio de Giro</div>
+                        <div class="stat-value" id="statRg">0</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Dist. Extremos</div>
+                        <div class="stat-value" id="statEnd">0</div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+    </main>
+
+    <script type="module">
+        // === CONFIG ===
+        const CONFIG = {
+            sequenceLength: 20,
+            stepsPerFrame: 5
+        };
+
+        let Module = null;
+        let protein = null;
+        let paused = false;
+        let foldingMethod = 'md';  // 'md', 'mc', 'sa'
+
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+
+        // === CANVAS SETUP ===
+        function resizeCanvas() {
+            const container = canvas.parentElement;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = container.clientWidth * dpr;
+            canvas.height = container.clientHeight * dpr;
+            ctx.scale(dpr, dpr);
+            canvas.style.width = container.clientWidth + 'px';
+            canvas.style.height = container.clientHeight + 'px';
+        }
+        resizeCanvas();
+        window.addEventListener('resize', resizeCanvas);
+
+        // === WASM LOADING ===
+        async function loadWASM() {
+            const script = document.createElement('script');
+            script.src = '../../_wasm/eigenlab-core.js';
+            document.head.appendChild(script);
+
+            return new Promise((resolve, reject) => {
+                script.onload = async () => {
+                    try {
+                        Module = await EigenLabCore({
+                            locateFile: (path) => '../../_wasm/' + path
+                        });
+                        resolve(Module);
+                    } catch (e) {
+                        reject(e);
+                    }
+                };
+                script.onerror = reject;
+            });
+        }
+
+        // === SIMULATION ===
+        function createSimulation() {
+            const config = new Module.ProteinConfig();
+            config.sequenceLength = CONFIG.sequenceLength;
+            config.temperature = parseFloat(document.getElementById('temp').value);
+            config.hhContactEnergy = parseFloat(document.getElementById('hhEnergy').value);
+            config.use3D = false;
+            config.dt = 0.005;
+
+            if (protein) protein.delete();
+            protein = new Module.ProteinFolding(config);
+            config.delete();
+
+            updateSequenceDisplay();
+        }
+
+        function updateSequenceDisplay() {
+            const seq = protein.getSequence();
+            const display = document.getElementById('sequenceDisplay');
+            display.innerHTML = seq.split('').map(c =>
+                `<span class="${c}">${c}</span>`
+            ).join('');
+        }
+
+        function draw() {
+            const w = canvas.width / (window.devicePixelRatio || 1);
+            const h = canvas.height / (window.devicePixelRatio || 1);
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            if (!protein) return;
+
+            const positions = Module.getProteinPositions(protein);
+            const colors = Module.getProteinColors(protein);
+            const count = protein.residueCount();
+
+            if (count === 0) return;
+
+            // Calculate bounds
+            let minX = Infinity, maxX = -Infinity;
+            let minY = Infinity, maxY = -Infinity;
+
+            for (let i = 0; i < count; i++) {
+                const x = positions[i * 3];
+                const y = positions[i * 3 + 1];
+                minX = Math.min(minX, x);
+                maxX = Math.max(maxX, x);
+                minY = Math.min(minY, y);
+                maxY = Math.max(maxY, y);
+            }
+
+            // Scale and center
+            const padding = 80;
+            const rangeX = maxX - minX || 1;
+            const rangeY = maxY - minY || 1;
+            const scaleX = (w - padding * 2) / rangeX;
+            const scaleY = (h - padding * 2) / rangeY;
+            const scale = Math.min(scaleX, scaleY, 30);
+
+            const cx = w / 2;
+            const cy = h / 2;
+            const offsetX = (minX + maxX) / 2;
+            const offsetY = (minY + maxY) / 2;
+
+            // Draw bonds first
+            ctx.strokeStyle = 'rgba(148, 163, 184, 0.5)';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+
+            for (let i = 0; i < count - 1; i++) {
+                const x1 = cx + (positions[i * 3] - offsetX) * scale;
+                const y1 = cy + (positions[i * 3 + 1] - offsetY) * scale;
+                const x2 = cx + (positions[(i + 1) * 3] - offsetX) * scale;
+                const y2 = cy + (positions[(i + 1) * 3 + 1] - offsetY) * scale;
+
+                ctx.moveTo(x1, y1);
+                ctx.lineTo(x2, y2);
+            }
+            ctx.stroke();
+
+            // Draw residues
+            for (let i = 0; i < count; i++) {
+                const x = cx + (positions[i * 3] - offsetX) * scale;
+                const y = cy + (positions[i * 3 + 1] - offsetY) * scale;
+
+                const r = Math.floor(colors[i * 3] * 255);
+                const g = Math.floor(colors[i * 3 + 1] * 255);
+                const b = Math.floor(colors[i * 3 + 2] * 255);
+
+                // Glow
+                const gradient = ctx.createRadialGradient(x, y, 0, x, y, 20);
+                gradient.addColorStop(0, `rgba(${r}, ${g}, ${b}, 0.4)`);
+                gradient.addColorStop(1, 'transparent');
+                ctx.fillStyle = gradient;
+                ctx.beginPath();
+                ctx.arc(x, y, 20, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Residue
+                ctx.fillStyle = `rgb(${r}, ${g}, ${b})`;
+                ctx.beginPath();
+                ctx.arc(x, y, 10, 0, Math.PI * 2);
+                ctx.fill();
+
+                // Border
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                ctx.lineWidth = 1;
+                ctx.stroke();
+
+                // Label
+                ctx.fillStyle = '#ffffff';
+                ctx.font = '10px Inter';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(i + 1, x, y);
+            }
+
+            // Draw N and C terminals
+            if (count > 0) {
+                const nx = cx + (positions[0] - offsetX) * scale;
+                const ny = cy + (positions[1] - offsetY) * scale;
+                ctx.fillStyle = '#22c55e';
+                ctx.font = 'bold 12px Inter';
+                ctx.fillText('N', nx, ny - 18);
+
+                const cidx = (count - 1) * 3;
+                const cx2 = cx + (positions[cidx] - offsetX) * scale;
+                const cy2 = cy + (positions[cidx + 1] - offsetY) * scale;
+                ctx.fillStyle = '#ef4444';
+                ctx.fillText('C', cx2, cy2 - 18);
+            }
+        }
+
+        let frameCount = 0;
+
+        function updateStats() {
+            const stats = protein.getStats();
+
+            document.getElementById('statEnergy').textContent = stats.totalEnergy.toFixed(1);
+            document.getElementById('statHH').textContent = stats.numHHContacts;
+            document.getElementById('statRg').textContent = stats.radiusOfGyration.toFixed(2);
+            document.getElementById('statEnd').textContent = stats.endToEndDistance.toFixed(2);
+
+            const statusEl = document.getElementById('foldStatus');
+            if (stats.isFolded) {
+                statusEl.textContent = 'Plegada';
+                statusEl.className = 'status-indicator status-folded';
+            } else {
+                statusEl.textContent = 'Sin plegar';
+                statusEl.className = 'status-indicator status-unfolded';
+            }
+        }
+
+        // === CONTROLS ===
+        function setupControls() {
+            document.getElementById('temp').addEventListener('input', (e) => {
+                document.getElementById('tempValue').textContent = parseFloat(e.target.value).toFixed(2);
+                if (protein) protein.setTemperature(parseFloat(e.target.value));
+            });
+
+            document.getElementById('hhEnergy').addEventListener('input', (e) => {
+                document.getElementById('hhValue').textContent = parseFloat(e.target.value).toFixed(1);
+                if (protein) protein.setContactEnergies(
+                    parseFloat(e.target.value), 0, 0
+                );
+            });
+
+            // Presets
+            document.getElementById('presetHelix').addEventListener('click', () => {
+                if (protein) {
+                    protein.presetAlphaHelix();
+                    updateSequenceDisplay();
+                }
+            });
+
+            document.getElementById('presetSheet').addEventListener('click', () => {
+                if (protein) {
+                    protein.presetBetaSheet();
+                    updateSequenceDisplay();
+                }
+            });
+
+            document.getElementById('presetCoil').addEventListener('click', () => {
+                if (protein) {
+                    protein.presetRandomCoil();
+                    updateSequenceDisplay();
+                }
+            });
+
+            document.getElementById('presetGlobular').addEventListener('click', () => {
+                if (protein) {
+                    protein.presetGlobular();
+                    updateSequenceDisplay();
+                }
+            });
+
+            // Folding methods
+            document.getElementById('foldMD').addEventListener('click', () => {
+                foldingMethod = 'md';
+                paused = false;
+            });
+
+            document.getElementById('foldMC').addEventListener('click', () => {
+                foldingMethod = 'mc';
+                paused = false;
+            });
+
+            document.getElementById('foldSA').addEventListener('click', () => {
+                foldingMethod = 'sa';
+                paused = false;
+                if (protein) protein.setTemperature(5.0);
+                document.getElementById('temp').value = 5;
+                document.getElementById('tempValue').textContent = '5.00';
+            });
+
+            document.getElementById('resetBtn').addEventListener('click', () => {
+                createSimulation();
+            });
+        }
+
+        // === ANIMATION LOOP ===
+        function animate() {
+            requestAnimationFrame(animate);
+
+            if (!paused && protein) {
+                if (foldingMethod === 'md') {
+                    protein.foldMolecularDynamics(CONFIG.stepsPerFrame);
+                } else if (foldingMethod === 'mc') {
+                    protein.foldMonteCarlo(CONFIG.stepsPerFrame * 10);
+                } else if (foldingMethod === 'sa') {
+                    protein.foldSimulatedAnnealing(CONFIG.stepsPerFrame * 10);
+                    // Update temp display
+                    const stats = protein.getStats();
+                    document.getElementById('temp').value = stats.temperature;
+                    document.getElementById('tempValue').textContent = stats.temperature.toFixed(2);
+                }
+
+                frameCount++;
+                if (frameCount % 5 === 0) {
+                    updateStats();
+                }
+            }
+
+            draw();
+        }
+
+        // === INIT ===
+        async function init() {
+            setupControls();
+
+            try {
+                await loadWASM();
+                document.getElementById('loading').style.display = 'none';
+                createSimulation();
+                updateStats();
+                animate();
+            } catch (error) {
+                console.error('Failed to load WASM:', error);
+                document.getElementById('loading').textContent = 'Error cargando simulación';
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>
