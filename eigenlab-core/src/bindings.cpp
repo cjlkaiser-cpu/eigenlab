@@ -27,6 +27,7 @@
 #include "../include/physics/electrophoresis.hpp"
 #include "../include/physics/plasma_particles.hpp"
 #include "../include/physics/protein_folding.hpp"
+#include "../include/physics/epidemiology.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -664,6 +665,22 @@ val getProteinColors(const ProteinFolding& pf) {
 
 val getProteinBonds(const ProteinFolding& pf) {
     return val(typed_memory_view(pf.bondCount() * 2, pf.bondIndices()));
+}
+
+// ============================================================================
+// Epidemiology helpers
+// ============================================================================
+
+val getEpidemiologyPositions(const Epidemiology& ep) {
+    return val(typed_memory_view(ep.agentCount() * 2, ep.positionData()));
+}
+
+val getEpidemiologyColors(const Epidemiology& ep) {
+    return val(typed_memory_view(ep.agentCount() * 3, ep.colorData()));
+}
+
+val getEpidemiologyStates(const Epidemiology& ep) {
+    return val(typed_memory_view(ep.agentCount(), ep.stateData()));
 }
 
 // ============================================================================
@@ -1936,6 +1953,75 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("getProteinPositions", &getProteinPositions);
     function("getProteinColors", &getProteinColors);
     function("getProteinBonds", &getProteinBonds);
+
+    // =========================================================================
+    // Epidemiology
+    // =========================================================================
+
+    // HealthState enum
+    enum_<HealthState>("HealthState")
+        .value("Susceptible", HealthState::Susceptible)
+        .value("Infected", HealthState::Infected)
+        .value("Recovered", HealthState::Recovered)
+        .value("Vaccinated", HealthState::Vaccinated)
+        .value("Quarantined", HealthState::Quarantined);
+
+    // EpidemiologyConfig struct
+    value_object<EpidemiologyConfig>("EpidemiologyConfig")
+        .field("numAgents", &EpidemiologyConfig::numAgents)
+        .field("worldSize", &EpidemiologyConfig::worldSize)
+        .field("transmissionRate", &EpidemiologyConfig::transmissionRate)
+        .field("infectionRadius", &EpidemiologyConfig::infectionRadius)
+        .field("recoveryRate", &EpidemiologyConfig::recoveryRate)
+        .field("mortalityRate", &EpidemiologyConfig::mortalityRate)
+        .field("incubationPeriod", &EpidemiologyConfig::incubationPeriod)
+        .field("initialInfected", &EpidemiologyConfig::initialInfected)
+        .field("vaccinationRate", &EpidemiologyConfig::vaccinationRate)
+        .field("enableQuarantine", &EpidemiologyConfig::enableQuarantine)
+        .field("quarantineProbability", &EpidemiologyConfig::quarantineProbability)
+        .field("socialDistancingFactor", &EpidemiologyConfig::socialDistancingFactor)
+        .field("baseSpeed", &EpidemiologyConfig::baseSpeed)
+        .field("dt", &EpidemiologyConfig::dt);
+
+    // EpidemiologyStats struct
+    value_object<EpidemiologyStats>("EpidemiologyStats")
+        .field("totalAgents", &EpidemiologyStats::totalAgents)
+        .field("susceptible", &EpidemiologyStats::susceptible)
+        .field("infected", &EpidemiologyStats::infected)
+        .field("recovered", &EpidemiologyStats::recovered)
+        .field("vaccinated", &EpidemiologyStats::vaccinated)
+        .field("quarantined", &EpidemiologyStats::quarantined)
+        .field("deaths", &EpidemiologyStats::deaths)
+        .field("r0Estimate", &EpidemiologyStats::r0Estimate)
+        .field("peakInfected", &EpidemiologyStats::peakInfected)
+        .field("daysPassed", &EpidemiologyStats::daysPassed)
+        .field("epidemicOver", &EpidemiologyStats::epidemicOver);
+
+    // Epidemiology class
+    class_<Epidemiology>("Epidemiology")
+        .constructor<>()
+        .constructor<const EpidemiologyConfig&>()
+        .function("init", &Epidemiology::init)
+        .function("step", select_overload<void()>(&Epidemiology::step))
+        .function("stepMultiple", select_overload<void(int)>(&Epidemiology::step))
+        .function("setTransmissionRate", &Epidemiology::setTransmissionRate)
+        .function("setRecoveryRate", &Epidemiology::setRecoveryRate)
+        .function("setVaccinationRate", &Epidemiology::setVaccinationRate)
+        .function("enableQuarantine", &Epidemiology::enableQuarantine)
+        .function("setSocialDistancing", &Epidemiology::setSocialDistancing)
+        .function("vaccinateRandom", &Epidemiology::vaccinateRandom)
+        .function("introduceInfected", &Epidemiology::introduceInfected)
+        .function("presetCovid", &Epidemiology::presetCovid)
+        .function("presetFlu", &Epidemiology::presetFlu)
+        .function("presetMeasles", &Epidemiology::presetMeasles)
+        .function("presetEbola", &Epidemiology::presetEbola)
+        .function("getStats", &Epidemiology::getStats)
+        .function("agentCount", &Epidemiology::agentCount);
+
+    // Epidemiology helper functions
+    function("getEpidemiologyPositions", &getEpidemiologyPositions);
+    function("getEpidemiologyColors", &getEpidemiologyColors);
+    function("getEpidemiologyStates", &getEpidemiologyStates);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

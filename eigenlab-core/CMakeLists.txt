@@ -27,6 +27,7 @@ set(SOURCES
     src/physics/electrophoresis.cpp
     src/physics/plasma_particles.cpp
     src/physics/protein_folding.cpp
+    src/physics/epidemiology.cpp
     src/bindings.cpp
 )
 
