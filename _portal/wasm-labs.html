@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">13</div>
+                        <div class="text-2xl font-light text-violet-400">14</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -477,6 +477,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Disco de Acrecion -->
+            <a href="../Astronomy/Astronomy Visual Lab/disco-acrecion.html"
+               class="sim-card block bg-gradient-to-br from-indigo-950/50 to-purple-950/30 rounded-2xl overflow-hidden border border-indigo-500/20 hover:border-indigo-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-accretion" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-indigo-500/20 rounded text-xs text-indigo-300 mono">
+                        Keplerian
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-indigo-500/20 text-indigo-400 rounded">Astronomy</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Disco de Acrecion</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Materia orbitando objeto masivo, viscosidad, temperatura radial, emision continua.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Viscous Flow</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Accretion</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -557,7 +585,8 @@
             molecular: document.getElementById('canvas-molecular'),
             lbm: document.getElementById('canvas-lbm'),
             granular: document.getElementById('canvas-granular'),
-            neural: document.getElementById('canvas-neural')
+            neural: document.getElementById('canvas-neural'),
+            accretion: document.getElementById('canvas-accretion')
         };
 
         function resizeCanvases() {
@@ -1302,6 +1331,76 @@
             }
         }
 
+        // Accretion Disk - Orbiting particles
+        const accretionParticles = [];
+        for (let i = 0; i < 150; i++) {
+            const r = 0.1 + Math.random() * 0.35;
+            const angle = Math.random() * Math.PI * 2;
+            accretionParticles.push({
+                r,
+                angle,
+                speed: 0.3 / Math.sqrt(r), // Keplerian velocity
+                z: (Math.random() - 0.5) * 0.02 * r
+            });
+        }
+
+        function drawAccretion() {
+            const canvas = canvases.accretion;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            const cx = w / 2, cy = h / 2;
+
+            ctx.fillStyle = '#030712';
+            ctx.fillRect(0, 0, w, h);
+
+            // Central glow
+            const glow = ctx.createRadialGradient(cx, cy, 0, cx, cy, w * 0.15);
+            glow.addColorStop(0, 'rgba(255, 255, 255, 0.8)');
+            glow.addColorStop(0.3, 'rgba(255, 200, 100, 0.4)');
+            glow.addColorStop(0.6, 'rgba(255, 100, 50, 0.1)');
+            glow.addColorStop(1, 'transparent');
+            ctx.fillStyle = glow;
+            ctx.fillRect(0, 0, w, h);
+
+            // Central object
+            ctx.fillStyle = '#fff';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 5, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Update and draw particles
+            accretionParticles.forEach(p => {
+                p.angle += p.speed * 0.02;
+
+                const x = cx + Math.cos(p.angle) * p.r * w * 0.9;
+                const y = cy + Math.sin(p.angle) * p.r * h * 0.6;
+
+                // Temperature color (hotter closer to center)
+                const temp = 1 - p.r / 0.45;
+                let r, g, b;
+                if (temp < 0.3) {
+                    r = Math.floor(80 + temp * 170);
+                    g = Math.floor(120 + temp * 130);
+                    b = Math.floor(220);
+                } else if (temp < 0.7) {
+                    const t2 = (temp - 0.3) / 0.4;
+                    r = Math.floor(200 + t2 * 55);
+                    g = Math.floor(180 - t2 * 30);
+                    b = Math.floor(120 - t2 * 100);
+                } else {
+                    r = 255;
+                    g = Math.floor(150 + (temp - 0.7) * 350);
+                    b = Math.floor(20 + (temp - 0.7) * 500);
+                }
+
+                ctx.fillStyle = `rgba(${Math.min(255, r)}, ${Math.min(255, g)}, ${Math.min(255, b)}, 0.8)`;
+                ctx.beginPath();
+                ctx.arc(x, y, 1.5, 0, Math.PI * 2);
+                ctx.fill();
+            });
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -1317,6 +1416,7 @@
             drawLBM();
             drawGranular();
             drawNeural();
+            drawAccretion();
             requestAnimationFrame(animate);
         }
 

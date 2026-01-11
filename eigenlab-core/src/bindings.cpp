@@ -21,6 +21,7 @@
 #include "../include/physics/lattice_boltzmann.hpp"
 #include "../include/physics/granular_sim.hpp"
 #include "../include/physics/neural_network.hpp"
+#include "../include/physics/accretion_disk.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -558,6 +559,22 @@ val getNeuralGateH(const NeuralNetwork& nn) {
 
 val getNeuralSpikes(const NeuralNetwork& nn) {
     return val(typed_memory_view(nn.dataSize(), nn.spikeData()));
+}
+
+// ============================================================================
+// AccretionDisk helpers
+// ============================================================================
+
+val getAccretionPositions(const AccretionDisk& ad) {
+    return val(typed_memory_view(ad.dataSize(), ad.positionData()));
+}
+
+val getAccretionVelocities(const AccretionDisk& ad) {
+    return val(typed_memory_view(ad.dataSize(), ad.velocityData()));
+}
+
+val getAccretionTemperatures(const AccretionDisk& ad) {
+    return val(typed_memory_view(ad.particleCount(), ad.temperatureData()));
 }
 
 // ============================================================================
@@ -1488,6 +1505,61 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("neuralPresetMedium", &neuralPresetMedium);
     function("neuralPresetLarge", &neuralPresetLarge);
     function("neuralPresetFast", &neuralPresetFast);
+
+    // =========================================================================
+    // AccretionDisk
+    // =========================================================================
+
+    // AccretionConfig struct
+    value_object<AccretionConfig>("AccretionConfig")
+        .field("numParticles", &AccretionConfig::numParticles)
+        .field("centralMass", &AccretionConfig::centralMass)
+        .field("innerRadius", &AccretionConfig::innerRadius)
+        .field("outerRadius", &AccretionConfig::outerRadius)
+        .field("diskHeight", &AccretionConfig::diskHeight)
+        .field("viscosity", &AccretionConfig::viscosity)
+        .field("accretionRate", &AccretionConfig::accretionRate)
+        .field("emissionRate", &AccretionConfig::emissionRate)
+        .field("G", &AccretionConfig::G)
+        .field("dt", &AccretionConfig::dt);
+
+    // AccretionStats struct
+    value_object<AccretionStats>("AccretionStats")
+        .field("numParticles", &AccretionStats::numParticles)
+        .field("particlesAccreted", &AccretionStats::particlesAccreted)
+        .field("totalAngularMomentum", &AccretionStats::totalAngularMomentum)
+        .field("avgTemperature", &AccretionStats::avgTemperature)
+        .field("diskMass", &AccretionStats::diskMass)
+        .field("luminosity", &AccretionStats::luminosity);
+
+    // AccretionDisk class
+    class_<AccretionDisk>("AccretionDisk")
+        .constructor<>()
+        .constructor<const AccretionConfig&>()
+        .function("setConfig", &AccretionDisk::setConfig)
+        .function("reset", &AccretionDisk::reset)
+        .function("step", &AccretionDisk::step)
+        .function("stepMultiple", &AccretionDisk::stepMultiple)
+        .function("setCentralMass", &AccretionDisk::setCentralMass)
+        .function("setViscosity", &AccretionDisk::setViscosity)
+        .function("setEmissionRate", &AccretionDisk::setEmissionRate)
+        .function("addParticleBurst", &AccretionDisk::addParticleBurst)
+        .function("computeStatistics", &AccretionDisk::computeStatistics)
+        .function("stats", &AccretionDisk::stats)
+        .function("particleCount", &AccretionDisk::particleCount)
+        .function("innerRadius", &AccretionDisk::innerRadius)
+        .function("outerRadius", &AccretionDisk::outerRadius);
+
+    // Accretion helper functions
+    function("getAccretionPositions", &getAccretionPositions);
+    function("getAccretionVelocities", &getAccretionVelocities);
+    function("getAccretionTemperatures", &getAccretionTemperatures);
+
+    // Accretion presets
+    function("accretionPresetProtostar", &accretionPresetProtostar);
+    function("accretionPresetBlackHole", &accretionPresetBlackHole);
+    function("accretionPresetCompact", &accretionPresetCompact);
+    function("accretionPresetThin", &accretionPresetThin);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

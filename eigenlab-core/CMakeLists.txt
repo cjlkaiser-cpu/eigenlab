@@ -21,6 +21,7 @@ set(SOURCES
     src/physics/lattice_boltzmann.cpp
     src/physics/granular_sim.cpp
     src/physics/neural_network.cpp
+    src/physics/accretion_disk.cpp
     src/bindings.cpp
 )
 
