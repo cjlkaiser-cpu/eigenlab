@@ -18,6 +18,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/heat_diffusion.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/heat_diffusion.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/particle_system.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o.d"
   "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/softbody.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o.d"
+  "/Users/carlos/Projects/EigenLab/eigenlab-core/src/physics/wave_solver.cpp" "CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.o" "gcc" "CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

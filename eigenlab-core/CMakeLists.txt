@@ -16,6 +16,7 @@ set(SOURCES
     src/physics/galaxy_collision.cpp
     src/physics/erosion.cpp
     src/physics/softbody.cpp
+    src/physics/wave_solver.cpp
     src/bindings.cpp
 )
 

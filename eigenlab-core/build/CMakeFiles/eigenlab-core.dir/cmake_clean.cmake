@@ -19,6 +19,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/eigenlab-core.dir/src/physics/particle_system.cpp.o.d"
   "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o"
   "CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.o.d"
+  "CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.o"
+  "CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.o.d"
   "eigenlab-core.js"
   "eigenlab-core.pdb"
 )

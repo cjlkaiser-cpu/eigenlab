@@ -696,4 +696,5 @@ CMakeFiles/eigenlab-core.dir/src/bindings.cpp.o: \
   /Users/carlos/Projects/EigenLab/eigenlab-core/src/../include/physics/galaxy_collision.hpp \
   /Users/carlos/Projects/EigenLab/eigenlab-core/src/../include/physics/erosion.hpp \
   /Users/carlos/Projects/EigenLab/eigenlab-core/src/../include/physics/softbody.hpp \
-  /Users/carlos/Projects/EigenLab/eigenlab-core/include/core/types.hpp
+  /Users/carlos/Projects/EigenLab/eigenlab-core/include/core/types.hpp \
+  /Users/carlos/Projects/EigenLab/eigenlab-core/src/../include/physics/wave_solver.hpp

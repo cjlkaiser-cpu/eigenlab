@@ -18,9 +18,9 @@ Cada simulación incluye: módulo C++, bindings, HTML frontend, indexación en p
 - [x] `HeatDiffusion` - FTCS Laplacian (difusion-calor-wasm.html)
 - [x] `ParticleSystem` - Gas ideal (gas-ideal-wasm.html)
 
-### Pendientes (14 nuevas)
+### Pendientes (13 nuevas)
 - [x] 1. `GalaxyCollision` - Colisión de galaxias (50K+ estrellas) ✅ COMPLETADA
-- [ ] 2. `WaveSolver2D` - Ecuación de onda 2D (estanque, interferencia)
+- [x] 2. `WaveSolver2D` - Ecuación de onda 2D (estanque, interferencia) ✅ COMPLETADA
 - [ ] 3. `MolecularDynamics` - Lennard-Jones (cristalización, fusión)
 - [ ] 4. `LatticeBoltzmann` - LBM fluidos (túnel de viento)
 - [ ] 5. `Avalanche` - Partículas granulares (arena, rocas)
@@ -39,8 +39,8 @@ Cada simulación incluye: módulo C++, bindings, HTML frontend, indexación en p
 
 ## Simulación Actual
 
-**CURRENT_SIM: 2**
-**NOMBRE: WaveSolver2D**
+**CURRENT_SIM: 3**
+**NOMBRE: MolecularDynamics**
 **ESTADO: NOT_STARTED**
 
 ---
@@ -601,8 +601,8 @@ Cada simulación debe cumplir:
 
 ## Progreso Total
 
-**Completadas:** 8/22 (36%)
-**Pendientes:** 14
+**Completadas:** 9/22 (41%)
+**Pendientes:** 13
 
 Cuando llegues al final:
 ```

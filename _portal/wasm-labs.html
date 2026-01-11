@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">8</div>
+                        <div class="text-2xl font-light text-violet-400">9</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -343,6 +343,34 @@
                     </div>
                 </div>
             </a>
+
+            <!-- Ondas 2D -->
+            <a href="../Physics/Physics Visual Lab/ondas-2d-wasm.html"
+               class="sim-card block bg-gradient-to-br from-green-950/50 to-emerald-950/30 rounded-2xl overflow-hidden border border-green-500/20 hover:border-green-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-wave" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-green-500/20 rounded text-xs text-green-300 mono">
+                        PDE Solver
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">Physics</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Ondas 2D</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Ecuacion de onda 2D con diferencias finitas. Gotas interactivas, obstaculos, doble rendija.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">512x512</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Diffraction</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- Tech Stack -->
@@ -418,7 +446,8 @@
             cloth: document.getElementById('canvas-cloth'),
             erosion: document.getElementById('canvas-erosion'),
             heat: document.getElementById('canvas-heat'),
-            gas: document.getElementById('canvas-gas')
+            gas: document.getElementById('canvas-gas'),
+            wave: document.getElementById('canvas-wave')
         };
 
         function resizeCanvases() {
@@ -753,6 +782,45 @@
             });
         }
 
+        // Wave - Rippling water
+        let waveTime = 0;
+        function drawWave() {
+            const canvas = canvases.wave;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            waveTime += 0.05;
+
+            ctx.fillStyle = '#051a20';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw concentric ripples from multiple sources
+            const sources = [
+                { x: 0.3, y: 0.4, phase: 0 },
+                { x: 0.7, y: 0.6, phase: 2 }
+            ];
+
+            for (let y = 0; y < h; y += 4) {
+                for (let x = 0; x < w; x += 4) {
+                    let amplitude = 0;
+                    sources.forEach(src => {
+                        const dx = x / w - src.x;
+                        const dy = y / h - src.y;
+                        const dist = Math.sqrt(dx * dx + dy * dy);
+                        amplitude += Math.sin(dist * 30 - waveTime * 3 + src.phase) * Math.exp(-dist * 3);
+                    });
+
+                    if (Math.abs(amplitude) > 0.1) {
+                        const color = amplitude > 0
+                            ? `rgba(96, 165, 250, ${Math.min(1, Math.abs(amplitude) * 0.8)})`
+                            : `rgba(244, 114, 182, ${Math.min(1, Math.abs(amplitude) * 0.8)})`;
+                        ctx.fillStyle = color;
+                        ctx.fillRect(x, y, 4, 4);
+                    }
+                }
+            }
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -763,6 +831,7 @@
             drawErosion();
             drawHeat();
             drawGas();
+            drawWave();
             requestAnimationFrame(animate);
         }
 

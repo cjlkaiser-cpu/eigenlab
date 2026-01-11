@@ -16,6 +16,7 @@
 #include "../include/physics/galaxy_collision.hpp"
 #include "../include/physics/erosion.hpp"
 #include "../include/physics/softbody.hpp"
+#include "../include/physics/wave_solver.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -451,6 +452,25 @@ val getClothSpringsByType(const ClothSimulator& cs, u8 type) {
     }
 
     return val(typed_memory_view(indices.size(), indices.data()));
+}
+
+// ============================================================================
+// WaveSolver2D helpers
+// ============================================================================
+
+// Get wave height field as Float32Array
+val getWaveHeightField(const WaveSolver2D& ws) {
+    return val(typed_memory_view(ws.getSize(), ws.getHeightField()));
+}
+
+// Get wave velocity field as Float32Array
+val getWaveVelocityField(const WaveSolver2D& ws) {
+    return val(typed_memory_view(ws.getSize(), ws.getVelocityField()));
+}
+
+// Get obstacles mask as Uint8Array
+val getWaveObstacles(const WaveSolver2D& ws) {
+    return val(typed_memory_view(ws.getSize(), ws.getObstacles()));
 }
 
 // ============================================================================
@@ -1069,6 +1089,61 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("collisionPresetMice", &collision_presets::mice);
     function("collisionPresetWhirlpool", &collision_presets::whirlpool);
     function("collisionPresetCartwheel", &collision_presets::cartwheel);
+
+    // ========================================================================
+    // WaveSolver2D
+    // ========================================================================
+
+    // WaveBoundary enum
+    enum_<WaveBoundary>("WaveBoundary")
+        .value("REFLECTIVE", WaveBoundary::REFLECTIVE)
+        .value("ABSORBING", WaveBoundary::ABSORBING)
+        .value("PERIODIC", WaveBoundary::PERIODIC);
+
+    // WaveConfig
+    value_object<WaveConfig>("WaveConfig")
+        .field("width", &WaveConfig::width)
+        .field("height", &WaveConfig::height)
+        .field("waveSpeed", &WaveConfig::waveSpeed)
+        .field("damping", &WaveConfig::damping)
+        .field("dx", &WaveConfig::dx)
+        .field("dt", &WaveConfig::dt)
+        .field("boundary", &WaveConfig::boundary);
+
+    // WaveSolver2D class
+    class_<WaveSolver2D>("WaveSolver2D")
+        .constructor<int, int>()
+        .constructor<const WaveConfig&>()
+        .function("step", &WaveSolver2D::step)
+        .function("reset", &WaveSolver2D::reset)
+        .function("addDrop", &WaveSolver2D::addDrop)
+        .function("addLine", &WaveSolver2D::addLine)
+        .function("addPlaneWave", &WaveSolver2D::addPlaneWave)
+        .function("setObstacle", &WaveSolver2D::setObstacle)
+        .function("addCircleObstacle", &WaveSolver2D::addCircleObstacle)
+        .function("addRectObstacle", &WaveSolver2D::addRectObstacle)
+        .function("clearObstacles", &WaveSolver2D::clearObstacles)
+        .function("setWaveSpeed", &WaveSolver2D::setWaveSpeed)
+        .function("setDamping", &WaveSolver2D::setDamping)
+        .function("setWaveBoundary", &WaveSolver2D::setWaveBoundary)
+        .function("getWidth", &WaveSolver2D::getWidth)
+        .function("getHeight", &WaveSolver2D::getHeight)
+        .function("getSize", &WaveSolver2D::getSize)
+        .function("getWaveSpeed", &WaveSolver2D::getWaveSpeed)
+        .function("getDamping", &WaveSolver2D::getDamping)
+        .function("getEnergy", &WaveSolver2D::getEnergy)
+        .function("getMaxAmplitude", &WaveSolver2D::getMaxAmplitude);
+
+    // Wave helper functions
+    function("getWaveHeightField", &getWaveHeightField);
+    function("getWaveVelocityField", &getWaveVelocityField);
+    function("getWaveObstacles", &getWaveObstacles);
+
+    // Wave presets
+    function("wavePresetCalm", &wavePresetCalm);
+    function("wavePresetPond", &wavePresetPond);
+    function("wavePresetRipple", &wavePresetRipple);
+    function("wavePresetSlit", &wavePresetSlit);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

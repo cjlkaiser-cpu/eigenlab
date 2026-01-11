@@ -414,6 +414,30 @@ src/physics/softbody.cpp.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/softbody.cpp.s
 .PHONY : src/physics/softbody.cpp.s
 
+src/physics/wave_solver.o: src/physics/wave_solver.cpp.o
+.PHONY : src/physics/wave_solver.o
+
+# target to build an object file
+src/physics/wave_solver.cpp.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.o
+.PHONY : src/physics/wave_solver.cpp.o
+
+src/physics/wave_solver.i: src/physics/wave_solver.cpp.i
+.PHONY : src/physics/wave_solver.i
+
+# target to preprocess a source file
+src/physics/wave_solver.cpp.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.i
+.PHONY : src/physics/wave_solver.cpp.i
+
+src/physics/wave_solver.s: src/physics/wave_solver.cpp.s
+.PHONY : src/physics/wave_solver.s
+
+# target to generate assembly for a file
+src/physics/wave_solver.cpp.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/eigenlab-core.dir/build.make CMakeFiles/eigenlab-core.dir/src/physics/wave_solver.cpp.s
+.PHONY : src/physics/wave_solver.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -457,6 +481,9 @@ help:
 	@echo "... src/physics/softbody.o"
 	@echo "... src/physics/softbody.i"
 	@echo "... src/physics/softbody.s"
+	@echo "... src/physics/wave_solver.o"
+	@echo "... src/physics/wave_solver.i"
+	@echo "... src/physics/wave_solver.s"
 .PHONY : help
 
 
