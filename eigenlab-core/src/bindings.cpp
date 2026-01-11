@@ -18,6 +18,7 @@
 #include "../include/physics/softbody.hpp"
 #include "../include/physics/wave_solver.hpp"
 #include "../include/physics/molecular_dynamics.hpp"
+#include "../include/physics/lattice_boltzmann.hpp"
 
 using namespace emscripten;
 using namespace eigenlab;
@@ -486,6 +487,35 @@ val getWaveVelocityField(const WaveSolver2D& ws) {
 // Get obstacles mask as Uint8Array
 val getWaveObstacles(const WaveSolver2D& ws) {
     return val(typed_memory_view(ws.getSize(), ws.getObstacles()));
+}
+
+// ============================================================================
+// LatticeBoltzmann helpers
+// ============================================================================
+
+// Get velocity X field as Float32Array
+val getLBMVelocityX(const LatticeBoltzmann& lbm) {
+    return val(typed_memory_view(lbm.dataSize(), lbm.velocityXData()));
+}
+
+// Get velocity Y field as Float32Array
+val getLBMVelocityY(const LatticeBoltzmann& lbm) {
+    return val(typed_memory_view(lbm.dataSize(), lbm.velocityYData()));
+}
+
+// Get density field as Float32Array
+val getLBMDensity(const LatticeBoltzmann& lbm) {
+    return val(typed_memory_view(lbm.dataSize(), lbm.densityData()));
+}
+
+// Get vorticity field as Float32Array
+val getLBMVorticity(const LatticeBoltzmann& lbm) {
+    return val(typed_memory_view(lbm.dataSize(), lbm.vorticityData()));
+}
+
+// Get obstacle mask as Uint8Array
+val getLBMObstacles(const LatticeBoltzmann& lbm) {
+    return val(typed_memory_view(lbm.dataSize(), lbm.obstacleData()));
 }
 
 // ============================================================================
@@ -1235,6 +1265,62 @@ EMSCRIPTEN_BINDINGS(eigenlab_core) {
     function("mdPresetGas", &mdPresetGas);
     function("mdPresetMelting", &mdPresetMelting);
     function("mdPresetLarge", &mdPresetLarge);
+
+    // =========================================================================
+    // LatticeBoltzmann
+    // =========================================================================
+
+    // LBMConfig struct
+    value_object<LBMConfig>("LBMConfig")
+        .field("width", &LBMConfig::width)
+        .field("height", &LBMConfig::height)
+        .field("tau", &LBMConfig::tau)
+        .field("inletVelocity", &LBMConfig::inletVelocity)
+        .field("useInlet", &LBMConfig::useInlet)
+        .field("useOutlet", &LBMConfig::useOutlet);
+
+    // LBMStats struct
+    value_object<LBMStats>("LBMStats")
+        .field("maxVelocity", &LBMStats::maxVelocity)
+        .field("avgDensity", &LBMStats::avgDensity)
+        .field("reynoldsNumber", &LBMStats::reynoldsNumber)
+        .field("obstacleCount", &LBMStats::obstacleCount);
+
+    // LatticeBoltzmann class
+    class_<LatticeBoltzmann>("LatticeBoltzmann")
+        .constructor<>()
+        .constructor<const LBMConfig&>()
+        .function("setConfig", &LatticeBoltzmann::setConfig)
+        .function("reset", &LatticeBoltzmann::reset)
+        .function("clear", &LatticeBoltzmann::clear)
+        .function("step", &LatticeBoltzmann::step)
+        .function("stepMultiple", &LatticeBoltzmann::stepMultiple)
+        .function("setObstacle", &LatticeBoltzmann::setObstacle)
+        .function("clearObstacles", &LatticeBoltzmann::clearObstacles)
+        .function("addCircleObstacle", &LatticeBoltzmann::addCircleObstacle)
+        .function("addRectObstacle", &LatticeBoltzmann::addRectObstacle)
+        .function("addAirfoil", &LatticeBoltzmann::addAirfoil)
+        .function("setTau", &LatticeBoltzmann::setTau)
+        .function("setInletVelocity", &LatticeBoltzmann::setInletVelocity)
+        .function("getViscosity", &LatticeBoltzmann::getViscosity)
+        .function("computeStatistics", &LatticeBoltzmann::computeStatistics)
+        .function("stats", &LatticeBoltzmann::stats)
+        .function("width", &LatticeBoltzmann::width)
+        .function("height", &LatticeBoltzmann::height)
+        .function("dataSize", &LatticeBoltzmann::dataSize);
+
+    // LBM helper functions
+    function("getLBMVelocityX", &getLBMVelocityX);
+    function("getLBMVelocityY", &getLBMVelocityY);
+    function("getLBMDensity", &getLBMDensity);
+    function("getLBMVorticity", &getLBMVorticity);
+    function("getLBMObstacles", &getLBMObstacles);
+
+    // LBM presets
+    function("lbmPresetWindTunnel", &lbmPresetWindTunnel);
+    function("lbmPresetChannel", &lbmPresetChannel);
+    function("lbmPresetHighReynolds", &lbmPresetHighReynolds);
+    function("lbmPresetLowViscosity", &lbmPresetLowViscosity);
 
     // Constants
     constant("BOLTZMANN", constants::BOLTZMANN);

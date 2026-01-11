@@ -97,7 +97,7 @@
                 </div>
                 <div class="flex items-center gap-4">
                     <div class="text-right">
-                        <div class="text-2xl font-light text-violet-400">10</div>
+                        <div class="text-2xl font-light text-violet-400">11</div>
                         <div class="text-xs text-gray-600">simulaciones</div>
                     </div>
                     <div class="w-px h-10 bg-gray-800"></div>
@@ -371,15 +371,12 @@
 
             <!-- Dinamica Molecular -->
             <a href="../Chemistry/Chemistry Visual Lab/dinamica-molecular.html"
-               class="sim-card block bg-gradient-to-br from-cyan-950/50 to-teal-950/30 rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/50 pulse-border">
+               class="sim-card block bg-gradient-to-br from-cyan-950/50 to-teal-950/30 rounded-2xl overflow-hidden border border-cyan-500/20 hover:border-cyan-500/50">
                 <div class="aspect-video relative overflow-hidden">
                     <canvas id="canvas-molecular" class="absolute inset-0 w-full h-full"></canvas>
                     <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
                     <div class="absolute top-3 right-3 px-2 py-1 bg-cyan-500/20 rounded text-xs text-cyan-300 mono">
                         Lennard-Jones
-                    </div>
-                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
-                        NUEVO
                     </div>
                 </div>
                 <div class="p-5">
@@ -393,6 +390,34 @@
                     <div class="flex gap-2 text-xs">
                         <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Velocity Verlet</span>
                         <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Cell Lists</span>
+                    </div>
+                </div>
+            </a>
+
+            <!-- Lattice Boltzmann -->
+            <a href="../Physics/Physics Visual Lab/lattice-boltzmann.html"
+               class="sim-card block bg-gradient-to-br from-blue-950/50 to-indigo-950/30 rounded-2xl overflow-hidden border border-blue-500/20 hover:border-blue-500/50 pulse-border">
+                <div class="aspect-video relative overflow-hidden">
+                    <canvas id="canvas-lbm" class="absolute inset-0 w-full h-full"></canvas>
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent"></div>
+                    <div class="absolute top-3 right-3 px-2 py-1 bg-blue-500/20 rounded text-xs text-blue-300 mono">
+                        D2Q9 LBM
+                    </div>
+                    <div class="absolute top-3 left-3 px-2 py-1 bg-yellow-500/80 rounded text-xs text-black font-bold">
+                        NUEVO
+                    </div>
+                </div>
+                <div class="p-5">
+                    <div class="flex items-center gap-2 mb-2">
+                        <span class="text-xs px-2 py-0.5 bg-green-500/20 text-green-400 rounded">Physics</span>
+                    </div>
+                    <h3 class="text-lg font-medium mb-2">Lattice Boltzmann</h3>
+                    <p class="text-sm text-gray-500 mb-3">
+                        Tunel de viento D2Q9, vortices de Karman, obstaculos interactivos, perfil alar.
+                    </p>
+                    <div class="flex gap-2 text-xs">
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">BGK Collision</span>
+                        <span class="px-2 py-1 bg-gray-800 rounded text-gray-400">Vorticity</span>
                     </div>
                 </div>
             </a>
@@ -473,7 +498,8 @@
             heat: document.getElementById('canvas-heat'),
             gas: document.getElementById('canvas-gas'),
             wave: document.getElementById('canvas-wave'),
-            molecular: document.getElementById('canvas-molecular')
+            molecular: document.getElementById('canvas-molecular'),
+            lbm: document.getElementById('canvas-lbm')
         };
 
         function resizeCanvases() {
@@ -914,6 +940,77 @@
             });
         }
 
+        // Lattice Boltzmann - Wind tunnel flow
+        let lbmTime = 0;
+        function drawLBM() {
+            const canvas = canvases.lbm;
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const w = canvas.width, h = canvas.height;
+            lbmTime += 0.03;
+
+            ctx.fillStyle = '#050a15';
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw flow lines
+            const numLines = 20;
+            for (let i = 0; i < numLines; i++) {
+                const y0 = (i / numLines) * h;
+
+                ctx.beginPath();
+                ctx.moveTo(0, y0);
+
+                for (let x = 0; x < w; x += 5) {
+                    // Obstacle deflection
+                    const obstacleX = w * 0.3;
+                    const obstacleY = h * 0.5;
+                    const obstacleR = h * 0.15;
+
+                    const dx = x - obstacleX;
+                    const dy = y0 - obstacleY;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+
+                    let yOffset = 0;
+                    if (dist < obstacleR * 2.5) {
+                        // Flow around obstacle
+                        const deflection = (obstacleR * 2 - dist) * 0.3;
+                        yOffset = dy > 0 ? deflection : -deflection;
+
+                        // Add Karman vortex shedding
+                        if (x > obstacleX + obstacleR) {
+                            const vortexPhase = (x - obstacleX) * 0.05 - lbmTime * 3;
+                            yOffset += Math.sin(vortexPhase) * 8 * Math.exp(-(x - obstacleX - obstacleR) / (w * 0.3));
+                        }
+                    }
+
+                    ctx.lineTo(x, y0 + yOffset);
+                }
+
+                const speed = 0.5 + Math.sin(i * 0.5 + lbmTime) * 0.2;
+                ctx.strokeStyle = `rgba(59, 130, 246, ${speed * 0.6})`;
+                ctx.lineWidth = 1;
+                ctx.stroke();
+            }
+
+            // Draw obstacle
+            ctx.fillStyle = '#334155';
+            ctx.beginPath();
+            ctx.arc(w * 0.3, h * 0.5, h * 0.15, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Vortex indicators
+            const vortexX = w * 0.5 + Math.sin(lbmTime * 2) * w * 0.1;
+            ctx.fillStyle = `rgba(239, 68, 68, ${0.3 + Math.sin(lbmTime * 4) * 0.2})`;
+            ctx.beginPath();
+            ctx.arc(vortexX, h * 0.4, 6, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = `rgba(59, 130, 246, ${0.3 + Math.cos(lbmTime * 4) * 0.2})`;
+            ctx.beginPath();
+            ctx.arc(vortexX + 15, h * 0.6, 6, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
         // Animation loop
         function animate() {
             drawGalaxy();
@@ -926,6 +1023,7 @@
             drawGas();
             drawWave();
             drawMolecular();
+            drawLBM();
             requestAnimationFrame(animate);
         }
 

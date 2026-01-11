@@ -18,6 +18,7 @@ set(SOURCES
     src/physics/softbody.cpp
     src/physics/wave_solver.cpp
     src/physics/molecular_dynamics.cpp
+    src/physics/lattice_boltzmann.cpp
     src/bindings.cpp
 )
 
