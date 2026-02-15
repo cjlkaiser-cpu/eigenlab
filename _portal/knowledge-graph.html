@@ -579,6 +579,14 @@
                 { id: "edo-visual", label: "Ecuaciones Diferenciales", type: "simulation", discipline: "mathematics", desc: "Campos de pendientes", url: "../Mathematics/Math Visual Lab/ecuaciones-diferenciales.html" },
                 { id: "campos-vectoriales", label: "Campos Vectoriales", type: "simulation", discipline: "mathematics", desc: "Adveccion RK4 (WASM)", url: "../Mathematics/Math Visual Lab/campos-vectoriales.html" },
 
+                // === PLATONIC LAB ===
+                { id: "platonic-solids", label: "Solidos Platonicos", type: "simulation", discipline: "mathematics", desc: "Los 5 poliedros regulares interactivos", url: "../Mathematics/Platonic Lab/index.html" },
+                { id: "conway-operators", label: "Conway Operators", type: "simulation", discipline: "mathematics", desc: "Dual, ambo, gyro, snub, truncate", url: "../Mathematics/Platonic Lab/index.html" },
+                { id: "polytopes-4d", label: "Politopos 4D", type: "simulation", discipline: "mathematics", desc: "Teseracto, 24-cell, 120-cell", url: "../Mathematics/Platonic Lab/index.html" },
+                { id: "schlegel-diagrams", label: "Diagramas Schlegel", type: "simulation", discipline: "mathematics", desc: "Proyecciones planares de poliedros", url: "../Mathematics/Platonic Lab/index.html" },
+                { id: "kepler-synth", label: "Sintetizador Kepler", type: "simulation", discipline: "mathematics", desc: "Harmonices Mundi sonificado", url: "../Mathematics/Platonic Lab/index.html" },
+                { id: "curso-platonic", label: "Curso Platonico", type: "simulation", discipline: "mathematics", desc: "33 lecciones de Platon a 4D", url: "../Mathematics/Platonic Lab/curso/index.html" },
+
                 // === MATHEMATICS GENERATIVE ART LAB ===
                 { id: "flow-fields", label: "Flow Fields", type: "simulation", discipline: "mathematics", desc: "Campos vectoriales generativos", url: "../Mathematics/Math Generative Art Lab/flow-fields.html" },
                 { id: "fractales-ifs", label: "Fractales IFS", type: "simulation", discipline: "mathematics", desc: "Sistemas de funciones iteradas", url: "../Mathematics/Math Generative Art Lab/fractales-ifs.html" },
@@ -763,6 +771,20 @@
                 { source: "campos-vectoriales", target: "caos" },
                 { source: "campos-vectoriales", target: "edo-visual" },
                 { source: "campos-vectoriales", target: "flow-fields" },
+
+                // PLATONIC LAB connections
+                { source: "platonic-solids", target: "geometria-3d" },
+                { source: "platonic-solids", target: "conway-operators" },
+                { source: "platonic-solids", target: "schlegel-diagrams" },
+                { source: "platonic-solids", target: "curso-platonic" },
+                { source: "conway-operators", target: "schlegel-diagrams" },
+                { source: "polytopes-4d", target: "platonic-solids" },
+                { source: "polytopes-4d", target: "curso-platonic" },
+                { source: "kepler-synth", target: "platonic-solids" },
+                { source: "kepler-synth", target: "ondas-concept" },
+                { source: "curso-platonic", target: "mobius" },
+                { source: "curso-platonic", target: "klein" },
+                { source: "teselaciones-aperiodicas", target: "platonic-solids" },
 
                 // MATHEMATICS GENERATIVE ART LAB internal connections
                 { source: "fractales-ifs", target: "mandelbrot" },
