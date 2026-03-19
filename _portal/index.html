@@ -43,22 +43,9 @@
         .header {
             position: relative;
             overflow: hidden;
-            background: var(--bg-secondary);
-            padding: 3rem 2rem 2.5rem;
+            background: var(--bg-primary);
+            padding: 3.5rem 2rem 3rem;
             text-align: center;
-        }
-
-        .header::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: linear-gradient(90deg,
-                transparent,
-                #22c55e, #06b6d4, #a855f7, #6366f1, #f97316,
-                transparent);
         }
 
         .header-canvas {
@@ -90,8 +77,9 @@
         .header h1 {
             font-size: clamp(2.5rem, 8vw, 5rem);
             font-weight: 300;
-            letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #f8fafc 40%, #94a3b8);
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #22c55e, #06b6d4, #a855f7, #6366f1);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
@@ -1822,8 +1810,7 @@
             function draw() {
                 const w = canvas.offsetWidth;
                 const h = canvas.offsetHeight;
-                ctx.clearRect(0, 0, w, h);
-                ctx.fillStyle = 'rgba(15,23,42,0.0)';
+                ctx.fillStyle = '#030712';
                 ctx.fillRect(0, 0, w, h);
 
                 particles.forEach(p => {
@@ -1851,6 +1838,13 @@
                         }
                     }
                 }
+
+                // Fade to page background at bottom for seamless integration
+                const fade = ctx.createLinearGradient(0, h * 0.55, 0, h);
+                fade.addColorStop(0, 'rgba(3,7,18,0)');
+                fade.addColorStop(1, 'rgba(3,7,18,1)');
+                ctx.fillStyle = fade;
+                ctx.fillRect(0, h * 0.55, w, h * 0.45);
                 requestAnimationFrame(draw);
             }
             draw();
