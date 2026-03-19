@@ -1,3 +1,23 @@
+[submodule "Chemistry/Chemistry Visual Lab"]
+	path = Chemistry/Chemistry Visual Lab
+	url = https://github.com/cjlkaiser-cpu/chemistry-visual-lab.git
+
 [submodule "Mathematics/Euler Lab"]
 	path = Mathematics/Euler Lab
 	url = https://github.com/cjlkaiser-cpu/euler-lab.git
+
+[submodule "Mathematics/Math Generative Art Lab"]
+	path = Mathematics/Math Generative Art Lab
+	url = https://github.com/cjlkaiser-cpu/math-generative-art-lab.git
+
+[submodule "Mathematics/Math Visual Lab"]
+	path = Mathematics/Math Visual Lab
+	url = https://github.com/cjlkaiser-cpu/math-visual-lab.git
+
+[submodule "Physics/Physics Sound Lab"]
+	path = Physics/Physics Sound Lab
+	url = https://github.com/cjlkaiser-cpu/physics-sound-lab.git
+
+[submodule "Physics/Physics Visual Lab"]
+	path = Physics/Physics Visual Lab
+	url = https://github.com/cjlkaiser-cpu/physics-visual-lab.git
