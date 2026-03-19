@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EigenLab - Simulaciones Interactivas</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@300;400&display=swap" rel="stylesheet">
     <style>
         * {
             margin: 0;
@@ -41,64 +41,154 @@
 
         /* Header */
         .header {
+            position: relative;
+            overflow: hidden;
             background: var(--bg-secondary);
-            border-bottom: 1px solid var(--border);
-            padding: 2rem;
+            padding: 3rem 2rem 2.5rem;
             text-align: center;
         }
 
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #22c55e, #06b6d4, #a855f7, #6366f1);
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg,
+                transparent,
+                #22c55e, #06b6d4, #a855f7, #6366f1, #f97316,
+                transparent);
+        }
+
+        .header-canvas {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-label {
+            font-size: 0.65rem;
+            font-weight: 600;
+            letter-spacing: 0.25em;
+            text-transform: uppercase;
+            background: linear-gradient(90deg, #22c55e, #06b6d4, #6366f1, #f97316);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            margin-bottom: 0.5rem;
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.1s forwards;
+        }
+
+        .header h1 {
+            font-size: clamp(2.5rem, 8vw, 5rem);
+            font-weight: 300;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, #f8fafc 40%, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.75rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.25s forwards;
         }
 
         .tagline {
-            font-size: 1.25rem;
+            font-size: clamp(1rem, 2.5vw, 1.25rem);
             color: var(--text-secondary);
-            margin-top: 0.5rem;
             font-weight: 400;
             letter-spacing: 0.01em;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.4s forwards;
         }
 
-        .stats-inline {
-            margin-top: 1.25rem;
-            font-size: 0.875rem;
-            color: var(--text-secondary);
-            letter-spacing: 0.02em;
+        .header-stats {
+            display: flex;
+            justify-content: center;
+            gap: clamp(2rem, 6vw, 4rem);
+            margin: 1.75rem 0 1.5rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.55s forwards;
+        }
+
+        .header-stat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(1.75rem, 5vw, 2.75rem);
+            font-weight: 300;
+            background: linear-gradient(135deg, #fff, #94a3b8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1;
+        }
+
+        .header-stat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #475569;
+            margin-top: 0.3rem;
         }
 
         .epigraph {
-            margin-top: 1.5rem;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-style: italic;
             color: var(--text-secondary);
-            opacity: 0.7;
-            letter-spacing: 0.01em;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.65s forwards;
+            margin-bottom: 1.75rem;
         }
 
-        .paths-link {
-            display: inline-block;
-            margin-top: 1.5rem;
-            padding: 0.625rem 1.25rem;
-            background: linear-gradient(135deg, rgba(34, 197, 94, 0.15), rgba(168, 85, 247, 0.15));
-            border: 1px solid var(--border);
+        .header-nav {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.8s forwards;
+        }
+
+        .nav-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.5rem 1.1rem;
+            border: 1px solid rgba(255,255,255,0.1);
             border-radius: 9999px;
             color: var(--text-primary);
-            font-size: 0.875rem;
+            font-size: 0.8rem;
             font-weight: 500;
             text-decoration: none;
             transition: all 0.2s ease;
+            backdrop-filter: blur(4px);
         }
 
-        .paths-link:hover {
-            border-color: #22c55e;
-            box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+        .nav-btn:hover {
             transform: translateY(-2px);
+        }
+
+        .nav-btn-paths  { background: rgba(34, 197, 94, 0.1); }
+        .nav-btn-paths:hover  { border-color: #22c55e; box-shadow: 0 0 18px rgba(34,197,94,0.25); }
+
+        .nav-btn-graph  { background: rgba(99, 102, 241, 0.1); }
+        .nav-btn-graph:hover  { border-color: #6366f1; box-shadow: 0 0 18px rgba(99,102,241,0.25); }
+
+        .nav-btn-wasm   { background: rgba(168, 85, 247, 0.1); }
+        .nav-btn-wasm:hover   { border-color: #a855f7; box-shadow: 0 0 18px rgba(168,85,247,0.25); }
+
+        .nav-btn-showcase { background: rgba(249, 115, 22, 0.1); }
+        .nav-btn-showcase:hover { border-color: #f97316; box-shadow: 0 0 18px rgba(249,115,22,0.25); }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(16px); }
+            to   { opacity: 1; transform: translateY(0); }
         }
 
         /* Main content */
@@ -341,15 +431,32 @@
 </head>
 <body>
     <header class="header">
-        <h1>EigenLab</h1>
-        <p class="tagline">Donde las ecuaciones cobran vida</p>
-        <p class="stats-inline">131+ simulaciones · 15 laboratorios · 10 disciplinas</p>
-        <p class="epigraph">Las ecuaciones no describen objetos — describen comportamientos.</p>
-        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-            <a href="paths/index.html" class="paths-link">Caminos de Aprendizaje →</a>
-            <a href="knowledge-graph.html" class="paths-link" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.15), rgba(236, 72, 153, 0.15));">Mapa de Conexiones →</a>
-            <a href="wasm-labs.html" class="paths-link" style="background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), rgba(6, 182, 212, 0.15));">⚡ WASM Labs →</a>
-            <a href="showcase.html" class="paths-link" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.15), rgba(236, 72, 153, 0.15));">Showcase →</a>
+        <canvas id="header-canvas" class="header-canvas"></canvas>
+        <div class="header-content">
+            <div class="header-label">Ecosistema Científico Interactivo</div>
+            <h1>EigenLab</h1>
+            <p class="tagline">Donde las ecuaciones cobran vida</p>
+            <div class="header-stats">
+                <div class="header-stat">
+                    <div class="header-stat-value">160+</div>
+                    <div class="header-stat-label">Simulaciones</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value">19</div>
+                    <div class="header-stat-label">Laboratorios</div>
+                </div>
+                <div class="header-stat">
+                    <div class="header-stat-value">10</div>
+                    <div class="header-stat-label">Disciplinas</div>
+                </div>
+            </div>
+            <p class="epigraph">Las ecuaciones no describen objetos — describen comportamientos.</p>
+            <nav class="header-nav">
+                <a href="paths/index.html" class="nav-btn nav-btn-paths">Caminos de Aprendizaje →</a>
+                <a href="knowledge-graph.html" class="nav-btn nav-btn-graph">Mapa de Conexiones →</a>
+                <a href="wasm-labs.html" class="nav-btn nav-btn-wasm">⚡ WASM Labs →</a>
+                <a href="showcase.html" class="nav-btn nav-btn-showcase">Showcase →</a>
+            </nav>
         </div>
     </header>
 
@@ -1686,6 +1793,68 @@
 
             requestAnimationFrame(animate);
         });
+
+        // ── Header particle canvas ──────────────────────────────────────
+        (function() {
+            const canvas = document.getElementById('header-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const COLORS = ['#22c55e','#a855f7','#06b6d4','#ec4899','#f97316','#6366f1','#10b981','#d97706','#3b82f6'];
+
+            function resize() {
+                const dpr = window.devicePixelRatio || 1;
+                canvas.width  = canvas.offsetWidth  * dpr;
+                canvas.height = canvas.offsetHeight * dpr;
+                ctx.scale(dpr, dpr);
+            }
+            window.addEventListener('resize', resize);
+            resize();
+
+            const particles = Array.from({ length: 120 }, () => ({
+                x: Math.random(),
+                y: Math.random(),
+                r: Math.random() * 2 + 0.8,
+                vx: (Math.random() - 0.5) * 0.00025,
+                vy: (Math.random() - 0.5) * 0.00025,
+                color: COLORS[Math.floor(Math.random() * COLORS.length)]
+            }));
+
+            function draw() {
+                const w = canvas.offsetWidth;
+                const h = canvas.offsetHeight;
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = 'rgba(15,23,42,0.0)';
+                ctx.fillRect(0, 0, w, h);
+
+                particles.forEach(p => {
+                    p.x += p.vx; p.y += p.vy;
+                    if (p.x < 0) p.x = 1; if (p.x > 1) p.x = 0;
+                    if (p.y < 0) p.y = 1; if (p.y > 1) p.y = 0;
+                    ctx.beginPath();
+                    ctx.arc(p.x * w, p.y * h, p.r, 0, Math.PI * 2);
+                    ctx.fillStyle = p.color + 'aa';
+                    ctx.fill();
+                });
+
+                ctx.lineWidth = 0.8;
+                for (let i = 0; i < particles.length; i++) {
+                    for (let j = i + 1; j < particles.length; j++) {
+                        const dx = particles[i].x - particles[j].x;
+                        const dy = particles[i].y - particles[j].y;
+                        const d  = Math.sqrt(dx*dx + dy*dy);
+                        if (d < 0.09) {
+                            ctx.strokeStyle = particles[i].color + '28';
+                            ctx.beginPath();
+                            ctx.moveTo(particles[i].x * w, particles[i].y * h);
+                            ctx.lineTo(particles[j].x * w, particles[j].y * h);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
     </script>
 </body>
 </html>
