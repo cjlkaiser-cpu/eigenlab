@@ -2,27 +2,35 @@
 
 **Simulaciones interactivas donde las ecuaciones cobran vida.**
 
-Colección de laboratorios virtuales que cubren Física, Química, Bioquímica, Biología, Geología, Matemáticas, Astronomía y Computación. Cada simulación convierte conceptos abstractos en experiencias visuales, sonoras e interactivas.
+Ecosistema de laboratorios virtuales que cubre Física, Química, Bioquímica, Biología, Geología, Matemáticas, Astronomía, Computación, IA y Música. Cada simulación convierte conceptos abstractos en experiencias visuales, sonoras e interactivas.
 
 ---
 
 ## Laboratorios
 
-| Disciplina | Laboratorio | Simulaciones | Descripción |
-|------------|-------------|--------------|-------------|
-| **Physics** | [Physics Visual Lab](Physics/Physics%20Visual%20Lab/) | 22 | Mecánica, ondas, fluidos, termodinámica, relatividad |
-| **Physics** | [Physics Sound Lab](Physics/Physics%20Sound%20Lab/) | 7+ | Metrónomos físicos y música generativa |
-| **Chemistry** | [Chemistry Visual Lab](Chemistry/Chemistry%20Visual%20Lab/) | 18 | Estructura atómica, termodinámica, electroquímica |
-| **Biochemistry** | [Biochem Visual Lab](Biochemistry/Biochem%20Visual%20Lab/) | 15 | ADN, proteínas, metabolismo celular |
-| **Biology** | [Biology Visual Lab](Biology/Biology%20Visual%20Lab/) | 8 | Neurociencia, ecología, genética, boids |
-| **Geology** | [Geology Visual Lab](Geology/Geology%20Visual%20Lab/) | 7 | Tectónica, terremotos, volcanes, erosión hidráulica |
-| **Mathematics** | [Math Visual Lab](Mathematics/Math%20Visual%20Lab/) | 28 | Fractales, caos, teoría de números, topología, campos vectoriales |
-| **Mathematics** | [Math Generative Art Lab](Mathematics/Math%20Generative%20Art%20Lab/) | 7 | Reacción-difusión, L-Systems, flow fields |
-| **Astronomy** | [Astronomy Visual Lab](Astronomy/Astronomy%20Visual%20Lab/) | 8 | Hubble, agujeros negros, formación de galaxias, anillos de Saturno |
+| Disciplina | Laboratorio | Sims | Descripción |
+|------------|-------------|:----:|-------------|
+| **Physics** | [Physics Visual Lab](Physics/Physics%20Visual%20Lab/) | 30 | Mecánica, ondas, fluidos, termodinámica, relatividad, WASM |
+| **Physics** | [Physics Sound Lab](Physics/Physics%20Sound%20Sound/) | 14 | Metrónomos físicos (7) + música generativa (7) |
+| **Chemistry** | [Chemistry Visual Lab](Chemistry/Chemistry%20Visual%20Lab/) | 19 | Estructura atómica, equilibrio, electroquímica, gases |
+| **Biochemistry** | [Biochem Visual Lab](Biochemistry/Biochem%20Visual%20Lab/) | 18 | ADN, proteínas, metabolismo, membranas |
+| **Biology** | [Biology Visual Lab](Biology/Biology%20Visual%20Lab/) | 11 | Hodgkin-Huxley, Lotka-Volterra, boids masivo, circadianos |
+| **Geology** | [Geology Visual Lab](Geology/Geology%20Visual%20Lab/) | 10 | Tectónica, terremotos, volcanes, erosión hidráulica (WASM) |
+| **Mathematics** | [Math Visual Lab](Mathematics/Math%20Visual%20Lab/) | 28 | Fractales, caos, topología, campos vectoriales (WASM) |
+| **Mathematics** | [Math Generative Art Lab](Mathematics/Math%20Generative%20Art%20Lab/) | 9 | Reacción-difusión, L-Systems, flow fields, Mandelbulb |
+| **Mathematics** | [Math Sound Lab](Mathematics/Math%20Sound%20Lab/) | 11 | Sonificación matemática: Lorenz, Fourier, primos, Markov |
+| **Mathematics** | [Chaos Lab](Mathematics/Chaos%20Lab/) | curso | 10 atractores extraños + 30 lecciones |
+| **Mathematics** | [Platonic Lab](Mathematics/Platonic%20Lab/) | curso | Poliedros, 4D, Conway operators + 33 lecciones |
+| **Astronomy** | [Astronomy Visual Lab](Astronomy/Astronomy%20Visual%20Lab/) | 11 | Hubble, agujeros negros, galaxias (WASM), anillos Saturno |
 | **Astronomy** | [Astronomy Sound Lab](Astronomy/Astronomy%20Sound%20Lab/) | 3 | Púlsares, ondas gravitacionales, música de las esferas |
-| **Computation** | [Computation Lab](Computation/Computation%20Lab/) | 6 | Algoritmos, estructuras de datos, redes neuronales, autómatas |
+| **Computation** | [Computation Lab](Computation/Computation%20Lab/) | 6 | Algoritmos, estructuras de datos, autómatas, perceptrón |
+| **AI** | [AI Visual Lab](AI/AI%20Visual%20Lab/) | 20 | Redes neuronales, transformers, difusión, RL, LLMs |
+| **Music** | [Music Theory Lab](Music/Music%20Theory%20Lab/) | 9 | Sistema Armónico Áureo: escalas, armonía y composición con φ |
 
-**Total: 11 laboratorios · 122 simulaciones · 8 disciplinas**
+**Total: 16 laboratorios · ~199 simulaciones · 10 disciplinas**
+
+> Incluye 2 cursos estructurados (Chaos Lab, Platonic Lab) y Euler Lab (100 problemas en submodule).
+> Portal unificado con Knowledge Graph interactivo (167 nodos) y 12 caminos de aprendizaje.
 
 ---
 
@@ -31,9 +39,11 @@ Colección de laboratorios virtuales que cubren Física, Química, Bioquímica, 
 ```
 EigenLab/
 ├── _portal/                    # Portal unificado
-│   ├── index.html              # Landing page
-│   ├── knowledge-graph.html    # Mapa de conexiones interactivo
-│   └── paths/                  # Caminos de aprendizaje
+│   ├── index.html              # Landing page (10 disciplinas)
+│   ├── academia.html           # Cursos, teoría y papers académicos
+│   ├── knowledge-graph.html    # Mapa D3.js (167 nodos, 409 enlaces)
+│   ├── wasm-labs.html          # Catálogo de simulaciones WASM
+│   └── paths/                  # 12 caminos de aprendizaje interdisciplinarios
 │
 ├── _templates/                 # Plantillas reutilizables
 │   ├── simulation-2d.html      # Base para simulaciones Canvas 2D
@@ -42,39 +52,49 @@ EigenLab/
 │
 ├── _wasm/                      # Binarios WebAssembly compartidos
 │   ├── eigenlab-core.js        # Glue code Emscripten
-│   └── eigenlab-core.wasm      # Motor compilado (158KB)
+│   └── eigenlab-core.wasm      # Motor compilado (~330KB, 22 módulos)
 │
-├── eigenlab-core/              # Código fuente C++ del motor
+├── eigenlab-core/              # Motor C++17 compilado con Emscripten
 │   ├── include/                # Headers (.hpp)
-│   ├── src/                    # Implementaciones (.cpp)
+│   ├── src/physics/            # 22 módulos: fluidos, boids, N-body...
 │   └── CMakeLists.txt          # Build system
 │
 ├── Physics/
-│   ├── Physics Visual Lab/     # Simulaciones visuales de física
-│   └── Physics Sound Lab/      # Sonificación y música generativa
+│   ├── Physics Visual Lab/     # 30 sims: mecánica, fluidos, relatividad
+│   └── Physics Sound Lab/      # 14 sims: metrónomos + generativos
 │
 ├── Chemistry/
-│   └── Chemistry Visual Lab/   # Simulaciones de química
+│   └── Chemistry Visual Lab/   # 19 sims: atómica, termodinámica
 │
 ├── Biochemistry/
-│   └── Biochem Visual Lab/     # Simulaciones de bioquímica
+│   └── Biochem Visual Lab/     # 18 sims: ADN, metabolismo, proteínas
 │
 ├── Biology/
-│   └── Biology Visual Lab/     # Simulaciones de biología
+│   └── Biology Visual Lab/     # 11 sims: neurona, ecosistema, boids
 │
 ├── Geology/
-│   └── Geology Visual Lab/     # Simulaciones de geología
+│   └── Geology Visual Lab/     # 10 sims: tectónica, erosión hidráulica
 │
 ├── Mathematics/
-│   ├── Math Visual Lab/        # Visualizaciones matemáticas
-│   └── Math Generative Art Lab/# Arte generativo matemático
+│   ├── Math Visual Lab/        # 28 sims: fractales, caos, topología
+│   ├── Math Generative Art Lab/# 9 sims: Gray-Scott, L-Systems, Mandelbulb
+│   ├── Math Sound Lab/         # 11 sims: sonificación matemática
+│   ├── Chaos Lab/              # Curso: 10 atractores + 30 lecciones
+│   ├── Platonic Lab/           # Curso: poliedros, 4D + 33 lecciones
+│   └── Euler Lab/              # Curso: 100 problemas, 4 niveles (submodule)
 │
 ├── Astronomy/
-│   ├── Astronomy Visual Lab/   # Cosmología y astrofísica
-│   └── Astronomy Sound Lab/    # Sonificación del cosmos
+│   ├── Astronomy Visual Lab/   # 11 sims: cosmología, galaxias, Saturno
+│   └── Astronomy Sound Lab/    # 3 sims: púlsares, LIGO, esferas
 │
 ├── Computation/
-│   └── Computation Lab/        # Algoritmos y ciencias de la computación
+│   └── Computation Lab/        # 6 sims: algoritmos, autómatas, perceptrón
+│
+├── AI/
+│   └── AI Visual Lab/          # 20 sims: redes, transformers, difusión
+│
+├── Music/
+│   └── Music Theory Lab/       # 9 sims: Sistema Armónico Áureo (φ)
 │
 ├── README.md                   # Este archivo
 └── ROADMAP.md                  # Plan de desarrollo futuro
@@ -96,15 +116,16 @@ EigenLab/
 
 Para simulaciones que requieren miles de cálculos por frame, usamos un motor C++ compilado a WebAssembly:
 
-| Módulo | Algoritmo | Rendimiento |
-|--------|-----------|-------------|
-| **FluidSolver** | Navier-Stokes 2D | 256×256 celdas @ 60fps |
-| **BoidSystem** | Reynolds + spatial hash | 1000+ agentes @ 60fps |
-| **GalaxySimulator** | Barnes-Hut N-body | 5000+ partículas @ 30fps |
-| **ErosionSimulator** | Erosión hidráulica | 256×256 terreno |
-| **ClothSimulator** | Verlet + PBD | 1200 partículas @ 60fps |
-| **SaturnRings** | Keplerian orbits | 10000+ partículas @ 60fps |
-| **VectorFields** | RK4 advection | 500+ partículas @ 60fps |
+| Módulo | Algoritmo | Sim desplegada |
+|--------|-----------|----------------|
+| **FluidSolver** | Navier-Stokes 2D | `fluidos-2d.html` |
+| **BoidSystem** | Reynolds + spatial hash | `boids-masivo.html` |
+| **GalaxySimulator** | Barnes-Hut N-body | `formacion-galaxias.html` |
+| **ErosionSimulator** | Erosión hidráulica | `erosion-hidraulica.html` |
+| **ClothSimulator** | Verlet + PBD | `simulacion-tela.html` |
+| **SaturnRings** | Keplerian orbits | `anillos-saturno.html` |
+| **VectorFields** | RK4 advection | `campos-vectoriales.html` |
+| **+ 15 módulos** | Mandelbulb, MD, epidemiología... | pendientes de front-end |
 
 ```bash
 # Compilar el motor (requiere Emscripten)
@@ -139,8 +160,8 @@ emcmake cmake .. && emmake make -j4
 
 Visualización interactiva de todas las simulaciones y sus conexiones conceptuales.
 
-- **~110 nodos** - Simulaciones + conceptos transversales (RK4, Caos, Energía...)
-- **~230 conexiones** - Intra e inter-disciplina
+- **167 nodos** - Simulaciones + conceptos transversales (RK4, Caos, Entropía, φ...)
+- **409 conexiones** - Intra e inter-disciplina
 - **Navegable** - Click abre simulación, Ctrl+Click nueva pestaña
 - **Ondas de propagación** - Click en conceptos propaga onda visual
 
@@ -161,6 +182,13 @@ Rutas guiadas que conectan simulaciones de distintas disciplinas a través de un
 | **Estados y Transiciones** | Máquinas que cambian | Computation → Biology → Chemistry → Geology |
 | **Algoritmos en Acción** | Cómo resuelven problemas | Computation → Math |
 | **Emergencia** | Lo simple genera lo complejo | Math → Biology |
+| **Energía en Transformación** | Conservación y disipación | Physics → Chemistry → Biochemistry |
+| **Patrones de la Naturaleza** | Fibonacci, fractales | Math → Biology → Geology |
+| **Del Átomo al Cosmos** | Escalas del universo | Chemistry → Physics → Astronomy |
+| **Ondas Everywhere** | Propagación | Physics → Math → Astronomy → Music |
+| **Retroalimentación** | Feedback loops | Biology → Chemistry → Computation |
+| **Información y Complejidad** | Bits a comportamiento | Computation → Math → AI |
+| **Simetría y Ruptura** | Orden y desorden | Math → Physics → Chemistry |
 
 Cada camino incluye:
 - Introducción al concepto unificador
@@ -194,14 +222,16 @@ python3 -m http.server 8080
 open http://localhost:8080/Physics/Physics%20Visual%20Lab/fluidos-2d.html
 ```
 
-**Simulaciones WASM:**
-- `fluidos-2d.html` - Navier-Stokes
-- `simulacion-tela.html` - Cloth physics
-- `boids-masivo.html` - Flocking
-- `formacion-galaxias.html` - N-body
-- `erosion-hidraulica.html` - Terrain erosion
-- `anillos-saturno.html` - Saturn rings
-- `campos-vectoriales.html` - Vector fields
+**Simulaciones WASM desplegadas (7):**
+- `fluidos-2d.html` — Navier-Stokes 2D
+- `simulacion-tela.html` — Cloth physics (Verlet + PBD)
+- `boids-masivo.html` — Flocking (Reynolds, 1000+ agentes)
+- `formacion-galaxias.html` — N-body Barnes-Hut
+- `erosion-hidraulica.html` — Erosión hidráulica por gotas
+- `anillos-saturno.html` — Anillos Keplerianos (10K+ partículas)
+- `campos-vectoriales.html` — Advección RK4
+
+> El motor tiene **22 módulos compilados**; 15 pendientes de front-end (Mandelbulb, dinámica molecular, epidemiología espacial, plasma, proteínas...).
 
 ---
 
@@ -233,12 +263,14 @@ Personaliza:
 | Physics Visual | Verde | `#22c55e` |
 | Physics Sound | Púrpura | `#a855f7` |
 | Chemistry | Cyan | `#06b6d4` |
-| Biochemistry | Rosa | `#ec4899` |
+| Biochemistry | Rosa oscuro | `#ec4899` |
 | Biology | Esmeralda | `#10b981` |
 | Geology | Ámbar | `#d97706` |
 | Mathematics | Naranja | `#f97316` |
 | Astronomy | Índigo | `#6366f1` |
-| Computation | Electric Blue | `#3b82f6` |
+| Computation | Azul eléctrico | `#3b82f6` |
+| AI | Violeta | `#8b5cf6` |
+| Music | Rosa | `#f472b6` |
 
 ---
 
