@@ -24,8 +24,9 @@ Plan de desarrollo y crecimiento del ecosistema de laboratorios virtuales.
 | Computation Lab | 6 | 6 | 100% |
 | AI Visual Lab | 20 | 21 | 100% |
 | Music Theory Lab | 9 | 0 | 0% |
+| Contrapunctus | 3/5 species | 0 | — |
 
-**Total: ~199 simulaciones · 91 guías · 46% cobertura global**
+**Total: ~200 simulaciones · 91 guías · 46% cobertura global**
 
 > Cursos: Chaos Lab (10 atractores + 30 lecciones), Platonic Lab (poliedros 4D + 33 lecciones), Euler Lab (100 problemas, 4 niveles).
 
@@ -74,6 +75,53 @@ emcmake cmake .. && emmake make -j4
 > Cada simulacion debe poder responder la pregunta: "¿que pasa si cambio esto?"
 > Cada guia debe poder responder: "¿por que importa esto?"
 > El ecosistema se nutre a si mismo: las guias revelan gaps, los gaps generan nuevas simulaciones.
+
+---
+
+## Proyectos Flagship en Desarrollo
+
+Proyectos de mayor complejidad y ambicion del ecosistema. No son simulaciones individuales: son aplicaciones completas con arquitectura propia.
+
+### Contrapunctus · Species Counterpoint Trainer
+
+**Ruta:** `Physics/Physics Sound Lab/generativos/contrapunctus/`
+**Estado:** v0.6.0 — 3/5 especies completas (Species 1, 2, 3)
+**Portal:** tarjeta en Music (marzo 2026) · nodo en Knowledge Graph ✅
+
+**Que es:** Entrenador pedagógico de contrapunto riguroso basado en Fux (1725) y Schoenberg (1963). Arquitectura modular: `Pitch.js`, `Interval.js`, `Scale.js`, `CantusFirmus.js` + validadores por especie. SoundFonts via smplr (6 instrumentos), Canvas interactivo, exportación MusicXML.
+
+**Pendiente:**
+
+| Fase | Contenido | Estado |
+|------|-----------|:------:|
+| Species 4 — Suspensiones | Ligaduras, retardos 7-6, 2-3, 9-8 | Pendiente |
+| Species 5 — Floridus | Combinacion libre de figuras | Pendiente |
+| 3 voces | Reglas de choque, cruce, 8as paralelas en 3 partes | Pendiente |
+| SATB | Coral barroco completo (4 voces) | Pendiente |
+| Herramientas pedagogicas | Modo visualizacion de errores, quiz, estadisticas | Pendiente |
+
+### NeuroFux · Arquitectura ML para Contrapunto
+
+**Donde vive:** Contrapunctus VISION.md — propuesta de investigacion para ML neural-simbolico.
+
+**Arquitectura:**
+- **Mamba backbone** (O(n) vs Transformer O(n²)) — modelo de secuencia eficiente
+- **Rule-Augmented Head** — capa final que aplica reglas de Fux como restricciones duras
+- **Fux Loss** — función de pérdida híbrida: cross-entropy + penalizacion de violaciones de reglas
+- **Lookahead Beam Search** — decodificacion consciente del contexto futuro
+- **VerticalContextEncoder** — Multi-Hot Harmony para contexto armónico vertical (todas las voces)
+- **Curriculum Learning** — entrenamiento progresivo: Species 1 → 5 → SATB
+
+**Comparacion:** Supera la arquitectura de DeepBach (Hadjeres et al., ICML 2017) en capacidad de contraint enforcement y eficiencia de secuencia.
+
+**Ruta de activacion:**
+1. Completar Contrapunctus Species 4 y 5 (datos de entrenamiento con validators)
+2. Implementar NeuroFux en Python/PyTorch, entrenar sobre corales de Bach
+3. Exportar a ONNX → correr inference en browser (via onnxruntime-web)
+4. Integrar como modo "Sugerencia IA" en Contrapunctus UI
+5. Publicar como paper o preprint (arXiv cs.SD / cs.LG)
+
+**Conexion con AI Visual Lab:** cuando NeuroFux tenga modelo entrenado, merece nodo propio en AI.
 
 ---
 

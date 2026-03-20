@@ -656,6 +656,10 @@
                 { id: "armonizador-12-phiW", label: "Armonizador 12 phiW", type: "simulation", discipline: "music", desc: "Acordes en sistema phi-weighted", url: "../Music/Music Theory Lab/armonizador-12-phiW.html" },
                 { id: "compositor-12-phiW", label: "Compositor 12 phiW", type: "simulation", discipline: "music", desc: "Composicion phi-weighted", url: "../Music/Music Theory Lab/compositor-12-phiW.html" },
 
+                // === CONTRAPUNCTUS ===
+                { id: "contrapunctus", label: "Contrapunctus", type: "simulation", discipline: "music", desc: "Species Counterpoint Trainer — Fux 1725 + Schoenberg 1963", url: "../Physics/Physics Sound Lab/generativos/contrapunctus/index.html" },
+                { id: "neurofux", label: "NeuroFux", type: "simulation", discipline: "ai", desc: "Neuro-symbolic AI: Mamba backbone + Fux Loss + Lookahead Beam Search", url: "../Physics/Physics Sound Lab/generativos/contrapunctus/index.html" },
+
                 // === MATHEMATICS - SCULPT & PUZZLE LABS ===
                 { id: "sculpt-lab", label: "Sculpt Lab", type: "simulation", discipline: "mathematics", desc: "Escultura matematica con exportacion STL", url: "../Mathematics/Math Visual Lab/sculpt-lab/index.html" },
                 { id: "puzzle-lab", label: "Puzzle Lab", type: "simulation", discipline: "mathematics", desc: "Puzzles 3D imprimibles (Soma, Tangram)", url: "../Mathematics/Math Visual Lab/puzzle-lab/index.html" },
@@ -1180,6 +1184,25 @@
                 { source: "escala-cromatica-aurea", target: "tonnetz-atractor", cross: true },
                 { source: "compositor-aureo", target: "rameau-machine", cross: true },
                 { source: "armonizador-aureo", target: "orbifold-walker", cross: true },
+
+                // CONTRAPUNCTUS internal connections
+                { source: "contrapunctus", target: "neurofux" },
+                { source: "neurofux", target: "deep-learning" },
+                { source: "neurofux", target: "lstm" },
+                { source: "neurofux", target: "neural-networks" },
+
+                // Contrapunctus <-> Music cross-connections
+                { source: "contrapunctus", target: "rameau-machine", cross: true },
+                { source: "contrapunctus", target: "orbifold-walker", cross: true },
+                { source: "contrapunctus", target: "tonnetz-atractor", cross: true },
+                { source: "contrapunctus", target: "compositor-aureo", cross: true },
+
+                // Contrapunctus <-> Computation/AI cross-connections
+                { source: "contrapunctus", target: "finite-automata", cross: true },
+                { source: "contrapunctus", target: "algoritmos", cross: true },
+                { source: "neurofux", target: "backpropagation", cross: true },
+                { source: "neurofux", target: "transformer", cross: true },
+                { source: "neurofux", target: "markov-generativas", cross: true },
 
                 // SCULPT LAB connections
                 { source: "sculpt-lab", target: "fabricacion-3d" },
