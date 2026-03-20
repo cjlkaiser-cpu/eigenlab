@@ -376,6 +376,78 @@
             --card-glow: rgba(239, 68, 68, 0.15);
         }
 
+        /* Depth badges */
+        .lab-depth {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+            margin-top: 0.875rem;
+            padding-top: 0.875rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .depth-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.25rem;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+        }
+
+        .depth-sims {
+            background: rgba(255,255,255,0.05);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .depth-guides {
+            background: rgba(255,255,255,0.04);
+            color: var(--card-accent);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .depth-course {
+            background: rgba(251,191,36,0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(251,191,36,0.2);
+            font-weight: 600;
+        }
+
+        .depth-paper {
+            background: rgba(139,92,246,0.1);
+            color: #a78bfa;
+            border: 1px solid rgba(139,92,246,0.2);
+            font-weight: 600;
+        }
+
+        .depth-theory {
+            background: rgba(236,72,153,0.08);
+            color: #f472b6;
+            border: 1px solid rgba(236,72,153,0.18);
+        }
+
+        /* Elevated cards (with course or paper) */
+        .lab-card.has-course,
+        .lab-card.has-paper {
+            border-color: rgba(255,255,255,0.1);
+        }
+
+        .lab-card.has-course:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35),
+                        0 0 35px var(--card-glow),
+                        0 0 0 1px rgba(251,191,36,0.3);
+        }
+
+        .lab-card.has-paper:hover {
+            box-shadow: 0 20px 40px rgba(0,0,0,0.35),
+                        0 0 35px var(--card-glow),
+                        0 0 0 1px rgba(139,92,246,0.3);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -466,7 +538,7 @@
             </div>
 
             <div class="labs-grid">
-                <a href="https://cjlkaiser-cpu.github.io/physics-visual-lab/" class="lab-card physics-visual">
+                <a href="https://cjlkaiser-cpu.github.io/physics-visual-lab/" class="lab-card physics-visual has-guides">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-physics-visual"></canvas>
                         <span class="lab-badge">19 sims</span>
@@ -477,6 +549,10 @@
                         <p class="lab-description">
                             Mecánica, ondas, óptica, termodinámica y relatividad. Simulaciones interactivas con Canvas 2D y métodos numéricos (RK4, Newton-Raphson).
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">30 sims</span>
+                            <span class="depth-badge depth-guides">5 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>JavaScript</span>
@@ -484,7 +560,7 @@
                     </div>
                 </a>
 
-                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/" class="lab-card physics-sound">
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/" class="lab-card physics-sound has-paper">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-physics-sound"></canvas>
                         <span class="lab-badge">19 sims</span>
@@ -495,6 +571,10 @@
                         <p class="lab-description">
                             7 metronomos físicos (péndulo, resorte, Kepler) + 6 generativos sonoros (Harmonices Mundi, Tonnetz, Rameau). Ecuaciones de movimiento convertidas en ritmo y música.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">19 sims</span>
+                            <span class="depth-badge depth-paper">5 papers</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Web Audio</span>
                             <span>RK4</span>
@@ -526,6 +606,10 @@
                         <p class="lab-description">
                             Estructura atómica, termodinámica, cinética y electroquímica. Incluye visualizaciones 3D con Three.js para moléculas y orbitales.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">17 sims</span>
+                            <span class="depth-badge depth-guides">17 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Three.js</span>
@@ -557,6 +641,10 @@
                         <p class="lab-description">
                             ADN, proteínas y metabolismo celular. Glucólisis, ciclo de Krebs, síntesis de proteínas y regulación génica visualizados.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">16 sims</span>
+                            <span class="depth-badge depth-guides">16 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Animaciones</span>
@@ -588,6 +676,10 @@
                         <p class="lab-description">
                             Fractales, caos, teoría de números, topología y geometría. Mandelbrot, Poincaré, Möbius, nudos matemáticos y más.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">27 sims</span>
+                            <span class="depth-badge depth-guides">27 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Interactivo</span>
@@ -606,6 +698,9 @@
                         <p class="lab-description">
                             Arte generativo basado en matemáticas. Reacción-difusión, L-Systems, campos de flujo, atractores extraños y teselaciones.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">7 sims</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Procedural</span>
@@ -624,6 +719,9 @@
                         <p class="lab-description">
                             Sonificación matemática. Game of Life musical, Fourier interactiva, Lorenz musical, fractales sonoros, cadenas de Markov generativas y L-Systems musicales.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">11 sims</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Web Audio API</span>
                             <span>Generativo</span>
@@ -631,7 +729,7 @@
                     </div>
                 </a>
 
-                <a href="https://cjlkaiser-cpu.github.io/platonic-lab/" class="lab-card mathematics">
+                <a href="https://cjlkaiser-cpu.github.io/platonic-lab/" class="lab-card mathematics has-course">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-platonic"></canvas>
                         <span class="lab-badge">33 lecciones</span>
@@ -640,8 +738,12 @@
                         <div class="lab-type">Interactive Lab + Curso</div>
                         <h3 class="lab-name">Platonic Lab</h3>
                         <p class="lab-description">
-                            Sólidos platónicos interactivos, operadores de Conway, poliedros arquimedianos, politopos 4D, diagramas de Schlegel y sintetizador de Kepler. Curso completo de 33 lecciones.
+                            Sólidos platónicos interactivos, operadores de Conway, poliedros arquimedianos, politopos 4D, diagramas de Schlegel y sintetizador de Kepler.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">sims interactivas</span>
+                            <span class="depth-badge depth-course">Curso · 33 lecciones · 6 módulos</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Three.js</span>
                             <span>STL Export</span>
@@ -649,7 +751,7 @@
                     </div>
                 </a>
 
-                <a href="https://cjlkaiser-cpu.github.io/euler-lab/" class="lab-card mathematics">
+                <a href="https://cjlkaiser-cpu.github.io/euler-lab/" class="lab-card mathematics has-course">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-euler"></canvas>
                         <span class="lab-badge">100 problemas</span>
@@ -660,6 +762,9 @@
                         <p class="lab-description">
                             100 problemas de Project Euler resueltos pedagógicamente. 4 niveles: a mano, fuerza bruta, pythónico y matemático.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-course">Curso · 100 problemas · 4 niveles</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Pyodide</span>
                             <span>Interactivo</span>
@@ -667,7 +772,7 @@
                     </div>
                 </a>
 
-                <a href="https://cjlkaiser-cpu.github.io/chaos-lab/" class="lab-card mathematics">
+                <a href="https://cjlkaiser-cpu.github.io/chaos-lab/" class="lab-card mathematics has-course">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-chaos-lab"></canvas>
                         <span class="lab-badge">30 lecciones</span>
@@ -676,8 +781,12 @@
                         <div class="lab-type">Interactive Lab + Curso</div>
                         <h3 class="lab-name">Chaos Lab</h3>
                         <p class="lab-description">
-                            Atractores extraños interactivos (Lorenz, Rössler, Chen, Thomas, Halvorsen, Sprott, Aizawa, Dadras, R-F). Curso completo de Teoría del Caos en 30 lecciones.
+                            Atractores extraños interactivos (Lorenz, Rössler, Chen, Thomas, Halvorsen, Sprott, Aizawa, Dadras, R-F).
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">9 atractores</span>
+                            <span class="depth-badge depth-course">Curso · 30 lecciones · 6 módulos</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Three.js</span>
                             <span>RK4</span>
@@ -709,6 +818,10 @@
                         <p class="lab-description">
                             Cosmología y astrofísica. Órbita Schwarzschild, lentes gravitacionales, ley de Hubble, diagrama H-R, nucleosíntesis estelar, N-body Barnes-Hut y más.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">8 sims</span>
+                            <span class="depth-badge depth-guides">8 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Relatividad</span>
@@ -727,6 +840,9 @@
                         <p class="lab-description">
                             Donde el cosmos se convierte en sonido. Púlsares rítmicos, el chirp de ondas gravitacionales y la música de los exoplanetas.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">3 sims</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Web Audio</span>
                             <span>Sonificación</span>
@@ -758,6 +874,10 @@
                         <p class="lab-description">
                             Neurociencia, ecología y genética. Hodgkin-Huxley, Lotka-Volterra, Hardy-Weinberg, mitosis/meiosis, algoritmos genéticos y Boids en WebAssembly.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">9 sims</span>
+                            <span class="depth-badge depth-guides">9 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>WASM</span>
@@ -789,6 +909,10 @@
                         <p class="lab-description">
                             Geología dinámica. Ondas sísmicas P/S, volcanes VEI, tectónica de placas, ciclo de rocas, erosión, estratigrafía y magmatismo global.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">7 sims</span>
+                            <span class="depth-badge depth-guides">7 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Geofísica</span>
@@ -820,6 +944,10 @@
                         <p class="lab-description">
                             Algoritmos, estructuras de datos y redes neuronales. Bubble sort, BST, compuertas lógicas, perceptrón, autómatas finitos y memoria stack/heap.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">6 sims</span>
+                            <span class="depth-badge depth-guides">6 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>Algoritmos</span>
@@ -841,7 +969,7 @@
             </div>
 
             <div class="labs-grid">
-                <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/" class="lab-card music">
+                <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/" class="lab-card music has-paper">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-music"></canvas>
                         <span class="lab-badge">9 sims</span>
@@ -850,8 +978,13 @@
                         <div class="lab-type">Theory Lab</div>
                         <h3 class="lab-name">Music Theory Lab</h3>
                         <p class="lab-description">
-                            Sistema Armónico Áureo: Teoría musical basada en φ. Escala cromática áurea, armonizador con optimización de consonancia, y compositor algorítmico SATB.
+                            Sistema Armónico Áureo: escala cromática, armonizador y compositor SATB algorítmico, todos basados en la proporción φ.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">9 sims</span>
+                            <span class="depth-badge depth-theory">Teoría · 2800 líneas</span>
+                            <span class="depth-badge depth-paper">Paper</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Web Audio API</span>
                             <span>Composición φ</span>
@@ -881,8 +1014,12 @@
                         <div class="lab-type">Visual Lab</div>
                         <h3 class="lab-name">AI Visual Lab</h3>
                         <p class="lab-description">
-                            20 simulaciones interactivas de IA y ML. Backpropagation, redes convolucionales, GANs, atención, transformers, diffusion models y más — con visualización en Canvas y sonificación.
+                            Backpropagation, CNNs, GANs, atención, transformers, diffusion models, LSTM, RL y más — visualizados e interactivos.
                         </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">20 sims</span>
+                            <span class="depth-badge depth-guides">21 guías</span>
+                        </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
                             <span>ML · Deep Learning</span>
