@@ -30,6 +30,7 @@
             --color-geology: #d97706;
             --color-computation: #3b82f6;
             --color-music: #ec4899;
+            --color-ai: #ef4444;
         }
 
         body {
@@ -370,6 +371,11 @@
             --card-glow: rgba(236, 72, 153, 0.15);
         }
 
+        .ai {
+            --card-accent: var(--color-ai);
+            --card-glow: rgba(239, 68, 68, 0.15);
+        }
+
         /* Footer */
         .footer {
             text-align: center;
@@ -430,7 +436,7 @@
                     <div class="header-stat-label">Simulaciones</div>
                 </div>
                 <div class="header-stat">
-                    <div class="header-stat-value">19</div>
+                    <div class="header-stat-value">17</div>
                     <div class="header-stat-label">Laboratorios</div>
                 </div>
                 <div class="header-stat">
@@ -838,7 +844,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/" class="lab-card music">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-music"></canvas>
-                        <span class="lab-badge">3 sims</span>
+                        <span class="lab-badge">9 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Theory Lab</div>
@@ -849,6 +855,37 @@
                         <div class="lab-meta">
                             <span>Web Audio API</span>
                             <span>Composición φ</span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
+        <!-- AI -->
+        <section class="discipline">
+            <div class="discipline-header">
+                <div class="discipline-icon" style="background: rgba(239, 68, 68, 0.15);">
+                    <span>&#129504;</span>
+                </div>
+                <h2 class="discipline-title">Artificial Intelligence</h2>
+                <span class="discipline-count">1 laboratorio</span>
+            </div>
+
+            <div class="labs-grid">
+                <a href="https://cjlkaiser-cpu.github.io/AI-Visual-Lab/" class="lab-card ai">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-ai"></canvas>
+                        <span class="lab-badge">20 sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Visual Lab</div>
+                        <h3 class="lab-name">AI Visual Lab</h3>
+                        <p class="lab-description">
+                            20 simulaciones interactivas de IA y ML. Backpropagation, redes convolucionales, GANs, atención, transformers, diffusion models y más — con visualización en Canvas y sonificación.
+                        </p>
+                        <div class="lab-meta">
+                            <span>Canvas 2D</span>
+                            <span>ML · Deep Learning</span>
                         </div>
                     </div>
                 </a>
@@ -1749,6 +1786,71 @@
                 ctx.lineTo(w * 0.5 - 6, arrowY - 4);
                 ctx.lineTo(w * 0.5 - 6, arrowY + 4);
                 ctx.fill();
+            }
+            'preview-music': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // Golden spiral waves
+                const cx = w * 0.5, cy = h * 0.5;
+                const phi = 1.618;
+                for (let i = 0; i < 5; i++) {
+                    const r = 8 + i * 9;
+                    const freq = phi * (i + 1);
+                    const amp = 3 + i * 1.5;
+                    ctx.beginPath();
+                    for (let a = 0; a < Math.PI * 2; a += 0.05) {
+                        const wave = amp * Math.sin(freq * a + t * (1 + i * 0.3));
+                        const x = cx + (r + wave) * Math.cos(a);
+                        const y = cy + (r + wave) * Math.sin(a);
+                        a === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+                    }
+                    ctx.closePath();
+                    const alpha = Math.round((0.4 + 0.3 * Math.sin(t + i)) * 255).toString(16).padStart(2,'0');
+                    ctx.strokeStyle = `#ec4899${alpha}`;
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            },
+
+            'preview-ai': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // Neural network layers
+                const layers = [3, 4, 4, 2];
+                const lx = layers.map((_, i) => w * (0.15 + i * 0.23));
+                const nodes = layers.map((n, i) =>
+                    Array.from({ length: n }, (_, j) => ({
+                        x: lx[i],
+                        y: h * (0.15 + j * (0.7 / (n - 1 || 1)))
+                    }))
+                );
+                // Connections
+                for (let l = 0; l < nodes.length - 1; l++) {
+                    for (const a of nodes[l]) {
+                        for (const b of nodes[l + 1]) {
+                            const pulse = (Math.sin(t * 2 + a.y * 0.1 + l) + 1) / 2;
+                            ctx.strokeStyle = `rgba(239,68,68,${0.08 + pulse * 0.2})`;
+                            ctx.lineWidth = 0.8;
+                            ctx.beginPath();
+                            ctx.moveTo(a.x, a.y);
+                            ctx.lineTo(b.x, b.y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                // Nodes
+                nodes.forEach((layer, l) => {
+                    layer.forEach(n => {
+                        const act = (Math.sin(t * 1.5 + n.y * 0.15 + l * 1.2) + 1) / 2;
+                        ctx.beginPath();
+                        ctx.arc(n.x, n.y, 4, 0, Math.PI * 2);
+                        ctx.fillStyle = `rgba(239,68,68,${0.3 + act * 0.7})`;
+                        ctx.fill();
+                        ctx.strokeStyle = `rgba(239,68,68,${0.5 + act * 0.5})`;
+                        ctx.lineWidth = 1;
+                        ctx.stroke();
+                    });
+                });
             }
         };
 

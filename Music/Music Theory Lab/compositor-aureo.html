@@ -68,6 +68,16 @@
             background: linear-gradient(90deg, #ec4899, #be185d);
             transition: width 0.1s linear;
         }
+
+        /* Mobile responsive */
+        @media (max-width: 1023px) {
+            button, select, .scale-note { min-height: 44px; }
+            input[type="range"] { height: 32px; }
+            input[type="range"]::-webkit-slider-thumb { width: 24px; height: 24px; }
+        }
+        #sidebar-overlay {
+            transition: opacity 0.3s;
+        }
     </style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
@@ -94,9 +104,18 @@
         </div>
     </header>
 
-    <main class="flex h-[calc(100vh-57px)]">
+    <main class="flex flex-col lg:flex-row h-[calc(100vh-57px)]">
+        <!-- Mobile sidebar toggle -->
+        <button id="toggleSidebar" class="lg:hidden fixed bottom-4 left-4 z-50 bg-pink-500 hover:bg-pink-600 text-white rounded-full w-14 h-14 flex items-center justify-center shadow-lg shadow-pink-500/30 transition-all"
+            onclick="toggleSidebarDrawer()">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/>
+            </svg>
+        </button>
+        <div id="sidebar-overlay" class="lg:hidden fixed inset-0 bg-black/60 z-30 hidden" onclick="toggleSidebarDrawer()"></div>
         <!-- Control Panel -->
-        <aside class="w-80 border-r border-gray-900 bg-gray-950 p-6 overflow-y-auto">
+        <aside id="sidebar" class="w-80 border-r border-gray-900 bg-gray-950 p-6 overflow-y-auto
+            fixed lg:static inset-y-0 left-0 z-40 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 top-[57px]">
             <h2 class="text-lg font-medium mb-6 text-pink-400 glow-text">Composición</h2>
 
             <!-- Generate Button -->
@@ -205,9 +224,9 @@
         </aside>
 
         <!-- Main Content -->
-        <div class="flex-1 p-6 space-y-4 overflow-y-auto">
+        <div class="flex-1 p-4 lg:p-6 space-y-4 overflow-y-auto">
             <!-- Stats -->
-            <div class="grid grid-cols-4 gap-4">
+            <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
                 <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
                     <div class="text-xs text-gray-500 mb-1">Compases</div>
                     <div id="statMeasures" class="text-2xl font-bold text-pink-400 mono">—</div>
@@ -230,7 +249,7 @@
             <div class="bg-gray-950 border border-gray-800 rounded-lg p-4">
                 <h3 class="text-sm font-medium text-pink-400 mb-3">Partitura SATB</h3>
                 <div class="canvas-container bg-black">
-                    <canvas id="notationCanvas" width="1200" height="500"></canvas>
+                    <canvas id="notationCanvas"></canvas>
                 </div>
             </div>
         </div>
@@ -261,8 +280,36 @@
             bass: true
         };
 
+        // ============ SIDEBAR TOGGLE ============
+        function toggleSidebarDrawer() {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const isOpen = !sidebar.classList.contains('-translate-x-full');
+            if (isOpen) {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            } else {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            }
+        }
+
+        // ============ CANVAS RESIZE ============
+        function resizeCanvas(canvas, aspectRatio = 2.4) {
+            const container = canvas.parentElement;
+            const width = container.clientWidth;
+            const dpr = window.devicePixelRatio || 1;
+            canvas.width = width * dpr;
+            canvas.height = (width / aspectRatio) * dpr;
+            canvas.style.width = width + 'px';
+            canvas.style.height = (width / aspectRatio) + 'px';
+            const ctx = canvas.getContext('2d');
+            ctx.scale(dpr, dpr);
+        }
+
         // ============ CANVAS ============
-        const canvas = document.getElementById('notationCanvas');
+        const notationCanvas = document.getElementById('notationCanvas');
+        const canvas = notationCanvas;
         const ctx = canvas.getContext('2d');
 
         // ============ AUDIO FUNCTIONS ============
@@ -481,7 +528,7 @@
                     });
 
                     updateStats();
-                    renderNotation();
+                    render();
 
                     console.log('Prelude generated:', currentPrelude);
                 } catch (error) {
@@ -524,8 +571,9 @@
         // ============ NOTATION ============
 
         function renderNotation() {
-            const w = canvas.width;
-            const h = canvas.height;
+            const dpr = window.devicePixelRatio || 1;
+            const w = canvas.width / dpr;
+            const h = canvas.height / dpr;
 
             ctx.fillStyle = '#000';
             ctx.fillRect(0, 0, w, h);
@@ -669,10 +717,23 @@
             document.getElementById('tempoValue').textContent = e.target.value;
         });
 
+        // ============ RENDER ============
+
+        function render() {
+            resizeCanvas(notationCanvas, 2.4);
+            renderNotation();
+        }
+
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(render, 150);
+        });
+
         // ============ INIT ============
 
         function init() {
-            renderNotation();
+            render();
             console.log('Compositor Áureo initialized');
         }
 

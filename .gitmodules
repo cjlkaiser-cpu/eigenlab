@@ -21,3 +21,6 @@
 [submodule "Physics/Physics Visual Lab"]
 	path = Physics/Physics Visual Lab
 	url = https://github.com/cjlkaiser-cpu/physics-visual-lab.git
+[submodule "AI/AI Visual Lab"]
+	path = AI/AI Visual Lab
+	url = https://github.com/cjlkaiser-cpu/AI-Visual-Lab.git
