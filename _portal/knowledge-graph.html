@@ -400,6 +400,14 @@
                 <span class="dot" style="background: #3b82f6"></span>
                 Computation <span class="count" id="count-computation">0</span>
             </button>
+            <button class="filter-btn" data-filter="ai">
+                <span class="dot" style="background: #8b5cf6"></span>
+                AI <span class="count" id="count-ai">0</span>
+            </button>
+            <button class="filter-btn" data-filter="music">
+                <span class="dot" style="background: #f472b6"></span>
+                Music <span class="count" id="count-music">0</span>
+            </button>
         </div>
 
         <div class="filter-section">
@@ -615,6 +623,43 @@
                 { id: "perceptron", label: "Perceptron", type: "simulation", discipline: "computation", desc: "Clasificador lineal", url: "../Computation/Computation Lab/perceptron-playground.html" },
                 { id: "finite-automata", label: "Automatas Finitos", type: "simulation", discipline: "computation", desc: "DFA/NFA", url: "../Computation/Computation Lab/finite-automata.html" },
 
+                // === AI VISUAL LAB ===
+                { id: "perceptron-viviente", label: "Perceptron Viviente", type: "simulation", discipline: "ai", desc: "Neurona artificial interactiva", url: "../AI/AI Visual Lab/perceptron-viviente.html" },
+                { id: "gradient-descent", label: "Gradient Descent", type: "simulation", discipline: "ai", desc: "Paisaje de perdida en 3D", url: "../AI/AI Visual Lab/gradient-descent-landscape.html" },
+                { id: "backpropagation", label: "Backpropagation", type: "simulation", discipline: "ai", desc: "Flujo de gradientes", url: "../AI/AI Visual Lab/backpropagation-flow.html" },
+                { id: "activation-functions", label: "Activation Functions", type: "simulation", discipline: "ai", desc: "ReLU, sigmoid, tanh, GELU", url: "../AI/AI Visual Lab/activation-function-orchestra.html" },
+                { id: "weight-init", label: "Weight Init Galaxy", type: "simulation", discipline: "ai", desc: "Inicializacion de pesos", url: "../AI/AI Visual Lab/weight-initialization-galaxy.html" },
+                { id: "autoencoder", label: "Autoencoder Cathedral", type: "simulation", discipline: "ai", desc: "Compresion y reconstruccion", url: "../AI/AI Visual Lab/autoencoder-cathedral.html" },
+                { id: "lstm", label: "LSTM Memory Cells", type: "simulation", discipline: "ai", desc: "Memoria a largo plazo", url: "../AI/AI Visual Lab/lstm-memory-cells.html" },
+                { id: "attention-heatmap", label: "Attention Heatmap", type: "simulation", discipline: "ai", desc: "Mecanismo de atencion", url: "../AI/AI Visual Lab/attention-heatmap.html" },
+                { id: "cnn-features", label: "CNN Feature Detectives", type: "simulation", discipline: "ai", desc: "Filtros convolucionales", url: "../AI/AI Visual Lab/cnn-feature-detectives.html" },
+                { id: "gan-duel", label: "GAN Duel", type: "simulation", discipline: "ai", desc: "Generador vs discriminador", url: "../AI/AI Visual Lab/gan-duel.html" },
+                { id: "transformer", label: "Transformer Anatomy", type: "simulation", discipline: "ai", desc: "Arquitectura transformer", url: "../AI/AI Visual Lab/transformer-anatomy.html" },
+                { id: "token-embeddings", label: "Token Embeddings", type: "simulation", discipline: "ai", desc: "Constelacion de embeddings", url: "../AI/AI Visual Lab/token-embeddings-constellation.html" },
+                { id: "self-attention", label: "Self-Attention", type: "simulation", discipline: "ai", desc: "Atencion multi-cabeza", url: "../AI/AI Visual Lab/self-attention-mechanism.html" },
+                { id: "chain-of-thought", label: "Chain of Thought", type: "simulation", discipline: "ai", desc: "Razonamiento paso a paso", url: "../AI/AI Visual Lab/chain-of-thought-unrolled.html" },
+                { id: "emergent-abilities", label: "Emergent Abilities", type: "simulation", discipline: "ai", desc: "Capacidades emergentes en escala", url: "../AI/AI Visual Lab/emergent-abilities.html" },
+                { id: "diffusion-models", label: "Diffusion Models", type: "simulation", discipline: "ai", desc: "Generacion iterativa de imagenes", url: "../AI/AI Visual Lab/diffusion-models.html" },
+                { id: "reinforcement-learning", label: "Reinforcement Learning", type: "simulation", discipline: "ai", desc: "Agente + recompensa + entorno", url: "../AI/AI Visual Lab/reinforcement-learning.html" },
+                { id: "knowledge-distillation", label: "Knowledge Distillation", type: "simulation", discipline: "ai", desc: "Destilacion modelo-maestro", url: "../AI/AI Visual Lab/knowledge-distillation.html" },
+                { id: "mixture-of-experts", label: "Mixture of Experts", type: "simulation", discipline: "ai", desc: "Enrutamiento experto sparse", url: "../AI/AI Visual Lab/mixture-of-experts.html" },
+                { id: "superposition", label: "Superposition", type: "simulation", discipline: "ai", desc: "Representacion en caja negra", url: "../AI/AI Visual Lab/superposition-black-box.html" },
+
+                // === MUSIC THEORY LAB ===
+                { id: "escala-cromatica-aurea", label: "Escala Cromatica Aurea", type: "simulation", discipline: "music", desc: "12 notas generadas por phi", url: "../Music/Music Theory Lab/escala-cromatica-aurea.html" },
+                { id: "escala-15-notas", label: "Escala 15 Notas", type: "simulation", discipline: "music", desc: "Extension phi a 15 grados", url: "../Music/Music Theory Lab/escala-15-notas.html" },
+                { id: "escala-12-phiW", label: "Escala 12 phiW", type: "simulation", discipline: "music", desc: "Sistema temperado phi-weighted", url: "../Music/Music Theory Lab/escala-12-phiW.html" },
+                { id: "armonizador-aureo", label: "Armonizador Aureo", type: "simulation", discipline: "music", desc: "Acordes y progresiones phi", url: "../Music/Music Theory Lab/armonizador-aureo.html" },
+                { id: "compositor-aureo", label: "Compositor Aureo", type: "simulation", discipline: "music", desc: "Preludios SATB algoritmicos", url: "../Music/Music Theory Lab/compositor-aureo.html" },
+                { id: "armonizador-15-notas", label: "Armonizador 15 Notas", type: "simulation", discipline: "music", desc: "Armonia en escala extendida", url: "../Music/Music Theory Lab/armonizador-15-notas.html" },
+                { id: "compositor-15-notas", label: "Compositor 15 Notas", type: "simulation", discipline: "music", desc: "Composicion en 15 grados", url: "../Music/Music Theory Lab/compositor-15-notas.html" },
+                { id: "armonizador-12-phiW", label: "Armonizador 12 phiW", type: "simulation", discipline: "music", desc: "Acordes en sistema phi-weighted", url: "../Music/Music Theory Lab/armonizador-12-phiW.html" },
+                { id: "compositor-12-phiW", label: "Compositor 12 phiW", type: "simulation", discipline: "music", desc: "Composicion phi-weighted", url: "../Music/Music Theory Lab/compositor-12-phiW.html" },
+
+                // === MATHEMATICS - SCULPT & PUZZLE LABS ===
+                { id: "sculpt-lab", label: "Sculpt Lab", type: "simulation", discipline: "mathematics", desc: "Escultura matematica con exportacion STL", url: "../Mathematics/Math Visual Lab/sculpt-lab/index.html" },
+                { id: "puzzle-lab", label: "Puzzle Lab", type: "simulation", discipline: "mathematics", desc: "Puzzles 3D imprimibles (Soma, Tangram)", url: "../Mathematics/Math Visual Lab/puzzle-lab/index.html" },
+
                 // === CONCEPTOS TRANSVERSALES ===
                 { id: "rk4", label: "Runge-Kutta 4", type: "method", discipline: "mathematics", desc: "Integracion numerica de EDOs" },
                 { id: "caos", label: "Teoria del Caos", type: "concept", discipline: "mathematics", desc: "Sensibilidad a condiciones iniciales" },
@@ -629,7 +674,11 @@
                 { id: "metabolismo", label: "Metabolismo", type: "concept", discipline: "biochemistry", desc: "Transformacion de energia" },
                 { id: "dogma-central", label: "Dogma Central", type: "concept", discipline: "biochemistry", desc: "ADN -> ARN -> Proteina" },
                 { id: "algoritmos", label: "Algoritmos", type: "concept", discipline: "computation", desc: "Resolucion de problemas" },
-                { id: "complejidad", label: "Complejidad", type: "concept", discipline: "computation", desc: "Big O notation" }
+                { id: "complejidad", label: "Complejidad", type: "concept", discipline: "computation", desc: "Big O notation" },
+                { id: "deep-learning", label: "Deep Learning", type: "concept", discipline: "ai", desc: "Redes neuronales profundas" },
+                { id: "neural-networks", label: "Redes Neuronales", type: "concept", discipline: "ai", desc: "Modelos de aprendizaje automatico" },
+                { id: "phi", label: "Proporcion Aurea", type: "concept", discipline: "mathematics", desc: "phi = (1+sqrt(5))/2, operador estructural" },
+                { id: "fabricacion-3d", label: "Fabricacion 3D", type: "concept", discipline: "mathematics", desc: "Impresion 3D de formas matematicas" }
             ],
             links: [
                 // PHYSICS VISUAL LAB internal connections
@@ -1045,7 +1094,103 @@
                 { source: "reaccion-difusion", target: "algoritmos", cross: true },
                 { source: "strange-attractors", target: "perceptron", cross: true },
                 { source: "teselaciones-aperiodicas", target: "algoritmos", cross: true },
-                { source: "phyllotaxis", target: "algoritmos", cross: true }
+                { source: "phyllotaxis", target: "algoritmos", cross: true },
+
+                // AI VISUAL LAB internal connections
+                { source: "perceptron-viviente", target: "neural-networks" },
+                { source: "perceptron-viviente", target: "deep-learning" },
+                { source: "gradient-descent", target: "deep-learning" },
+                { source: "gradient-descent", target: "rk4" },
+                { source: "backpropagation", target: "deep-learning" },
+                { source: "backpropagation", target: "gradient-descent" },
+                { source: "activation-functions", target: "neural-networks" },
+                { source: "weight-init", target: "neural-networks" },
+                { source: "weight-init", target: "probabilidad" },
+                { source: "autoencoder", target: "deep-learning" },
+                { source: "lstm", target: "deep-learning" },
+                { source: "lstm", target: "neural-networks" },
+                { source: "attention-heatmap", target: "deep-learning" },
+                { source: "attention-heatmap", target: "self-attention" },
+                { source: "cnn-features", target: "deep-learning" },
+                { source: "cnn-features", target: "fourier-visual" },
+                { source: "gan-duel", target: "deep-learning" },
+                { source: "transformer", target: "deep-learning" },
+                { source: "transformer", target: "self-attention" },
+                { source: "token-embeddings", target: "deep-learning" },
+                { source: "self-attention", target: "deep-learning" },
+                { source: "chain-of-thought", target: "deep-learning" },
+                { source: "emergent-abilities", target: "deep-learning" },
+                { source: "emergent-abilities", target: "caos" },
+                { source: "diffusion-models", target: "deep-learning" },
+                { source: "diffusion-models", target: "probabilidad" },
+                { source: "reinforcement-learning", target: "deep-learning" },
+                { source: "reinforcement-learning", target: "algoritmos" },
+                { source: "knowledge-distillation", target: "deep-learning" },
+                { source: "mixture-of-experts", target: "deep-learning" },
+                { source: "superposition", target: "deep-learning" },
+                { source: "superposition", target: "cuantica" },
+
+                // AI <-> Computation cross-connections
+                { source: "perceptron-viviente", target: "perceptron", cross: true },
+                { source: "perceptron-viviente", target: "algoritmos", cross: true },
+                { source: "backpropagation", target: "algoritmos", cross: true },
+                { source: "reinforcement-learning", target: "finite-automata", cross: true },
+                { source: "emergent-abilities", target: "complejidad", cross: true },
+                { source: "lstm", target: "stack-heap", cross: true },
+
+                // AI <-> Mathematics cross-connections
+                { source: "gradient-descent", target: "edo-visual", cross: true },
+                { source: "backpropagation", target: "caos", cross: true },
+                { source: "diffusion-models", target: "reaccion-difusion", cross: true },
+                { source: "token-embeddings", target: "domain-coloring", cross: true },
+                { source: "gan-duel", target: "caos", cross: true },
+
+                // AI <-> Biology cross-connections
+                { source: "neural-networks", target: "neurona", cross: true },
+                { source: "perceptron-viviente", target: "neurona", cross: true },
+                { source: "reinforcement-learning", target: "evolucion", cross: true },
+
+                // AI <-> Physics cross-connections
+                { source: "diffusion-models", target: "termodinamica", cross: true },
+                { source: "emergent-abilities", target: "entropia", cross: true },
+
+                // MUSIC THEORY LAB internal connections
+                { source: "escala-cromatica-aurea", target: "phi" },
+                { source: "escala-15-notas", target: "phi" },
+                { source: "escala-12-phiW", target: "phi" },
+                { source: "armonizador-aureo", target: "escala-cromatica-aurea" },
+                { source: "armonizador-aureo", target: "phi" },
+                { source: "compositor-aureo", target: "armonizador-aureo" },
+                { source: "compositor-aureo", target: "phi" },
+                { source: "armonizador-15-notas", target: "escala-15-notas" },
+                { source: "armonizador-15-notas", target: "phi" },
+                { source: "compositor-15-notas", target: "armonizador-15-notas" },
+                { source: "compositor-12-phiW", target: "escala-12-phiW" },
+                { source: "armonizador-12-phiW", target: "escala-12-phiW" },
+                { source: "escala-cromatica-aurea", target: "escala-15-notas" },
+                { source: "escala-cromatica-aurea", target: "escala-12-phiW" },
+
+                // Music <-> Mathematics cross-connections
+                { source: "phi", target: "phyllotaxis", cross: true },
+                { source: "phi", target: "geometria-3d", cross: true },
+                { source: "compositor-aureo", target: "markov-generativas", cross: true },
+                { source: "armonizador-aureo", target: "fourier-visual", cross: true },
+
+                // Music <-> Physics Sound cross-connections
+                { source: "escala-cromatica-aurea", target: "tonnetz-atractor", cross: true },
+                { source: "compositor-aureo", target: "rameau-machine", cross: true },
+                { source: "armonizador-aureo", target: "orbifold-walker", cross: true },
+
+                // SCULPT LAB connections
+                { source: "sculpt-lab", target: "fabricacion-3d" },
+                { source: "sculpt-lab", target: "geometria-3d" },
+                { source: "sculpt-lab", target: "platonic-solids" },
+
+                // PUZZLE LAB connections
+                { source: "puzzle-lab", target: "fabricacion-3d" },
+                { source: "puzzle-lab", target: "geometria-3d" },
+                { source: "puzzle-lab", target: "algoritmos" },
+                { source: "puzzle-lab", target: "sculpt-lab" }
             ]
         };
 
@@ -1065,7 +1210,9 @@
             geology: '#d97706',
             astronomy: '#6366f1',
             mathematics: '#f97316',
-            computation: '#3b82f6'
+            computation: '#3b82f6',
+            ai: '#8b5cf6',
+            music: '#f472b6'
         };
 
         const typeColors = {
