@@ -4,912 +4,435 @@ Plan de desarrollo y crecimiento del ecosistema de laboratorios virtuales.
 
 ---
 
-## Estado Actual
+## Estado Actual (Marzo 2026)
+
+### Inventario Real por Laboratorio
+
+| Lab | Sims | Guías | Cobertura |
+|-----|:----:|:-----:|:---------:|
+| Physics Visual Lab | 30 | 5 | 17% |
+| Physics Sound Lab | 14 | 0 | 0% |
+| Chemistry Visual Lab | 19 | ~17 | 89% |
+| Biochemistry Visual Lab | 18 | 16 | 89% |
+| Biology Visual Lab | 11 | ~8 | 73% |
+| Geology Visual Lab | 10 | ~6 | 60% |
+| Math Visual Lab | 28 | 27 | 96% |
+| Math Generative Art Lab | 9 | 0 | 0% |
+| Math Sound Lab | 11 | 0 | 0% |
+| Astronomy Visual Lab | 11 | ~7 | 64% |
+| Astronomy Sound Lab | 3 | 3 | 100% |
+| Computation Lab | 6 | 6 | 100% |
+| AI Visual Lab | 20 | 21 | 100% |
+| Music Theory Lab | 9 | 0 | 0% |
+
+**Total: ~199 simulaciones · 91 guías · 46% cobertura global**
+
+> Cursos: Chaos Lab (10 atractores + 30 lecciones), Platonic Lab (poliedros 4D + 33 lecciones), Euler Lab (100 problemas, 4 niveles).
+
+---
 
 ### Motor C++/WebAssembly (eigenlab-core)
 
-**Nueva arquitectura de alto rendimiento** para simulaciones que requieren miles de calculos por frame.
+**22 módulos C++ compilados. 7 desplegados como simulación.**
 
-| Componente | Descripcion |
-|------------|-------------|
-| `eigenlab-core/` | Codigo fuente C++17 |
-| `eigenlab-core.wasm` | Binario compilado (158KB) |
-| `eigenlab-core.js` | Glue code Emscripten |
-
-**Modulos implementados:**
-
-| Modulo | Algoritmo | Rendimiento |
-|--------|-----------|-------------|
-| `FluidSolver` | Navier-Stokes 2D, proyeccion de presion | 256x256 @ 60fps |
-| `BoidSystem` | Reynolds flocking + spatial hash O(n) | 1000+ agentes @ 60fps |
-| `GalaxySimulator` | N-body Barnes-Hut O(n log n) | 5000+ particulas @ 30fps |
-| `ErosionSimulator` | Erosion hidraulica por gotas | 256x256 terreno |
-| `ClothSimulator` | Verlet + PBD constraints | 1200 particulas @ 60fps |
-| `SaturnRings` | Keplerian orbits + ring gaps | 10000+ particulas @ 60fps |
-| `VectorFields` | RK4 particle advection | 500+ particulas @ 60fps |
+| Módulo | Sim HTML | Estado |
+|--------|----------|:------:|
+| `FluidSolver` | `fluidos-2d.html` | ✅ |
+| `BoidSystem` | `boids-masivo.html` | ✅ |
+| `GalaxySimulator` | `formacion-galaxias.html` | ✅ |
+| `ErosionSimulator` | `erosion-hidraulica.html` | ✅ |
+| `ClothSimulator` | `simulacion-tela.html` | ✅ |
+| `SaturnRings` | `anillos-saturno.html` | ✅ |
+| `VectorFields` | `campos-vectoriales.html` | ✅ |
+| `Mandelbulb` | — | 💤 |
+| `MolecularDynamics` | — | 💤 |
+| `Epidemiology` | — | 💤 |
+| `ProteinFolding` | — | 💤 |
+| `AccretionDisk` | — | 💤 |
+| `LatticeBotzmann` | — | 💤 |
+| `PlasmaParticles` | — | 💤 |
+| `GalaxyCollision` | — | 💤 |
+| `GranularSim` | — | 💤 |
+| `CellularAutomata3D` | — | 💤 |
+| `NeuralNetwork` | — | 💤 |
+| `HeatDiffusion` | — | 💤 |
+| `WaveSolver` | — | 💤 |
+| `ParticleSystem` | — | 💤 |
+| `Electrophoresis` | — | 💤 |
 
 **Compilacion:**
 ```bash
-cd eigenlab-core
-mkdir build && cd build
-emcmake cmake ..
-emmake make -j4
+cd eigenlab-core && mkdir build && cd build
+emcmake cmake .. && emmake make -j4
 ```
-
-### Laboratorios Existentes
-
-| Lab | Simulaciones | Con Guía | Estado |
-|-----|:------------:|:--------:|--------|
-| Physics Visual Lab | 27 | 5 | 🔴 22 guías pendientes |
-| Physics Sound Lab | 4 | 0 | 🔴 4 guías pendientes |
-| Chemistry Visual Lab | 18 | 17 | ✅ Casi completo (94%) |
-| Biochem Visual Lab | 16 | 16 | ✅ Completo |
-| Math Visual Lab | 27 | 27 | ✅ Completo |
-| Math Generative Art Lab | 7 | 0 | 🔴 7 guías pendientes |
-| Astronomy Visual Lab | 8 | 7 | ✅ Casi completo (87%) |
-| Astronomy Sound Lab | 3 | 3 | ✅ Completo |
-| Biology Visual Lab | 9 | 8 | ✅ Casi completo (88%) |
-| Geology Visual Lab | 7 | 6 | ✅ Casi completo (85%) |
-| Computation Lab | 6 | 2 | 🔴 4 guías pendientes |
-
-**Total: 132 simulaciones | 91 con guía (68%)**
-
-> Última actualización: 11 Ene 2026
 
 ---
 
-## Ideas de Crecimiento por Área
+## Filosofia
 
-### Physics
-
-#### Visual Lab - Expansión
-| Categoría | Simulación | Descripción |
-|-----------|------------|-------------|
-| Cuántica | Doble Rendija | Patrón de interferencia, dualidad onda-partícula |
-| Cuántica | Efecto Túnel | Probabilidad de tunelaje vs barrera de potencial |
-| Cuántica | Pozo de Potencial | Niveles de energía cuantizados |
-| Fluidos | Navier-Stokes 2D | Flujo laminar y turbulento |
-| Fluidos | Vórtices de Karman | Calle de vórtices detrás de obstáculos |
-| Electromagnetismo | Ondas EM 3D | Propagación de campos E y B acoplados |
-| Electromagnetismo | Líneas de Campo Magnético | Imanes, solenoides, bobinas |
-| Relatividad | Diagrama de Minkowski | Conos de luz, líneas de mundo |
-| Relatividad | Paradoja de los Gemelos | Visualización del envejecimiento diferencial |
-
-#### Sound Lab - Expansión
-| Tipo | Simulación | Descripción |
-|------|------------|-------------|
-| Acústica | Modos de Vibración | Patrones de Chladni sonificados |
-| Acústica | Resonancia de Salas | Reverberación y ondas estacionarias |
-| Síntesis | FM Synthesis | Modulación de frecuencia interactiva |
-| Síntesis | Síntesis Granular | Física de partículas → granos de audio |
-| Doppler | Efecto Doppler Sonoro | Fuente móvil con audio real |
-| Cuerdas | Modos Armónicos | Cuerda vibrante → sonido |
-
-#### Data Lab (Nuevo)
-| Tipo | Contenido |
-|------|-----------|
-| Datasets | Mediciones reales de experimentos clásicos |
-| Comparación | Simulación vs datos reales |
-| Análisis | Herramientas de ajuste de curvas |
+> **Profundidad antes que amplitud.**
+> Cada simulacion debe poder responder la pregunta: "¿que pasa si cambio esto?"
+> Cada guia debe poder responder: "¿por que importa esto?"
+> El ecosistema se nutre a si mismo: las guias revelan gaps, los gaps generan nuevas simulaciones.
 
 ---
 
-### Chemistry
+## FASE ACTIVA I: Consolidacion Pedagogica
 
-#### Visual Lab - Expansión
-| Categoría | Simulación | Descripción |
-|-----------|------------|-------------|
-| Espectroscopía | IR Interactivo | Modos vibracionales → espectro |
-| Espectroscopía | UV-Vis | Transiciones electrónicas |
-| Espectroscopía | RMN básico | Desplazamiento químico |
-| Cristalografía | Celdas Unitarias 3D | 14 redes de Bravais |
-| Cristalografía | Difracción de Rayos X | Ley de Bragg visualizada |
-| Cinética | Michaelis-Menten | Cinética enzimática detallada |
-| Orgánica | Mecanismos SN1/SN2 | Animación paso a paso |
-| Orgánica | Conformaciones | Rotación de enlaces, energía torsional |
+La mayor deuda tecnica del proyecto. Laboratorios con alto valor pedagogico y baja cobertura de guias.
 
-#### Sound Lab (Nuevo)
-| Tipo | Simulación | Descripción |
-|------|------------|-------------|
-| Sonificación | Espectros IR → Audio | Cada pico = frecuencia |
-| Música Molecular | Vibraciones Moleculares | Modos normales como acordes |
-| Reacciones | Sonificación de Cinética | Velocidad de reacción → pitch |
+### Prioridad 1 — Physics Visual Lab (25 guias pendientes)
 
-#### AR Lab (Futuro)
-| Tipo | Descripción |
-|------|-------------|
-| WebXR | Moléculas en realidad aumentada |
-| Marker-based | Tarjetas físicas → modelos 3D |
+El lab mas visitado y mas fundamental del ecosistema. Base de todo lo demas.
 
----
+Simulaciones sin guia:
+- `pendulo-simple.html`, `pendulos-desacoplados.html`
+- `ondas.html`, `interferencia.html`, `optica.html`
+- `campo-electrico.html`, `circuitos.html`, `relatividad.html`
+- `termodinamica.html`, `entropia.html`, `gas-ideal.html`
+- `fluidos-2d.html`, `simulacion-tela.html`, `lattice-boltzmann.html`
+- `particulas-plasma.html`, `orbitas-kepler.html`
+- `proyectil.html`, `mecanica-lagrangiana.html`, `oscilador-forzado.html`
+- `efecto-doppler.html`, `efecto-tunel.html`, `colisiones.html`
+- `difusion-calor.html`, `sistema-solar.html`, `atractor-multicuerpo.html`
 
-### Biochemistry
+Cada guia debe incluir: ecuacion principal explicada, estados visuales, experimento guiado, conexiones con otras sims, limitaciones del modelo.
 
-#### Visual Lab - Expansión
-| Categoría | Simulación | Descripción |
-|-----------|------------|-------------|
-| Enzimas | Docking Molecular | Interacción enzima-sustrato simplificada |
-| Técnicas | Electroforesis | Separación por tamaño/carga |
-| Técnicas | PCR Animado | Ciclos de amplificación |
-| Técnicas | Western Blot | Proceso paso a paso |
-| Genética | CRISPR Simplificado | Edición génica visualizada |
-| Membrana | Transporte Activo | Bombas iónicas, gradientes |
-| Señalización | Cascadas de Señales | Receptores, segundos mensajeros |
+### Prioridad 2 — Music Theory Lab (9 guias pendientes)
 
-#### Sound Lab (Nuevo)
-| Tipo | Simulación | Descripción |
-|------|------------|-------------|
-| ADN Musical | Secuencia → Melodía | A=Do, T=Re, G=Mi, C=Fa |
-| Proteínas | Estructura → Sonido | α-hélice y β-lámina como patrones rítmicos |
-| Metabolismo | Flujo Metabólico | Actividad de rutas → texturas sonoras |
+El laboratorio con mayor densidad teorica por sim (Sistema Armonico Aureo). Sin ninguna guia de entrada, es inaccesible para nuevos usuarios.
+
+Simulaciones: `escala-cromatica-aurea`, `escala-15-notas`, `escala-12-phiW`, `armonizador-aureo`, `armonizador-15-notas`, `armonizador-12-phiW`, `compositor-aureo`, `compositor-15-notas`, `compositor-12-phiW`.
+
+Enfoque sugerido: guia unificada de introduccion a phi como operador musical + guia individual por herramienta (escala, armonizador, compositor).
+
+### Prioridad 3 — Math Sound + Generative Art (20 guias pendientes)
+
+Math Sound Lab (11 sims): conexion entre matematicas y musica. Audiencia amplia.
+Math Generative Art Lab (9 sims): arte generativo, muy visual, facil de documentar.
 
 ---
 
-### Mathematics
+## FASE ACTIVA II: WASM Durmientes
 
-#### Visual Lab - Expansión (Top 7 Simulaciones)
-| # | Simulación | Categoría | Ecuación/Concepto | Descripción |
-|---|------------|-----------|-------------------|-------------|
-| 1 | Disco de Poincaré | Geometría | Métrica hiperbólica | Universo infinito en círculo finito. Teselaciones tipo Escher. |
-| 2 | Domain Coloring | Análisis Complejo | f: ℂ → ℂ | Visualizar funciones complejas con color. Ceros, polos, singularidades. |
-| 3 | Autómatas Elementales | Caos Discreto | Rule 30, 110, 184 | Wolfram. Determinismo → caos en 1D. Complementa Game of Life. |
-| 4 | Problema de 3 Cuerpos | Dinámica | F = Gm₁m₂/r² | Caos gravitacional. Completa trilogía (Lorenz, Péndulo). |
-| 5 | Banda de Möbius | Topología | Superficie no orientable | Una cara, un borde. Preparación para Klein. |
-| 6 | Nudos Matemáticos | Topología | Invariantes, coloración | Equivalencia topológica. ¿Se puede desatar? |
-| 7 | Grupos de Simetría | Álgebra | Wallpaper groups (17) | Todas las simetrías posibles del plano. Arte islámico explicado. |
+15 modulos C++ compilados sin simulacion HTML. Activarlos es alto impacto con bajo coste de implementacion (el motor ya existe).
 
-**Menciones honorables:** Grafos (Dijkstra, BFS), Redes complejas (scale-free), Botella de Klein.
+### Tier A — Desplegar ya (maxima espectacularidad + valor pedagogico)
 
-#### Generative Art Lab (Top 7 - Nuevo)
-| # | Simulación | Técnica | Descripción |
-|---|------------|---------|-------------|
-| 1 | Reacción-Difusión | Gray-Scott (EDP) | Patrones de Turing vivos. Coral, huellas, cebras. La joya de la emergencia. |
-| 2 | L-Systems | Gramáticas formales | Un motor → árboles, helechos, curva de Hilbert, dragón. Usuario edita reglas. |
-| 3 | Flow Fields | Perlin Noise + partículas | Estética Van Gogh. Miles de trazos siguiendo un campo suave. |
-| 4 | Strange Attractors | Sistemas dinámicos | Galería: Rössler, Aizawa, Thomas, Halvorsen. Más allá de Lorenz. |
-| 5 | Phyllotaxis | Ángulo áureo (137.5°) | Espirales de Fibonacci en girasoles, piñas, suculentas. |
-| 6 | Fractales IFS | Funciones iteradas | Helecho de Barnsley, Sierpinski por IFS, árboles fractales. |
-| 7 | Teselaciones Aperiódicas | Penrose, Wang tiles | Cubrir el infinito sin repetirse. Cuasicristales. |
+#### Mandelbulb (Mathematics)
+Fractal 3D en tiempo real. Raymarching sobre el conjunto de Mandelbrot en R³.
+- Rotacion interactiva, zoom, control de potencia n
+- Unico en el ecosistema: el unico fractal volumetrico
+- Conexiones: Mandelbrot 2D, Julia, caos, dominio complejo
 
-#### Sound Lab (Nuevo)
-| Tipo | Simulación | Descripción |
-|------|------------|-------------|
-| Secuencias | Primos → Ritmo | Números primos como pulsos |
-| Secuencias | Fibonacci → Melodía | Proporción áurea en música |
-| Caos | Atractor de Lorenz → Audio | Coordenadas XYZ → parámetros de síntesis |
-| Fractales | Mandelbrot Sonificado | Profundidad de iteración → pitch |
+#### Molecular Dynamics (Chemistry / Biochemistry)
+Dinamica molecular con potencial Lennard-Jones.
+- Visualizar cristalizacion, fusion, presion, temperatura emergente
+- Parametros: temperatura, densidad, tipo de particula
+- Conexiones: termodinamica, gases reales, plegamiento de proteinas
+
+#### Epidemiology (Biology / Network Science)
+Modelo SIR/SEIR espacial con miles de agentes en grid.
+- Visualizar R0, inmunidad de rebano, curvas de contagio en tiempo real
+- Conexiones: ecosistema (Lotka-Volterra), redes, probabilidad
+
+### Tier B — Activar con nueva disciplina natural
+
+| Modulo | Disciplina futura | Descripcion |
+|--------|-------------------|-------------|
+| `AccretionDisk` | Astronomy | Disco de acrecion alrededor de agujero negro |
+| `GalaxyCollision` | Astronomy | Dos sistemas gravitacionales, colas de marea |
+| `ProteinFolding` | Biochemistry | Minimizacion de energia, estructuras 2D/3D |
+| `LatticeBotzmann` | Physics (ya tiene HTML) | Flujo alrededor de obstaculos, turbulencia |
+| `PlasmaParticles` | Physics (ya tiene HTML) | Interacciones Coulomb, aurora boreal |
+| `GranularSim` | Geology / Physics | Arena, avalanchas, angulo de reposo |
+| `HeatDiffusion` | Physics | Difusion en 2D con materiales distintos |
+| `WaveSolver` | Physics / Acoustics | Ecuacion de onda 2D con reflexion |
+| `CellularAutomata3D` | Mathematics | Game of Life volumetrico |
+| `NeuralNetwork` | AI | Red neuronal entrenando en tiempo real (C++) |
+| `Electrophoresis` | Biochemistry | Separacion por tamanyo y carga en gel |
 
 ---
 
-## Nuevas Disciplinas Potenciales
+## Proximas Disciplinas
 
-### Biology ✅ VISUAL LAB COMPLETADO
-```
-Biology/
-├── Biology Visual Lab/          # ✅ 6 simulaciones
-│   ├── index.html               # ✅ Landing con previews
-│   ├── neurona.html             # ✅ Potencial de acción (Hodgkin-Huxley)
-│   ├── ecosistema.html          # ✅ Depredador-presa (Lotka-Volterra)
-│   ├── genetica-poblacional.html # ✅ Hardy-Weinberg, deriva genética
-│   ├── mitosis.html             # ✅ Fases del ciclo celular
-│   ├── meiosis.html             # ✅ Recombinación, crossing-over
-│   └── evolucion.html           # ✅ Selección natural simulada
-└── Biology Sound Lab/
-    └── ritmos-circadianos.html  # Ciclos biológicos → música (pendiente)
-```
+### Neuroscience Lab
 
-### Astronomy ✅ COMPLETADO
-```
-Astronomy/
-├── Astronomy Visual Lab/         # ✅ 6 simulaciones
-│   ├── expansion-universo.html   # ✅ Ley de Hubble
-│   ├── agujero-negro.html        # ✅ Órbitas, horizonte de eventos
-│   ├── lentes-gravitacionales.html # ✅ Deflexión de luz
-│   ├── diagrama-hr.html          # ✅ Hertzsprung-Russell interactivo
-│   ├── fases-lunares.html        # ✅ Geometría Sol-Tierra-Luna
-│   └── estaciones.html           # ✅ Inclinación axial
-└── Astronomy Sound Lab/          # ✅ 3 simulaciones
-    ├── pulsares.html             # ✅ Pulsos de radio → ritmo
-    ├── ondas-gravitacionales.html # ✅ Datos LIGO sonificados
-    └── musica-esferas-moderna.html # ✅ Exoplanetas cantando
-```
+**Por que ahora:** la brecha entre Biology y AI es la mas obvia del ecosistema. La neurociencia la llena con matematicas rigurosas.
 
-### Geology ✅ VISUAL LAB COMPLETADO
-```
-Geology/
-└── Geology Visual Lab/           # ✅ 6 simulaciones
-    ├── index.html                # ✅ Landing con previews
-    ├── terremotos.html           # ✅ Ondas P, S, superficiales, sismograma
-    ├── volcanes.html             # ✅ Tipos de erupciones, VEI
-    ├── tectonica-placas.html     # ✅ Deriva continental, bordes de placas
-    ├── ciclo-rocas.html          # ✅ Ígneas, sedimentarias, metamórficas
-    ├── erosion.html              # ✅ Hídrica, eólica, glaciar, costera
-    └── estratigrafia.html        # ✅ Capas geológicas, fósiles, datación
-```
+**Simulaciones propuestas:**
 
-### Engineering
-```
-Engineering/
-├── Engineering Visual Lab/
-│   ├── estructuras.html          # Análisis de cerchas
-│   ├── vigas.html                # Diagramas de momento/cortante
-│   ├── circuitos.html            # Ley de Ohm, Kirchhoff
-│   ├── control-pid.html          # Controladores, respuesta
-│   ├── maquinas-termicas.html    # Ciclos Carnot, Otto, Diesel
-│   └── robotica-cinematica.html  # Brazos articulados
-└── Engineering Sound Lab/
-    └── feedback-audio.html       # Control PID aplicado a síntesis
-```
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Red de neuronas Kuramoto | Sincronizacion de osciladores acoplados | Physics (ondas), Biology (neurona) |
+| Plasticidad sinaptica | Regla de Hebb, LTP/LTD | AI (backprop), Biochemistry |
+| Oscilaciones cerebrales | Ritmos alpha/beta/gamma → EEG sintetico | Physics Sound, Math Fourier |
+| Red de Hopfield | Memoria como atractor de energia | AI (autoencoder), Math (caos) |
+| Percepcion bayesiana | Ilusiones visuales como inferencia | AI, Computation |
+| Modelo de memoria de trabajo | Bump attractor (EDO neural) | Math (EDOs), RK4 |
 
-### Music Theory
-```
-Music Theory/
-├── Music Theory Visual Lab/
-│   ├── circulo-quintas.html      # Relaciones tonales
-│   ├── progresiones.html         # Análisis armónico
-│   ├── contrapunto.html          # Reglas de voice leading
-│   ├── formas-musicales.html     # Sonata, rondó, variaciones
-│   └── analisis-schenkerian.html # Reducción de Schenker
-└── Music Theory Sound Lab/        # Ya parcialmente en Physics Sound Lab
-    ├── temperamentos.html        # Comparación de afinaciones
-    ├── escalas-mundo.html        # Modos, ragas, maqams
-    └── microtonal.html           # Divisiones del octavo
-```
+**Sound Lab:** sonificacion de ritmos EEG — frecuencias cerebrales como drones.
+
+**Curso:** "Del Potencial de Accion al Pensamiento" — 20 lecciones desde Hodgkin-Huxley hasta cognicion.
+
+---
+
+### Climate Science Lab
+
+**Por que ahora:** la fisica mas urgente de nuestro tiempo. Dinamica no lineal con tipping points reales. Conecta 5 disciplinas existentes.
+
+**Simulaciones propuestas:**
+
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Forzamiento radiativo | Curva Keeling interactiva, equilibrio energetico | Chemistry (CO2), Physics (termo) |
+| Retroalimentacion hielo-albedo | Tipping points, histéresis climatica | Physics (caos), Geology |
+| Ciclos de Milankovitch | Parametros orbitales → glaciaciones | Astronomy (orbitas), Geology (estratigrafia) |
+| Celulas de Hadley | Circulacion atmosferica, zona intertropical | Physics (fluidos WASM) |
+| Modelo energetico 0D (EBM) | Temperatura global como EDO simple | Math (EDOs), RK4 |
+| Termoclina oceanica | Capas de densidad, AMOC simplificado | Physics (fluidos), Geology |
+
+**Curso:** "La Ecuacion del Clima" — desde el efecto invernadero hasta los ciclos de Milankovitch.
+
+---
+
+### Quantum Computing Lab
+
+**Por que ahora:** extension natural de la mecanica cuantica existente en Physics. Puente entre Physics, Math y AI.
+
+**Simulaciones propuestas:**
+
+| Sim | Concepto | Conexiones |
+|-----|----------|-----------|
+| Esfera de Bloch | Qubit como punto en S², rotaciones unitarias | Physics (cuantica), Math (algebra lineal) |
+| Puertas cuanticas | H, CNOT, Toffoli animadas en circuito | Computation (logic gates) |
+| Entrelazamiento | Bell states, no-localidad visualizada | Physics (cuantica) |
+| Algoritmo de Grover | Busqueda cuantica O(√n) vs O(n) clasico | Computation (complejidad) |
+| QFT (Fourier Cuantica) | Transformada de Fourier cuantica | Math Fourier, Computation |
+| Interferencia cuantica | Doble rendija cuantica vs clasica | Physics (interferencia) |
+
+**Curso:** "De Bits a Qubits" — 25 lecciones desde algebra lineal hasta el algoritmo de Shor.
+
+---
+
+### Game Theory Lab
+
+**Por que ahora:** matematicas puras que modelan comportamiento emergente. Conecta Biology (evolucion), Computation (algoritmos) y un futuro Economics Lab.
+
+**Simulaciones propuestas:**
+
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Dilema del Prisionero iterado | Cooperacion/defeccion, TFT, ALLC, ALLD | Biology (evolucion), Computation |
+| Nash Equilibrium finder | Juegos 2×2, dominancia, equilibrio mixto | Math (probabilidad) |
+| Replicator dynamics | Evolucion de estrategias en poblacion | Biology (seleccion natural), EDOs |
+| Tragedia de los Comunes | Recursos compartidos, over-exploitation | Biology (ecosistema) |
+| Subastas | Vickrey, primer precio, revenue equivalence | Math (probabilidad) |
+| Juegos en red | Grafos donde los nodos juegan, cascadas | Computation (grafos) |
+
+**Sound Lab:** estrategias como partituras — cooperacion = consonancia, defeccion = disonancia.
+
+---
+
+### Acoustics Lab
+
+**Por que ahora:** la fisica del sonido merece su propio laboratorio, distinto de Physics Sound Lab (sonificacion) y Math Sound Lab (matematizacion). Complementa Music Theory.
+
+**Simulaciones propuestas:**
+
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Modos de resonancia de salas | Ondas estacionarias 3D, frecuencias propias | Physics (ondas), Math Fourier |
+| Sintesis fisica (Karplus-Strong) | Modelo de cuerda/tubo con delays | Music Theory, Physics Sound |
+| Psychoacoustica | Bandas criticas, enmascaramiento, pitch | Biology (percepcion) |
+| Efecto Doppler 2D | Fuente movil con audio real | Physics (Doppler) |
+| Difraccion sonora | Obstaculos, difraccion en aperturas | Physics (difraccion) |
+| Patron de Chladni | Vibracion de placa, patrones de arena | Physics (ondas), Math Gen Art |
+
+---
+
+### Network Science Lab
+
+**Por que ahora:** los grafos son el lenguaje universal de la complejidad. Transversal a Biologia, Epidemiologia, Computacion e IA.
+
+**Simulaciones propuestas:**
+
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Modelo Barabasi-Albert | Red scale-free creciendo en tiempo real | Math (probabilidad), Computation |
+| Watts-Strogatz | Pequeño mundo, coeficiente de clustering | Biology (ecosistema) |
+| Epidemias en redes | SIR sobre grafo (usando modulo WASM) | Biology, Epidemiology |
+| Cascadas de fallo | Blackouts, robustez vs ataque dirigido | Computation (algoritmos) |
+| Comunidades | Modularidad, algoritmo Louvain | Computation (grafos), AI |
+| PageRank visual | Flujo de autoridad en red | Computation, AI |
+
+---
+
+### Engineering Lab
+
+**Por que ahora:** el ecosistema tiene todos los ingredientes (fluidos, estructuras, circuitos, control). Cierra el ciclo STEM→Ingenieria.
+
+**Simulaciones propuestas:**
+
+| Sim | Modelo | Conexiones |
+|-----|--------|-----------|
+| Cerchas y vigas | Metodo de nudos, diagramas M/V/N | Math (algebra lineal) |
+| Control PID | Respuesta al escalon, sintonizacion | Math (EDOs), Physics |
+| Circuitos AC | Fasores, potencia reactiva, filtros | Physics (circuitos RLC) |
+| Maquinas termicas | Ciclo Carnot/Otto/Diesel animado | Physics (termodinamica) |
+| Cinematica de robot | Transformaciones homogeneas, IK | Math (matrices), 3D |
+| Analisis de señales | Convolucion, filtros FIR/IIR | Math Sound (Fourier), Acoustics |
+
+---
+
+## Proximos Cursos (formato Academia)
+
+Disciplinas donde la riqueza esta en el recorrido intelectual, no en simulaciones individuales. Se publican en `_portal/academia.html`.
+
+### Topology Course
+
+Continuacion natural de Platonic Lab y Math Visual Lab (Möbius, Klein).
+
+| Modulo | Contenido |
+|--------|-----------|
+| 1. Superficies | Clasificacion topologica, genero, orientabilidad |
+| 2. Homotopia | Deformaciones continuas, grupo fundamental |
+| 3. Homologia | Agujeros en dimension n, numeros de Betti |
+| 4. TDA | Persistent homology, nubes de puntos |
+| 5. Aplicaciones | Proteinas, redes, cosmologia, datos |
+
+**Prerequisito:** Platonic Lab (solidos, 4D).
+
+### Information Theory Course
+
+El curso unificador del ecosistema. La entropia de Shannon conecta termodinamica, biologia, computacion e IA.
+
+| Modulo | Contenido |
+|--------|-----------|
+| 1. Entropia de Shannon | Informacion, sorpresa, bits |
+| 2. Capacidad de canal | Ruido, teorema de Shannon-Hartley |
+| 3. Compresion | Huffman, LZ, incompresibilidad |
+| 4. Informacion mutua | Dependencia, causalidad de Granger |
+| 5. Informacion cuantica | Qubits, entrelazamiento, teleportacion |
+
+**Conexiones:** Physics (entropia termodinamica), Biology (informacion genetica), AI (cross-entropy loss), Quantum Computing.
+
+### Complex Systems Course
+
+El meta-nivel de EigenLab: el estudio de la emergencia misma. Curso transversal a todas las disciplinas.
+
+| Modulo | Contenido |
+|--------|-----------|
+| 1. Criticidad auto-organizada | Avalanchas de arena, 1/f noise |
+| 2. Transiciones de fase | Orden/desorden, universalidad |
+| 3. Redes adaptativas | Feedback estructural y dinamico |
+| 4. Complejidad computacional | P vs NP, computacion al borde del caos |
+| 5. Vida artificial | Autopoiesis, origen de la vida como complejidad |
 
 ---
 
 ## Features Transversales
 
 ### Corto Plazo
-- [ ] Teclas de atajo consistentes (Space=play, R=reset)
-- [ ] Export de estado como JSON
-- [ ] URLs con parámetros para compartir configuraciones
+- [ ] Sistema de progreso en Caminos de Aprendizaje (localStorage, checkmarks)
+- [ ] Botones "Anterior / Siguiente" dentro de cada simulacion cuando viene de un camino
+- [ ] Breadcrumb de camino: "Caos: Paso 3/5"
+- [ ] Actualizar `_portal/academia.html` con Euler Lab como curso destacado
+- [ ] Añadir Euler Lab al Knowledge Graph
 
 ### Medio Plazo
-- [ ] Internacionalización (ES/EN/PT)
-- [ ] Service Workers para modo offline
-- [ ] PWA instalable en móviles
-- [ ] Presets compartibles entre simulaciones similares
+- [ ] Integrar Caminos con Knowledge Graph (resaltar nodos del camino activo al filtrarlo)
+- [ ] Deep linking en caminos: `?path=chaos&step=3` para compartir progreso
+- [ ] Preguntas de reflexion al final de cada paso del camino
+- [ ] Service Workers para modo offline (simulaciones JS ya son autocontenidas)
+- [ ] PWA instalable en moviles
 
 ### Largo Plazo
-- [ ] Modo "profesor" con anotaciones
-- [ ] Grabación de sesiones (replay)
-- [ ] Integración con LMS (exportar como SCORM)
-- [ ] WebXR para experiencias inmersivas
+- [ ] Modo "profesor": anotaciones sobre simulaciones, exportar como PDF
+- [ ] Grabacion de sesiones (replay de parametros en el tiempo)
+- [ ] URLs con parametros para compartir configuraciones: `?L=1.5&g=9.8&theta=45`
+- [ ] Internacionalizacion (ES/EN/PT)
+- [ ] Integracion con LMS (exportar como SCORM)
+- [ ] WebXR para experiencias inmersivas (moleculas en AR)
 
 ---
 
-## Prioridades: Consolidación antes que Expansion
+## Mapa de Nuevas Disciplinas
 
-> "Profundidad antes que amplitud"
-> — Ver MANIFESTO.md
-
----
-
-### FASE ACTUAL: Consolidacion Pedagogica
-
-#### 1. Guias Pedagogicas para Todos los Labs
-
-Cada simulacion debe tener una guia en `guides/` con:
-- Que es y por que importa
-- Ecuacion/modelo con explicacion
-- Estados visuales (leyenda de colores)
-- Experimento guiado paso a paso
-- Conexiones con otras simulaciones
-- Limitaciones del modelo
-
-**Estado actual (27 Dic 2025):**
-| Lab | Guías | Sims | Estado |
-|-----|:-----:|:----:|--------|
-| Math Visual Lab | 27/27 | 27 | ✅ Completo |
-| Biochem Visual Lab | 16/16 | 16 | ✅ Completo |
-| Astronomy Sound Lab | 3/3 | 3 | ✅ Completo |
-| Chemistry Visual Lab | 17/18 | 18 | ✅ Casi completo (94%) |
-| Biology Visual Lab | 8/9 | 9 | ✅ Casi completo (88%) |
-| Astronomy Visual Lab | 7/8 | 8 | ✅ Casi completo (87%) |
-| Geology Visual Lab | 6/7 | 7 | ✅ Casi completo (85%) |
-| Computation Lab | 2/6 | 6 | 🔴 4 pendientes |
-| Physics Visual Lab | 5/27 | 27 | 🔴 22 pendientes |
-| Physics Sound Lab | 0/4 | 4 | 🔴 4 pendientes |
-| Math Generative Art Lab | 0/7 | 7 | 🔴 7 pendientes |
-
-**Total: 91 guías completadas** (de 132 simulaciones = 68%)
-
-**Próxima prioridad:**
-1. Physics Visual Lab (22 sin guía) - las más visitadas, base de todo
-2. Math Generative Art Lab (7 sin guía) - arte generativo
-3. Physics Sound Lab (4 sin guía) - generativos musicales
-4. Computation Lab (4 sin guía) - algoritmos
-
----
-
-### NUEVA FASE: Espiral Virtuosa de Auto-Evolución
-
-> El ecosistema se nutre a sí mismo: las guías revelan gaps, los gaps generan nuevas simulaciones, las simulaciones generan nuevas guías.
-
-#### Diagrama del Sistema
+Conexiones con el ecosistema existente:
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                                                         │
-▼                                                         │
-┌──────────┐     ┌──────────────┐     ┌───────────────┐   │
-│  GUÍAS   │────▶│  CONEXIONES  │────▶│ SIMULACIONES  │───┤
-│ (91 ya)  │     │ INTER-DISC   │     │    NUEVAS     │   │
-└────┬─────┘     └──────┬───────┘     └───────────────┘   │
-     │                  │                                  │
-     │                  ▼                                  │
-     │          ┌───────────────┐                         │
-     │          │    DEMANDA    │ ← ¿qué falta?           │
-     │          │   DETECTADA   │                         │
-     │          └───────────────┘                         │
-     │                                                     │
-     ▼                                                     │
-┌──────────────┐     ┌──────────────┐                     │
-│  MEJORAS A   │     │  CAMINOS DE  │◀────────────────────┘
-│ SIMULACIONES │     │ APRENDIZAJE  │
-└──────────────┘     └──────────────┘
+Neuroscience   ←→  Biology (neurona), AI (redes), Physics Sound, Biochemistry
+Climate        ←→  Geology (estratigrafia), Astronomy (orbitas), Chemistry (CO2), Physics
+Quantum Comp.  ←→  Physics (cuantica), Math (algebra), AI (quantum ML), Computation
+Game Theory    ←→  Biology (evolucion), Computation (algoritmos), Math (probabilidad)
+Acoustics      ←→  Physics Sound, Music Theory, Math Fourier, Biology (percepcion)
+Network Sci.   ←→  Biology (ecosistema), Computation (grafos), AI, Epidemiology
+Engineering    ←→  Physics (fluidos, termo), Math (EDOs), Computation (control)
 ```
-
-#### Flujo de Trabajo
-
-1. **Leer guías existentes** → Identificar:
-   - Sugerencias de mejora para la simulación
-   - Conexiones a simulaciones que no existen
-   - Conceptos que merecen su propia simulación
-
-2. **Mapa de Demanda** → Analizar:
-   - ¿Cuántas guías referencian una simulación inexistente?
-   - ¿Qué conceptos son "hubs" que conectan múltiples disciplinas?
-   - Priorizar por frecuencia + valor pedagógico
-
-3. **Crear simulaciones prioritarias** → Las más demandadas primero
-
-4. **Crear guía para la nueva simulación** → Ciclo se repite
-
-#### ACCIÓN INMEDIATA: Mapa de Demanda
-
-**Objetivo:** Parsear las guías para extraer:
-
-| Dato | Uso |
-|------|-----|
-| Links a simulaciones existentes | Validar conexiones |
-| Links a simulaciones inexistentes | Detectar demanda |
-| Conceptos mencionados sin link | Oportunidades |
-| Mejoras sugeridas en experimentos | Backlog de features |
-
-**Resultado del análisis (Diciembre 2025):**
-
-#### SIMULACIONES MÁS DEMANDADAS
-
-✅ **Todas completadas** - Las simulaciones más solicitadas han sido implementadas.
-
-#### COMPLETADAS RECIENTEMENTE ✅
-
-| Simulación | Lab | Fecha |
-|------------|-----|-------|
-| `nucleosintesis.html` | Astronomy Visual | Dic 2025 |
-| `vision.html` | Biology Visual | Dic 2025 |
-| `lipidos.html` | Biochem Visual | Dic 2025 |
-| `efecto-tunel.html` | Physics Visual | Dic 2025 |
-| `circuitos.html` | Physics Visual | Dic 2025 |
-| `entropia.html` | Physics Visual | Dic 2025 |
-| `fluidos-2d.html` | Physics Visual | Dic 2025 (WASM) |
-| `formacion-galaxias.html` | Astronomy Visual | Dic 2025 (WASM) |
-| `boids-masivo.html` | Biology Visual | Dic 2025 (WASM) |
-| `erosion-hidraulica.html` | Geology Visual | Dic 2025 (WASM) |
-| `simulacion-tela.html` | Physics Visual | Dic 2025 (WASM) |
-| `probabilidad.html` | Math Visual | 21 Dic 2025 |
-| `funciones.html` | Math Visual | 21 Dic 2025 |
-| `geometria-3d.html` | Math Visual | 21 Dic 2025 |
-| `ecuaciones-diferenciales.html` | Math Visual | 21 Dic 2025 |
-| `termodinamica.html` | Physics Visual | Dic 2025 |
-| `ondas.html` | Physics Visual | Dic 2025 |
-| `trigonometria.html` | Math Visual | Dic 2025 |
-| `ritmos-circadianos.html` | Biology Visual | Dic 2025 |
-| `enlaces.html` | Chemistry Visual | Dic 2025 |
-| `cinetica-colisiones.html` | Chemistry Visual | Dic 2025 |
-| `double-pendulum.html` | Math Visual | Dic 2025 |
-| `three-body.html` | Math Visual | Dic 2025 |
-
-#### SIMULACIONES MÁS CONECTADAS (hubs existentes)
-
-| Simulación | Conexiones Entrantes | Rol |
-|------------|:--------------------:|-----|
-| `le-chatelier.html` | 9 | Hub de equilibrio químico |
-| `agujero-negro.html` | 5 | Hub de relatividad |
-| `gases-reales.html` | 5 | Hub de termodinámica |
-| `diagrama-fases.html` | 4 | Hub de estados de materia |
-| `perceptron-playground.html` | 4 | Hub de machine learning |
-| `lorenz-attractor.html` | 3 | Hub de caos |
-| `neurona.html` | 3 | Hub de bioelectricidad |
-| `finite-automata.html` | 3 | Hub de computación |
-
-#### LINKS CORREGIDOS ✅
-
-23 links rotos corregidos en 18 archivos (errores de nomenclatura).
-
----
-
-#### 2. Experimentos Guiados
-
-Dentro de cada guia, incluir secciones "Experimenta" que lleven al usuario a:
-- Formular una hipotesis
-- Manipular variables especificas
-- Observar un fenomeno concreto
-- Conectar con la teoria
-
-**Ejemplos de experimentos guiados:**
-
-| Simulacion | Experimento | Descubrimiento |
-|------------|-------------|----------------|
-| Pendulo Doble | Cambiar angulo inicial de 0.1° | Sensibilidad a condiciones iniciales |
-| Lotka-Volterra | Eliminar depredadores | Explosion de presas, luego colapso |
-| Bubble Sort | Comparar con array casi-ordenado | O(n) en mejor caso |
-| Atractor de Lorenz | Variar σ cerca de 10 | Transicion al caos |
-| Hodgkin-Huxley | Reducir Na+ | Bloqueo del potencial de accion |
-
-#### 3. Conexiones Entre Simulaciones
-
-Crear enlaces explicitos entre simulaciones que comparten patrones:
-
-**Patron: Caos Deterministico**
-```
-Physics/pendulo-doble.html
-    ↔ Math/lorenz.html
-    ↔ Biology/ecosistema.html
-    ↔ Math Generative/gray-scott.html
-```
-
-**Patron: Retroalimentacion**
-```
-Biology/ecosistema.html (depredador-presa)
-    ↔ Chemistry/equilibrio-quimico.html
-    ↔ Physics/oscilador-amortiguado.html
-```
-
-**Patron: Estados Discretos**
-```
-Computation/finite-automata.html
-    ↔ Biology/mitosis.html (fases)
-    ↔ Chemistry/estados-materia.html
-```
-
-**Implementacion:**
-- Seccion "Conexiones" en cada guia
-- Badges en simulaciones: "Ver tambien: [patron] en [disciplina]"
-- Pagina especial: `_portal/patterns.html` con mapa de patrones
-
----
-
-### FASE ACTUAL: Caminos de Aprendizaje
-
-**Estado:** 12 caminos implementados en `_portal/paths/`
-
-| # | Camino | Archivo | Simulaciones |
-|---|--------|---------|--------------|
-| 1 | Caos y Atractores | chaos.html | 5 |
-| 2 | Oscilaciones y Ondas | oscillations.html | 5 |
-| 3 | Estados y Transiciones | states.html | 5 |
-| 4 | Algoritmos y Optimización | algorithms.html | 5 |
-| 5 | Emergencia y Autoorganización | emergence.html | 5 |
-| 6 | Energía en Transformación | energy.html | 5 |
-| 7 | Patrones de la Naturaleza | patterns.html | 5 |
-| 8 | Del Átomo al Cosmos | scales.html | 5 |
-| 9 | Ondas Everywhere | waves.html | 5 |
-| 10 | Retroalimentación | feedback.html | 5 |
-| 11 | Información y Complejidad | information.html | 5 |
-| 12 | Simetría y Ruptura | symmetry.html | 5 |
-
-Rutas sugeridas que cruzan disciplinas, unificadas por un concepto:
-
-#### Ruta 1: "Entender el Caos"
-> Del orden al desorden: por que sistemas simples producen comportamiento impredecible
-
-| Paso | Simulacion | Concepto |
-|------|------------|----------|
-| 1 | Physics/pendulo-simple.html | Sistema predecible |
-| 2 | Physics/pendulo-doble.html | Sensibilidad a condiciones iniciales |
-| 3 | Math/lorenz.html | Atractor extrano, trayectorias que nunca se repiten |
-| 4 | Biology/ecosistema.html | Caos en poblaciones |
-| 5 | Math Generative/gray-scott.html | Patrones emergentes del caos |
-
-#### Ruta 2: "Oscilaciones Universales"
-> Todo vibra: de atomos a galaxias
-
-| Paso | Simulacion | Concepto |
-|------|------------|----------|
-| 1 | Physics/pendulo-simple.html | Oscilacion mecanica |
-| 2 | Physics/ondas.html | Propagacion de oscilaciones |
-| 3 | Chemistry/orbitales.html | Funciones de onda |
-| 4 | Biology/neurona.html | Potencial de accion como oscilacion |
-| 5 | Astronomy/pulsares.html | Oscilaciones cosmicas |
-
-#### Ruta 3: "Estados y Transiciones"
-> Maquinas que cambian: de bits a celulas
-
-| Paso | Simulacion | Concepto |
-|------|------------|----------|
-| 1 | Computation/finite-automata.html | Estados discretos, reglas de transicion |
-| 2 | Computation/logic-gates.html | Compuertas como maquinas de estado |
-| 3 | Biology/mitosis.html | Fases del ciclo celular |
-| 4 | Chemistry/estados-materia.html | Transiciones de fase |
-| 5 | Geology/ciclo-rocas.html | Estados geologicos |
-
-#### Ruta 4: "Algoritmos en Accion"
-> Como resuelven problemas las maquinas
-
-| Paso | Simulacion | Concepto |
-|------|------------|----------|
-| 1 | Computation/bubble-sort.html | Ordenamiento ingenuo O(n²) |
-| 2 | Computation/binary-search-tree.html | Busqueda eficiente O(log n) |
-| 3 | Math/dijkstra.html (futuro) | Caminos optimos en grafos |
-| 4 | Computation/perceptron.html | Aprendizaje como optimizacion |
-
-#### Ruta 5: "Emergencia"
-> Como lo simple genera lo complejo
-
-| Paso | Simulacion | Concepto |
-|------|------------|----------|
-| 1 | Math/game-of-life.html | Reglas simples, patrones complejos |
-| 2 | Math Generative/gray-scott.html | Reaccion-difusion |
-| 3 | Biology/evolucion.html | Seleccion natural |
-| 4 | Math Generative/l-systems.html | Gramaticas → arboles |
-
-**Implementacion actual:**
-- ✅ Pagina `_portal/paths/index.html` con las 5 rutas
-- ✅ Cada ruta tiene su página dedicada con explicaciones
-- ✅ Links directos a cada simulación del camino
-
----
-
-### MEJORAS FUTURAS: Caminos de Aprendizaje
-
-#### Interactividad y Progreso
-- [ ] **Sistema de progreso** - localStorage para marcar simulaciones completadas
-- [ ] **Checkmarks visuales** - Indicador de "visitado" en cada paso
-- [ ] **Porcentaje de avance** - Barra de progreso por camino
-- [ ] **Certificado de completado** - Badge descargable al terminar un camino
-
-#### Navegación Mejorada
-- [ ] **Botón "Siguiente"** - En cada simulación, link al siguiente paso del camino activo
-- [ ] **Breadcrumb de camino** - Mostrar posición actual: "Caos: Paso 3/5"
-- [ ] **Mini-mapa flotante** - Widget que muestra el camino completo
-- [ ] **Deep linking** - URLs como `?path=chaos&step=3` para compartir progreso
-
-#### Contenido Expandido
-- [ ] **Preguntas de reflexión** - Al final de cada paso: "¿Qué observaste?"
-- [ ] **Comparaciones guiadas** - "Abre estas dos simulaciones lado a lado"
-- [ ] **Datos curiosos** - Contexto histórico, aplicaciones reales
-- [ ] **Videos cortos** - Explicaciones de 1-2 minutos por concepto
-- [ ] **Quizzes opcionales** - Verificar comprensión sin ser intrusivo
-
-#### Nuevos Caminos (Diciembre 2025) ✅
-| Camino | Concepto | Estado |
-|--------|----------|--------|
-| **Energía en Transformación** | Conservación y disipación | ✅ Implementado |
-| **Patrones de la Naturaleza** | Fibonacci, fractales | ✅ Implementado |
-| **Del Átomo al Cosmos** | Escalas del universo | ✅ Implementado |
-| **Ondas Everywhere** | Propagación | ✅ Implementado |
-| **Retroalimentación** | Feedback loops | ✅ Implementado |
-| **Información y Complejidad** | Bits a comportamiento | ✅ Implementado |
-| **Simetría y Ruptura** | Orden y desorden | ✅ Implementado |
-
-#### Personalización
-- [ ] **Caminos por nivel** - Básico / Intermedio / Avanzado
-- [ ] **Caminos por tiempo** - "15 min", "1 hora", "Exploración profunda"
-- [ ] **Caminos por interés** - "Quiero entender X" → sugerencia automática
-- [ ] **Constructor de caminos** - Usuario crea su propia ruta
-
-#### Integración con Knowledge Graph
-- [ ] **Visualizar camino en el grafo** - Resaltar nodos del camino activo
-- [ ] **Sugerir caminos desde grafo** - Click en concepto → "Explorar camino relacionado"
-- [ ] **Caminos emergentes** - IA sugiere rutas basadas en patrones de uso
-
-#### Gamificación (opcional, con cuidado)
-- [ ] **Logros desbloqueables** - "Explorador del Caos", "Maestro de Ondas"
-- [ ] **Estadísticas personales** - Tiempo en simulaciones, conceptos explorados
-- [ ] **Modo descubrimiento** - Camino oculto que se revela al explorar
-
----
-
-### FASES FUTURAS (Post-Consolidacion)
-
-#### Fase 2: Expansion Vertical
-1. Añadir Sound Lab a Chemistry y Biochemistry
-2. Expandir Physics Sound Lab con más generativos
-3. Añadir simulaciones 3D donde tenga sentido
-
-#### Fase 3: Expansion Horizontal
-1. ~~Lanzar Biology Visual Lab~~ ✅ Completado (6 simulaciones)
-2. ~~Lanzar Astronomy Visual Lab~~ ✅ Completado (Visual + Sound Lab)
-3. ~~Lanzar Geology Visual Lab~~ ✅ Completado (6 simulaciones)
-4. Engineering Visual Lab
-5. Music Theory Visual Lab
-
-#### Fase 4: Integracion Avanzada
-1. Sistema de ejercicios con feedback
-2. Modo profesor con anotaciones
-3. Grabacion de sesiones (replay)
-
----
-
-## Simulaciones Pendientes (según conexiones de guías)
-
-> **Estrategia:** Completar todas las guías primero. Las conexiones interdisciplinarias revelarán qué simulaciones faltan. Luego priorizamos las más referenciadas.
-
-### Completadas recientemente
-
-| Simulación | Lab | Estado |
-|------------|-----|--------|
-| `trigonometria.html` | Math Visual | ✅ Dic 2025 - Círculo unitario, ondas |
-| `ritmos-circadianos.html` | Biology Visual | ✅ Dic 2025 - Reloj biológico, genes reloj |
-
-### Por descubrir
-
-Cuando terminemos las guías de:
-- [ ] Physics Visual Lab (19 sims)
-- [ ] Math Visual Lab (22 sims)
-- [ ] Chemistry Visual Lab (17 sims)
-- [ ] Biochem Visual Lab (16 sims)
-
-...el mapa de conexiones mostrará más gaps. Entonces priorizaremos por:
-1. **Frecuencia** — cuántas guías referencian la simulación faltante
-2. **Centralidad** — si es un "hub" que conecta múltiples disciplinas
-3. **Valor pedagógico** — si explica un concepto fundamental
 
 ---
 
 ## Contribuciones
 
-Ideas para nuevas simulaciones o mejoras son bienvenidas.
+Formato sugerido para propuestas de nuevas simulaciones:
 
-Formato sugerido para propuestas:
 ```markdown
-## Nueva Simulación: [Nombre]
+## Nueva Simulacion: [Nombre]
 
 **Disciplina:** Physics/Chemistry/etc.
 **Tipo:** Visual/Sound/Data
-**Ecuación principal:** [LaTeX o descripción]
-**Parámetros interactivos:** [lista]
+**Ecuacion principal:** [descripcion o LaTeX]
+**Parametros interactivos:** [lista]
+**Conexiones cross-disciplina:** [labs relacionados]
 **Referencias:** [papers, libros, videos]
 ```
 
 ---
 
-*Última actualización: 11 Enero 2026*
-
----
-
 ## Changelog
 
-### 11 Enero 2026 - Nuevos Módulos WASM
+### Marzo 2026
 
-- **2 Nuevos módulos WASM añadidos al eigenlab-core:**
-  - `SaturnRings` - Simulación de anillos planetarios con órbitas Keplerianas y gaps de resonancia
-  - `VectorFields` - Campos vectoriales con advección de partículas RK4
+- ✅ **Knowledge Graph actualizado:** 132 → 167 nodos, ~290 → 409 enlaces
+- ✅ **14 links rotos corregidos** en el Knowledge Graph (URLs verificadas)
+- ✅ **Academia page:** cursos, teoria original y papers en `_portal/academia.html`
+- ✅ **Portal reorganizado:** Computation + AI unificados, depth badges en todas las cards
+- ✅ **Sculpt Lab y Puzzle Lab** añadidos como cards en Mathematics
+- ✅ **Generative Music Lab** duplicado bajo Music para mayor descubribilidad
+- ✅ **README actualizado:** conteos reales, 10 disciplinas, 16 labs
 
-- **Nuevas simulaciones WASM:**
+### Enero 2026
 
-  | Simulación | Lab | Motor | Descripción |
-  |------------|-----|-------|-------------|
-  | `anillos-saturno.html` | Astronomy Visual | SaturnRings | Anillos de Saturno con gaps de Cassini |
-  | `campos-vectoriales.html` | Math Visual | VectorFields | 8 campos vectoriales con advección |
-
-- **Total simulaciones WASM:** 7 (antes 5)
-- **Tamaño binario:** 331KB (antes 317KB)
-
----
-
-### 27 Diciembre 2025 - Inventario Actualizado
-
-- **Inventario completo regenerado:**
-  - 132 simulaciones totales (excluidos papers, tutoriales y documentos auxiliares)
-  - 91 guías pedagógicas (68% cobertura)
-  - CSV y Excel actualizados: `eigenlab_simulaciones.csv`, `eigenlab_simulaciones.xlsx`
-
-- **Simulaciones demandadas completadas:**
-  - `nucleosintesis.html`, `vision.html`, `lipidos.html`
-  - `efecto-tunel.html`, `circuitos.html`, `entropia.html`
-
-- **Próximas prioridades (41 guías pendientes):**
-  - Physics Visual Lab: 22 guías pendientes
-  - Math Generative Art Lab: 7 guías pendientes
-  - Physics Sound Lab: 4 guías pendientes
-  - Computation Lab: 4 guías pendientes
-
----
-
-### 23 Diciembre 2025 - Motor WASM de Alto Rendimiento
-
-- **eigenlab-core: Motor C++/WebAssembly**
-  - Arquitectura modular en C++17 con Emscripten
-  - Binario optimizado: 158KB (-O3, LTO, -ffast-math)
-  - Embind para interoperabilidad JS/C++ sin overhead
-
-- **5 Nuevas Simulaciones de Alto Rendimiento:**
-
-  | Simulacion | Lab | Motor | Guia |
-  |------------|-----|-------|------|
-  | `fluidos-2d.html` | Physics Visual | FluidSolver (Navier-Stokes) | fluidos-2d.md |
-  | `boids-masivo.html` | Biology Visual | BoidSystem (Reynolds) | boids-masivo.md |
-  | `formacion-galaxias.html` | Astronomy Visual | GalaxySimulator (Barnes-Hut) | formacion-galaxias.md |
-  | `erosion-hidraulica.html` | Geology Visual | ErosionSimulator | erosion-hidraulica.md |
-  | `simulacion-tela.html` | Physics Visual | ClothSimulator (Verlet+PBD) | simulacion-tela.md |
- Con un motor C++/WASM podrías hacer simulaciones que hoy serían imposibles en JS puro. Ideas por disciplina:
-
-  Physics
-
-  | Simulación                     | Por qué necesita C++                         | Visualización                     |
-  |--------------------------------|----------------------------------------------|-----------------------------------|
-  | Fluidos 2D (Navier-Stokes)     | Solver de presión iterativo, miles de celdas | Humo, agua, vórtices              |
-  | Tela/Softbody                  | Red de 10K+ resortes, colisiones             | Bandera al viento, gelatina       |
-  | Electrodinámica de partículas  | N² interacciones Coulomb + campos B          | Plasma, aurora boreal             |
-  | Lattice Boltzmann              | Autómata celular masivo                      | Flujo alrededor de obstáculos     |
-  | Ondas en 2D (ecuación de onda) | PDE en grid grande                           | Estanque con gotas, interferencia |
-  | Cuerpo rígido con fricción     | Solver de restricciones iterativo            | Dominós, jenga, pinball           |
-
-  Chemistry / Biochemistry
-
-  | Simulación                      | Por qué necesita C++          | Visualización                  |
-  |---------------------------------|-------------------------------|--------------------------------|
-  | Dinámica molecular simplificada | Lennard-Jones N²              | Cristalización, fusión         |
-  | Reacción-difusión avanzada      | Gray-Scott en alta res        | Patrones Turing, morphogenesis |
-  | Plegamiento de proteínas (toy)  | Minimización energía 2D/3D    | Cadena buscando mínimo         |
-  | Electroforesis                  | Miles de partículas + campo E | Separación por tamaño          |
-
-  Biology
-
-  | Simulación                            | Por qué necesita C++               | Visualización               |
-  |---------------------------------------|------------------------------------|-----------------------------|
-  | Enjambre (boids avanzado)             | 10K+ agentes con reglas            | Peces, pájaros, multitudes  |
-  | Crecimiento de plantas (L-systems 3D) | Recursión profunda + renderizado   | Árboles fractales realistas |
-  | Epidemiología espacial                | Millones de agentes en grid        | Propagación de enfermedades |
-  | Red neuronal biológica                | Hodgkin-Huxley para 1000+ neuronas | Actividad cerebral          |
-
-  Mathematics
-
-  | Simulación                            | Por qué necesita C++                 | Visualización              |
-  |---------------------------------------|--------------------------------------|----------------------------|
-  | Fractales 3D (Mandelbulb)             | Raymarching, millones de iteraciones | Rotación interactiva       |
-  | Autómatas celulares 3D                | Grid cúbico grande                   | "Game of Life" volumétrico |
-  | Campos vectoriales HECHA       | Integración de miles de trayectorias | Líneas de flujo            |
-  | Atractor de Lorenz (10K trayectorias) | RK4 masivo paralelo                  | Nube de puntos caótica     |
-
-  Astronomy
-
-  | Simulación            | Por qué necesita C++              | Visualización      |
-  |-----------------------|-----------------------------------|--------------------|
-  | Formación de galaxias HECHA | N-body con 50K+ estrellas         | Espiral emergente  |
-  | Colisión de galaxias  | Dos sistemas gravitacionales      | Colas de marea     |
-  | Anillos de Saturno HECHA | Millones de partículas + gravedad | Estructura de gaps |
-  | Disco de acreción     | Fluido + gravedad relativista     | Agujero negro      |
-
-  Geology
-
-  | Simulación              | Por qué necesita C++            | Visualización              |
-  |-------------------------|---------------------------------|----------------------------|
-  | Erosión hidráulica HECHA     | Simulación de agua en heightmap | Formación de ríos, cañones |
-  | Tectónica con conveción | Fluido viscoso + placas         | Manto convectivo           |
-  | Avalancha/derrumbe      | Partículas granulares           | Arena, rocas cayendo       |
-
- 
-
-- **Algoritmos implementados:**
-  - Navier-Stokes con proyeccion de presion y vorticidad
-  - Spatial hashing O(n) para deteccion de vecinos
-  - Barnes-Hut quadtree O(n log n) para N-body
-  - Erosion hidraulica basada en particulas con sedimento
-  - Position-Based Dynamics para restricciones de tela
-
-- **Infraestructura:**
-  - `eigenlab-core/include/` - Headers C++
-  - `eigenlab-core/src/` - Implementaciones
-  - `eigenlab-core/CMakeLists.txt` - Build system
-  - `_wasm/` - Binarios distribuidos
-
-### 21 Diciembre 2025 (Actualización 2)
-- ✅ **Math Visual Lab expandido: 23 → 27 simulaciones**
-  - `probabilidad.html` - 4 distribuciones (uniforme, normal, binomial, Poisson) + Box-Muller
-  - `funciones.html` - Explorador con transformaciones a·f(b(x-h))+k, derivadas/integrales
-  - `geometria-3d.html` - 9 sólidos 3D (cubo, esfera, 5 Platónicos) + Three.js + Euler V-A+C=2
-  - `ecuaciones-diferenciales.html` - 6 EDOs + campos de pendientes + Euler vs RK4
-- ✅ **4 nuevas guías pedagógicas** en `guides/`
-- ✅ **Portal actualizado**: 117+ simulaciones
-- ✅ **Knowledge Graph**: 6 nuevos nodos + 15 conexiones
-- 📊 **Totales**: 115 simulaciones, 89 guías (77%)
-
-### 21 Diciembre 2025
-- 📊 **Inventario completo del ecosistema**
-  - 111 simulaciones totales (antes se reportaban ~117)
-  - 85 guías pedagógicas (77% cobertura)
-  - Excel generado: `eigenlab_simulaciones.xlsx`
-- ✅ **Simulaciones confirmadas como existentes** (estaban en demanda):
-  - `termodinamica.html`, `ondas.html` (Physics)
-  - `enlaces.html`, `cinetica-colisiones.html` (Chemistry)
-  - `double-pendulum.html`, `three-body.html` (Math)
-- 🔴 **Labs que necesitan guías:**
-  - Physics Visual Lab: 18/20 sin guía
-  - Math Generative Art Lab: 7/7 sin guía
-
-### Diciembre 2025 (Actualización 2)
-- ✅ **Nuevas Simulaciones con Guías**
-  - `trigonometria.html` (Math Visual Lab) - Círculo unitario, funciones trigonométricas, ondas
-  - `ritmos-circadianos.html` (Biology Visual Lab) - Reloj biológico, genes reloj, jet lag
-- ✅ **82 Guías Pedagógicas Completadas** (antes 80)
-- ✅ **Math Visual Lab: 23 simulaciones** (antes 22)
-- ✅ **Biology Visual Lab: 7 simulaciones** (antes 6)
-
-### Diciembre 2025 (Actualización)
-- ✅ **80 Guías Pedagógicas Completadas**
-  - Chemistry Visual Lab: 16 guías
-  - Math Visual Lab: 22 guías
-  - Biochem Visual Lab: 15 guías
-  - Biology Visual Lab: 6 guías
-  - Geology Visual Lab: 6 guías
-  - Astronomy Visual Lab: 6 guías
-  - Astronomy Sound Lab: 3 guías
-  - Computation Lab: 6 guías
-- ✅ **Links a Guías en Simulaciones** - Todas las 77 simulaciones con guías tienen link en sidebar
-- ✅ **Espiral Virtuosa** - Nuevo framework de auto-evolución documentado en ROADMAP
-- ✅ **Mapa de Demanda** - Análisis de 80 guías completado
-  - 22 simulaciones/guías demandadas identificadas
-  - 8 hubs de conexión mapeados
-  - 23 links rotos corregidos en 18 archivos
+- ✅ **Music Theory Lab** — nueva disciplina, 9 simulaciones del Sistema Armonico Aureo (phi)
+- ✅ **Math Sound Lab** — 8 simulaciones de sonificacion matematica
+- ✅ **AI Visual Lab** — 20 simulaciones + 21 guias sobre redes neuronales y LLMs
+- ✅ **Platonic Lab** — Curso: 33 lecciones desde Platon hasta politopos 4D
+- ✅ **Chaos Lab** — Curso: 10 atractores + 30 lecciones
+- ✅ **2 nuevos modulos WASM:** SaturnRings, VectorFields
+- ✅ **Knowledge Graph expandido:** ~110 → 132 nodos, ~230 conexiones
 
 ### Diciembre 2025
-- ✅ **Caminos de Aprendizaje Expandidos** - 12 rutas interdisciplinarias (`_portal/paths/`)
-  - 7 nuevos caminos: Energía, Patrones, Escalas, Ondas, Feedback, Información, Simetría
-  - Cada camino con 5 simulaciones y conexiones explicadas
-  - Previews animados en el índice de caminos
-- ✅ **Caminos de Aprendizaje** - 5 rutas originales
-  - Entender el Caos (Physics → Math → Biology)
-  - Oscilaciones Universales (Physics → Chemistry → Biology → Astronomy)
-  - Estados y Transiciones (Computation → Biology → Chemistry → Geology)
-  - Algoritmos en Acción (Computation → Math)
-  - Emergencia (Math → Biology)
-- ✅ **Knowledge Graph** - Mapa interactivo de conexiones (`_portal/knowledge-graph.html`)
-  - ~110 nodos (simulaciones + conceptos transversales)
-  - ~230 conexiones intra e inter-disciplina
-  - Navegación: click abre simulación, Ctrl+click nueva pestaña
-  - Ondas de propagación visual al hacer click en conceptos
-  - Filtros por disciplina, búsqueda, zoom
-  - Tecnología: D3.js force-directed graph
-- ✅ **Guías pedagógicas** - Geology, Biology, Biochemistry, Astronomy
-- ✅ **Computation Lab** - 6 simulaciones + guias pedagogicas
-  - Bubble Sort Race (ordenamiento con visualizacion)
-  - Binary Search Tree (insercion, busqueda, eliminacion)
-  - Logic Gates Sandbox (AND, OR, NOT, XOR, NAND, NOR)
-  - Stack & Heap Visualizer (modelo de memoria)
-  - Perceptron Playground (clasificador lineal)
-  - Finite Automata (DFA interactivo)
-  - 6 guias pedagogicas completas en `guides/`
-- ✅ **Portal actualizado** - Nuevo header con manifiesto
-- ✅ **MANIFESTO.md** - Filosofia pedagogica documentada
-- ✅ **Geology Visual Lab** - 6 simulaciones completadas
-  - Terremotos (ondas sísmicas P, S, superficiales + sismograma)
-  - Volcanes (escudo, estratovolcán, caldera + índice VEI)
-  - Tectónica de Placas (mapa mundial, bordes, cortes transversales)
-  - Ciclo de Rocas (ígneas, sedimentarias, metamórficas interactivo)
-  - Erosión (hídrica, eólica, glaciar, costera con heightmap)
-  - Estratigrafía (columna estratigráfica, fósiles, datación)
+
+- ✅ **Motor WASM eigenlab-core** — C++17, Emscripten, 7 modulos desplegados
+- ✅ **5 simulaciones WASM de alto rendimiento:** fluidos, boids, galaxias, erosion, tela
+- ✅ **Math Visual Lab:** 23 → 27 simulaciones (probabilidad, funciones, geometria-3d, EDOs)
+- ✅ **12 caminos de aprendizaje** en `_portal/paths/`
+- ✅ **Knowledge Graph** — D3.js force-directed, ~110 nodos, filtros, busqueda
+- ✅ **91 guias pedagogicas** completadas (68% cobertura en ese momento)
+- ✅ **Computation Lab** — 6 simulaciones + 6 guias completas
+- ✅ **Geology Visual Lab** — 6 simulaciones completas
+- ✅ **Biology Visual Lab** — expandido a 9 simulaciones
+- ✅ **Astronomy Visual + Sound Lab** — completados
+- ✅ **23 links rotos corregidos** en 18 archivos (nomenclatura)
 
 ### Diciembre 2024
-- ✅ **Biology Visual Lab** - 6 simulaciones completadas
-  - Potencial de Acción (modelo Hodgkin-Huxley)
-  - Ecosistema (Lotka-Volterra depredador-presa)
-  - Genética Poblacional (Hardy-Weinberg, deriva genética)
-  - Mitosis (división celular con fases animadas)
-  - Meiosis (crossing-over, segregación independiente)
-  - Selección Natural (algoritmo genético visual)
-- ✅ **Astronomy Visual Lab** - 6 simulaciones completadas
-  - Expansión del Universo (Ley de Hubble)
-  - Agujero Negro (órbitas relativistas, spacetime grid)
-  - Lentes Gravitacionales (anillo de Einstein)
-  - Diagrama H-R (clasificación estelar)
-  - Fases Lunares (geometría Sol-Tierra-Luna)
-  - Estaciones (inclinación axial)
-- ✅ **Astronomy Sound Lab** - 3 simulaciones completadas
-  - Púlsares (pulsos de radio → ritmo, Joy Division style)
-  - Ondas Gravitacionales (chirp de fusión, GW150914)
-  - Música de las Esferas (TRAPPIST-1, Kepler-90)
+
+- ✅ **Biology Visual Lab** — 6 simulaciones (Hodgkin-Huxley, Lotka-Volterra, Hardy-Weinberg, mitosis, meiosis, evolucion)
+- ✅ **Astronomy Visual Lab** — 6 simulaciones (Hubble, agujero negro, lentes, H-R, lunas, estaciones)
+- ✅ **Astronomy Sound Lab** — 3 simulaciones (pulsares, LIGO, musica esferas)
+- ✅ **Portal unificado** `_portal/index.html` con previews animados
+
+---
+
+*Ultima actualizacion: Marzo 2026*
