@@ -933,7 +933,7 @@
                     <span>&#9835;</span>
                 </div>
                 <h2 class="discipline-title">Music</h2>
-                <span class="discipline-count">1 laboratorio</span>
+                <span class="discipline-count">2 laboratorios</span>
             </div>
 
             <div class="labs-grid">
@@ -956,6 +956,28 @@
                         <div class="lab-meta">
                             <span>Web Audio API</span>
                             <span>Composición φ</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/generativos/" class="lab-card music has-paper">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-music-generative"></canvas>
+                        <span class="lab-badge">6+ sims</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Generative Lab</div>
+                        <h3 class="lab-name">Generative Music Lab</h3>
+                        <p class="lab-description">
+                            Física de partículas como motor compositivo. Tonnetz caótico, gravedad tonal de Rameau, orbifolds de Tymoczko, Sistema Solar sonificado y espacio atonal de Forte.
+                        </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">6+ sims</span>
+                            <span class="depth-badge depth-paper">5 papers</span>
+                        </div>
+                        <div class="lab-meta">
+                            <span>Web Audio API</span>
+                            <span>Neo-Riemannian</span>
                         </div>
                     </div>
                 </a>
@@ -1914,6 +1936,65 @@
                 ctx.lineTo(w * 0.5 - 6, arrowY + 4);
                 ctx.fill();
             },
+            'preview-music-generative': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // Tonnetz hexagonal grid + particle
+                const cx = w * 0.5, cy = h * 0.5;
+                const hexR = 18;
+                const cols = 6, rows = 4;
+                const dx = hexR * 1.75, dy = hexR * 1.52;
+                const nodes = [];
+                for (let row = 0; row < rows; row++) {
+                    for (let col = 0; col < cols; col++) {
+                        const x = cx - cols * dx * 0.45 + col * dx + (row % 2) * dx * 0.5;
+                        const y = cy - rows * dy * 0.45 + row * dy;
+                        nodes.push({ x, y });
+                    }
+                }
+                // Draw edges
+                ctx.strokeStyle = 'rgba(236,72,153,0.12)';
+                ctx.lineWidth = 1;
+                for (let i = 0; i < nodes.length; i++) {
+                    for (let j = i + 1; j < nodes.length; j++) {
+                        const d = Math.hypot(nodes[i].x - nodes[j].x, nodes[i].y - nodes[j].y);
+                        if (d < dx * 1.1) {
+                            ctx.beginPath();
+                            ctx.moveTo(nodes[i].x, nodes[i].y);
+                            ctx.lineTo(nodes[j].x, nodes[j].y);
+                            ctx.stroke();
+                        }
+                    }
+                }
+                // Draw nodes
+                nodes.forEach((n, i) => {
+                    const pulse = (Math.sin(t * 1.2 + i * 0.7) + 1) / 2;
+                    ctx.beginPath();
+                    ctx.arc(n.x, n.y, 3.5, 0, Math.PI * 2);
+                    ctx.fillStyle = `rgba(236,72,153,${0.2 + pulse * 0.4})`;
+                    ctx.fill();
+                });
+                // Particle traversing the grid
+                const pathLen = nodes.length;
+                const idx = Math.floor((t * 0.6) % pathLen);
+                const nextIdx = (idx + 1) % pathLen;
+                const frac = ((t * 0.6) % 1);
+                const px = nodes[idx].x + (nodes[nextIdx].x - nodes[idx].x) * frac;
+                const py = nodes[idx].y + (nodes[nextIdx].y - nodes[idx].y) * frac;
+                // Particle glow
+                const grd = ctx.createRadialGradient(px, py, 0, px, py, 14);
+                grd.addColorStop(0, 'rgba(236,72,153,0.5)');
+                grd.addColorStop(1, 'rgba(236,72,153,0)');
+                ctx.fillStyle = grd;
+                ctx.beginPath();
+                ctx.arc(px, py, 14, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.beginPath();
+                ctx.arc(px, py, 4, 0, Math.PI * 2);
+                ctx.fillStyle = '#f472b6';
+                ctx.fill();
+            },
+
             'preview-music': (ctx, w, h, t) => {
                 ctx.fillStyle = '#030712';
                 ctx.fillRect(0, 0, w, h);
