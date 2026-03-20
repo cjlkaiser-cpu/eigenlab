@@ -433,6 +433,13 @@
             border: 1px solid rgba(236,72,153,0.18);
         }
 
+        .depth-fab {
+            background: rgba(20,184,166,0.08);
+            color: #2dd4bf;
+            border: 1px solid rgba(20,184,166,0.2);
+            font-weight: 600;
+        }
+
         /* Elevated cards (with course or paper) */
         .lab-card.has-course,
         .lab-card.has-paper {
@@ -665,7 +672,7 @@
                     <span>&#8734;</span>
                 </div>
                 <h2 class="discipline-title">Mathematics</h2>
-                <span class="discipline-count">6 laboratorios</span>
+                <span class="discipline-count">8 laboratorios</span>
             </div>
 
             <div class="labs-grid">
@@ -794,6 +801,50 @@
                         <div class="lab-meta">
                             <span>Three.js</span>
                             <span>RK4</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/math-visual-lab/sculpt-lab/" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-sculpt-lab"></canvas>
+                        <span class="lab-badge">3 herramientas</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Design Lab</div>
+                        <h3 class="lab-name">Sculpt Lab</h3>
+                        <p class="lab-description">
+                            Superficies matemáticas para imprimir. TPMS (Gyroid, Schwarz P, Diamond), figuras de Lissajous 3D y superficies mínimas paramétricas.
+                        </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">3 herramientas</span>
+                            <span class="depth-badge depth-fab">STL Export · Impresión 3D</span>
+                        </div>
+                        <div class="lab-meta">
+                            <span>Three.js</span>
+                            <span>Mesh generation</span>
+                        </div>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/math-visual-lab/puzzle-lab/" class="lab-card mathematics">
+                    <div class="lab-preview">
+                        <canvas class="lab-preview-canvas" id="preview-puzzle-lab"></canvas>
+                        <span class="lab-badge">4 puzzles</span>
+                    </div>
+                    <div class="lab-content">
+                        <div class="lab-type">Design Lab</div>
+                        <h3 class="lab-name">Puzzle Lab</h3>
+                        <p class="lab-description">
+                            Puzzles matemáticos clásicos en 3D. Soma cube (7 piezas), teselaciones de Penrose, Tangram — todos exportables como STL para imprimir.
+                        </p>
+                        <div class="lab-depth">
+                            <span class="depth-badge depth-sims">4 puzzles</span>
+                            <span class="depth-badge depth-fab">STL Export · Impresión 3D</span>
+                        </div>
+                        <div class="lab-meta">
+                            <span>Three.js</span>
+                            <span>STL Export</span>
                         </div>
                     </div>
                 </a>
@@ -1936,6 +1987,95 @@
                 ctx.lineTo(w * 0.5 - 6, arrowY + 4);
                 ctx.fill();
             },
+            'preview-sculpt-lab': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // Gyroid-like wireframe: parametric surface projected to 2D
+                const cx = w * 0.5, cy = h * 0.5;
+                const scale = Math.min(w, h) * 0.38;
+                const steps = 28;
+                ctx.lineWidth = 0.8;
+                for (let i = 0; i <= steps; i++) {
+                    const u = (i / steps) * Math.PI * 2;
+                    ctx.beginPath();
+                    for (let j = 0; j <= steps; j++) {
+                        const v = (j / steps) * Math.PI * 2;
+                        // Gyroid implicit: sin(x)cos(y) + sin(y)cos(z) + sin(z)cos(x) = 0
+                        // Parametric approximation for preview
+                        const x = Math.sin(u + t * 0.4) * Math.cos(v);
+                        const y = Math.sin(v + t * 0.3) * Math.cos(u + t * 0.2);
+                        const z = Math.cos(u + t * 0.4) * Math.sin(v + t * 0.35);
+                        // Isometric projection
+                        const px = cx + (x - z) * scale * 0.707;
+                        const py = cy + ((x + z) * 0.5 - y) * scale * 0.707;
+                        const alpha = 0.15 + (z + 1) * 0.15;
+                        ctx.strokeStyle = `rgba(45,212,191,${alpha})`;
+                        j === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+                    }
+                    ctx.stroke();
+                }
+            },
+
+            'preview-puzzle-lab': (ctx, w, h, t) => {
+                ctx.fillStyle = '#030712';
+                ctx.fillRect(0, 0, w, h);
+                // Soma cube: 7 colored unit cubes in isometric view
+                const cx = w * 0.5, cy = h * 0.52;
+                const s = Math.min(w, h) * 0.13;
+                const iso = (gx, gy, gz) => ({
+                    x: cx + (gx - gz) * s * Math.cos(Math.PI / 6),
+                    y: cy + (gx + gz) * s * Math.sin(Math.PI / 6) - gy * s
+                });
+                const drawCube = (gx, gy, gz, color) => {
+                    const wobble = Math.sin(t * 0.8 + (gx + gy + gz) * 0.9) * 0.03;
+                    const a = iso(gx, gy, gz);
+                    const b = iso(gx+1, gy, gz);
+                    const c = iso(gx+1, gy+1, gz);
+                    const d = iso(gx, gy+1, gz);
+                    const e = iso(gx, gy, gz+1);
+                    const f = iso(gx+1, gy, gz+1);
+                    const g2 = iso(gx+1, gy+1, gz+1);
+                    const h2 = iso(gx, gy+1, gz+1);
+                    const alpha = 0.55 + wobble;
+                    // Top face
+                    ctx.beginPath();
+                    ctx.moveTo(d.x, d.y); ctx.lineTo(c.x, c.y);
+                    ctx.lineTo(g2.x, g2.y); ctx.lineTo(h2.x, h2.y);
+                    ctx.closePath();
+                    ctx.fillStyle = color.replace(')', `,${alpha + 0.15})`).replace('rgb', 'rgba');
+                    ctx.fill();
+                    // Right face
+                    ctx.beginPath();
+                    ctx.moveTo(b.x, b.y); ctx.lineTo(c.x, c.y);
+                    ctx.lineTo(g2.x, g2.y); ctx.lineTo(f.x, f.y);
+                    ctx.closePath();
+                    ctx.fillStyle = color.replace(')', `,${alpha - 0.1})`).replace('rgb', 'rgba');
+                    ctx.fill();
+                    // Left face
+                    ctx.beginPath();
+                    ctx.moveTo(a.x, a.y); ctx.lineTo(d.x, d.y);
+                    ctx.lineTo(h2.x, h2.y); ctx.lineTo(e.x, e.y);
+                    ctx.closePath();
+                    ctx.fillStyle = color.replace(')', `,${alpha - 0.2})`).replace('rgb', 'rgba');
+                    ctx.fill();
+                    // Edges
+                    ctx.strokeStyle = 'rgba(0,0,0,0.4)';
+                    ctx.lineWidth = 0.5;
+                    [[a,b],[b,c],[c,d],[d,a],[e,f],[f,g2],[g2,h2],[h2,e],
+                     [a,e],[b,f],[c,g2],[d,h2]].forEach(([p1,p2]) => {
+                        ctx.beginPath(); ctx.moveTo(p1.x,p1.y); ctx.lineTo(p2.x,p2.y); ctx.stroke();
+                    });
+                };
+                const pieces = [
+                    [0,0,0,'rgb(249,115,22)'],[1,0,0,'rgb(249,115,22)'],
+                    [0,1,0,'rgb(168,85,247)'],[1,1,0,'rgb(168,85,247)'],
+                    [0,0,1,'rgb(34,197,94)'], [1,0,1,'rgb(34,197,94)'],
+                    [0,1,1,'rgb(6,182,212)'], [1,1,1,'rgb(6,182,212)'],
+                    [2,0,0,'rgb(251,191,36)'],[2,1,0,'rgb(251,191,36)'],
+                ];
+                pieces.forEach(([gx,gy,gz,color]) => drawCube(gx - 1, gy - 0.5, gz - 0.5, color));
+            },
+
             'preview-music-generative': (ctx, w, h, t) => {
                 ctx.fillStyle = '#030712';
                 ctx.fillRect(0, 0, w, h);
