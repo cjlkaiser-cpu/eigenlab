@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Academia — EigenLab</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:ital,wght@0,300;0,400;1,300;1,400&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg-primary:   #030712;
+            --bg-secondary: #0f172a;
+            --bg-card:      #1e293b;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --border:       #334155;
+            --amber:        #fbbf24;
+            --amber-dim:    rgba(251,191,36,0.12);
+            --amber-border: rgba(251,191,36,0.25);
+            --violet:       #a78bfa;
+            --violet-dim:   rgba(139,92,246,0.1);
+            --violet-border:rgba(139,92,246,0.22);
+            --pink:         #f472b6;
+            --pink-dim:     rgba(236,72,153,0.08);
+            --pink-border:  rgba(236,72,153,0.2);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        /* ── Header ── */
+        .header {
+            border-bottom: 1px solid var(--border);
+            padding: 2rem 2rem 1.75rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .breadcrumb {
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            margin-bottom: 1.25rem;
+            letter-spacing: 0.02em;
+        }
+
+        .breadcrumb a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .breadcrumb a:hover { color: var(--text-primary); }
+        .breadcrumb span { margin: 0 0.4rem; opacity: 0.4; }
+
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            font-size: clamp(2rem, 5vw, 3.25rem);
+            font-weight: 300;
+            letter-spacing: 0.02em;
+            background: linear-gradient(135deg, #fbbf24, #f472b6, #a78bfa);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .header-sub {
+            font-size: 0.95rem;
+            color: var(--text-secondary);
+            max-width: 560px;
+            line-height: 1.6;
+        }
+
+        .header-stats {
+            display: flex;
+            gap: 2rem;
+            margin-top: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .hstat {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .hstat-value {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.5rem;
+            font-weight: 300;
+            color: var(--text-primary);
+            line-height: 1;
+        }
+
+        .hstat-label {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.12em;
+            color: #475569;
+        }
+
+        /* ── Main layout ── */
+        .main {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 3rem 2rem 4rem;
+        }
+
+        /* ── Section ── */
+        .section {
+            margin-bottom: 4rem;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: baseline;
+            gap: 1rem;
+            margin-bottom: 1.75rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section-title {
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            color: var(--text-secondary);
+        }
+
+        .section-pill {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.5rem;
+            border-radius: 9999px;
+            font-weight: 600;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .pill-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid var(--amber-border); }
+        .pill-violet { background: var(--violet-dim); color: var(--violet); border: 1px solid var(--violet-border); }
+        .pill-pink { background: var(--pink-dim); color: var(--pink); border: 1px solid var(--pink-border); }
+
+        /* ── Course cards grid ── */
+        .courses-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .course-card {
+            background: var(--bg-card);
+            border: 1px solid var(--amber-border);
+            border-radius: 1rem;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+
+        .course-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--amber);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35),
+                        0 0 30px rgba(251,191,36,0.15),
+                        0 0 0 1px rgba(251,191,36,0.3);
+        }
+
+        .course-head {
+            padding: 1.25rem 1.25rem 1rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .course-discipline {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            color: var(--amber);
+            margin-bottom: 0.5rem;
+        }
+
+        .course-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .course-meta-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 0.6rem;
+        }
+
+        .cmeta {
+            font-size: 0.6875rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.25rem;
+            background: var(--amber-dim);
+            color: var(--amber);
+            border: 1px solid var(--amber-border);
+            font-weight: 500;
+        }
+
+        .cmeta-neutral {
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        /* Module list */
+        .modules-list {
+            padding: 0.75rem 1.25rem 1.25rem;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .module-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.55rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            align-items: flex-start;
+        }
+
+        .module-item:last-child { border-bottom: none; }
+
+        .module-num {
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: var(--amber);
+            opacity: 0.7;
+            letter-spacing: 0.05em;
+            padding-top: 0.1rem;
+            min-width: 2rem;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .module-content { flex: 1; }
+
+        .module-title {
+            font-size: 0.8125rem;
+            font-weight: 500;
+            color: var(--text-primary);
+            line-height: 1.3;
+        }
+
+        .module-desc {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            margin-top: 0.15rem;
+            line-height: 1.4;
+        }
+
+        .course-cta {
+            margin: 0 1.25rem 1.25rem;
+            padding: 0.6rem 1rem;
+            background: var(--amber-dim);
+            border: 1px solid var(--amber-border);
+            border-radius: 0.5rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--amber);
+            letter-spacing: 0.02em;
+            transition: all 0.2s;
+        }
+
+        .course-card:hover .course-cta {
+            background: rgba(251,191,36,0.2);
+        }
+
+        /* ── Theory featured block ── */
+        .theory-block {
+            background: var(--bg-card);
+            border: 1px solid var(--pink-border);
+            border-radius: 1rem;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            transition: all 0.2s ease;
+        }
+
+        @media (max-width: 768px) {
+            .theory-block { grid-template-columns: 1fr; }
+        }
+
+        .theory-block:hover {
+            transform: translateY(-3px);
+            border-color: var(--pink);
+            box-shadow: 0 16px 40px rgba(0,0,0,0.35),
+                        0 0 30px rgba(236,72,153,0.12),
+                        0 0 0 1px rgba(236,72,153,0.3);
+        }
+
+        .theory-left {
+            padding: 2rem;
+            border-right: 1px solid var(--border);
+        }
+
+        @media (max-width: 768px) {
+            .theory-left { border-right: none; border-bottom: 1px solid var(--border); }
+        }
+
+        .theory-label {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.2em;
+            font-weight: 600;
+            color: var(--pink);
+            margin-bottom: 0.75rem;
+        }
+
+        .theory-title {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.4rem;
+            font-weight: 400;
+            font-style: italic;
+            line-height: 1.3;
+            margin-bottom: 0.75rem;
+        }
+
+        .theory-desc {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            margin-bottom: 1.25rem;
+        }
+
+        .theory-meta-row {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .tmeta {
+            font-size: 0.6875rem;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.25rem;
+            background: var(--pink-dim);
+            color: var(--pink);
+            border: 1px solid var(--pink-border);
+            font-weight: 500;
+        }
+
+        .theory-right {
+            padding: 1.5rem 2rem;
+        }
+
+        .theory-toc-title {
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            color: #475569;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+
+        .toc-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .toc-item {
+            display: flex;
+            gap: 0.75rem;
+            padding: 0.45rem 0;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            align-items: baseline;
+            font-size: 0.8rem;
+        }
+
+        .toc-item:last-child { border-bottom: none; }
+
+        .toc-num {
+            font-size: 0.6rem;
+            color: var(--pink);
+            opacity: 0.6;
+            font-variant-numeric: tabular-nums;
+            min-width: 1.5rem;
+        }
+
+        .toc-text { color: var(--text-secondary); line-height: 1.4; }
+        .toc-part { color: var(--pink); font-weight: 600; font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; padding-top: 0.35rem; }
+
+        .theory-cta {
+            display: block;
+            margin: 1.5rem 0 0;
+            padding: 0.6rem 1rem;
+            background: var(--pink-dim);
+            border: 1px solid var(--pink-border);
+            border-radius: 0.5rem;
+            text-align: center;
+            font-size: 0.8125rem;
+            font-weight: 600;
+            color: var(--pink);
+            text-decoration: none;
+            transition: all 0.2s;
+        }
+
+        .theory-block:hover .theory-cta {
+            background: rgba(236,72,153,0.15);
+        }
+
+        /* ── Papers grid ── */
+        .papers-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+            gap: 1.25rem;
+        }
+
+        .paper-card {
+            background: var(--bg-card);
+            border: 1px solid var(--violet-border);
+            border-radius: 0.875rem;
+            padding: 1.25rem;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .paper-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--violet);
+            box-shadow: 0 12px 32px rgba(0,0,0,0.35),
+                        0 0 24px var(--violet-dim),
+                        0 0 0 1px rgba(139,92,246,0.3);
+        }
+
+        .paper-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .paper-discipline {
+            font-size: 0.6rem;
+            text-transform: uppercase;
+            letter-spacing: 0.15em;
+            font-weight: 600;
+            padding: 0.2rem 0.55rem;
+            border-radius: 0.25rem;
+            white-space: nowrap;
+        }
+
+        .disc-physics { background: rgba(168,85,247,0.12); color: #c084fc; border: 1px solid rgba(168,85,247,0.2); }
+        .disc-music { background: rgba(236,72,153,0.1); color: var(--pink); border: 1px solid var(--pink-border); }
+
+        .paper-title {
+            font-size: 0.9375rem;
+            font-weight: 600;
+            line-height: 1.35;
+            flex: 1;
+        }
+
+        .paper-abstract {
+            font-size: 0.8125rem;
+            color: var(--text-secondary);
+            line-height: 1.65;
+            flex: 1;
+        }
+
+        .paper-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding-top: 0.75rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .paper-tags {
+            display: flex;
+            gap: 0.4rem;
+            flex-wrap: wrap;
+        }
+
+        .paper-tag {
+            font-size: 0.6rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 0.2rem;
+            background: rgba(255,255,255,0.04);
+            color: var(--text-secondary);
+            border: 1px solid rgba(255,255,255,0.07);
+        }
+
+        .paper-read {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--violet);
+            white-space: nowrap;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+        }
+
+        .footer a { color: var(--text-primary); text-decoration: none; }
+
+        /* ── Responsive ── */
+        @media (max-width: 640px) {
+            .courses-grid, .papers-grid { grid-template-columns: 1fr; }
+            .header-stats { gap: 1.25rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <div class="breadcrumb">
+            <a href="index.html">EigenLab</a>
+            <span>/</span>
+            Academia
+        </div>
+        <h1 class="header-title">Academia EigenLab</h1>
+        <p class="header-sub">
+            Cursos estructurados, teoría original y artículos académicos del ecosistema.
+            Todo el conocimiento en profundidad.
+        </p>
+        <div class="header-stats">
+            <div class="hstat">
+                <div class="hstat-value">3</div>
+                <div class="hstat-label">Cursos</div>
+            </div>
+            <div class="hstat">
+                <div class="hstat-value">163</div>
+                <div class="hstat-label">Lecciones</div>
+            </div>
+            <div class="hstat">
+                <div class="hstat-value">6</div>
+                <div class="hstat-label">Papers</div>
+            </div>
+            <div class="hstat">
+                <div class="hstat-value">1</div>
+                <div class="hstat-label">Tratado</div>
+            </div>
+        </div>
+    </div>
+
+    <main class="main">
+
+        <!-- ── CURSOS ── -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-title">Cursos Completos</span>
+                <span class="section-pill pill-amber">3 cursos · 163 lecciones</span>
+            </div>
+
+            <div class="courses-grid">
+
+                <!-- Chaos Lab -->
+                <a href="https://cjlkaiser-cpu.github.io/chaos-lab/curso/" class="course-card">
+                    <div class="course-head">
+                        <div class="course-discipline">Mathematics</div>
+                        <div class="course-name">Teoría del Caos</div>
+                        <div class="course-meta-row">
+                            <span class="cmeta">6 módulos</span>
+                            <span class="cmeta">30 lecciones</span>
+                            <span class="cmeta-neutral cmeta">Three.js · RK4</span>
+                        </div>
+                    </div>
+                    <div class="modules-list">
+                        <div class="module-item">
+                            <span class="module-num">01</span>
+                            <div class="module-content">
+                                <div class="module-title">Fundamentos del Caos</div>
+                                <div class="module-desc">Determinismo, espacio de fases, atractores y sensibilidad a condiciones iniciales.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">02</span>
+                            <div class="module-content">
+                                <div class="module-title">El Atractor de Lorenz</div>
+                                <div class="module-desc">El sistema que inició la revolución del caos. Parámetros, equilibrios y bifurcaciones.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">03</span>
+                            <div class="module-content">
+                                <div class="module-title">Integración Numérica</div>
+                                <div class="module-desc">De ecuaciones a trayectorias. Euler, RK4, paso temporal y el pipeline de visualización.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">04</span>
+                            <div class="module-content">
+                                <div class="module-title">Familia de Atractores</div>
+                                <div class="module-desc">Rössler, Chen, Thomas, Halvorsen, Sprott, Aizawa y Rabinovich-Fabrikant.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">05</span>
+                            <div class="module-content">
+                                <div class="module-title">Herramientas de Análisis</div>
+                                <div class="module-desc">Exponente de Lyapunov, bifurcaciones, cascada de Feigenbaum y dimensión fractal.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">06</span>
+                            <div class="module-content">
+                                <div class="module-title">Más Allá</div>
+                                <div class="module-desc">Secciones de Poincaré, mapa logístico, caos en la naturaleza y fronteras abiertas.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-cta">Iniciar curso &rarr;</div>
+                </a>
+
+                <!-- Platonic Lab -->
+                <a href="https://cjlkaiser-cpu.github.io/platonic-lab/curso/" class="course-card">
+                    <div class="course-head">
+                        <div class="course-discipline">Mathematics</div>
+                        <div class="course-name">Matemáticas Visuales</div>
+                        <div class="course-meta-row">
+                            <span class="cmeta">6 módulos</span>
+                            <span class="cmeta">33 lecciones</span>
+                            <span class="cmeta-neutral cmeta">Three.js · STL</span>
+                        </div>
+                    </div>
+                    <div class="modules-list">
+                        <div class="module-item">
+                            <span class="module-num">01</span>
+                            <div class="module-content">
+                                <div class="module-title">Los Guardianes de la Geometría</div>
+                                <div class="module-desc">Historia y filosofía de los sólidos platónicos desde Pitágoras hasta Platón.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">02</span>
+                            <div class="module-content">
+                                <div class="module-title">La Fórmula de Euler</div>
+                                <div class="module-desc">V &minus; E + F = 2. El teorema que unifica la geometría y la demostración de unicidad.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">03</span>
+                            <div class="module-content">
+                                <div class="module-title">Dualidad y Simetría</div>
+                                <div class="module-desc">Las relaciones ocultas entre los sólidos y sus grupos de simetría algebraicos.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">04</span>
+                            <div class="module-content">
+                                <div class="module-title">Más Allá de la Tercera Dimensión</div>
+                                <div class="module-desc">Politopos 4D y proyecciones estereográficas. Navegando el hiperespacio.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">05</span>
+                            <div class="module-content">
+                                <div class="module-title">Teoría de Grafos Aplicada</div>
+                                <div class="module-desc">Los sólidos como redes. Diagramas de Schlegel y caminos hamiltonianos.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">06</span>
+                            <div class="module-content">
+                                <div class="module-title">De Platón al Mundo Moderno</div>
+                                <div class="module-desc">Aplicaciones en cristalografía, virología, fullerenos y quasicristales.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-cta">Iniciar curso &rarr;</div>
+                </a>
+
+                <!-- Euler Lab -->
+                <a href="https://cjlkaiser-cpu.github.io/euler-lab/" class="course-card">
+                    <div class="course-head">
+                        <div class="course-discipline">Mathematics · Problem Solving</div>
+                        <div class="course-name">Project Euler</div>
+                        <div class="course-meta-row">
+                            <span class="cmeta">100 problemas</span>
+                            <span class="cmeta">4 niveles</span>
+                            <span class="cmeta-neutral cmeta">Pyodide · Python</span>
+                        </div>
+                    </div>
+                    <div class="modules-list">
+                        <div class="module-item">
+                            <span class="module-num">I</span>
+                            <div class="module-content">
+                                <div class="module-title">A mano</div>
+                                <div class="module-desc">Razonamiento matemático sin código. La solución sobre el papel.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">II</span>
+                            <div class="module-content">
+                                <div class="module-title">Fuerza bruta</div>
+                                <div class="module-desc">Implementación directa, sin optimizar. El punto de partida más honesto.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">III</span>
+                            <div class="module-content">
+                                <div class="module-title">Pythónico</div>
+                                <div class="module-desc">Generators, comprensiones, functools. Aprovechar el lenguaje.</div>
+                            </div>
+                        </div>
+                        <div class="module-item">
+                            <span class="module-num">IV</span>
+                            <div class="module-content">
+                                <div class="module-title">Matemático</div>
+                                <div class="module-desc">La solución óptima: número teórico, algoritmos clásicos, complejidad mínima.</div>
+                            </div>
+                        </div>
+                        <div class="module-item" style="opacity:0.4;">
+                            <span class="module-num">···</span>
+                            <div class="module-content">
+                                <div class="module-title">100 problemas en total</div>
+                                <div class="module-desc">Ejecutables en el navegador con Python real vía Pyodide.</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="course-cta">Explorar problemas &rarr;</div>
+                </a>
+
+            </div>
+        </section>
+
+        <!-- ── TEORÍA ORIGINAL ── -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-title">Teoría Original</span>
+                <span class="section-pill pill-pink">Tratado completo</span>
+            </div>
+
+            <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/papers/golden-harmony/ARTICLE_v1.html" class="theory-block">
+                <div class="theory-left">
+                    <div class="theory-label">Music Theory · φ</div>
+                    <h2 class="theory-title">Sistema Armónico Áureo</h2>
+                    <p class="theory-desc">
+                        Una teoría musical completa construida sobre un único número: φ = 1.618&hellip;
+                        Tres sistemas complementarios (12-φ, 15-φ, 12-φW), algoritmos de consonancia,
+                        contrapunto áureo, composición SATB y 9 simulaciones interactivas.
+                        Más de 2.800 líneas de teoría formalizada.
+                    </p>
+                    <div class="theory-meta-row">
+                        <span class="tmeta">2.800 líneas</span>
+                        <span class="tmeta">16 secciones</span>
+                        <span class="tmeta">3 sistemas</span>
+                        <span class="tmeta">Paper PDF</span>
+                    </div>
+                </div>
+                <div class="theory-right">
+                    <div class="theory-toc-title">Contenido</div>
+                    <ul class="toc-list">
+                        <li class="toc-item">
+                            <span class="toc-num toc-part">I</span>
+                            <span class="toc-text toc-part">Sistema 12-φ Original</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">01</span>
+                            <span class="toc-text">Escala Cromática Áurea</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">02</span>
+                            <span class="toc-text">Consonancia &amp; Función Armónica</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">03</span>
+                            <span class="toc-text">Contrapunto y Voice Leading</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">04</span>
+                            <span class="toc-text">Composición Algorítmica SATB</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num toc-part">II</span>
+                            <span class="toc-text toc-part">Sistemas Extendidos</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">05</span>
+                            <span class="toc-text">Sistema 15-φ: Escala Microtonal</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">06</span>
+                            <span class="toc-text">Sistema 12-φW: Escala Occidental Áurea</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num toc-part">III</span>
+                            <span class="toc-text toc-part">Síntesis y Futuro</span>
+                        </li>
+                        <li class="toc-item">
+                            <span class="toc-num">07</span>
+                            <span class="toc-text">Validación, Referencias y Apéndices</span>
+                        </li>
+                    </ul>
+                    <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/papers/golden-harmony/ARTICLE_v1.html" class="theory-cta">Leer artículo &rarr;</a>
+                </div>
+            </a>
+        </section>
+
+        <!-- ── PAPERS ── -->
+        <section class="section">
+            <div class="section-header">
+                <span class="section-title">Papers &amp; Artículos</span>
+                <span class="section-pill pill-violet">6 publicaciones</span>
+            </div>
+
+            <div class="papers-grid">
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/papers/harmonices-mundi/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">De Kepler a Web Audio: Reviviendo la Música de las Esferas</div>
+                        <span class="paper-discipline disc-physics">Physics</span>
+                    </div>
+                    <p class="paper-abstract">
+                        En 1619, Kepler publicó <em>Harmonices Mundi</em>. Este artículo traza la línea desde su visión mística hasta una implementación moderna que sonifica el Sistema Solar en tiempo real. ¿Qué significa "escuchar" el universo 400 años después?
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Kepler</span>
+                            <span class="paper-tag">Sonificación</span>
+                            <span class="paper-tag">Web Audio</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/papers/paper-tonnetz-atractor/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">El Atractor del Tonnetz: Cuando el Caos Compone Música</div>
+                        <span class="paper-discipline disc-physics">Physics</span>
+                    </div>
+                    <p class="paper-abstract">
+                        ¿Puede el caos componer música? Una partícula magnética sigue trayectorias caóticas y genera progresiones de acordes al atravesar el Tonnetz. El resultado es música emergente: ni aleatoria ni predeterminada.
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Neo-Riemannian</span>
+                            <span class="paper-tag">Caos</span>
+                            <span class="paper-tag">Tonnetz</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/papers/paper-orbifold-walker/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">Orbifold Walker: Explorando la Geometría del Espacio de Acordes</div>
+                        <span class="paper-discipline disc-physics">Physics</span>
+                    </div>
+                    <p class="paper-abstract">
+                        Tymoczko demostró que todos los voicings posibles forman un orbifold: un prisma torcido donde los acordes consonantes habitan el centro. Este artículo explora ese espacio con una partícula física.
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Tymoczko</span>
+                            <span class="paper-tag">Orbifold</span>
+                            <span class="paper-tag">Voice Leading</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/papers/paper-set-class-attractor/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">Set-Class Attractor: Navegando el Espacio Atonal con Física</div>
+                        <span class="paper-discipline disc-physics">Physics</span>
+                    </div>
+                    <p class="paper-abstract">
+                        ¿Cómo suena el espacio atonal? Una partícula navega entre los 223 set-classes de Allen Forte. Cada clase es un atractor gravitacional. Cuando la partícula "cae" en uno, suena el conjunto de alturas correspondiente.
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Pitch-Class Sets</span>
+                            <span class="paper-tag">Forte</span>
+                            <span class="paper-tag">Atonalidad</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/papers/paper-rameau-machine/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">Rameau Machine: Gravedad Tonal y Armonía Funcional Generativa</div>
+                        <span class="paper-discipline disc-physics">Physics</span>
+                    </div>
+                    <p class="paper-abstract">
+                        La armonía funcional de Rameau (1722) organiza los acordes en una jerarquía gravitacional. La tónica actúa como centro de masa; cadenas de Markov con pesos dinámicos producen progresiones que respetan tres siglos de práctica musical.
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Rameau</span>
+                            <span class="paper-tag">Markov</span>
+                            <span class="paper-tag">Gravedad Tonal</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+                <a href="https://cjlkaiser-cpu.github.io/music-theory-lab/papers/golden-harmony/ARTICLE_v1.html" class="paper-card">
+                    <div class="paper-top">
+                        <div class="paper-title">Sistema Armónico Áureo: Teoría Musical desde la Proporción Divina</div>
+                        <span class="paper-discipline disc-music">Music</span>
+                    </div>
+                    <p class="paper-abstract">
+                        φ = 1.618&hellip; como operador estructural de un sistema armónico completo. Tres variantes complementarias, fundamento matemático coherente, implementación en JavaScript con 9 simulaciones y ~11.500 líneas de código.
+                    </p>
+                    <div class="paper-footer">
+                        <div class="paper-tags">
+                            <span class="paper-tag">Proporción Áurea</span>
+                            <span class="paper-tag">Microtonalidad</span>
+                            <span class="paper-tag">SATB</span>
+                        </div>
+                        <span class="paper-read">Leer &rarr;</span>
+                    </div>
+                </a>
+
+            </div>
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <a href="index.html">&larr; Volver a EigenLab</a>
+    </footer>
+
+</body>
+</html>
