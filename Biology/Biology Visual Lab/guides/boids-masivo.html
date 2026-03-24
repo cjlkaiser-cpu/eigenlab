@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Boids Masivo | Biology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #10b981; --color-accent-dim: rgba(16,185,129,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .rule-grid { display: grid; grid-template-columns: auto 1fr auto; gap: 0.75rem 1.5rem; margin: 1.5rem 0; align-items: start; }
+        .rule-name { font-family: var(--font-sans); font-weight: 600; color: var(--color-accent); font-size: 0.95rem; white-space: nowrap; }
+        .rule-desc { font-size: 0.95rem; color: var(--color-text-secondary); }
+        .rule-formula { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); white-space: nowrap; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biology Visual Lab</a> /
+            <span>Guía: Boids Masivo</span>
+        </nav>
+        <h1>Boids Masivo</h1>
+        <p class="subtitle">Comportamiento colectivo emergente de reglas individuales simples</p>
+    </header>
+
+    <p class="intro">
+        Un estornino no sabe cómo forman murmuración las miles de aves que lo rodean. Solo conoce
+        tres reglas locales: no chocarse, igualar la dirección de los vecinos y acercarse al grupo.
+        El algoritmo Boids de Craig Reynolds (1987) demuestra que esas tres reglas son suficientes
+        para reproducir bandadas, cardúmenes y rebaños con fidelidad sorprendente. Esta simulación
+        WASM corre miles de agentes en tiempo real con spatial hashing.
+    </p>
+
+    <h2>Las Tres Reglas de Reynolds</h2>
+
+    <div class="equation-block">
+        <div class="equation">F = w_s · S + w_a · A + w_c · C</div>
+        <div class="equation-label">Fuerza total = peso_separación × Separación + peso_alineación × Alineación + peso_cohesión × Cohesión</div>
+    </div>
+
+    <div class="rule-grid">
+        <div class="rule-name">Separación</div>
+        <div class="rule-desc">Evita colisiones con vecinos demasiado cercanos. La repulsión es inversamente proporcional al cuadrado de la distancia: los muy cercanos alejan con mucha fuerza.</div>
+        <div class="rule-formula">S = Σ (p_i − p_j) / d²</div>
+
+        <div class="rule-name">Alineación</div>
+        <div class="rule-desc">Iguala la velocidad con el promedio de los vecinos visibles. Sincroniza dirección y rapidez con el entorno local. Es la regla responsable de la coherencia de dirección.</div>
+        <div class="rule-formula">A = (Σ v_j) / N</div>
+
+        <div class="rule-name">Cohesión</div>
+        <div class="rule-desc">Dirige al agente hacia el centro de masa de sus vecinos. Mantiene el grupo unido. Sin cohesión, la separación dispersa la bandada irreversiblemente.</div>
+        <div class="rule-formula">C = centroide − p_i</div>
+    </div>
+
+    <h2>Emergencia y Complejidad</h2>
+
+    <p>La clave del algoritmo es que la bandada no está programada como entidad: solo existen los agentes individuales. La estructura global — la forma de la murmuración, sus ondulaciones, sus divisiones y reunificaciones — <em>emerge</em> de las interacciones locales sin ningún director central.</p>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Radio de percepción</h4>
+            <p>Cada boid solo ve sus vecinos dentro de un radio r. Fuera de ese radio, los demás agentes no existen. La bandada global emerge de esta percepción local sin ninguna visión de conjunto.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Ángulo de visión</h4>
+            <p>Los boids solo perciben lo que está frente a ellos (tipicamente 270°). Los agentes directamente detrás son invisibles. Reproduce el campo visual real de aves y peces.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Spatial hashing</h4>
+            <p>Con N agentes, buscar los vecinos de cada uno costaría O(N²) operaciones por frame. El spatial hashing divide el espacio en celdas: solo se comparan agentes en la misma celda o adyacentes. Costo: O(N).</p>
+        </div>
+        <div class="concept-card">
+            <h4>Fases del sistema</h4>
+            <p>Según los pesos w_s, w_a, w_c, el sistema exhibe distintas "fases": gas (caos, baja cohesión), líquido (grupos fluidos) y sólido (bloque rígido). Ajustar pesos cambia la fase.</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>La murmuración de estorninos no tiene líder.</strong> Estudios con cámaras de alta velocidad (Cavagna et al. 2010) muestran que los cambios de dirección se propagan desde cualquier punto de la bandada, no desde el frente ni desde individuos dominantes. La información se transmite a velocidad constante, independiente del tamaño de la bandada. Cada pájaro responde a los 6–7 vecinos más cercanos, no a todos.
+    </div>
+
+    <h2>Controles y Parámetros</h2>
+
+    <ul>
+        <li><strong>Separación (w_s)</strong> — Muy alto → agentes dispersos, sin bandada. Muy bajo → colisiones frecuentes.</li>
+        <li><strong>Alineación (w_a)</strong> — Muy alto → movimiento sincronizado en línea recta, sin giros. Muy bajo → caos sin dirección común.</li>
+        <li><strong>Cohesión (w_c)</strong> — Muy alto → bola compacta inmóvil. Muy bajo → la bandada se fragmenta y los grupos se separan.</li>
+        <li><strong>Radio de percepción</strong> — Mayor radio → grupos más grandes pero más lentos en reaccionar. Menor → muchos grupos pequeños independientes.</li>
+        <li><strong>Número de agentes</strong> — Con WASM puede correr miles de boids a 60 FPS usando spatial hashing.</li>
+    </ul>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Aislar cada regla</h4>
+        <ol>
+            <li>Baja alineación y cohesión a 0. Solo separación activa: los agentes se repelen mutuamente sin formar grupos. Gas browniano.</li>
+            <li>Añade solo cohesión (sin alineación ni separación): los agentes colapsan en un punto. No hay bandada, solo un bloque.</li>
+            <li>Activa solo alineación: los agentes sincronizan dirección pero se dispersan. Fluyen en paralelo como partículas en un campo uniforme.</li>
+            <li>Las tres juntas en balance: emerge la bandada. El balance es crítico.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Transición de fase</h4>
+        <ol>
+            <li>Empieza con alineación = 0. Los agentes se mueven en direcciones aleatorias: fase gaseosa.</li>
+            <li>Aumenta alineación lentamente. En algún punto habrá una transición abrupta: de repente todos los agentes se alinean y la bandada fluye como un líquido.</li>
+            <li>Esta transición de "desordenado → ordenado" al aumentar el acoplamiento es análoga a una transición de fase magnética (modelo de Ising) o a la sincronización en osciladores acoplados.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Depredador y evasión</h4>
+        <ol>
+            <li>Añade un depredador (si está disponible) o haz clic en el centro de la bandada.</li>
+            <li>La bandada se parte y rodea el obstáculo: el comportamiento de evasión emerge de la separación aumentada cerca del depredador.</li>
+            <li>La "expansión" de la bandada antes de rodear al depredador es real: las aves amplían su separación individual al sentirse amenazadas, haciendo más difícil que el depredador atrape una presa específica.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../ecosistema.html" class="connection-item">
+            <span class="connection-icon">🌿</span>
+            <div class="connection-text"><strong>Ecosistema</strong><br>Lotka-Volterra: depredador y presa</div>
+        </a>
+        <a href="../epidemiologia-sir.html" class="connection-item">
+            <span class="connection-icon">🦠</span>
+            <div class="connection-text"><strong>Epidemiología SIR</strong><br>Propagación en grupos: contagio social</div>
+        </a>
+        <a href="../evolucion.html" class="connection-item">
+            <span class="connection-icon">🧬</span>
+            <div class="connection-text"><strong>Evolución</strong><br>Comportamiento de grupo como adaptación</div>
+        </a>
+        <a href="../red-neuronal-hh.html" class="connection-item">
+            <span class="connection-icon">🧠</span>
+            <div class="connection-text"><strong>Red Neuronal HH</strong><br>Emergencia colectiva en redes</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../boids-masivo.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

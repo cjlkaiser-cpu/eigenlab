@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Epidemiología SIR | Biology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #10b981; --color-accent-dim: rgba(16,185,129,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .disease-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .disease-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .disease-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .disease-table td:nth-child(2), .disease-table td:nth-child(3), .disease-table td:nth-child(4) { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biology Visual Lab</a> /
+            <span>Guía: Epidemiología SIR</span>
+        </nav>
+        <h1>Epidemiología SIR</h1>
+        <p class="subtitle">El número R₀, la inmunidad de rebaño y la dinámica de los brotes</p>
+    </header>
+
+    <p class="intro">
+        El modelo SIR divide a la población en tres compartimentos: Susceptibles, Infectados y
+        Recuperados. Con solo dos parámetros — la tasa de transmisión β y la tasa de recuperación γ —
+        predice si un brote se extingue, alcanza un pico o infecta a toda la población.
+        La simulación añade espacio: los agentes se mueven, se contagian por proximidad y pueden
+        ser puestos en cuarentena, revelando cómo la geografía modifica la dinámica.
+    </p>
+
+    <h2>Las Ecuaciones del Modelo SIR</h2>
+
+    <div class="equation-block">
+        <div class="equation">dS/dt = −β·S·I/N</div>
+        <div class="equation">dI/dt = β·S·I/N − γ·I</div>
+        <div class="equation">dR/dt = γ·I</div>
+        <div class="equation-label">S + I + R = N (constante). β = tasa de transmisión. γ = tasa de recuperación.</div>
+    </div>
+
+    <p>Las ecuaciones describen flujos entre compartimentos: los susceptibles se infectan al contactar con infectados (a ritmo β·S·I/N), y los infectados se recuperan (a ritmo γ·I). La conservación S + I + R = N implica que no hay nacimientos ni muertes, solo transición entre estados.</p>
+
+    <h2>El Número Básico de Reproducción R₀</h2>
+
+    <p>R₀ es el número promedio de personas que infecta un caso índice en una población completamente susceptible. Es el parámetro más importante en epidemiología:</p>
+
+    <div class="equation-block">
+        <div class="equation">R₀ = β / γ</div>
+        <div class="equation-label">R₀ &lt; 1 → el brote se extingue · R₀ &gt; 1 → el brote crece · R₀ = 1 → estado endémico estable</div>
+    </div>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>R₀ &lt; 1: extinción</h4>
+            <p>Cada infectado genera menos de un caso nuevo. La cadena de transmisión se rompe sola. El brote se extingue sin que la totalidad de la población se infecte. No es necesaria intervención.</p>
+        </div>
+        <div class="concept-card">
+            <h4>R₀ &gt; 1: brote</h4>
+            <p>Crecimiento exponencial inicial: I(t) ≈ I₀ · e^((β−γ)t). El pico llega cuando S/N = γ/β = 1/R₀. Después, la reducción de susceptibles frena la epidemia aunque haya infectados.</p>
+        </div>
+        <div class="concept-card">
+            <h4>R efectivo R_e</h4>
+            <p>A medida que avanza el brote, la proporción de susceptibles cae. R_e = R₀ · (S/N) disminuye. Cuando R_e &lt; 1, la epidemia decae aunque queden muchos susceptibles.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Inmunidad de rebaño</h4>
+            <p>Si suficientes personas son inmunes (por infección o vacuna), R_e &lt; 1 aunque haya susceptibles. El umbral es p_c = 1 − 1/R₀. Para sarampión (R₀≈15): p_c = 93%. Para gripe (R₀≈2): p_c = 50%.</p>
+        </div>
+    </div>
+
+    <h2>Enfermedades Reales</h2>
+
+    <table class="disease-table">
+        <thead>
+            <tr><th>Enfermedad</th><th>R₀</th><th>β (sim)</th><th>γ (sim)</th><th>Característica</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>COVID-19 (cepa original)</td><td>2.5–3</td><td>0.25</td><td>0.03</td><td>Transmisión moderada, recuperación lenta. Hospitales saturados en el pico.</td></tr>
+            <tr><td>Gripe estacional</td><td>1.5–2.5</td><td>0.20</td><td>0.10</td><td>Recuperación rápida. Brotes rápidos y cortos. Variación estacional.</td></tr>
+            <tr><td>Sarampión</td><td>12–18</td><td>0.50</td><td>0.07</td><td>El R₀ más alto conocido. Requiere >93% de inmunidad para control.</td></tr>
+            <tr><td>Ébola</td><td>1.5–2.5</td><td>0.15</td><td>0.05</td><td>Alta mortalidad, baja transmisión. Control posible con aislamiento rápido.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="key-insight">
+        <strong>El pico de infectados no ocurre cuando se agota la población susceptible, sino antes.</strong> Cuando S/N cae por debajo de 1/R₀, R_e baja de 1 y la epidemia comienza a decrecer. Esto es la "frenada natural" del brote, independientemente de intervenciones. La fracción final infectada f satisface f + ln(1−f) = −R₀ · f. Para R₀ = 2.5: el 89% de la población se infecta si no hay intervención.
+    </div>
+
+    <h2>El Efecto de la Cuarentena</h2>
+
+    <p>La cuarentena reduce β efectivo sacando infectados de la población activa. En términos de R₀: si aislamos una fracción q de infectados, R_efectivo = R₀ · (1 − q). Para controlar un brote de COVID (R₀≈2.5), necesitamos q > 1 − 1/2.5 = 60% de los infectados aislados.</p>
+
+    <p>La simulación incluye toggle de cuarentena: los puntos rojos detectados se confinan y dejan de transmitir. El efecto sobre la curva de infectados es visible en tiempo real.</p>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Cruzar el umbral: R₀ = 1</h4>
+        <ol>
+            <li>Fija γ = 0.05 (recuperación). Empieza con β = 0.03 (R₀ = 0.6 &lt; 1): el brote se extingue rápidamente.</li>
+            <li>Sube β a 0.05 (R₀ = 1): la epidemia se arrastra lentamente. Pocos infectados durante mucho tiempo.</li>
+            <li>Sube β a 0.15 (R₀ = 3): el brote explota. Observa el pico y cuántos susceptibles quedan al final.</li>
+            <li>La diferencia entre R₀ = 0.99 y R₀ = 1.01 es la bifurcación más importante en epidemiología.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Inmunidad de rebaño en acción</h4>
+        <ol>
+            <li>Activa el preset COVID-19 (R₀≈2.5). Deja correr el brote hasta el final. Observa qué porcentaje queda susceptible.</li>
+            <li>Reinicia e introduce inmunidad inicial: marca el 60% de la población como recuperada (inmune) antes de empezar.</li>
+            <li>Con R₀ = 2.5, el umbral de rebaño es 1 − 1/2.5 = 60%. El brote debería apenas despegar.</li>
+            <li>Prueba con 50% inmune: el brote ocurre pero es más pequeño. Prueba con 70%: se extingue de inmediato.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Cuarentena y aplanamiento de la curva</h4>
+        <ol>
+            <li>Activa Sarampión (R₀ muy alto). Sin cuarentena, observa la velocidad del brote.</li>
+            <li>Reinicia y activa cuarentena desde el inicio. La curva de infectados se "aplana": el pico es menor pero más tarde.</li>
+            <li>El área bajo la curva (total de infectados) cambia poco; la cuarentena no elimina el brote sino que lo redistribuye en el tiempo.</li>
+            <li>Esto es la diferencia entre "aplanar la curva" (reducir el pico) y "eliminar el brote" (reducir R₀ &lt; 1).</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../ecosistema.html" class="connection-item">
+            <span class="connection-icon">🌿</span>
+            <div class="connection-text"><strong>Ecosistema (Lotka-Volterra)</strong><br>Dinámica depredador-presa: mismas EDOs</div>
+        </a>
+        <a href="../genetica-poblacional.html" class="connection-item">
+            <span class="connection-icon">🧬</span>
+            <div class="connection-text"><strong>Genética Poblacional</strong><br>Selección natural: otra dinámica de frecuencias</div>
+        </a>
+        <a href="../evolucion.html" class="connection-item">
+            <span class="connection-icon">🦠</span>
+            <div class="connection-text"><strong>Evolución</strong><br>Resistencia a antibióticos: selección del patógeno</div>
+        </a>
+        <a href="../boids-masivo.html" class="connection-item">
+            <span class="connection-icon">🐦</span>
+            <div class="connection-text"><strong>Boids Masivo</strong><br>Agentes individuales, comportamiento colectivo</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../epidemiologia-sir.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

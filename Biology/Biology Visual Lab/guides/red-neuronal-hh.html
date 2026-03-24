@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Red Neuronal Hodgkin-Huxley | Biology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #10b981; --color-accent-dim: rgba(16,185,129,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.2rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .gate-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+        .gate-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.25rem; text-align: center; }
+        .gate-card .gate-sym { font-family: var(--font-mono); font-size: 2rem; color: var(--color-accent); }
+        .gate-card h4 { font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600; margin: 0.5rem 0 0.4rem; }
+        .gate-card p { font-size: 0.85rem; color: var(--color-text-secondary); margin: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biology Visual Lab</a> /
+            <span>Guía: Red Neuronal Hodgkin-Huxley</span>
+        </nav>
+        <h1>Red Neuronal Hodgkin-Huxley</h1>
+        <p class="subtitle">Canales iónicos, potencial de acción y propagación en redes biológicas</p>
+    </header>
+
+    <p class="intro">
+        En 1952, Alan Hodgkin y Andrew Huxley describieron el potencial de acción neuronal con
+        cuatro ecuaciones diferenciales acopladas. El modelo ganó el Nobel en 1963 y sigue siendo
+        el estándar de la neurociencia computacional. Esta simulación WASM integra redes de hasta
+        625 neuronas idénticas con acoplamiento eléctrico, reproduciendo ondas de disparo que
+        viajan a través de la red.
+    </p>
+
+    <h2>La Ecuación Central</h2>
+
+    <div class="equation-block">
+        <div class="equation">Cₘ dV/dt = I − g_Na·m³·h·(V−E_Na) − g_K·n⁴·(V−E_K) − g_L·(V−E_L)</div>
+        <div class="equation-label">Cₘ = capacidad de membrana · V = voltaje · I = corriente inyectada · g = conductancias máximas · E = potenciales de equilibrio</div>
+    </div>
+
+    <p>La ecuación describe la conservación de carga en la membrana: la corriente inyectada se distribuye entre cargar el condensador de membrana (Cₘ dV/dt) y las corrientes iónicas a través de tres tipos de canales: sodio (Na⁺), potasio (K⁺) y fuga (leak).</p>
+
+    <h2>Las Compuertas Iónicas</h2>
+
+    <div class="gate-grid">
+        <div class="gate-card">
+            <div class="gate-sym">m</div>
+            <h4>Activación Na⁺</h4>
+            <p>Se abre rápido cuando V sube. Potencia 3: se necesitan 3 compuertas abiertas simultáneamente. El responsable de la despolarización inicial.</p>
+        </div>
+        <div class="gate-card">
+            <div class="gate-sym">h</div>
+            <h4>Inactivación Na⁺</h4>
+            <p>Se cierra con despolarización sostenida. Responsable del período refractario: tras el disparo, la neurona no puede volver a disparar hasta que h se recupere.</p>
+        </div>
+        <div class="gate-card">
+            <div class="gate-sym">n</div>
+            <h4>Activación K⁺</h4>
+            <p>Se abre lentamente cuando V sube. Potencia 4: se necesitan 4 compuertas. Provoca la repolarización y la hiperpolarización posterior al pico.</p>
+        </div>
+    </div>
+
+    <p>Cada compuerta sigue su propia dinámica de primer orden: dx/dt = α_x(V)·(1−x) − β_x(V)·x, donde α y β son tasas de apertura y cierre dependientes del voltaje determinadas experimentalmente por Hodgkin y Huxley en axón de calamar gigante.</p>
+
+    <h2>El Potencial de Acción Paso a Paso</h2>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>1. Reposo (−65 mV)</h4>
+            <p>m≈0, h≈1, n≈0.3. Los canales Na⁺ cerrados (por m). La célula está en equilibrio: las corrientes de Na⁺ y K⁺ de fuga se compensan.</p>
+        </div>
+        <div class="concept-card">
+            <h4>2. Despolarización</h4>
+            <p>Un estímulo sube V. m aumenta, abriendo canales Na⁺. El Na⁺ entra, subiendo más V. Retroalimentación positiva explosiva: el pico llega a +40 mV en &lt;1 ms.</p>
+        </div>
+        <div class="concept-card">
+            <h4>3. Repolarización</h4>
+            <p>h se cierra (inactivando Na⁺). n se abre (salida de K⁺). El voltaje cae de vuelta al reposo y más: hiperpolarización hasta −80 mV.</p>
+        </div>
+        <div class="concept-card">
+            <h4>4. Período refractario</h4>
+            <p>h tarda ~5 ms en recuperarse. Durante este tiempo, la neurona no puede disparar de nuevo (refractario absoluto) o necesita un estímulo mayor (refractario relativo).</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>El potencial de acción es todo-o-nada.</strong> Si el estímulo supera el umbral (~−55 mV), la neurona dispara siempre con el mismo voltaje máximo. Si no llega al umbral, no dispara en absoluto. La información no está codificada en la amplitud (siempre igual) sino en la frecuencia: estímulos más fuertes generan disparos más frecuentes.
+    </div>
+
+    <h2>Propagación en la Red</h2>
+
+    <p>En la simulación, las neuronas están acopladas eléctricamente: el voltaje de cada neurona influye en sus vecinas mediante una corriente de acoplamiento I_syn ∝ (V_pre − V_post). Cuando una neurona dispara, su pico puede elevar el voltaje de sus vecinas por encima del umbral, propagando la onda.</p>
+
+    <p>La velocidad de propagación depende del acoplamiento: fuerte → propagación rápida y amplia; débil → la onda se extingue después de pocas neuronas. Con los tamaños de red disponibles (8×8, 16×16, 25×25) se pueden observar:</p>
+
+    <ul>
+        <li><strong>Ondas planas</strong> — estimulación de un borde, frente de disparo que avanza.</li>
+        <li><strong>Espirales</strong> — estimulación asimétrica genera frentes rotatorios (arritmias cardíacas tienen este origen).</li>
+        <li><strong>Actividad espontánea</strong> — con acoplamiento fuerte, el ruido térmico propaga disparos aleatorios.</li>
+    </ul>
+
+    <h2>Vistas de las Compuertas</h2>
+
+    <p>La simulación permite visualizar V, m, n o h en cada neurona simultáneamente. Cambiar entre vistas revela la dinámica interna:</p>
+    <ul>
+        <li><strong>V (voltaje)</strong> — la onda de potencial de acción propagándose, de azul (reposo) a rojo (disparo).</li>
+        <li><strong>m</strong> — coincide con el frente de disparo: se activa justo antes que el pico.</li>
+        <li><strong>h</strong> — deprimido en el frente (refractario): la zona que acaba de disparar no puede volver a hacerlo.</li>
+        <li><strong>n</strong> — activado en la cola del frente: la repolarización siguiendo al pico.</li>
+    </ul>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Onda de propagación simple</h4>
+        <ol>
+            <li>Selecciona red 16×16 (256 neuronas). Haz clic en el borde izquierdo.</li>
+            <li>Observa el frente de disparo recorriendo la red de izquierda a derecha: onda plana.</li>
+            <li>Cambia la vista a <em>h</em> (inactivación Na⁺): la cola oscura detrás del frente es la zona refractaria.</li>
+            <li>Haz clic en el centro inmediatamente después: la nueva onda no puede propagarse hacia la zona refractaria, solo hacia zonas frescas.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Período refractario</h4>
+        <ol>
+            <li>Con red 8×8, haz clic en una neurona. Espera a que dispare.</li>
+            <li>Haz clic inmediatamente en la misma neurona (antes de 5 ms). No dispara: período refractario absoluto.</li>
+            <li>Espera un poco más y repite: ahora dispara pero necesita un doble clic (refractario relativo).</li>
+            <li>La vista <em>h</em> muestra cuándo la neurona ha recuperado su capacidad de disparo (h vuelve a claro).</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Escala y emergencia colectiva</h4>
+        <ol>
+            <li>Empieza con red 8×8. El disparo es limpio y predecible.</li>
+            <li>Sube a 25×25 (625 neuronas). Con el mismo estímulo, los frentes pueden reflejarse en los bordes y generar patrones complejos.</li>
+            <li>Estimula dos puntos simultáneamente en lados opuestos: los dos frentes colisionan y se anulan (ambos lados de la colisión están en refractario). Esto es cómo las ondas nerviosas tienen dirección definida.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../neurona.html" class="connection-item">
+            <span class="connection-icon">⚡</span>
+            <div class="connection-text"><strong>Neurona (HH simple)</strong><br>Una sola neurona en detalle</div>
+        </a>
+        <a href="../ritmos-circadianos.html" class="connection-item">
+            <span class="connection-icon">🕐</span>
+            <div class="connection-text"><strong>Ritmos Circadianos</strong><br>Osciladores biológicos acoplados</div>
+        </a>
+        <a href="../epidemiologia-sir.html" class="connection-item">
+            <span class="connection-icon">🦠</span>
+            <div class="connection-text"><strong>Epidemiología SIR</strong><br>Propagación en redes: misma matemática</div>
+        </a>
+        <a href="../boids-masivo.html" class="connection-item">
+            <span class="connection-icon">🐦</span>
+            <div class="connection-text"><strong>Boids Masivo</strong><br>Comportamiento emergente colectivo</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../red-neuronal-hh.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>
