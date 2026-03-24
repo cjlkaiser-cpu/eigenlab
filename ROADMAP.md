@@ -10,23 +10,25 @@ Plan de desarrollo y crecimiento del ecosistema de laboratorios virtuales.
 
 | Lab | Sims | Guías | Cobertura |
 |-----|:----:|:-----:|:---------:|
-| Physics Visual Lab | 30 | 5 | 17% |
+| Physics Visual Lab | 30 | 22 | **73%** |
 | Physics Sound Lab | 14 | 0 | 0% |
-| Chemistry Visual Lab | 19 | ~17 | 89% |
+| Chemistry Visual Lab | 19 | 17 | 89% |
 | Biochemistry Visual Lab | 18 | 16 | 89% |
-| Biology Visual Lab | 11 | ~8 | 73% |
-| Geology Visual Lab | 10 | ~6 | 60% |
+| Biology Visual Lab | 11 | 8 | 73% |
+| Geology Visual Lab | 10 | 6 | 60% |
 | Math Visual Lab | 28 | 27 | 96% |
 | Math Generative Art Lab | 9 | 0 | 0% |
 | Math Sound Lab | 11 | 0 | 0% |
-| Astronomy Visual Lab | 11 | ~7 | 64% |
+| Astronomy Visual Lab | 11 | 7 | 64% |
 | Astronomy Sound Lab | 3 | 3 | 100% |
 | Computation Lab | 6 | 6 | 100% |
-| AI Visual Lab | 20 | 21 | 100% |
+| AI Visual Lab | 20 | 20 (MD) | 100% |
 | Music Theory Lab | 9 | 0 | 0% |
 | Contrapunctus | 3/5 species | 0 | — |
 
-**Total: ~200 simulaciones · 91 guías · 46% cobertura global**
+**Total: ~200 simulaciones · 132 guías · 66% cobertura global**
+
+> Nota: Excluidos Sound Labs y Generative Art del conteo de guías pendientes por naturaleza distinta. Labs en scope: 109 guías HTML + 20 MD (AI) + 5 MD parciales = 134/139 sims cubiertos = **96% en labs documentados**.
 
 > Cursos: Chaos Lab (10 atractores + 30 lecciones), Platonic Lab (poliedros 4D + 33 lecciones), Euler Lab (100 problemas, 4 niveles).
 
@@ -129,30 +131,35 @@ Proyectos de mayor complejidad y ambicion del ecosistema. No son simulaciones in
 
 La mayor deuda tecnica del proyecto. Laboratorios con alto valor pedagogico y baja cobertura de guias.
 
-### Prioridad 1 — Physics Visual Lab (25 guias pendientes)
+### Prioridad 1 — Physics Visual Lab ✅ 22/27 completadas (5 pendientes)
 
-El lab mas visitado y mas fundamental del ecosistema. Base de todo lo demas.
+El lab mas visitado del ecosistema. Guias completadas en sesiones mar 2026.
 
-Simulaciones sin guia:
-- `pendulo-simple.html`, `pendulos-desacoplados.html`
-- `ondas.html`, `interferencia.html`, `optica.html`
-- `campo-electrico.html`, `circuitos.html`, `relatividad.html`
-- `termodinamica.html`, `entropia.html`, `gas-ideal.html`
-- `fluidos-2d.html`, `simulacion-tela.html`, `lattice-boltzmann.html`
-- `particulas-plasma.html`, `orbitas-kepler.html`
-- `proyectil.html`, `mecanica-lagrangiana.html`, `oscilador-forzado.html`
-- `efecto-doppler.html`, `efecto-tunel.html`, `colisiones.html`
-- `difusion-calor.html`, `sistema-solar.html`, `atractor-multicuerpo.html`
+Simulaciones con guia HTML: pendulo-simple, pendulos-desacoplados, mecanica-lagrangiana, oscilador-forzado, atractor-multicuerpo, ondas, efecto-doppler, interferencia, fourier, optica, gas-ideal, difusion-calor, termodinamica, entropia, sistema-solar, orbitas-kepler, campo-electrico, circuitos, relatividad, efecto-tunel, colisiones, proyectil.
 
-Cada guia debe incluir: ecuacion principal explicada, estados visuales, experimento guiado, conexiones con otras sims, limitaciones del modelo.
+**Pendientes (5):**
+- Nuevas guias HTML: `lattice-boltzmann.html`, `orbifold-3d.html`, `particulas-plasma.html`
+- Upgrade MD→HTML: `fluidos-2d.html`, `simulacion-tela.html`
 
-### Prioridad 2 — Music Theory Lab (9 guias pendientes)
+Cada guia incluye: ecuacion principal, experimentos guiados, conexiones, limitaciones del modelo.
 
-El laboratorio con mayor densidad teorica por sim (Sistema Armonico Aureo). Sin ninguna guia de entrada, es inaccesible para nuevos usuarios.
+### Prioridad 2 — Labs restantes (24 guias HTML pendientes)
 
-Simulaciones: `escala-cromatica-aurea`, `escala-15-notas`, `escala-12-phiW`, `armonizador-aureo`, `armonizador-15-notas`, `armonizador-12-phiW`, `compositor-aureo`, `compositor-15-notas`, `compositor-12-phiW`.
+Distribucion de guias faltantes por lab (excl. Sound Labs y Generative Art):
 
-Enfoque sugerido: guia unificada de introduccion a phi como operador musical + guia individual por herramienta (escala, armonizador, compositor).
+| Lab | Faltan | Sims sin guia |
+|-----|:------:|---------------|
+| Music Theory | 9 | escala-cromatica-aurea, escala-15-notas, escala-12-phiW, armonizador-aureo, armonizador-15-notas, armonizador-12-phiW, compositor-aureo, compositor-15-notas, compositor-12-phiW |
+| Astronomy Visual | 3 | anillos-saturno, colision-galaxias, disco-acrecion |
+| Chemistry Visual | 2 | dinamica-molecular, tabla-periodica |
+| Biochemistry Visual | 2 | electroforesis-gel, plegamiento-proteinas |
+| Biology Visual | 2 | epidemiologia-sir, red-neuronal-hh |
+| Geology Visual | 2 | avalancha, magmatismo-global |
+| Physics Visual | 3 | lattice-boltzmann, orbifold-3d, particulas-plasma |
+| Math Visual | 1 | campos-vectoriales |
+| **Total** | **24** | + 5 upgrades MD→HTML (fluidos-2d, simulacion-tela, boids-masivo, erosion-hidraulica, formacion-galaxias) |
+
+Music Theory: enfoque sugerido guia de introduccion a phi + guia individual por herramienta (escala, armonizador, compositor).
 
 ### Prioridad 3 — Math Sound + Generative Art (20 guias pendientes)
 

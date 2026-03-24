@@ -29,6 +29,25 @@ Ecosistema de laboratorios virtuales que cubre Física, Química, Bioquímica, B
 
 **Total: 16 laboratorios · ~199 simulaciones · 10 disciplinas**
 
+### Guías Teóricas
+
+Cada simulación enlaza a una guía HTML con la ecuación principal, experimentos guiados y conexiones interdisciplinarias. Estado de cobertura (excl. Sound Labs y Generative Art):
+
+| Lab | Guías / Sims | Cobertura |
+|-----|:------------:|:---------:|
+| Math Visual Lab | 27 / 28 | 96% |
+| Computation Lab | 6 / 6 | 100% |
+| AI Visual Lab | 20 / 20 (MD) | 100% |
+| Chemistry Visual Lab | 17 / 19 | 89% |
+| Biochemistry Visual Lab | 16 / 18 | 89% |
+| Physics Visual Lab | 22 / 30 | 73% |
+| Biology Visual Lab | 8 / 11 | 73% |
+| Astronomy Visual Lab | 7 / 11 | 64% |
+| Geology Visual Lab | 6 / 10 | 60% |
+| Music Theory Lab | 0 / 9 | 0% |
+
+**132 guías completadas · 29 pendientes** · Ver [ROADMAP.md](ROADMAP.md) para detalle.
+
 > Incluye 2 cursos estructurados (Chaos Lab, Platonic Lab) y Euler Lab (100 problemas en submodule).
 > Portal unificado con Knowledge Graph interactivo (167 nodos) y 12 caminos de aprendizaje.
 
