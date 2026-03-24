@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Formación de Galaxias | Astronomy Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #6366f1; --color-accent-dim: rgba(99,102,241,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #f0f0ff; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .theta-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .theta-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .theta-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .theta-table td:first-child { font-family: var(--font-mono); font-size: 0.9rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Astronomy Visual Lab</a> /
+            <span>Guía: Formación de Galaxias</span>
+        </nav>
+        <h1>Formación de Galaxias</h1>
+        <p class="subtitle">N-body gravitacional, Barnes-Hut O(N log N) y colapso gravitacional</p>
+    </header>
+
+    <p class="intro">
+        Una galaxia espiral es el resultado de 10,000 millones de años de colapso gravitacional:
+        una nube primordial de gas y materia oscura que se contrae, se aplana por conservación
+        de momento angular y forma un disco de rotación. Esta simulación resuelve el problema
+        gravitacional de N cuerpos para miles de estrellas usando el algoritmo Barnes-Hut,
+        que hace tratable computacionalmente lo que de otro modo requeriría millones de operaciones por frame.
+    </p>
+
+    <h2>El Problema de N Cuerpos Gravitacional</h2>
+
+    <p>La fuerza gravitacional sobre cada estrella <em>i</em> es la suma vectorial de las contribuciones de todas las demás. La implementación directa (fuerza bruta) tiene costo O(N²):</p>
+
+    <div class="equation-block">
+        <div class="equation">F_i = G·m_i · Σ_{j≠i} m_j·(r_j − r_i) / |r_j − r_i|³</div>
+        <div class="equation-label">N = 10,000 estrellas → 10⁸ evaluaciones por paso. A 60 fps: 6×10⁹ operaciones/segundo. Imposible en JavaScript; difícil incluso en C++.</div>
+    </div>
+
+    <p>El suavizado (softening) es imprescindible: sin él, dos estrellas que se acercan producirían fuerzas divergentes. Se reemplaza r por √(r² + ε²), donde ε es la longitud de suavizado:</p>
+
+    <div class="equation-block">
+        <div class="equation">F = G·m₁·m₂ / (r² + ε²) &nbsp;&nbsp;&nbsp; ε ≈ 1–5% del radio galáctico</div>
+        <div class="equation-label">ε representa el tamaño finito efectivo de cada partícula. Sin él, encuentros cercanos generarían velocidades no físicas y estrellas eyectadas del sistema.</div>
+    </div>
+
+    <h2>El Algoritmo Barnes-Hut y el Quadtree</h2>
+
+    <p>La idea central: las estrellas suficientemente lejanas pueden aproximarse como un único cuerpo con masa total concentrada en su centro de masa. Para formalizar «suficientemente lejano», el espacio se divide recursivamente en un quadtree:</p>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Construcción del quadtree</h4>
+            <p>El espacio se divide en cuatro cuadrantes. Cada cuadrante con más de una estrella se subdivide recursivamente. El árbol se reconstruye en cada paso de tiempo. Costo de construcción: O(N log N).</p>
+        </div>
+        <div class="concept-card">
+            <h4>Centro de masa por nodo</h4>
+            <p>Cada nodo del árbol almacena la masa total y el centro de masa de todas las estrellas contenidas. Esta información se calcula en una pasada ascendente del árbol (bottom-up pass) después de la inserción.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Criterio de apertura θ</h4>
+            <p>Para cada estrella, al descender el árbol se evalúa: si tamaño_nodo/distancia &lt; θ → usar el nodo como masa puntual. Si no → descender a los hijos. θ controla el equilibrio precisión/velocidad.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Complejidad resultante</h4>
+            <p>Con θ adecuado, cada estrella interactúa con O(log N) nodos del árbol. Costo total: O(N log N) por paso. Para N = 10,000: ~130,000 operaciones en lugar de 100,000,000. Factor 770× más rápido.</p>
+        </div>
+    </div>
+
+    <div class="equation-block">
+        <div class="equation">θ = tamaño_celda / distancia &nbsp;&nbsp; si θ &lt; θ_umbral → aproximar como masa puntual</div>
+        <div class="equation-label">El parámetro θ (theta de Barnes-Hut) controla la precisión. θ = 0 → fuerza bruta exacta. θ = 1 → máxima aproximación. θ = 0.5 es el equilibrio estándar.</div>
+    </div>
+
+    <table class="theta-table">
+        <thead>
+            <tr><th>θ</th><th>Precisión</th><th>Velocidad relativa</th><th>Uso recomendado</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>0.3</td><td>Muy alta (cuasi exacta)</td><td>1×</td><td>Validación científica</td></tr>
+            <tr><td>0.5</td><td>Alta</td><td>2–3×</td><td>Simulación estándar</td></tr>
+            <tr><td>0.7</td><td>Media</td><td>4–5×</td><td>Muchas partículas en tiempo real</td></tr>
+            <tr><td>1.0</td><td>Aproximada</td><td>8–10×</td><td>Preview rápido o dispositivos lentos</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Integración Temporal: Leapfrog</h2>
+
+    <p>El integrador leapfrog (también llamado Störmer-Verlet) es el estándar en simulaciones gravitacionales porque es <em>simpléctico</em>: conserva el volumen del espacio de fase y, por tanto, mantiene acotado el error de energía a largo plazo. Euler diverge; leapfrog oscila pero no crece:</p>
+
+    <div class="equation-block">
+        <div class="equation">v(t+dt/2) = v(t) + a(t)·dt/2 &nbsp;&nbsp; x(t+dt) = x(t) + v(t+dt/2)·dt &nbsp;&nbsp; v(t+dt) = v(t+dt/2) + a(t+dt)·dt/2</div>
+        <div class="equation-label">Las posiciones y velocidades están «desfasadas» en dt/2 — de ahí el nombre leapfrog (rana saltando). Reversible en el tiempo, orden 2, error de energía acotado para siempre.</div>
+    </div>
+
+    <h2>Tipos de Galaxias y Estructuras</h2>
+
+    <p>La forma final de una galaxia depende de las condiciones iniciales y de su historia de fusiones:</p>
+
+    <ul>
+        <li><strong>Galaxia espiral (disco)</strong> — Distribución inicial con momento angular neto. Las estrellas colapsan preferentemente en el plano perpendicular al vector de momento angular, formando un disco con densidad exponencial ρ(r) = ρ₀·e^(−r/h). Los brazos espirales son ondas de densidad, no estructuras rígidas: las estrellas entran y salen de los brazos.</li>
+        <li><strong>Galaxia elíptica</strong> — Distribución inicial esferoidal sin rotación neta (modelo de Plummer). Las estrellas siguen órbitas con dispersión de velocidades isótropa en las tres dimensiones. Resultado típico de fusiones de espirales.</li>
+        <li><strong>Cúmulo estelar</strong> — Sistema menos masivo. La «relajación dinámica» (colisiones elásticas efectivas por encuentros cercanos) tiende a equipartir la energía entre estrellas de distintas masas.</li>
+    </ul>
+
+    <div class="key-insight">
+        <strong>Los brazos espirales no son estructuras de estrellas: son ondas de densidad.</strong> Si fueran estructuras rígidas, se enrollarían y desaparecerían en unas pocas órbitas galácticas (el «problema del enrollamiento», dilema de winding). La teoría de ondas de densidad de Lin & Shu (1964) explica que los brazos son regiones de mayor densidad que se propagan a través del disco como ondas, a velocidad distinta de las estrellas individuales — igual que una ola en el mar no arrastra el agua, sino que es la ola la que viaja.
+    </div>
+
+    <h2>Métricas de Conservación</h2>
+
+    <p>Dos cantidades deben conservarse en una simulación gravitacional correcta:</p>
+
+    <div class="equation-block">
+        <div class="equation">E_total = ½·Σm_i·v_i² − G·Σ_{i&lt;j} m_i·m_j/r_ij &nbsp;&nbsp;&nbsp; L = Σ m_i·(r_i × v_i)</div>
+        <div class="equation-label">Energía total (cinética + potencial) y momento angular. En equilibrio: E_pot = −2·E_cin (Teorema del Virial). La desviación de estas cantidades mide la calidad del integrador.</div>
+    </div>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Galaxia espiral vs elíptica</h4>
+        <ol>
+            <li>Selecciona el preset «Galaxia Espiral». Observa el colapso inicial: la nube esferoidal se aplana en un disco en pocas órbitas. El momento angular inicial determina el plano del disco.</li>
+            <li>Resetea y selecciona «Galaxia Elíptica». La distribución inicial ya es esferoidal con velocidades isótropas: el sistema colapsa pero no forma disco. Cada estrella sigue una órbita elongada con orientación diferente.</li>
+            <li>Compara la curva de rotación: en la espiral, las velocidades orbitales son aproximadamente planas (velocidad casi constante con r); en la elíptica, hay dispersión de velocidades en todas las direcciones.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Efecto del parámetro θ en precisión</h4>
+        <ol>
+            <li>Congela la simulación en la fase de colapso inicial (máxima actividad gravitacional). Anota la distribución de estrellas.</li>
+            <li>Baja θ a 0.3: la simulación se ralentiza pero las fuerzas son más precisas. Las estructuras son ligeramente más detalladas en el núcleo.</li>
+            <li>Sube θ a 0.8 o 1.0 y observa la diferencia de FPS. El comportamiento global (colapso, formación de disco) es cualitativamente el mismo — el teorema central de Barnes-Hut dice que las grandes estructuras no dependen de la precisión local.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Agujero negro central y velocidad de rotación</h4>
+        <ol>
+            <li>Inicia la galaxia espiral sin agujero negro (masa central = 0). Observa la curva de rotación: sin concentración central, las velocidades internas son bajas y crecen con r (como un sólido rígido).</li>
+            <li>Añade un agujero negro supermasivo con masa 1000–2000 M_estrella. El núcleo se vuelve mucho más activo; las estrellas internas adquieren velocidades orbitales muy altas.</li>
+            <li>Una galaxia real (Vía Láctea) tiene una masa total de materia oscura ~10¹² M_☉, mucho mayor que la masa estelar visible. La materia oscura es la razón por la que las curvas de rotación galácticas son planas — y por eso las galaxias no son tan diferentes de lo que muestra la simulación.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../colision-galaxias.html" class="connection-item">
+            <span class="connection-icon">🌌</span>
+            <div class="connection-text"><strong>Colisión de Galaxias</strong><br>El destino de dos galaxias formadas</div>
+        </a>
+        <a href="../agujero-negro.html" class="connection-item">
+            <span class="connection-icon">⚫</span>
+            <div class="connection-text"><strong>Agujero Negro</strong><br>El objeto compacto en el núcleo galáctico</div>
+        </a>
+        <a href="../expansion-universo.html" class="connection-item">
+            <span class="connection-icon">🔭</span>
+            <div class="connection-text"><strong>Expansión del Universo</strong><br>El contexto cosmológico de la formación</div>
+        </a>
+        <a href="../../../Biology/Biology Visual Lab/boids-masivo.html" class="connection-item">
+            <span class="connection-icon">🐟</span>
+            <div class="connection-text"><strong>Boids Masivo</strong><br>Comportamiento colectivo emergente de N agentes</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../formacion-galaxias.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

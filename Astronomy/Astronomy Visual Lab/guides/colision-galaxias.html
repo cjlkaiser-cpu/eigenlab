@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Colisión de Galaxias | Astronomy Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #6366f1; --color-accent-dim: rgba(99,102,241,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #f0f0ff; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .collision-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .collision-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .collision-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .collision-table td:nth-child(3) { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Astronomy Visual Lab</a> /
+            <span>Guía: Colisión de Galaxias</span>
+        </nav>
+        <h1>Colisión de Galaxias</h1>
+        <p class="subtitle">N-body gravitacional, mareas cósmicas y la fusión Vía Láctea–Andrómeda</p>
+    </header>
+
+    <p class="intro">
+        Las galaxias colisionan. No como automóviles — las estrellas pasan de largo sin tocarse
+        (la distancia entre ellas es enorme comparada con su tamaño) — pero la gravedad reorganiza
+        centenares de millones de estrellas en escala de miles de millones de años. Esta simulación
+        N-body resuelve el problema gravitacional para miles de partículas usando el algoritmo
+        Barnes-Hut, que reduce el costo de O(N²) a O(N log N).
+    </p>
+
+    <h2>El Problema de N Cuerpos</h2>
+
+    <p>Cada estrella ejerce atracción gravitacional sobre todas las demás. La fuerza sobre la estrella <em>i</em> es la suma de N−1 contribuciones:</p>
+
+    <div class="equation-block">
+        <div class="equation">F_i = G·m_i · Σ_j m_j·(r_j − r_i) / |r_j − r_i|³</div>
+        <div class="equation-label">Con N estrellas: O(N²) operaciones por paso. Para 10,000 estrellas: 100 millones de cálculos por frame.</div>
+    </div>
+
+    <p>El suavizado (softening) evita singularidades cuando dos partículas se acercan demasiado: se reemplaza r² por r² + ε². Sin él, dos partículas muy cercanas generarían fuerzas infinitas y velocidades non-físicas que expulsarían a las estrellas del sistema.</p>
+
+    <div class="equation-block">
+        <div class="equation">F = G·m₁·m₂ / (r² + ε²) &nbsp;&nbsp;&nbsp; r_eff = √(r² + ε²)</div>
+        <div class="equation-label">ε es la longitud de suavizado: representa el tamaño finito efectivo de cada estrella. Valor típico: 1–5% del radio galáctico.</div>
+    </div>
+
+    <h2>El Algoritmo Barnes-Hut</h2>
+
+    <p>La idea central: grupos de estrellas distantes pueden tratarse como una sola partícula con la masa total concentrada en su centro de masa. El espacio se divide recursivamente en un quadtree (cuadrilátero → cuatro cuadrantes → …). Para cada nodo del árbol se almacena la masa total y el centro de masa de todas las estrellas contenidas.</p>
+
+    <div class="equation-block">
+        <div class="equation">θ = tamaño_nodo / distancia_al_nodo</div>
+        <div class="equation-label">Criterio de apertura: si θ &lt; umbral → usar la aproximación (masa total del nodo). Si θ ≥ umbral → descender a los hijos. Complejidad resultante: O(N log N).</div>
+    </div>
+
+    <table class="collision-table">
+        <thead>
+            <tr><th>Parámetro θ</th><th>Precisión</th><th>Operaciones/paso</th><th>Uso recomendado</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>0.3</td><td>Muy alta (cuasi exacta)</td><td>~N·3 log N</td><td>Comparación de referencia</td></tr>
+            <tr><td>0.5</td><td>Alta</td><td>~N·2 log N</td><td>Simulación estándar</td></tr>
+            <tr><td>0.7</td><td>Media</td><td>~N·log N</td><td>Tiempo real con muchas partículas</td></tr>
+            <tr><td>1.0</td><td>Baja (aproximada)</td><td>~N·0.5 log N</td><td>Preview rápido</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Fuerzas de Marea y Colas</h2>
+
+    <p>Las colas de marea — las largas hebras de estrellas que se extienden durante las colisiones — son consecuencia de la fuerza diferencial: la gravedad de la galaxia vecina atrae más fuertemente las estrellas del lado más cercano que las del lado más lejano. Esta diferencia es la fuerza de marea:</p>
+
+    <div class="equation-block">
+        <div class="equation">ΔF ≈ 2GMmd / r³ &nbsp;&nbsp;&nbsp; (fuerza de marea a distancia r, separación d)</div>
+        <div class="equation-label">La misma física que crea las mareas oceánicas de la Luna, pero a escala galáctica. Las colas de marea duran cientos de millones de años después de la colisión.</div>
+    </div>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Colisión frontal</h4>
+            <p>Parámetro de impacto b ≈ 0. Las galaxias se atraviesan, se frenan, retroceden y se fusionan. Resultado final: galaxia elíptica masiva. La Via Láctea y Andrómeda en 4,500 millones de años.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Colisión oblicua</h4>
+            <p>Parámetro de impacto intermedio. Se forman largas colas de marea y puentes de estrellas entre las galaxias. Las estructuras pueden durar miles de millones de años antes de la fusión final.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Encuentro de paso</h4>
+            <p>Parámetro de impacto grande. Las galaxias se perturban mutuamente y distorsionan sus brazos, pero no se fusionan. Las estrellas eyectadas forman halos difusos.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Galaxia anular</h4>
+            <p>Si una galaxia pequeña impacta en el centro de una espiral, genera una onda de densidad radial que produce el espectacular patrón de anillo. Ejemplo real: Cartwheel Galaxy.</p>
+        </div>
+    </div>
+
+    <h2>Tipos Galácticos y Fusión</h2>
+
+    <p>Las dos galaxias de la simulación comienzan con estructuras iniciales distintas:</p>
+
+    <ul>
+        <li><strong>Galaxia espiral (disco)</strong> — Disco rotante con distribución de densidad exponencial ρ(r) = ρ₀·e^(−r/h). Velocidad orbital casi plana (curva de rotación plana gracias a la materia oscura). Agujero negro supermasivo central.</li>
+        <li><strong>Galaxia elíptica</strong> — Distribución esferoidal (modelo de Plummer). Sin rotación neta. Dispersión de velocidades isotrópica en las tres dimensiones.</li>
+    </ul>
+
+    <p>Después de una fusión completa, el resultado es casi invariablemente una galaxia elíptica — el momento angular neto del sistema determina si queda alguna estructura rotatoria residual.</p>
+
+    <div class="key-insight">
+        <strong>La Vía Láctea y Andrómeda colisionarán en ≈ 4,500 millones de años.</strong> Las simulaciones N-body del Hubble Space Telescope (Cox & Loeb, 2008) muestran que el Sol sobrevivirá la colisión con una probabilidad del 97%, aunque probablemente será eyectado a una órbita exterior. En ≈ 7,000 millones de años, las dos galaxias se habrán fusionado en una galaxia elíptica masiva — informalmente llamada «Milkomeda». No hay que preocuparse: el Sol habrá agotado su hidrógeno en 5,000 millones de años.
+    </div>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Colisión frontal vs oblicua</h4>
+        <ol>
+            <li>Lanza la simulación con el parámetro de impacto b ≈ 0 (colisión frontal). Observa cómo las galaxias se atraviesan, se frenan, oscilan y se fusionan. El proceso completo puede tomar 2–3 oscilaciones.</li>
+            <li>Resetea y aumenta b. Las colas de marea aparecen: largas hebras de estrellas arrancadas gravitacionalmente. Observa su asimetría — la cola delantera es más compacta que la trasera.</li>
+            <li>Con b muy alto, las galaxias se perturban y continúan. Mide el ángulo de dispersión de la trayectoria: igual que una dispersión elástica en física de partículas.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Efecto del parámetro θ</h4>
+        <ol>
+            <li>Congela la simulación en el instante de máxima interacción (galaxias superpuestas). Anota la distribución de estrellas.</li>
+            <li>Cambia θ de 0.3 a 1.0 y observa las diferencias en la distribución. A θ alto, algunas estrellas reciben fuerzas ligeramente incorrectas, pero el comportamiento global es cualitativamente igual.</li>
+            <li>Observa el FPS counter: la diferencia de rendimiento entre θ = 0.3 y θ = 0.7 puede ser un factor de 3–5× con muchas partículas.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Conservación de energía y virial</h4>
+        <ol>
+            <li>Monitorea la energía total durante la simulación. En un sistema perfectamente conservativo, E_total = E_cinética + E_potencial debería ser constante.</li>
+            <li>En equilibrio gravitacional, el Teorema del Virial predice: E_potencial = −2·E_cinética, o E_total = −E_cinética. Verifica este ratio antes y después de la fusión.</li>
+            <li>Si el integrador leapfrog conserva bien la energía, las oscilaciones serán pequeñas. Un Euler simple mostraría un crecimiento sistemático de la energía total.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../formacion-galaxias.html" class="connection-item">
+            <span class="connection-icon">🌌</span>
+            <div class="connection-text"><strong>Formación de Galaxias</strong><br>Cómo se formaron antes de colisionar</div>
+        </a>
+        <a href="../agujero-negro.html" class="connection-item">
+            <span class="connection-icon">⚫</span>
+            <div class="connection-text"><strong>Agujero Negro</strong><br>Los núcleos que se fusionan en la colisión</div>
+        </a>
+        <a href="../expansion-universo.html" class="connection-item">
+            <span class="connection-icon">🔭</span>
+            <div class="connection-text"><strong>Expansión del Universo</strong><br>Galaxias que se acercan contra el flujo de Hubble</div>
+        </a>
+        <a href="../../../Physics/Physics Visual Lab/orbitas-kepler.html" class="connection-item">
+            <span class="connection-icon">🪐</span>
+            <div class="connection-text"><strong>Órbitas de Kepler</strong><br>La misma gravedad en escala planetaria</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../colision-galaxias.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

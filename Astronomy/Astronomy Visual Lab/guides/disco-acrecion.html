@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Disco de Acreción | Astronomy Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #6366f1; --color-accent-dim: rgba(99,102,241,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #f0f0ff; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .preset-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .preset-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .preset-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .preset-table td:first-child { font-family: var(--font-sans); font-weight: 500; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Astronomy Visual Lab</a> /
+            <span>Guía: Disco de Acreción</span>
+        </nav>
+        <h1>Disco de Acreción</h1>
+        <p class="subtitle">Dinámica kepleriana viscosa, temperatura y luminosidad de Eddington</p>
+    </header>
+
+    <p class="intro">
+        Cuando materia cae hacia un objeto compacto — estrella, agujero negro, estrella de neutrones —
+        no cae en línea recta. El momento angular la obliga a orbitar, formando un disco. La materia
+        en ese disco pierde energía lentamente por viscosidad y deriva hacia adentro en espiral, calentándose
+        cada vez más hasta emitir rayos X. Los discos de acreción son los objetos más luminosos del universo.
+    </p>
+
+    <h2>Órbitas Keplerianas en el Disco</h2>
+
+    <p>Cada partícula del disco orbita en una órbita kepleriana quasi-circular. Como en los anillos de Saturno, las partículas internas orbitan más rápido: el disco gira diferencialmente. Esta rotación diferencial genera cizallamiento (shear), y el cizallamiento genera viscosidad.</p>
+
+    <div class="equation-block">
+        <div class="equation">v_orb = √(GM/r) &nbsp;&nbsp;&nbsp; T ∝ r^(3/2) &nbsp;&nbsp;&nbsp; Ω = v_orb/r = √(GM/r³)</div>
+        <div class="equation-label">Velocidad orbital, período y velocidad angular kepleriana. A menor radio, mayor velocidad: la rotación diferencial genera viscosidad turbulenta.</div>
+    </div>
+
+    <h2>Viscosidad y Transporte de Momento Angular</h2>
+
+    <p>La materia en el disco no puede caer adentro sin perder momento angular — que se conserva. La viscosidad transfiere momento angular hacia afuera mientras la masa fluye hacia adentro. Sin viscosidad, el disco sería estable para siempre; es la viscosidad la que lo hace «acretar».</p>
+
+    <div class="equation-block">
+        <div class="equation">ν = α · c_s · H &nbsp;&nbsp;&nbsp; (Prescripción α de Shakura-Sunyaev)</div>
+        <div class="equation-label">α (parámetro de viscosidad turbulenta) × c_s (velocidad del sonido) × H (altura del disco). El parámetro α ∈ [0.01, 0.1] encapsula toda la turbulencia magnetohidrodinámica (inestabilidad MRI).</div>
+    </div>
+
+    <h2>Temperatura y Emisión</h2>
+
+    <p>La energía gravitacional liberada por la materia al caer se convierte en calor. El disco emite como cuerpo negro (aproximadamente): la temperatura local depende de la tasa de acreción Ṁ y del radio:</p>
+
+    <div class="equation-block">
+        <div class="equation">T(r) ∝ (Ṁ·M / r³)^(1/4) &nbsp;&nbsp;&nbsp; T_max ≈ 10⁷ K (agujero negro stellar)</div>
+        <div class="equation-label">Temperatura local del disco. El interior es más caliente (rayos X), el exterior más frío (visible/UV). Para una enana blanca: T ∼ 50,000 K. Para un agujero negro de 10 M_☉: T ∼ 10⁷ K.</div>
+    </div>
+
+    <h2>Los Cuatro Presets</h2>
+
+    <table class="preset-table">
+        <thead>
+            <tr><th>Preset</th><th>Objeto central</th><th>Temperatura</th><th>Características</th></tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Protoestrella</td>
+                <td>Protoestrella T-Tauri (~1 M_☉)</td>
+                <td>1,000–10,000 K</td>
+                <td>Disco protoplanetario frío y extendido. La materia que cae forma eventualmente la estrella y sus planetas. Escala de tiempo: millones de años.</td>
+            </tr>
+            <tr>
+                <td>Agujero Negro</td>
+                <td>Agujero negro estelar (10 M_☉)</td>
+                <td>10⁶–10⁷ K</td>
+                <td>Disco compacto, caliente, emisor de rayos X. Fuente de sistemas binarios de rayos X. ISCO a 3r_s = 6·GM/c².</td>
+            </tr>
+            <tr>
+                <td>Compacto</td>
+                <td>Estrella de neutrones / enana blanca</td>
+                <td>10⁵–10⁶ K</td>
+                <td>Disco de acreción en nova cataclísmica. Puede alimentar detonaciones termonucleares (novae recurrentes).</td>
+            </tr>
+            <tr>
+                <td>Disco Fino</td>
+                <td>AGN / núcleo galáctico activo</td>
+                <td>10⁴–10⁵ K</td>
+                <td>Disco estándar de Shakura-Sunyaev. Enorme extensión, emisión UV/óptica. Alimenta quásares y blazares.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>Luminosidad de Eddington</h2>
+
+    <p>Existe un límite superior para la luminosidad de un objeto acretante: si la luminosidad es demasiado alta, la presión de radiación supera la gravedad y detiene la acreción. Es la <em>luminosidad de Eddington</em>:</p>
+
+    <div class="equation-block">
+        <div class="equation">L_Edd = 4πGMc / κ ≈ 1.3 × 10³⁸ · (M/M_☉) erg/s</div>
+        <div class="equation-label">κ = opacidad por dispersión de Thomson. Para un agujero negro de 10 M_☉: L_Edd ≈ 10³⁹ erg/s ≈ 250,000 L_☉. Los quásares pueden superar brevemente este límite (acreción super-Eddington).</td>
+    </div>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>ISCO — Órbita circular estable interna</h4>
+            <p>En relatividad general, no hay órbitas circulares estables por debajo de 3r_s (6GM/c²) para un agujero negro de Schwarzschild. La materia que llega al ISCO cae en espiral libre hacia el interior. El ISCO define el borde interno efectivo del disco.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Eficiencia energética</h4>
+            <p>El disco convierte masa en energía con eficiencia η ≈ 0.06–0.42 (6–42% de mc²), dependiendo del spin del agujero negro. Comparado con la fusión nuclear: η_fusión ≈ 0.007 (0.7%). Los discos son 10–60 veces más eficientes que las estrellas.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Inestabilidad MRI</h4>
+            <p>La viscosidad real en los discos no es molecular: es turbulencia magnetohidrodinámica desencadenada por la inestabilidad magneto-rotacional (Balbus & Hawley, 1991). Un campo magnético débil amplificado por la rotación diferencial genera turbulencia que actúa como viscosidad efectiva.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Jets relativistas</h4>
+            <p>En muchos sistemas de acreción (AGN, microquásares), parte del material es lanzado perpendicularmente al disco en jets que viajan a velocidades relativistas (0.99c). El mecanismo exacto involucra campos magnéticos helicoidales y extracción de spin del agujero negro (proceso de Blandford-Znajek).</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>Los discos de acreción en núcleos galácticos activos (AGN) son las fuentes de energía más potentes del universo.</strong> Un quásar como 3C 273 emite 10⁴⁶ erg/s — más que 10 billones de estrellas como el Sol. Toda esa energía proviene de un disco de acreción alrededor de un agujero negro supermasivo de ~10⁹ M_☉. La materia que cae libera energía gravitacional con una eficiencia de hasta 42%, superando con creces la fusión nuclear.
+    </div>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Comparar presets: temperatura y radio</h4>
+        <ol>
+            <li>Activa el preset «Protoestrella». Observa el disco extendido y frío: las partículas orbitales son de color rojizo/anaranjado (temperatura baja). El radio del disco es enorme comparado con el objeto central.</li>
+            <li>Cambia a «Agujero Negro». El disco se compacta y las partículas internas brillan azul/blanco (temperatura alta). El tamaño del objeto central es mucho menor pero su masa es similar.</li>
+            <li>Compara el ISCO visible: en el preset de agujero negro, las partículas que llegan al borde interior caen sin retorno. En el preset de protoestrella, aterrizan en la superficie estelar.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Rotación diferencial y espiral</h4>
+        <ol>
+            <li>Marca mentalmente una partícula en el borde exterior del disco y sigue su órbita. Compara su período con una partícula en el radio interior: la interior completa muchas órbitas mientras la exterior completa una.</li>
+            <li>Observa cómo las partículas que empiezan en una línea radial se enrollan en espiral con el tiempo: la rotación diferencial es la razón por la que el disco no puede ser un objeto rígido.</li>
+            <li>Incrementa la tasa de acreción (si está disponible) y observa cómo las partículas espiralan más rápidamente hacia el interior — la viscosidad transfiere momento angular hacia afuera mientras la masa cae.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Disco Fino vs Agujero Negro: escala de energía</h4>
+        <ol>
+            <li>En el preset «Disco Fino» (AGN), observa la enorme extensión del disco y el gradiente de temperatura: azul en el interior, rojizo en el exterior.</li>
+            <li>El color de la emisión delata la temperatura: T ∝ r^(−3/4) según el modelo de Shakura-Sunyaev. Verifica que el interior es siempre más caliente.</li>
+            <li>Compara la luminosidad total (proporcional al área iluminada × T⁴) entre los cuatro presets. El AGN domina por muchos órdenes de magnitud: la misma física kepleriana, escala de masa radicalmente diferente.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../agujero-negro.html" class="connection-item">
+            <span class="connection-icon">⚫</span>
+            <div class="connection-text"><strong>Agujero Negro</strong><br>El objeto central del preset más energético</div>
+        </a>
+        <a href="../anillos-saturno.html" class="connection-item">
+            <span class="connection-icon">🪐</span>
+            <div class="connection-text"><strong>Anillos de Saturno</strong><br>Disco kepleriano sin viscosidad ni acreción</div>
+        </a>
+        <a href="../colision-galaxias.html" class="connection-item">
+            <span class="connection-icon">🌌</span>
+            <div class="connection-text"><strong>Colisión de Galaxias</strong><br>Los AGN se activan durante fusiones galácticas</div>
+        </a>
+        <a href="../../../Physics/Physics Visual Lab/orbitas-kepler.html" class="connection-item">
+            <span class="connection-icon">🪐</span>
+            <div class="connection-text"><strong>Órbitas de Kepler</strong><br>La física base de cada partícula del disco</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../disco-acrecion.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

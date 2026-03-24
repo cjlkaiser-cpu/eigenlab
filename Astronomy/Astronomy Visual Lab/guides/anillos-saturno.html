@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Anillos de Saturno | Astronomy Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #6366f1; --color-accent-dim: rgba(99,102,241,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #f0f0ff; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .ring-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .ring-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .ring-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .ring-table td:nth-child(2), .ring-table td:nth-child(3) { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Astronomy Visual Lab</a> /
+            <span>Guía: Anillos de Saturno</span>
+        </nav>
+        <h1>Anillos de Saturno</h1>
+        <p class="subtitle">Órbitas Keplerianas, resonancias y la División de Cassini</p>
+    </header>
+
+    <p class="intro">
+        Los anillos de Saturno son el laboratorio de mecánica orbital más espectacular del sistema
+        solar: billones de partículas de hielo y roca, cada una en su propia órbita kepleriana,
+        formando una estructura de miles de kilómetros de ancho y apenas decenas de metros de espesor.
+        La División de Cassini — una brecha oscura visible desde la Tierra — es el resultado
+        de una resonancia orbital con la luna Mimas, exactamente igual que los Asteroides de Kirkwood.
+    </p>
+
+    <h2>Órbitas Keplerianas Individuales</h2>
+
+    <p>Cada partícula del anillo orbita a Saturno siguiendo la tercera ley de Kepler: su período T depende solo de su distancia orbital a:</p>
+
+    <div class="equation-block">
+        <div class="equation">T² = (4π²/GM) · a³ &nbsp;&nbsp;&nbsp; v = √(GM/r)</div>
+        <div class="equation-label">Las partículas más internas orbitan más rápido que las externas (rotación diferencial). No hay "anillo sólido": es un flujo de partículas independientes.</div>
+    </div>
+
+    <p>La rotación diferencial es fundamental: a 1.5 R_S, una partícula orbita en ~8 horas; a 2.5 R_S, tarda ~16 horas. Si las partículas no interaccionasen entre ellas ni con las lunas, cada una mantendría su órbita para siempre.</p>
+
+    <h2>Los Anillos Principales</h2>
+
+    <table class="ring-table">
+        <thead>
+            <tr><th>Anillo</th><th>Radio (R_S)</th><th>Anchura (km)</th><th>Características</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>C (Crêpe)</td><td>1.23–1.52</td><td>17,500</td><td>Anillo tenue, partículas oscuras, poco material.</td></tr>
+            <tr><td>B</td><td>1.52–1.95</td><td>25,500</td><td>El más denso y brillante. Opaco. Ondas de densidad.</td></tr>
+            <tr><td>División Cassini</td><td>1.95–2.02</td><td>4,800</td><td>Brecha creada por resonancia 2:1 con Mimas.</td></tr>
+            <tr><td>A</td><td>2.02–2.27</td><td>14,600</td><td>Denso. División de Encke (resonancia con Pan).</td></tr>
+            <tr><td>F</td><td>2.33</td><td>~30–500</td><td>Estrecho, trenzado. Mantenido por lunas pastoras.</td></tr>
+        </tbody>
+    </table>
+
+    <h2>Resonancias Orbitales</h2>
+
+    <p>La División de Cassini es consecuencia directa de una resonancia 2:1 con la luna Mimas: una partícula a 1.95 R_S orbita exactamente el doble de veces que Mimas por año. Cada dos órbitas de la partícula, Mimas está en la misma posición relativa, siempre tirando en la misma dirección: la perturbación gravitacional se acumula y expulsa a la partícula de esa región.</p>
+
+    <div class="equation-block">
+        <div class="equation">n_partícula / n_Mimas = p/q &nbsp;&nbsp;&nbsp; (p, q enteros)</div>
+        <div class="equation-label">Resonancias de movimiento medio. 2:1 crea la División de Cassini. 3:2 crea la División de Encke. Idéntico mecanismo a los Asteroides de Kirkwood con Júpiter.</div>
+    </div>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Resonancia de Lindblad</h4>
+            <p>Las perturbaciones de las lunas a frecuencias resonantes generan ondas de densidad espiral en los anillos, como ondas en el agua. La sonda Cassini fotografió estas ondas en el anillo B.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Lunas pastoras</h4>
+            <p>Prometeo y Pandora flanquean el anillo F y lo confinan gravitacionalmente. Cualquier partícula que se aleje es devuelta por la perturbación de la luna más cercana. El anillo F es el ejemplo más claro.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Límite de Roche</h4>
+            <p>Dentro del límite de Roche (~2.5 R_S), las fuerzas de marea de Saturno son mayores que la gravedad propia de los fragmentos: los objetos no pueden aglomerarse. Los anillos existen solo dentro de este límite.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Edad y origen</h4>
+            <p>Las sondas Cassini (2004–2017) muestran que los anillos son sorprendentemente jóvenes: ~10–100 millones de años. Probablemente el resto de una luna de hielo destruida por las mareas o un cometa.</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>Los anillos de Saturno son delgadísimos en proporción a su tamaño.</strong> Tienen ~250,000 km de diámetro pero solo 10–100 m de espesor promedio. Escala: si los anillos fueran una hoja de papel A4 (210×297 mm), su grosor sería de 0.0008 mm — cien veces más delgado que el propio papel. Su estructura plana es consecuencia directa de las colisiones entre partículas: las velocidades verticales se disipan rápidamente.
+    </div>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — La División de Cassini</h4>
+        <ol>
+            <li>Activa la División de Cassini en los controles. Observa la brecha oscura entre los anillos B y A.</li>
+            <li>La posición exacta de la brecha (1.95–2.02 R_S) corresponde a la resonancia 2:1 con Mimas (3.08 R_S): 3.08/1.95 ≈ 1.58... pero T ∝ a^(3/2), así que T_ratio = (3.08/1.95)^(3/2) ≈ 1.99 ≈ 2.</li>
+            <li>Desactiva la División: las partículas llenan uniformemente la brecha. Sin Mimas (sin resonancia), no habría División de Cassini.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Rotación diferencial</h4>
+        <ol>
+            <li>Observa la velocidad orbital a distintos radios. Las partículas internas completan su órbita antes que las externas.</li>
+            <li>Anota el tiempo de órbita a ~1.5 R_S y a ~2.2 R_S. El ratio debe ser ≈ (2.2/1.5)^(3/2) ≈ 1.68.</li>
+            <li>Esta rotación diferencial es la razón por la que los anillos no son estructuras rígidas: si los congeláramos en el tiempo, en pocas órbitas las estructuras radiales se enrollarían en espirales y desaparecerían.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Comparar con asteroides de Kirkwood</h4>
+        <ol>
+            <li>Los anillos de Saturno con la División de Cassini son análogos exactos al cinturón de asteroides con los huecos de Kirkwood.</li>
+            <li>En ambos casos, el planeta exterior masivo (Mimas/Júpiter) crea resonancias que vacían regiones específicas.</li>
+            <li>El mecanismo es idéntico: acumulación de perturbaciones gravitacionales en frecuencias resonantes → expulsión de la órbita resonante.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../../../Physics/Physics Visual Lab/orbitas-kepler.html" class="connection-item">
+            <span class="connection-icon">🪐</span>
+            <div class="connection-text"><strong>Órbitas de Kepler</strong><br>Las mismas leyes que rigen cada partícula</div>
+        </a>
+        <a href="../disco-acrecion.html" class="connection-item">
+            <span class="connection-icon">🌀</span>
+            <div class="connection-text"><strong>Disco de Acreción</strong><br>Disco kepleriano con viscosidad</div>
+        </a>
+        <a href="../formacion-galaxias.html" class="connection-item">
+            <span class="connection-icon">🌌</span>
+            <div class="connection-text"><strong>Formación de Galaxias</strong><br>Discos galácticos: misma física, escala mayor</div>
+        </a>
+        <a href="../agujero-negro.html" class="connection-item">
+            <span class="connection-icon">⚫</span>
+            <div class="connection-text"><strong>Agujero Negro</strong><br>Límite de Roche extremo: el horizonte de eventos</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../anillos-saturno.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>
