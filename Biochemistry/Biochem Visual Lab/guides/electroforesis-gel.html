@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Electroforesis en Gel | Biochem Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #ec4899; --color-accent-dim: rgba(236,72,153,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .gel-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .gel-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .gel-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .gel-table td:nth-child(2), .gel-table td:nth-child(3) { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biochem Visual Lab</a> /
+            <span>Guía: Electroforesis en Gel</span>
+        </nav>
+        <h1>Electroforesis en Gel</h1>
+        <p class="subtitle">Cómo el campo eléctrico separa moléculas por tamaño</p>
+    </header>
+
+    <p class="intro">
+        La electroforesis en gel es la técnica de biología molecular más usada en el mundo: desde
+        identificar sospechosos por ADN hasta diagnosticar enfermedades genéticas o verificar
+        que una PCR funcionó. El principio es elegante: las moléculas cargadas migran en un campo
+        eléctrico, y el gel actúa como un tamiz molecular — los fragmentos pequeños pasan antes
+        que los grandes.
+    </p>
+
+    <h2>El Principio Físico</h2>
+
+    <p>Una molécula con carga neta q en un campo eléctrico E experimenta una fuerza F = qE. Al mismo tiempo, el gel ofrece resistencia friccional proporcional a la velocidad y al tamaño de la molécula. En equilibrio, la velocidad de migración es:</p>
+
+    <div class="equation-block">
+        <div class="equation">μ = q · E / f &nbsp;&nbsp;&nbsp; v = μ · E</div>
+        <div class="equation-label">μ = movilidad electroforética · f = coeficiente de fricción (proporcional al tamaño) · v = velocidad de migración</div>
+    </div>
+
+    <p>Para el ADN, todas las moléculas tienen la misma densidad de carga negativa (un fosfato por par de bases, independiente de la secuencia). Esto significa que la carga es proporcional al tamaño, y f también lo es, de modo que q/f sería constante… excepto por el efecto de tamiz del gel, que hace que las moléculas grandes tengan que "esquivar" más fibras.</p>
+
+    <h2>El Efecto de Tamiz: Ecuación de Ferguson</h2>
+
+    <div class="equation-block">
+        <div class="equation">log(μ) = log(μ₀) − K_r · [T]</div>
+        <div class="equation-label">μ₀ = movilidad en gel infinitamente diluido · K_r = coeficiente de retardación (depende del tamaño) · [T] = concentración del gel (%)</div>
+    </div>
+
+    <p>K_r es mayor para moléculas más grandes: quedan más atrapadas en las fibras del gel. A concentración de gel más alta ([T] mayor), la separación entre fragmentos de distinto tamaño aumenta. Por eso se eligen geles más concentrados para separar fragmentos pequeños y más diluidos para los grandes.</p>
+
+    <h2>DNA vs. Proteínas (SDS-PAGE)</h2>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Electroforesis de ADN</h4>
+            <p>El ADN tiene carga negativa uniforme (fosfatos). El gel es agarosa. La separación es solo por tamaño (pb o kpb). Se usa para verificar PCRs, mapear genes, análisis forense (RFLP).</p>
+        </div>
+        <div class="concept-card">
+            <h4>SDS-PAGE (proteínas)</h4>
+            <p>Las proteínas tienen carga variable. Se desnaturalizan con SDS (detergente) que las recubre con carga negativa uniforme proporcional al peso molecular. El gel es poliacrilamida. Separación por kDa.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Marcador o ladder</h4>
+            <p>El carril del marcador contiene fragmentos de tamaño conocido. Permite construir una curva estándar log(tamaño) vs. distancia de migración y leer el tamaño de bandas desconocidas por interpolación.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Concentración del gel</h4>
+            <p>Agarosa 0.8–1%: ADN grande (1–20 kb). Agarosa 2–3%: fragmentos cortos (100–500 pb). PAGE 10–15%: proteínas pequeñas (10–50 kDa). PAGE 7–8%: proteínas grandes (50–250 kDa).</p>
+        </div>
+    </div>
+
+    <table class="gel-table">
+        <thead>
+            <tr><th>Gel %</th><th>Rango óptimo</th><th>Aplicación</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>0.5%</td><td>1–30 kb</td><td>Fragmentos muy grandes (cromosomas, BACs)</td></tr>
+            <tr><td>1.0%</td><td>200 bp–10 kb</td><td>PCR estándar, digestión enzimática</td></tr>
+            <tr><td>1.5%</td><td>100–3000 bp</td><td>Fragmentos intermedios</td></tr>
+            <tr><td>2.0%</td><td>50–2000 bp</td><td>Productos de PCR cortos, exones</td></tr>
+            <tr><td>2.5%</td><td>20–500 bp</td><td>Fragmentos muy cortos, microsatélites</td></tr>
+        </tbody>
+    </table>
+
+    <div class="key-insight">
+        <strong>La huella genética forense funciona exactamente como este experimento.</strong> El ADN de una muestra (sangre, pelo) se corta con enzimas de restricción en posiciones específicas. Los fragmentos resultantes se separan en gel: el patrón de bandas es único para cada individuo (excepto gemelos idénticos). La probabilidad de que dos personas no relacionadas tengan el mismo patrón es menor de 1 en 10¹⁵.
+    </div>
+
+    <h2>Controles de la Simulación</h2>
+
+    <ul>
+        <li><strong>Voltaje (20–200 V)</strong> — A mayor voltaje, mayor migración por unidad de tiempo, pero también más calor y posible distorsión de bandas.</li>
+        <li><strong>Gel % (0.5–2.5)</strong> — Controla el tamaño de poro. A mayor concentración, mejor separación de fragmentos pequeños; peor para los grandes.</li>
+        <li><strong>Preset DNA</strong> — Carga un DNA ladder estándar con fragmentos de tamaños conocidos (100, 200, 500, 1000, 2000, 5000 bp).</li>
+        <li><strong>Preset Protein</strong> — Carga proteínas SDS-PAGE (10–250 kDa). La migración sigue log(kDa) vs. distancia.</li>
+        <li><strong>Clic en carril</strong> — Carga tu propia muestra en ese carril para comparar con el marcador.</li>
+    </ul>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Voltaje y velocidad de migración</h4>
+        <ol>
+            <li>Carga el preset DNA. Observa la migración a 100 V: las bandas se separan progresivamente.</li>
+            <li>Dobla el voltaje a 200 V: las bandas se mueven más rápido, pero observa si la separación entre bandas adyacentes cambia.</li>
+            <li>A mayor voltaje, todas las bandas van más rápido pero la resolución relativa entre bandas cercanas en tamaño puede deteriorarse.</li>
+            <li>El voltaje óptimo en el laboratorio real es ~5 V/cm: suficientemente rápido sin desnaturalizar por calor.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Efecto del porcentaje de gel</h4>
+        <ol>
+            <li>Carga DNA ladder a gel 0.5% y voltaje 100 V. Los fragmentos grandes se separan bien; los pequeños quedan agrupados en el frente.</li>
+            <li>Cambia a gel 2.5% con los mismos parámetros. Ahora los fragmentos grandes apenas se mueven, pero los pequeños están perfectamente separados.</li>
+            <li>Elige el gel según el tamaño de tus fragmentos de interés: la ventana de separación óptima cambia con [T].</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Curva estándar y tamaño desconocido</h4>
+        <ol>
+            <li>Carga el DNA ladder. Después de un tiempo de migración, anota la distancia recorrida por cada banda del marcador.</li>
+            <li>Grafica log(tamaño en bp) vs. distancia de migración: deberías obtener una línea recta (la curva de Ferguson linearizada).</li>
+            <li>Carga una muestra desconocida en otro carril. Lee su distancia de migración e interpola en tu curva para determinar su tamaño.</li>
+            <li>Esta es la operación que hace cualquier laboratorio de biología molecular: el gel como regla molecular.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../adn-replicacion.html" class="connection-item">
+            <span class="connection-icon">🧬</span>
+            <div class="connection-text"><strong>ADN y Replicación</strong><br>El origen de los fragmentos que se separan</div>
+        </a>
+        <a href="../mutaciones.html" class="connection-item">
+            <span class="connection-icon">⚡</span>
+            <div class="connection-text"><strong>Mutaciones</strong><br>RFLP: cómo las mutaciones cambian el patrón</div>
+        </a>
+        <a href="../estructura-proteica.html" class="connection-item">
+            <span class="connection-icon">🔬</span>
+            <div class="connection-text"><strong>Estructura Proteica</strong><br>Western blot: gel + anticuerpo = proteína específica</div>
+        </a>
+        <a href="../plegamiento.html" class="connection-item">
+            <span class="connection-icon">🌀</span>
+            <div class="connection-text"><strong>Plegamiento</strong><br>SDS-PAGE verifica el peso de proteínas recombinantes</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../electroforesis-gel.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Plegamiento de Proteínas | Biochem Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #ec4899; --color-accent-dim: rgba(236,72,153,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.2rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .method-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.5rem 0; }
+        .method-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.25rem; }
+        .method-card h4 { font-family: var(--font-sans); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--color-accent); }
+        .method-card p { font-size: 0.88rem; color: var(--color-text-secondary); margin: 0; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Biochem Visual Lab</a> /
+            <span>Guía: Plegamiento de Proteínas</span>
+        </nav>
+        <h1>Plegamiento de Proteínas</h1>
+        <p class="subtitle">La paradoja de Levinthal, el paisaje energético y los algoritmos de búsqueda conformacional</p>
+    </header>
+
+    <p class="intro">
+        Una proteína de 100 aminoácidos tiene ~10⁴⁷ conformaciones posibles. Si las probara al azar
+        a 10¹³ por segundo, tardaría más que la edad del universo en encontrar la correcta. Sin embargo,
+        en la célula se pliega en milisegundos. Cómo lo logra — la paradoja de Levinthal —
+        es uno de los problemas centrales de la biología molecular y la base de AlphaFold.
+    </p>
+
+    <h2>La Función de Energía</h2>
+
+    <div class="equation-block">
+        <div class="equation">E = E_bond + E_LJ + E_HP</div>
+        <div class="equation-label">Energía total = bonds (enlaces covalentes) + Lennard-Jones (interacciones de Van der Waals) + HP (núcleo hidrofóbico)</div>
+    </div>
+
+    <p>Cada término captura una fuerza diferente:</p>
+
+    <ul>
+        <li><strong>E_bond</strong> — Energía elástica de los enlaces péptídicos. Penaliza elongaciones o compresiones excesivas de la cadena principal.</li>
+        <li><strong>E_LJ</strong> — Potencial de Lennard-Jones entre residuos no covalentes. Repulsión a corta distancia (núcleos electrónicos), atracción a media distancia (Van der Waals).</li>
+        <li><strong>E_HP</strong> — Modelo HP (hidrofóbico-polar). Los residuos hidrofóbicos pagan un costo energético por estar expuestos al agua; buscan formar un núcleo hidrofóbico compacto en el interior. Es la fuerza dominante en el plegamiento real.</li>
+    </ul>
+
+    <h2>El Paisaje Energético</h2>
+
+    <p>La idea clave de la teoría moderna del plegamiento es el <em>paisaje energético</em> (energy landscape). La conformación de la proteína es un punto en un espacio de altísima dimensionalidad. La energía libre define un "relieve" sobre ese espacio:</p>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Embudo de plegamiento</h4>
+            <p>El paisaje no es plano: tiene forma de embudo. Hay muchas conformaciones de alta energía (extendidas) y pocas de baja energía (plegadas). La proteína "cae" cuesta abajo en el embudo, convergiendo hacia el estado nativo.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Mínimos locales</h4>
+            <p>El paisaje tiene valles locales donde la proteína puede quedar atrapada: conformaciones incorrectas pero estables. Los chaperones moleculares in vivo ayudan a la proteína a escapar de estos trampas y seguir hacia el mínimo global.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Estado nativo</h4>
+            <p>El mínimo global de energía libre. En la célula es la conformación biológicamente activa. La hipótesis de Anfinsen (Nobel 1972): toda la información necesaria para alcanzarlo está en la secuencia de aminoácidos.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Velocidad y cooperatividad</h4>
+            <p>El plegamiento real es cooperativo: no hay pasos intermedios estables. La proteína pasa directamente de desnaturalizada a nativa en milisegundos, como una transición de fase de primer orden.</p>
+        </div>
+    </div>
+
+    <h2>Los Tres Métodos de Búsqueda</h2>
+
+    <div class="method-grid">
+        <div class="method-card">
+            <h4>Dinámica Molecular (MD)</h4>
+            <p>Integra las ecuaciones de Newton F = ma para cada átomo. Calcula fuerzas de E_bond, E_LJ y E_HP en cada paso. Físicamente riguroso pero lento: la energía se disipa gradualmente.</p>
+        </div>
+        <div class="method-card">
+            <h4>Monte Carlo (MC)</h4>
+            <p>Propone conformaciones aleatorias. Acepta si baja la energía; acepta con probabilidad e^(−ΔE/kT) si sube. El criterio de Metropolis. Explora el espacio de manera estocástica sin seguir trayectorias físicas.</p>
+        </div>
+        <div class="method-card">
+            <h4>Recocido Simulado (SA)</h4>
+            <p>Como MC pero con temperatura decreciente: al principio acepta movimientos malos (exploración global); al final los rechaza (convergencia local). Escapa de mínimos locales mejor que MD puro.</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>AlphaFold2 (DeepMind, 2021) resolvió el problema del plegamiento de proteínas.</strong> Usando redes neuronales entrenadas con la base de datos PDB, predice la estructura 3D a partir de la secuencia con precisión atómica. En el CASP14, superó a todos los grupos humanos por un margen histórico. Desde 2022, AlphaFold ha predicho la estructura de ~200 millones de proteínas, incluyendo todo el proteoma humano. La biología estructural cambió para siempre.
+    </div>
+
+    <h2>Malplegamiento y Enfermedades</h2>
+
+    <p>Cuando la proteína no alcanza su estado nativo y se agrega en estructuras anómalas (hojas β cruzadas, fibrillas amiloides), causa enfermedades degenerativas:</p>
+
+    <ul>
+        <li><strong>Alzheimer</strong> — Agregados de péptido β-amiloide y proteína tau hiperfosforilada.</li>
+        <li><strong>Parkinson</strong> — Fibrillas de α-sinucleína (cuerpos de Lewy).</li>
+        <li><strong>Priones (Creutzfeldt-Jakob)</strong> — La proteína PrP normal se convierte en la forma mal plegada PrP^Sc, que actúa como molde para plegar más proteínas incorrectamente. Transmisible sin ADN ni ARN.</li>
+        <li><strong>Diabetes tipo II</strong> — Depósitos de amilina en células beta del páncreas.</li>
+    </ul>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Comparar métodos: MD vs. SA</h4>
+        <ol>
+            <li>Genera una cadena aleatoria. Activa Dinámica Molecular: la proteína oscila y se pliega lentamente, siguiendo trayectorias físicas.</li>
+            <li>Resetea y activa Recocido Simulado (SA): la temperatura inicial alta permite saltos conformacionales grandes. Observa cómo al bajar T, la exploración se vuelve más fina.</li>
+            <li>SA generalmente encuentra conformaciones de menor energía que MD en el mismo tiempo: explora mejor el espacio porque no está limitado por barreras físicas.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Núcleo hidrofóbico</h4>
+        <ol>
+            <li>Observa los residuos hidrofóbicos (naranja) y polares (azul) durante el plegamiento.</li>
+            <li>En la conformación final, los residuos hidrofóbicos deberían estar en el interior (núcleo), lejos del "agua" virtual.</li>
+            <li>Este efecto hidrofóbico es la fuerza dominante: crea el colapso inicial que guía el embudo de plegamiento hacia la estructura nativa.</li>
+            <li>Una proteína con más hidrofóbicos tiende a tener un núcleo más compacto y una energía final más baja.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Mínimos locales y trampas</h4>
+        <ol>
+            <li>Con Monte Carlo a temperatura baja (T pequeño), la proteína queda atrapada en el primer mínimo que encuentra.</li>
+            <li>Aumenta T: los movimientos malos se aceptan con mayor probabilidad y la proteína escapa de trampas locales.</li>
+            <li>Reduce T muy lentamente (SA manual): llega a conformaciones de menor energía que con T fija.</li>
+            <li>Esto replica exactamente el rol de los chaperones in vivo: aportan energía para deshacer conformaciones incorrectas y reiniciar la búsqueda.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../estructura-proteica.html" class="connection-item">
+            <span class="connection-icon">🔬</span>
+            <div class="connection-text"><strong>Estructura Proteica</strong><br>1°/2°/3°/4° estructura del estado nativo</div>
+        </a>
+        <a href="../desnaturalizacion.html" class="connection-item">
+            <span class="connection-icon">🌡</span>
+            <div class="connection-text"><strong>Desnaturalización</strong><br>El proceso inverso al plegamiento</div>
+        </a>
+        <a href="../sintesis-proteinas.html" class="connection-item">
+            <span class="connection-icon">🧬</span>
+            <div class="connection-text"><strong>Síntesis de Proteínas</strong><br>Dónde empieza la cadena que se pliega</div>
+        </a>
+        <a href="../plegamiento.html" class="connection-item">
+            <span class="connection-icon">🌀</span>
+            <div class="connection-text"><strong>Plegamiento (HP 2D)</strong><br>Modelo lattice hidrofóbico-polar</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../plegamiento-proteinas.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>
