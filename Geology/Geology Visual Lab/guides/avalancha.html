@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Avalancha Granular | Geology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #d97706; --color-accent-dim: rgba(217,119,6,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.35rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .material-table { width: 100%; border-collapse: collapse; font-family: var(--font-sans); font-size: 0.85rem; margin: 1.5rem 0; }
+        .material-table th { text-align: left; padding: 0.6rem 0.75rem; background: var(--color-surface); border-bottom: 1px solid var(--color-border); color: var(--color-text-secondary); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; }
+        .material-table td { padding: 0.55rem 0.75rem; border-bottom: 1px solid var(--color-border); }
+        .material-table td:nth-child(2), .material-table td:nth-child(3) { font-family: var(--font-mono); font-size: 0.82rem; color: var(--color-accent); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Geology Visual Lab</a> /
+            <span>Guía: Avalancha Granular</span>
+        </nav>
+        <h1>Avalancha Granular</h1>
+        <p class="subtitle">Fricción estática, ángulo de reposo y dinámica de materiales granulares</p>
+    </header>
+
+    <p class="intro">
+        Los materiales granulares — arena, grava, nieve, rocas — no son sólidos ni líquidos: son
+        una fase de la materia con propiedades propias. Fluyen como líquidos cuando la pendiente
+        supera un ángulo crítico, pero se detienen y sostienen esfuerzos cortantes como sólidos.
+        Esta simulación WASM integra miles de granos con fricción estática y dinámica en tiempo real.
+    </p>
+
+    <h2>El Ángulo de Reposo</h2>
+
+    <p>La propiedad más característica de un material granular es su <em>ángulo de reposo</em> θ_r: la pendiente máxima que puede mantener sin que los granos deslicen. Está determinado por la fricción entre partículas:</p>
+
+    <div class="equation-block">
+        <div class="equation">tan(θ_r) = μ_s &nbsp;&nbsp;&nbsp; θ_r = arctan(μ_s)</div>
+        <div class="equation-label">μ_s = coeficiente de fricción estática entre granos. La montaña no puede ser más empinada que este ángulo.</div>
+    </div>
+
+    <p>Cuando la pendiente local supera θ_r, los granos se liberan y fluyen como un fluido viscoso. La fricción <em>dinámica</em> μ_d (siempre menor que μ_s) rige el movimiento durante la avalancha. Esta diferencia entre μ_s y μ_d es la razón por la que las avalanchas son eventos discretos: el deslizamiento comienza de golpe y se detiene solo cuando la pendiente baja de θ_r.</p>
+
+    <h2>Fricción Estática y Dinámica</h2>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Fricción estática (μ_s)</h4>
+            <p>Fuerza máxima que resiste el movimiento antes de que los granos deslicen. Define el ángulo de reposo. Un grano en pendiente cumple: F_grav_paralela ≤ μ_s · F_normal.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Fricción dinámica (μ_d)</h4>
+            <p>Fricción durante el movimiento. Siempre μ_d < μ_s. Una vez que la avalancha comienza, necesita menos pendiente para continuar que para iniciarse: hay histéresis.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Presión de confinamiento</h4>
+            <p>Los granos profundos están bajo mayor presión de los que están encima. La fricción efectiva aumenta con la profundidad, lo que da a los depósitos granulares una resistencia que crece con el tamaño del montón.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Dilatancia</h4>
+            <p>Para que los granos fluyan deben separarse ligeramente (dilatarse) primero. Este fenómeno es la razón por la que la arena mojada se pone blanca al pisarla: la dilatación desplaza el agua de los poros.</p>
+        </div>
+    </div>
+
+    <h2>Los Cuatro Materiales</h2>
+
+    <table class="material-table">
+        <thead>
+            <tr><th>Material</th><th>μ_s (aprox.)</th><th>θ_r (aprox.)</th><th>Comportamiento</th></tr>
+        </thead>
+        <tbody>
+            <tr><td>Arena</td><td>0.58</td><td>30°</td><td>Flujo suave, avalanchas frecuentes pequeñas. Representa dunas y playas.</td></tr>
+            <tr><td>Grava</td><td>0.70</td><td>35°</td><td>Pendientes más empinadas antes de deslizar. Fragmentos más angulosos = mayor fricción.</td></tr>
+            <tr><td>Rocas</td><td>0.84</td><td>40°</td><td>Alta fricción, pendientes muy pronunciadas. Acantilados y taludes rocosos.</td></tr>
+            <tr><td>Avalancha</td><td>0.27</td><td>15°</td><td>Baja fricción por nieve o barro. Fluye lejos con poca pendiente. Alta movilidad.</td></tr>
+        </tbody>
+    </table>
+
+    <div class="key-insight">
+        <strong>Las avalanchas de nieve y barro tienen una movilidad anómalamente alta.</strong> Las grandes avalanchas recorren distancias mucho mayores de lo que predice la fricción simple. El mecanismo propuesto: una capa de aire atrapado bajo la masa fluidizada actúa como colchón, reduciendo la fricción efectiva. Este fenómeno (excess run-out) también se observa en deslizamientos submarinos y en flujos piroclásticos volcánicos.
+    </div>
+
+    <h2>Ley de Bagnold</h2>
+
+    <p>En un flujo granular rápido (avalancha en movimiento), las colisiones entre granos dominan el transporte de momento. La ley de Bagnold establece que la presión de flujo es proporcional al cuadrado de la velocidad de cizalla:</p>
+
+    <div class="equation-block">
+        <div class="equation">τ = ρ · d² · (du/dy)²</div>
+        <div class="equation-label">τ = esfuerzo cortante · d = diámetro del grano · du/dy = gradiente de velocidad · ρ = densidad</div>
+    </div>
+
+    <p>Esta relación cuadrática (no lineal como en fluidos newtonianos) es la razón por la que los flujos granulares rápidos son tan destructivos: duplicar la velocidad cuadruplica el esfuerzo.</p>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Ángulo de reposo: comparar materiales</h4>
+        <ol>
+            <li>Selecciona <em>Arena</em>. Vierte granos desde arriba y observa la forma final del montón: un cono con pendiente ≈ 30°.</li>
+            <li>Cambia a <em>Rocas</em>. El cono resultante es notablemente más empinado (≈ 40°).</li>
+            <li>Compara <em>Avalancha</em>: el mismo volumen de granos se extiende mucho más, con pendientes suaves de ~15°.</li>
+            <li>La diferencia entre presets ilustra directamente cómo la fricción entre partículas controla la geomorfología.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Histéresis: inicio y parada</h4>
+        <ol>
+            <li>Con <em>Grava</em>, crea una pendiente cerca del ángulo de reposo añadiendo granos lentamente.</li>
+            <li>Observa cómo la avalancha comienza de forma abrupta cuando se supera θ_r.</li>
+            <li>Una vez iniciada, el flujo continúa incluso en zonas con pendiente menor que el ángulo de inicio: esto es histéresis (μ_d &lt; μ_s).</li>
+            <li>La avalancha se detiene cuando la pendiente residual baja de θ_r. La forma final es distinta de la inicial.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Movilidad de la avalancha</h4>
+        <ol>
+            <li>Con <em>Rocas</em>, crea un montículo alto en una esquina y suéltalo sobre terreno plano.</li>
+            <li>Repite con <em>Avalancha</em> (baja fricción) con el mismo volumen inicial.</li>
+            <li>Mide visualmente la distancia recorrida. La avalancha de baja fricción puede recorrer 3–5 veces más.</li>
+            <li>Este contraste reproduce los flujos de larga distancia observados en deslizamientos catastróficos reales (Elm 1881, Frank 1903).</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../volcanes.html" class="connection-item">
+            <span class="connection-icon">🌋</span>
+            <div class="connection-text"><strong>Volcanes</strong><br>Flujos piroclásticos: avalanchas calientes</div>
+        </a>
+        <a href="../erosion.html" class="connection-item">
+            <span class="connection-icon">🏔</span>
+            <div class="connection-text"><strong>Erosión</strong><br>Transporte de sedimento por gravedad</div>
+        </a>
+        <a href="../tectonica-placas.html" class="connection-item">
+            <span class="connection-icon">🌍</span>
+            <div class="connection-text"><strong>Tectónica</strong><br>Origen de las pendientes que deslizan</div>
+        </a>
+        <a href="../estratigrafia.html" class="connection-item">
+            <span class="connection-icon">📚</span>
+            <div class="connection-text"><strong>Estratigrafía</strong><br>Depósitos granulares como capas</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../avalancha.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

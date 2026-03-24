@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Magmatismo Global | Geology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #d97706; --color-accent-dim: rgba(217,119,6,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.35rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .boundary-grid { display: grid; grid-template-columns: 1fr; gap: 1rem; margin: 1.5rem 0; }
+        .boundary-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; display: grid; grid-template-columns: auto 1fr auto; gap: 1rem; align-items: start; }
+        .boundary-num { font-family: var(--font-mono); font-size: 1.4rem; color: var(--color-accent); font-weight: bold; }
+        .boundary-body h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.4rem; }
+        .boundary-body p { font-size: 0.9rem; color: var(--color-text-secondary); margin: 0; }
+        .boundary-magma { font-family: var(--font-mono); font-size: 0.88rem; color: var(--color-accent); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Geology Visual Lab</a> /
+            <span>Guía: Magmatismo Global</span>
+        </nav>
+        <h1>Magmatismo Global</h1>
+        <p class="subtitle">Cómo la tectónica de placas genera cuatro tipos distintos de magma</p>
+    </header>
+
+    <p class="intro">
+        El magma no sube al azar. Cada tipo de límite de placa genera un magma con composición
+        química, temperatura y viscosidad diferentes. La simulación modela las cuatro configuraciones
+        tectónicas activas en la Tierra hoy, con cámaras magmáticas y erupciones en tiempo real.
+    </p>
+
+    <h2>Por Qué Funde la Roca</h2>
+
+    <p>La roca del manto no funde por ser más caliente: funde cuando baja su presión o cuando recibe agua. Tres mecanismos, tres contextos tectónicos:</p>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Fusión por descompresión</h4>
+            <p>Al separarse las placas, el manto asciende. La presión baja pero la temperatura apenas cambia. El material cruza su curva de solidus y funde sin añadir calor. Produce basalto tholeiítico puro.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Fusión por agua</h4>
+            <p>En subducción, la placa oceánica pierde agua al calentarse. El agua baja el punto de fusión del manto suprayacente, que funde sin necesidad de temperatura extra. El fundido resultante es andesítico.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Fusión por anomalía térmica</h4>
+            <p>Los hotspots (puntos calientes) son penachos de manto anómalamente caliente que ascienden desde la base del manto. El exceso de temperatura funde la litosfera sin necesidad de separación ni agua.</p>
+        </div>
+    </div>
+
+    <h2>Los Cuatro Contextos Tectónicos</h2>
+
+    <div class="boundary-grid">
+        <div class="boundary-card">
+            <div class="boundary-num">1</div>
+            <div class="boundary-body">
+                <h4>Límite divergente (dorsal oceánica)</h4>
+                <p>Dos placas se separan. El manto asciende y funde por descompresión. Se forma nueva corteza oceánica a ritmo de 2–10 cm/año. Ejemplo: Dorsal Mesoatlántica.</p>
+            </div>
+            <div class="boundary-magma">Basalto<br>tholeiítico</div>
+        </div>
+        <div class="boundary-card">
+            <div class="boundary-num">2</div>
+            <div class="boundary-body">
+                <h4>Límite convergente (zona de subducción)</h4>
+                <p>La placa oceánica más densa buza bajo la continental. Al calentarse, libera agua que funde el manto. El arco volcánico resultante es explosivo (Andes, Japón, Cascades).</p>
+            </div>
+            <div class="boundary-magma">Andesita<br>calcoalcalina</div>
+        </div>
+        <div class="boundary-card">
+            <div class="boundary-num">3</div>
+            <div class="boundary-body">
+                <h4>Hotspot intraplaca oceánica</h4>
+                <p>Penacho caliente que perfora la placa oceánica. Crea cadenas de islas volcánicas a medida que la placa se mueve sobre el punto fijo (Hawái, Galápagos, Reunión).</p>
+            </div>
+            <div class="boundary-magma">Basalto<br>alcalino</div>
+        </div>
+        <div class="boundary-card">
+            <div class="boundary-num">4</div>
+            <div class="boundary-body">
+                <h4>Hotspot intraplaca continental</h4>
+                <p>El penacho funde la corteza continental más gruesa. Produce supervolcanes (Yellowstone) y grandes provincias ígneas (Siberia, Decán) con erupciones de larga duración.</p>
+            </div>
+            <div class="boundary-magma">Basalto<br>continental</div>
+        </div>
+    </div>
+
+    <h2>Composición y Viscosidad</h2>
+
+    <div class="equation-block">
+        <div class="equation">SiO₂ %: basalto (50%) → andesita (60%) → riolita (70%)</div>
+        <div class="equation-label">A mayor contenido en SiO₂, mayor viscosidad y explosividad potencial. El agua disuelta es el propulsor de las erupciones.</div>
+    </div>
+
+    <p>La viscosidad del magma determina todo lo demás: cómo fluye, si retiene gases, si erupciona de forma efusiva (lava fluida) o explosiva (piroclastos):</p>
+
+    <ul>
+        <li><strong>Basalto</strong> — viscosidad baja (como miel caliente), gas escapa fácilmente, erupciones efusivas, coladas largas. Hawaiian shield volcanoes.</li>
+        <li><strong>Andesita</strong> — viscosidad media, gas parcialmente atrapado, erupciones mixtas con domos de lava y explosiones ocasionales. Estratovolcanes.</li>
+        <li><strong>Riolita/Dacita</strong> — alta viscosidad, gas muy atrapado, erupciones ultraexplosivas (Pinatubo 1991, Krakatoa 1883). Calderas.</li>
+    </ul>
+
+    <div class="key-insight">
+        <strong>El basalto continental (Yellowstone, Siberia, Decán) es el magma más peligroso a escala geológica.</strong> No por su explosividad inmediata, sino por el volumen: las grandes provincias ígneas liberan millones de km³ de lava en pocos millones de años. La extinción del Pérmico (–90% de las especies) coincide con el volcanismo de la Trampa Siberiana. La de los dinosaurios no extintos, con el Decán. Las tasas de CO₂ volcánico de estos eventos superan con creces las del clima actual.
+    </div>
+
+    <h2>Cámaras Magmáticas</h2>
+
+    <p>El magma no asciende directamente del manto a la superficie. Se detiene en <em>cámaras magmáticas</em> en la corteza, donde evoluciona por cristalización fraccionada: los minerales más pesados cristalizan primero y se hunden, enriqueciendo el fundido restante en SiO₂. Un magma basáltico puede evolucionar a andesita o incluso riolita por este proceso.</p>
+
+    <p>La simulación muestra cámaras pulsando con calor bajo los volcanes. Su tamaño y profundidad varían con el contexto tectónico: dorsales tienen cámaras superficiales y grandes; hotspots continentales, cámaras profundas y enormes.</p>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Comparar dorsal vs. subducción</h4>
+        <ol>
+            <li>Activa <em>Divergente</em>. Observa la dorsal generando corteza nueva: magma basáltico simétrico a ambos lados.</li>
+            <li>Cambia a <em>Convergente</em>. El arco volcánico aparece a ~100 km de la fosa: ahí el agua llega al manto y genera fusión.</li>
+            <li>La diferencia clave: en la dorsal el magma sube verticalmente por descompresión; en subducción sube oblicuamente empujado por el agua liberada.</li>
+            <li>Compara el número y disposición de los volcanes en cada caso.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Hotspot: cadena de islas</h4>
+        <ol>
+            <li>Activa <em>Hotspot oceánico</em>. El penacho genera un único volcán activo sobre el punto caliente.</li>
+            <li>La cadena de islas más antiguas (extintas) muestra la dirección y velocidad de movimiento de la placa. Hawái: la placa Pacífico se mueve a ~7 cm/año en dirección noroeste.</li>
+            <li>Activa <em>Hotspot continental</em>. La corteza gruesa amortigua el penacho y genera erupciones menos frecuentes pero colosales.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Generación de corteza nueva</h4>
+        <ol>
+            <li>Con <em>Divergente</em>, observa el contador de magma generado. En la Tierra real se crean ~20 km³ de corteza oceánica nueva cada año.</li>
+            <li>Toda la corteza oceánica actual tiene menos de 200 millones de años: es reciclada continuamente por subducción. La corteza continental puede tener más de 4.000 millones.</li>
+            <li>Pausa la simulación y observa la simetría del patrón: la dorsal es un generador bilateral de corteza nueva a ambos lados.</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../volcanes.html" class="connection-item">
+            <span class="connection-icon">🌋</span>
+            <div class="connection-text"><strong>Volcanes</strong><br>Tipos de erupción según la viscosidad</div>
+        </a>
+        <a href="../tectonica-placas.html" class="connection-item">
+            <span class="connection-icon">🌍</span>
+            <div class="connection-text"><strong>Tectónica de Placas</strong><br>Los límites que generan el magma</div>
+        </a>
+        <a href="../ciclo-rocas.html" class="connection-item">
+            <span class="connection-icon">🪨</span>
+            <div class="connection-text"><strong>Ciclo de las Rocas</strong><br>Magma → ígneo → metamórfico → sedimentario</div>
+        </a>
+        <a href="../terremotos.html" class="connection-item">
+            <span class="connection-icon">📡</span>
+            <div class="connection-text"><strong>Terremotos</strong><br>Sismos volcánicos y de subducción</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../magmatismo-global.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guía: Erosión Hidráulica | Geology Visual Lab</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Crimson+Pro:ital,wght@0,400;0,600;1,400&family=Inter:wght@400;500;600&family=Fira+Code:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --color-bg: #0a0a0a; --color-surface: #141414; --color-surface-elevated: #1a1a1a;
+            --color-border: #262626; --color-text: #e5e5e5; --color-text-secondary: #a3a3a3;
+            --color-accent: #d97706; --color-accent-dim: rgba(217,119,6,0.1);
+            --font-serif: 'Crimson Pro', Georgia, serif; --font-sans: 'Inter', system-ui, sans-serif;
+            --font-mono: 'Fira Code', monospace;
+        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: var(--font-serif); font-size: 19px; line-height: 1.7; color: var(--color-text); background-color: var(--color-bg); padding: 2rem; max-width: 900px; margin: 0 auto; }
+        header { margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--color-border); }
+        .breadcrumb { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); margin-bottom: 1rem; }
+        .breadcrumb a { color: var(--color-accent); text-decoration: none; }
+        .breadcrumb a:hover { text-decoration: underline; }
+        h1 { font-family: var(--font-serif); font-size: 2.5rem; font-weight: 600; margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+        .subtitle { font-size: 1.25rem; color: var(--color-text-secondary); font-style: italic; }
+        h2 { font-family: var(--font-sans); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: var(--color-accent); margin-top: 3rem; margin-bottom: 1.25rem; }
+        p { margin-bottom: 1.25rem; }
+        .intro { font-size: 1.15rem; color: var(--color-text-secondary); border-left: 3px solid var(--color-accent); padding-left: 1.5rem; margin: 2rem 0; }
+        .equation-block { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+        .equation { font-family: var(--font-mono); font-size: 1.25rem; color: var(--color-accent); margin-bottom: 0.75rem; }
+        .equation-label { font-family: var(--font-sans); font-size: 0.85rem; color: var(--color-text-secondary); }
+        .concept-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1.5rem; margin: 1.5rem 0; }
+        .concept-card { background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; padding: 1.5rem; }
+        .concept-card h4 { font-family: var(--font-sans); font-size: 1rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--color-accent); }
+        .concept-card p { font-size: 0.95rem; margin-bottom: 0; color: var(--color-text-secondary); }
+        .key-insight { background: var(--color-accent-dim); border: 1px solid var(--color-accent); border-radius: 8px; padding: 1.5rem; margin: 1.5rem 0; }
+        .key-insight strong { color: var(--color-accent); }
+        .experiment-block { background: var(--color-surface-elevated); border-radius: 8px; padding: 1.75rem; margin: 1.5rem 0; border-left: 3px solid var(--color-accent); }
+        .experiment-block h4 { font-family: var(--font-sans); font-weight: 600; margin-bottom: 1rem; }
+        .experiment-block ol { margin-left: 1.25rem; color: var(--color-text-secondary); }
+        .experiment-block li { margin-bottom: 0.5rem; }
+        .connections-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin: 1.5rem 0; }
+        .connection-item { display: flex; align-items: center; gap: 0.75rem; padding: 1rem; background: var(--color-surface); border: 1px solid var(--color-border); border-radius: 8px; text-decoration: none; color: var(--color-text); transition: border-color 0.2s; }
+        .connection-item:hover { border-color: var(--color-accent); background: var(--color-surface-elevated); }
+        .connection-icon { font-size: 1.5rem; }
+        .connection-text { font-family: var(--font-sans); font-size: 0.9rem; }
+        ul { margin-left: 1.25rem; margin-bottom: 1.25rem; }
+        li { margin-bottom: 0.5rem; }
+        footer { margin-top: 4rem; padding-top: 2rem; border-top: 1px solid var(--color-border); text-align: center; }
+        .btn-launch { display: inline-flex; align-items: center; gap: 0.5rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 500; padding: 1rem 2rem; background: var(--color-accent); color: #030712; border-radius: 8px; text-decoration: none; transition: opacity 0.2s; }
+        .btn-launch:hover { opacity: 0.9; }
+        .step-grid { display: grid; grid-template-columns: auto 1fr; gap: 0.5rem 1.5rem; margin: 1.5rem 0; }
+        .step-num { font-family: var(--font-mono); font-size: 1.2rem; color: var(--color-accent); font-weight: bold; padding-top: 0.1rem; }
+        .step-body { font-size: 0.95rem; color: var(--color-text-secondary); padding-bottom: 1rem; border-bottom: 1px solid var(--color-border); }
+        .step-body:last-child { border-bottom: none; }
+        .step-body strong { color: var(--color-text); }
+    </style>
+</head>
+<body>
+    <header>
+        <nav class="breadcrumb">
+            <a href="https://cjlkaiser-cpu.github.io/eigenlab/_portal/index.html">EigenLab</a> /
+            <a href="../index.html">Geology Visual Lab</a> /
+            <span>Guía: Erosión Hidráulica</span>
+        </nav>
+        <h1>Erosión Hidráulica</h1>
+        <p class="subtitle">Cómo millones de gotas de agua esculpen montañas, valles y cañones</p>
+    </header>
+
+    <p class="intro">
+        El Grand Canyon tardó 5–6 millones de años en formarse. La simulación comprime ese
+        proceso en segundos: miles de gotas de agua virtuales fluyen sobre un terreno, erosionan
+        donde ganan velocidad y depositan sedimento donde la pierden. El resultado emergente
+        reproduce ríos, valles, deltas y formas del paisaje sorprendentemente realistas.
+    </p>
+
+    <h2>El Ciclo de una Gota</h2>
+
+    <div class="step-grid">
+        <div class="step-num">1</div>
+        <div class="step-body"><strong>Nacimiento:</strong> La gota aparece en posición aleatoria sobre el terreno.</div>
+        <div class="step-num">2</div>
+        <div class="step-body"><strong>Flujo:</strong> Desciende siguiendo la pendiente más pronunciada, combinada con inercia de pasos anteriores.</div>
+        <div class="step-num">3</div>
+        <div class="step-body"><strong>Erosión:</strong> Si carga menos sedimento del que puede transportar, recoge material del terreno y lo lleva consigo.</div>
+        <div class="step-num">4</div>
+        <div class="step-body"><strong>Depósito:</strong> Si carga más sedimento del que puede transportar (pierde velocidad), deposita el exceso.</div>
+        <div class="step-num">5</div>
+        <div class="step-body"><strong>Evaporación:</strong> La gota pierde agua gradualmente. Menos agua → menos capacidad → más depósito.</div>
+        <div class="step-num">6</div>
+        <div class="step-body"><strong>Muerte:</strong> Cuando el agua se agota, la gota desaparece. Su sedimento queda en el terreno.</div>
+    </div>
+
+    <h2>Capacidad de Transporte</h2>
+
+    <p>La cantidad de sedimento que una gota puede transportar depende de su velocidad y de la pendiente local:</p>
+
+    <div class="equation-block">
+        <div class="equation">C = max(v · slope · water, C_min)</div>
+        <div class="equation-label">v = velocidad · slope = pendiente local · water = agua restante · C_min = capacidad mínima</div>
+    </div>
+
+    <p>Esta relación captura la física real: los ríos rápidos transportan piedras; los lentos solo arena; los que se detienen depositan todo. La velocidad se actualiza en cada paso con la energía gravitacional:</p>
+
+    <div class="equation-block">
+        <div class="equation">v_nueva = √(max(0, v² + Δh · g))</div>
+        <div class="equation-label">Δh = diferencia de altura entre el punto actual y el siguiente · g = gravedad</div>
+    </div>
+
+    <h2>Erosión y Depósito</h2>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Erosión (sedimento &lt; capacidad)</h4>
+            <p>La gota puede cargar más de lo que lleva. Raspa el terreno: quita una fracción de la diferencia (controlada por la tasa de erosión). El terreno baja, la gota se carga.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Depósito (sedimento &gt; capacidad)</h4>
+            <p>La gota lleva más de lo que puede. Deposita el exceso en el terreno actual. El terreno sube, la gota se alivia. Ocurre en zonas planas o de menor pendiente.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Erosión térmica</h4>
+            <p>Complementa la hidráulica: las celdas con pendiente mayor que el ángulo de talud ceden material a las vecinas más bajas. Impide acantilados verticales irreales.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Inercia de dirección</h4>
+            <p>La gota no gira bruscamente: combina la pendiente actual con su dirección previa (parámetro de inercia). Sin inercia, los ríos son en zigzag; con mucha, son canales rectos.</p>
+        </div>
+    </div>
+
+    <div class="key-insight">
+        <strong>La red de ríos emerge sin programarla.</strong> Ningún canal está codificado en la simulación: las gotas individuales forman canales porque el agua que ya pasó erosionó el terreno, haciendo ese camino más profundo y atrayendo más gotas. Es retroalimentación positiva: los canales se refuerzan solos. Exactamente así funciona la red hidrográfica real.
+    </div>
+
+    <h2>Los Cinco Presets</h2>
+
+    <ul>
+        <li><strong>Suave</strong> — baja erosión, alta deposición. Resultado: colinas onduladas, paisaje maduro. Análogo a cordilleras antiguas (Appalachianos, Urales).</li>
+        <li><strong>Río</strong> — alta inercia, baja evaporación. Las gotas recorren trayectorias largas antes de perder agua. Produce canales bien definidos y meandrosos.</li>
+        <li><strong>Cañón</strong> — alta erosión, baja deposición. La gota erosiona mucho y deposita poco. Cañones profundos y paredes verticales. Grand Canyon.</li>
+        <li><strong>Costa</strong> — alta inercia, deposición rápida al frenar. Playas y deltas donde el terreno se vuelve plano.</li>
+        <li><strong>Volcánico</strong> — alta erosión térmica. Las laderas del volcán se erosionan rápidamente generando barrancos radiales (barrancos del Teide, laderas del Etna).</li>
+    </ul>
+
+    <h2>Formas del Paisaje Resultantes</h2>
+
+    <div class="concept-grid">
+        <div class="concept-card">
+            <h4>Cañones y barrancos</h4>
+            <p>Formados por erosión concentrada a lo largo de canales de drenaje. El canal principal se profundiza más rápido que los tributarios, creando un perfil longitudinal cóncavo.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Deltas</h4>
+            <p>Depósitos en abanico donde el río pierde velocidad al llegar a una zona plana o al mar. La sedimentación es rápida y el delta avanza hacia afuera con el tiempo.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Divisorias de aguas</h4>
+            <p>Líneas de cresta que separan cuencas hidrográficas. Emergen automáticamente: ninguna gota cruza una divisoria porque siempre va cuesta abajo.</p>
+        </div>
+        <div class="concept-card">
+            <h4>Terrazas fluviales</h4>
+            <p>Escalones en las laderas del valle. Se forman cuando el río se encaja más profundamente y abandona su antigua llanura aluvial, que queda como terraza elevada.</p>
+        </div>
+    </div>
+
+    <h2>Experimentos Guiados</h2>
+
+    <div class="experiment-block">
+        <h4>Experimento 1 — Un solo río emergente</h4>
+        <ol>
+            <li>Genera un terreno con ligera inclinación uniforme (sin picos ni valles). Activa preset <em>Río</em>.</li>
+            <li>En pocos ciclos, las gotas formarán un canal dominante donde el terreno bajó ligeramente antes. Ese canal atrae más gotas, se profundiza más, y así sucesivamente.</li>
+            <li>Observa cómo tributarios se conectan al canal principal formando una red dendrítica sin ninguna regla programada.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 2 — Comparar presets: velocidad del paisaje</h4>
+        <ol>
+            <li>Genera el mismo terreno de partida (mismo seed) con preset <em>Suave</em>: el resultado tras 50.000 gotas es un paisaje de colinas suaves.</li>
+            <li>Repite con <em>Cañón</em>: aparecen incisiones profundas y verticales. El volumen erosionado y redistribuido es mucho mayor.</li>
+            <li>La diferencia ilustra cómo el clima (lluvias intensas vs. suaves) y la resistencia de la roca controlan si una montaña envejece suavemente o se disecciona en cañones.</li>
+        </ol>
+    </div>
+
+    <div class="experiment-block">
+        <h4>Experimento 3 — Delta en tiempo real</h4>
+        <ol>
+            <li>Diseña un terreno con una montaña alta en un extremo y una llanura baja en el otro.</li>
+            <li>Activa preset <em>Costa</em>. Las gotas erosionan la ladera y depositan al llegar a la llanura.</li>
+            <li>Observa el abanico aluvial (delta) crecer desde la base de la montaña hacia la llanura. La forma en abanico reproduce deltas reales (Delta del Nilo visto desde satélite).</li>
+        </ol>
+    </div>
+
+    <h2>Conexiones</h2>
+
+    <div class="connections-grid">
+        <a href="../erosion.html" class="connection-item">
+            <span class="connection-icon">🌊</span>
+            <div class="connection-text"><strong>Erosión</strong><br>Eólica, glaciar y costera</div>
+        </a>
+        <a href="../avalancha.html" class="connection-item">
+            <span class="connection-icon">🏔</span>
+            <div class="connection-text"><strong>Avalancha Granular</strong><br>Transporte de masa por gravedad</div>
+        </a>
+        <a href="../estratigrafia.html" class="connection-item">
+            <span class="connection-icon">📚</span>
+            <div class="connection-text"><strong>Estratigrafía</strong><br>El sedimento erosionado se deposita en capas</div>
+        </a>
+        <a href="../ciclo-rocas.html" class="connection-item">
+            <span class="connection-icon">🪨</span>
+            <div class="connection-text"><strong>Ciclo de las Rocas</strong><br>La erosión convierte ígneas en sedimentarias</div>
+        </a>
+    </div>
+
+    <footer>
+        <a href="../erosion-hidraulica.html" class="btn-launch">Abrir simulación →</a>
+    </footer>
+</body>
+</html>
