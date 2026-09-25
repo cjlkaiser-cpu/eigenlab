@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>EigenLab - Simulaciones Interactivas</title>
+    <!-- eigenlab:meta -->
+    <meta name="description" content="~200 simulaciones interactivas de física, química, biología, matemáticas, astronomía, IA y música. Las ecuaciones no describen objetos: describen comportamientos.">
+    <meta property="og:site_name" content="EigenLab">
+    <meta property="og:type" content="website">
+    <meta property="og:locale" content="es_ES">
+    <meta property="og:title" content="EigenLab · Donde las ecuaciones cobran vida">
+    <meta property="og:description" content="~200 simulaciones interactivas de física, química, biología, matemáticas, astronomía, IA y música. Las ecuaciones no describen objetos: describen comportamientos.">
+    <meta property="og:image" content="https://cjlkaiser-cpu.github.io/eigenlab/_portal/og/eigenlab.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="theme-color" content="#030712">
+    <!-- /eigenlab:meta -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@300;400&display=swap" rel="stylesheet">
     <style>
         * {
@@ -142,6 +155,43 @@
             flex-wrap: wrap;
             opacity: 0;
             animation: fadeInUp 0.8s ease 0.8s forwards;
+        }
+
+        .search-trigger {
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+            width: min(520px, 100%);
+            margin: 0 auto 1.25rem;
+            padding: 0.7rem 0.9rem 0.7rem 1.1rem;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid var(--border);
+            border-radius: 9999px;
+            color: var(--text-secondary);
+            font: inherit;
+            font-size: 0.9rem;
+            text-align: left;
+            cursor: text;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease 0.7s forwards;
+        }
+
+        .search-trigger:hover,
+        .search-trigger:focus-visible {
+            border-color: #64748b;
+            box-shadow: 0 0 22px rgba(148, 163, 184, 0.15);
+            outline: none;
+        }
+
+        .search-trigger span { flex: 1; }
+
+        .search-trigger kbd {
+            font: inherit;
+            font-size: 0.72rem;
+            padding: 0.15rem 0.45rem;
+            border: 1px solid var(--border);
+            border-radius: 6px;
         }
 
         .nav-btn {
@@ -527,6 +577,11 @@
                 </div>
             </div>
             <p class="epigraph">Las ecuaciones no describen objetos — describen comportamientos.</p>
+            <button type="button" class="search-trigger" data-eigenlab-search aria-label="Buscar en EigenLab">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                <span>Buscar entre ~200 simulaciones…</span>
+                <kbd data-eigenlab-kbd>⌘K</kbd>
+            </button>
             <nav class="header-nav">
                 <a href="paths/index.html" class="nav-btn nav-btn-paths">Caminos de Aprendizaje →</a>
                 <a href="knowledge-graph.html" class="nav-btn nav-btn-graph">Mapa de Conexiones →</a>
@@ -552,7 +607,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/physics-visual-lab/" class="lab-card physics-visual has-guides">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-physics-visual"></canvas>
-                        <span class="lab-badge">19 sims</span>
+                        <span class="lab-badge">30 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -574,7 +629,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/physics-sound-lab/" class="lab-card physics-sound has-paper">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-physics-sound"></canvas>
-                        <span class="lab-badge">19 sims</span>
+                        <span class="lab-badge">14 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Sound Lab</div>
@@ -583,7 +638,7 @@
                             7 metronomos físicos (péndulo, resorte, Kepler) + 6 generativos sonoros (Harmonices Mundi, Tonnetz, Rameau). Ecuaciones de movimiento convertidas en ritmo y música.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">19 sims</span>
+                            <span class="depth-badge depth-sims">14 sims</span>
                             <span class="depth-badge depth-paper">5 papers</span>
                         </div>
                         <div class="lab-meta">
@@ -609,7 +664,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/chemistry-visual-lab/" class="lab-card chemistry">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-chemistry"></canvas>
-                        <span class="lab-badge">17 sims</span>
+                        <span class="lab-badge">18 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -618,7 +673,7 @@
                             Estructura atómica, termodinámica, cinética y electroquímica. Incluye visualizaciones 3D con Three.js para moléculas y orbitales.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">17 sims</span>
+                            <span class="depth-badge depth-sims">18 sims</span>
                             <span class="depth-badge depth-guides">17 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -644,7 +699,7 @@
                 <a href="../Biochemistry/Biochem Visual Lab/index.html" class="lab-card biochemistry">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-biochemistry"></canvas>
-                        <span class="lab-badge">16 sims</span>
+                        <span class="lab-badge">18 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -653,7 +708,7 @@
                             ADN, proteínas y metabolismo celular. Glucólisis, ciclo de Krebs, síntesis de proteínas y regulación génica visualizados.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">16 sims</span>
+                            <span class="depth-badge depth-sims">18 sims</span>
                             <span class="depth-badge depth-guides">16 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -679,7 +734,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/math-visual-lab/" class="lab-card mathematics">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-mathematics"></canvas>
-                        <span class="lab-badge">27 sims</span>
+                        <span class="lab-badge">28 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -688,7 +743,7 @@
                             Fractales, caos, teoría de números, topología y geometría. Mandelbrot, Poincaré, Möbius, nudos matemáticos y más.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">27 sims</span>
+                            <span class="depth-badge depth-sims">28 sims</span>
                             <span class="depth-badge depth-guides">27 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -701,7 +756,7 @@
                 <a href="https://cjlkaiser-cpu.github.io/math-generative-art-lab/" class="lab-card mathematics">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-generative"></canvas>
-                        <span class="lab-badge">7 sims</span>
+                        <span class="lab-badge">9 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Generative Art</div>
@@ -710,7 +765,7 @@
                             Arte generativo basado en matemáticas. Reacción-difusión, L-Systems, campos de flujo, atractores extraños y teselaciones.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">7 sims</span>
+                            <span class="depth-badge depth-sims">9 sims</span>
                         </div>
                         <div class="lab-meta">
                             <span>Canvas 2D</span>
@@ -722,7 +777,7 @@
                 <a href="../Mathematics/Math Sound Lab/index.html" class="lab-card mathematics">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-math-sound"></canvas>
-                        <span class="lab-badge">8 sims</span>
+                        <span class="lab-badge">11 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Sound Lab</div>
@@ -865,7 +920,7 @@
                 <a href="../Astronomy/Astronomy Visual Lab/index.html" class="lab-card astronomy">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-astronomy"></canvas>
-                        <span class="lab-badge">8 sims</span>
+                        <span class="lab-badge">11 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -874,7 +929,7 @@
                             Cosmología y astrofísica. Órbita Schwarzschild, lentes gravitacionales, ley de Hubble, diagrama H-R, nucleosíntesis estelar, N-body Barnes-Hut y más.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">8 sims</span>
+                            <span class="depth-badge depth-sims">11 sims</span>
                             <span class="depth-badge depth-guides">8 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -921,7 +976,7 @@
                 <a href="../Biology/Biology Visual Lab/index.html" class="lab-card biology">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-biology"></canvas>
-                        <span class="lab-badge">9 sims</span>
+                        <span class="lab-badge">11 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -930,7 +985,7 @@
                             Neurociencia, ecología y genética. Hodgkin-Huxley, Lotka-Volterra, Hardy-Weinberg, mitosis/meiosis, algoritmos genéticos y Boids en WebAssembly.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">9 sims</span>
+                            <span class="depth-badge depth-sims">11 sims</span>
                             <span class="depth-badge depth-guides">9 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -956,7 +1011,7 @@
                 <a href="../Geology/Geology Visual Lab/index.html" class="lab-card geology">
                     <div class="lab-preview">
                         <canvas class="lab-preview-canvas" id="preview-geology"></canvas>
-                        <span class="lab-badge">8 sims</span>
+                        <span class="lab-badge">10 sims</span>
                     </div>
                     <div class="lab-content">
                         <div class="lab-type">Visual Lab</div>
@@ -965,7 +1020,7 @@
                             Geología dinámica. Ondas sísmicas P/S, volcanes VEI, tectónica de placas, ciclo de rocas, erosión, estratigrafía y magmatismo global.
                         </p>
                         <div class="lab-depth">
-                            <span class="depth-badge depth-sims">7 sims</span>
+                            <span class="depth-badge depth-sims">10 sims</span>
                             <span class="depth-badge depth-guides">7 guías</span>
                         </div>
                         <div class="lab-meta">
@@ -2405,5 +2460,6 @@
             draw();
         })();
     </script>
+    <script src="search.js" defer></script>
 </body>
 </html>
