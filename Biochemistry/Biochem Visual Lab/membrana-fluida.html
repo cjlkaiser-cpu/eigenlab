@@ -19,6 +19,7 @@
     <!-- /eigenlab:meta -->
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        canvas { touch-action: pan-y pinch-zoom; } /* canvas casi a pantalla completa: el gesto vertical desplaza la página hasta los controles; el resto interactúa */
         @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
         * { font-family: 'JetBrains Mono', monospace; }
         body { background: #0f172a; margin: 0; overflow: hidden; }
@@ -443,7 +444,7 @@
             proteins.push(new Protein(W / 2 + (Math.random() - 0.5) * 200, 'channel'));
         });
 
-        canvas.addEventListener('mousemove', e => {
+        canvas.addEventListener('pointermove', e => {
             mouseX = e.clientX;
             mouseY = e.clientY;
         });

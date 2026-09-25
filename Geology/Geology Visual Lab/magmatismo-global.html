@@ -20,6 +20,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        canvas { touch-action: none; } /* arrastrar con el dedo interactúa con la simulación en lugar de desplazar la página */
         body { font-family: 'Inter', sans-serif; }
         .mono { font-family: 'JetBrains Mono', monospace; }
 
@@ -173,6 +174,15 @@
                 rgba(139,0,0,0.3) 100%);
         }
     </style>
+    <style>/* eigenlab:mobile — en pantallas estrechas, la barra lateral pasa debajo de la simulación */
+        @media (max-width: 767px) {
+            :has(> aside) { flex-direction: column !important; height: auto !important; min-height: 0 !important; }
+            :has(> aside) > :not(aside) { flex: none !important; width: 100% !important; height: 62vh !important; min-height: 320px; }
+            :has(> aside) > aside { width: 100% !important; max-width: none !important; height: auto !important; max-height: none !important;
+                                    overflow: visible !important; border-left: 0 !important; border-top: 1px solid rgba(255,255,255,.08); }
+            body { overflow-y: auto !important; }
+        }
+    /* /eigenlab:mobile */</style>
 </head>
 <body class="bg-black text-gray-100 min-h-screen">
     <!-- Tooltip -->
@@ -3808,7 +3818,7 @@
         });
 
         // Mouse interaction for tooltips
-        crossSectionCanvas.addEventListener('mousemove', (e) => {
+        crossSectionCanvas.addEventListener('pointermove', (e) => {
             const rect = crossSectionCanvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -3838,7 +3848,7 @@
             }
         });
 
-        crossSectionCanvas.addEventListener('mouseleave', () => {
+        crossSectionCanvas.addEventListener('pointerleave', () => {
             tooltip.style.display = 'none';
         });
 

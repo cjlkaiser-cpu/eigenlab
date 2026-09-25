@@ -20,6 +20,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        canvas { touch-action: none; } /* arrastrar con el dedo interactúa con la simulación en lugar de desplazar la página */
         body { font-family: 'Inter', sans-serif; background: #030712; }
         .mono { font-family: 'JetBrains Mono', monospace; }
 
@@ -86,6 +87,15 @@
         ::-webkit-scrollbar-track { background: #1e293b; }
         ::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
     </style>
+    <style>/* eigenlab:mobile — en pantallas estrechas, la barra lateral pasa debajo de la simulación */
+        @media (max-width: 767px) {
+            :has(> aside) { flex-direction: column !important; height: auto !important; min-height: 0 !important; }
+            :has(> aside) > :not(aside) { flex: none !important; width: 100% !important; height: 62vh !important; min-height: 320px; }
+            :has(> aside) > aside { width: 100% !important; max-width: none !important; height: auto !important; max-height: none !important;
+                                    overflow: visible !important; border-left: 0 !important; border-top: 1px solid rgba(255,255,255,.08); }
+            body { overflow-y: auto !important; }
+        }
+    /* /eigenlab:mobile */</style>
 </head>
 <body class="text-gray-100 min-h-screen">
     <!-- Header -->
@@ -650,7 +660,7 @@
             return null;
         }
 
-        earthCanvas.addEventListener('mousedown', (e) => {
+        earthCanvas.addEventListener('pointerdown', (e) => {
             const station = getStationAtPosition(e);
             if (station) {
                 state.draggingStation = station.id;
@@ -660,7 +670,7 @@
             }
         });
 
-        earthCanvas.addEventListener('mousemove', (e) => {
+        earthCanvas.addEventListener('pointermove', (e) => {
             if (isDragging && state.draggingStation !== null) {
                 const newAngle = getAngleFromMouse(e);
                 const station = stations[state.draggingStation];
@@ -676,13 +686,13 @@
             }
         });
 
-        earthCanvas.addEventListener('mouseup', () => {
+        earthCanvas.addEventListener('pointerup', () => {
             isDragging = false;
             state.draggingStation = null;
             earthCanvas.style.cursor = 'default';
         });
 
-        earthCanvas.addEventListener('mouseleave', () => {
+        earthCanvas.addEventListener('pointerleave', () => {
             isDragging = false;
             state.draggingStation = null;
         });

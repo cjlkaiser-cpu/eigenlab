@@ -19,6 +19,7 @@
     <!-- /eigenlab:meta -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <style>
+        canvas { touch-action: pan-y pinch-zoom; } /* canvas casi a pantalla completa: el gesto vertical desplaza la página hasta los controles; el resto interactúa */
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
@@ -866,7 +867,7 @@
         // EVENT HANDLERS
         // ============================================
 
-        canvas.addEventListener('mousedown', (e) => {
+        canvas.addEventListener('pointerdown', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
@@ -940,7 +941,7 @@
             draw();
         });
 
-        canvas.addEventListener('mousemove', (e) => {
+        canvas.addEventListener('pointermove', (e) => {
             const rect = canvas.getBoundingClientRect();
             mousePos = { x: e.clientX - rect.left, y: e.clientY - rect.top };
 
@@ -956,11 +957,11 @@
             draw();
         });
 
-        canvas.addEventListener('mouseup', () => {
+        canvas.addEventListener('pointerup', () => {
             dragging = null;
         });
 
-        canvas.addEventListener('mouseleave', () => {
+        canvas.addEventListener('pointerleave', () => {
             dragging = null;
             wireStart = null;
             draw();

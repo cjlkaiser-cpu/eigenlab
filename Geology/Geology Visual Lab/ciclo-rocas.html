@@ -20,6 +20,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        canvas { touch-action: none; } /* arrastrar con el dedo interactúa con la simulación en lugar de desplazar la página */
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
             font-family: 'Inter', system-ui, sans-serif;
@@ -226,6 +227,15 @@
             background: repeating-linear-gradient(45deg, #8b5cf6 0px, #8b5cf6 2px, #7c3aed 2px, #7c3aed 4px);
         }
     </style>
+    <style>/* eigenlab:mobile — en pantallas estrechas, la barra lateral pasa debajo de la simulación */
+        @media (max-width: 767px) {
+            :has(> aside) { flex-direction: column !important; height: auto !important; min-height: 0 !important; }
+            :has(> aside) > :not(aside) { flex: none !important; width: 100% !important; height: 62vh !important; min-height: 320px; }
+            :has(> aside) > aside { width: 100% !important; max-width: none !important; height: auto !important; max-height: none !important;
+                                    overflow: visible !important; border-left: 0 !important; border-top: 1px solid rgba(255,255,255,.08); }
+            body { overflow-y: auto !important; }
+        }
+    /* /eigenlab:mobile */</style>
 </head>
 <body class="flex flex-col h-screen">
     <!-- Header -->
@@ -859,7 +869,7 @@
         }
 
         // ===== CANVAS INTERACTION =====
-        canvas.addEventListener('mousemove', (e) => {
+        canvas.addEventListener('pointermove', (e) => {
             const rect = canvas.getBoundingClientRect();
             const x = e.clientX - rect.left;
             const y = e.clientY - rect.top;
