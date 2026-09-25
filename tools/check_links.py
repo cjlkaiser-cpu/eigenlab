@@ -7,10 +7,12 @@ Uso:
     python3 tools/check_links.py --json     # salida JSON (para scripts)
 
 Ignora enlaces externos (http, mailto, data...), plantillas JS (${...}) y anclas.
+Un destino que existe en disco pero está ignorado por git también cuenta como roto: no se publica.
 """
 import json
 import os
 import re
+import subprocess
 import sys
 import urllib.parse
 
@@ -31,6 +33,25 @@ def html_files():
                 yield os.path.join(dp, f)
 
 
+_repo_cache = {}
+
+
+def git_ignored(full):
+    """True si algún repositorio que contiene `full` lo ignora (existe en local pero no se publica)."""
+    d = full if os.path.isdir(full) else os.path.dirname(full)
+    while True:
+        if os.path.exists(os.path.join(d, '.git')):
+            key = (d, full)
+            if key not in _repo_cache:
+                r = subprocess.run(['git', '-C', d, 'check-ignore', '-q', os.path.relpath(full, d)], capture_output=True)
+                _repo_cache[key] = r.returncode == 0
+            if _repo_cache[key]:
+                return True
+        if d == ROOT or len(d) <= len(ROOT):
+            return False
+        d = os.path.dirname(d)
+
+
 def broken_links(path):
     src = open(path, encoding='utf-8', errors='ignore').read()
     base = os.path.dirname(path)
@@ -46,7 +67,7 @@ def broken_links(path):
         full = os.path.normpath(os.path.join(base, target))
         if os.path.isdir(full):
             full = os.path.join(full, 'index.html')
-        if not os.path.exists(full):
+        if not os.path.exists(full) or git_ignored(full):
             line = src.count('\n', 0, m.start()) + 1
             yield line, url
 
@@ -54,6 +75,8 @@ def broken_links(path):
 def main():
     results = []
     for f in html_files():
+        if git_ignored(f):   # subproyectos con repo propio que su lab ignora: se revisan en su propio repo
+            continue
         for line, url in broken_links(f):
             results.append({'file': os.path.relpath(f, ROOT), 'line': line, 'url': url})
     if '--json' in sys.argv:
