@@ -22,7 +22,7 @@
 - **SVG** - Diagramas y gráficos vectoriales
 
 ### Interfaces
-- **Tailwind CSS** (CDN) - Solo para índices de laboratorio
+- **Tailwind CSS** (Play CDN) - Índices y ~63% de las simulaciones (pendiente de sustituir: no apto para producción)
 - **Custom CSS** - Controles y layouts de simulaciones
 
 ### Audio (Sound Labs)
@@ -37,33 +37,38 @@ EigenLab/
 ├── _portal/
 │   ├── index.html              # Landing page unificada
 │   ├── knowledge-graph.html    # Mapa de conexiones (D3.js)
-│   └── paths/                  # Caminos de aprendizaje interdisciplinarios
+│   └── paths/                  # 12 caminos de aprendizaje interdisciplinarios
+├── _promo/                     # Vídeo promocional generado por código (video.py, promo2.py, music*.py)
+├── tools/                      # check_links.py (enlaces rotos) · stats.py (cifras reales)
 ├── _templates/                 # Plantillas base
 │   ├── simulation-2d.html
 │   └── simulation-3d.html
 ├── Physics/
-│   ├── Physics Visual Lab/     # 19 sims - Mecánica, ondas, termodinámica
-│   └── Physics Sound Lab/      # 7+ sims - Ondas sonoras, resonancia
+│   ├── Physics Visual Lab/     # 30 sims - Mecánica, ondas, termodinámica, WASM
+│   └── Physics Sound Lab/      # 14 sims - Metrónomos físicos + generativos (submódulo)
 ├── Chemistry/
-│   └── Chemistry Visual Lab/   # 17 sims - Estructura atómica, reacciones
+│   └── Chemistry Visual Lab/   # 18 sims - Estructura atómica, reacciones
 ├── Biochemistry/
-│   └── Biochem Visual Lab/     # 16 sims - Metabolismo, síntesis proteica
+│   └── Biochem Visual Lab/     # 18 sims - Metabolismo, síntesis proteica
 ├── Biology/
-│   └── Biology Visual Lab/     # 6 sims - Hodgkin-Huxley, Lotka-Volterra
+│   └── Biology Visual Lab/     # 11 sims - Hodgkin-Huxley, Lotka-Volterra
 ├── Geology/
-│   └── Geology Visual Lab/     # 6 sims - Ondas sísmicas, tectónica
+│   └── Geology Visual Lab/     # 10 sims - Ondas sísmicas, tectónica, erosión
 ├── Mathematics/
 │   ├── Math Visual Lab/        # 28 sims - Geometría, topología, caos, campos vectoriales
-│   ├── Math Generative Art Lab/# 7 sims - L-Systems, fractales, autómatas
-│   └── Math Sound Lab/         # 8 sims - Sonificación matemática ⭐
+│   ├── Math Generative Art Lab/# 9 sims - L-Systems, fractales, autómatas
+│   ├── Chaos Lab/              # Curso (submódulo)
+│   ├── Platonic Lab/           # Curso
+│   ├── Euler Lab/              # 100 problemas (submódulo)
+│   └── Math Sound Lab/         # 11 sims - Sonificación matemática ⭐
 │       └── CLAUDE.md           # Documentación técnica detallada
 ├── Astronomy/
-│   ├── Astronomy Visual Lab/   # 6 sims - Órbitas, Hubble, HR diagrams
+│   ├── Astronomy Visual Lab/   # 11 sims - Órbitas, Hubble, HR diagrams
 │   └── Astronomy Sound Lab/    # 3 sims - Pulsares, música de las esferas
 ├── Computation/
 │   └── Computation Lab/        # 6 sims - Algoritmos, estructuras de datos
 ├── Music/
-│   └── Music Theory Lab/       # 3 sims - Sistema Armónico Áureo (φ) ⭐
+│   └── Music Theory Lab/       # 9 sims - Sistema Armónico Áureo (φ) ⭐
 │       └── CLAUDE.md           # Documentación técnica detallada
 ├── README.md                   # Documentación pública
 ├── ROADMAP.md                  # Planificación futura
@@ -76,17 +81,18 @@ EigenLab/
 
 | Disciplina | Labs | Simulaciones | Color | Estado |
 |------------|------|--------------|-------|--------|
-| **Physics** | Visual (19) + Sound (7+) | 26+ | Verde/Púrpura | ✅ Maduro |
-| **Chemistry** | Visual (17) | 17 | Cyan | ✅ Maduro |
-| **Biochemistry** | Visual (16) | 16 | Rosa | ✅ Maduro |
-| **Biology** | Visual (6) | 6 | Verde esmeralda | ✅ Completo |
-| **Geology** | Visual (6) | 6 | Ámbar | ✅ Completo |
-| **Mathematics** | Visual (28) + Gen Art (7) + Sound (8) | 43 | Naranja | ⭐ Activo |
-| **Astronomy** | Visual (7) + Sound (3) | 10 | Índigo | ✅ Completo |
+| **Physics** | Visual (30) + Sound (14) | 44 | Verde/Púrpura | ✅ Maduro |
+| **Chemistry** | Visual (18) | 18 | Cyan | ✅ Maduro |
+| **Biochemistry** | Visual (18) | 18 | Rosa | ✅ Maduro |
+| **Biology** | Visual (11) | 11 | Verde esmeralda | ✅ Completo |
+| **Geology** | Visual (10) | 10 | Ámbar | ✅ Completo |
+| **Mathematics** | Visual (28) + Gen Art (9) + Sound (11) + cursos | 48 | Naranja | ⭐ Activo |
+| **Astronomy** | Visual (11) + Sound (3) | 14 | Índigo | ✅ Completo |
 | **Computation** | Lab (6) | 6 | Azul | ✅ Completo |
-| **Music** | Theory Lab (3) | 3 | Rosa/Magenta | ⭐ Nuevo |
+| **AI** | Visual (20) | 20 | Rojo | ✅ Completo |
+| **Music** | Theory Lab (9) | 9 | Rosa/Magenta | ⭐ Nuevo |
 
-**Total:** ~134+ simulaciones
+**Total:** 198 simulaciones · 154/164 con guía (93%). Fuente de verdad: `python3 tools/stats.py`
 
 ### Math Sound Lab ⭐ (Nueva adición)
 
@@ -497,14 +503,17 @@ git push origin main
 
 ## Estado del Proyecto
 
-**Última actualización:** 2026-01-11
+**Última actualización:** 2026-09-25
 
-**Estadísticas:**
-- **~134+ simulaciones** totales
+**Estadísticas** (regenerar con `python3 tools/stats.py`, no a mano):
+- **198 simulaciones** totales · **154/164 con guía** (93%)
 - **10 disciplinas** científicas
-- **15 laboratorios** temáticos
-- **110+ nodos** en Knowledge Graph
-- **5 caminos** de aprendizaje
+- **21 laboratorios y cursos** en el portal (14 de simulación)
+- **167 nodos** en Knowledge Graph
+- **12 caminos** de aprendizaje
+
+**Mantenimiento:** antes de cada commit, `python3 tools/check_links.py` debe dar 0 enlaces rotos.
+Las guías en `Lab/guides/` enlazan a otros labs con `../../../Disciplina/Lab/archivo.html` (tres niveles).
 
 **Laboratorios más recientes:**
 - Math Sound Lab (8 simulaciones, enero 2026)

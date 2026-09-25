@@ -11,8 +11,8 @@ Ecosistema de laboratorios virtuales que cubre Física, Química, Bioquímica, B
 | Disciplina | Laboratorio | Sims | Descripción |
 |------------|-------------|:----:|-------------|
 | **Physics** | [Physics Visual Lab](Physics/Physics%20Visual%20Lab/) | 30 | Mecánica, ondas, fluidos, termodinámica, relatividad, WASM |
-| **Physics** | [Physics Sound Lab](Physics/Physics%20Sound%20Sound/) | 14 | Metrónomos físicos (7) + música generativa (7) |
-| **Chemistry** | [Chemistry Visual Lab](Chemistry/Chemistry%20Visual%20Lab/) | 19 | Estructura atómica, equilibrio, electroquímica, gases |
+| **Physics** | [Physics Sound Lab](Physics/Physics%20Sound%20Lab/) | 14 | Metrónomos físicos (7) + música generativa (7) |
+| **Chemistry** | [Chemistry Visual Lab](Chemistry/Chemistry%20Visual%20Lab/) | 18 | Estructura atómica, equilibrio, electroquímica, gases |
 | **Biochemistry** | [Biochem Visual Lab](Biochemistry/Biochem%20Visual%20Lab/) | 18 | ADN, proteínas, metabolismo, membranas |
 | **Biology** | [Biology Visual Lab](Biology/Biology%20Visual%20Lab/) | 11 | Hodgkin-Huxley, Lotka-Volterra, boids masivo, circadianos |
 | **Geology** | [Geology Visual Lab](Geology/Geology%20Visual%20Lab/) | 10 | Tectónica, terremotos, volcanes, erosión hidráulica (WASM) |
@@ -27,26 +27,27 @@ Ecosistema de laboratorios virtuales que cubre Física, Química, Bioquímica, B
 | **AI** | [AI Visual Lab](AI/AI%20Visual%20Lab/) | 20 | Redes neuronales, transformers, difusión, RL, LLMs |
 | **Music** | [Music Theory Lab](Music/Music%20Theory%20Lab/) | 9 | Sistema Armónico Áureo: escalas, armonía y composición con φ |
 
-**Total: 16 laboratorios · ~199 simulaciones · 10 disciplinas**
+**Total: 198 simulaciones · 10 disciplinas · 21 laboratorios y cursos en el portal** (14 laboratorios de simulación + cursos Chaos, Platonic y Euler + proyectos satélite Sculpt Lab, Puzzle Lab, Generative Music Lab y Contrapunctus)
 
 ### Guías Teóricas
 
-Cada simulación enlaza a una guía HTML con la ecuación principal, experimentos guiados y conexiones interdisciplinarias. Estado de cobertura (excl. Sound Labs y Generative Art):
+Cada simulación enlaza a una guía HTML con la ecuación principal, experimentos guiados y conexiones interdisciplinarias. Estado de cobertura (excl. Sound Labs y Generative Art, que no llevan guía):
 
 | Lab | Guías / Sims | Cobertura |
 |-----|:------------:|:---------:|
-| Math Visual Lab | 27 / 28 | 96% |
+| Chemistry Visual Lab | 18 / 18 | 100% |
+| Biochemistry Visual Lab | 18 / 18 | 100% |
+| Biology Visual Lab | 11 / 11 | 100% |
+| Geology Visual Lab | 10 / 10 | 100% |
+| Math Visual Lab | 28 / 28 | 100% |
+| Astronomy Visual Lab | 11 / 11 | 100% |
+| Astronomy Sound Lab | 3 / 3 | 100% |
 | Computation Lab | 6 / 6 | 100% |
 | AI Visual Lab | 20 / 20 (MD) | 100% |
-| Chemistry Visual Lab | 17 / 19 | 89% |
-| Biochemistry Visual Lab | 16 / 18 | 89% |
-| Physics Visual Lab | 22 / 30 | 73% |
-| Biology Visual Lab | 8 / 11 | 73% |
-| Astronomy Visual Lab | 7 / 11 | 64% |
-| Geology Visual Lab | 6 / 10 | 60% |
+| Physics Visual Lab | 29 / 30 | 97% |
 | Music Theory Lab | 0 / 9 | 0% |
 
-**132 guías completadas · 29 pendientes** · Ver [ROADMAP.md](ROADMAP.md) para detalle.
+**154 / 164 simulaciones con guía (93%) · 10 pendientes** (9 de Music Theory Lab + `ondas-2d-wasm`). Cifras generadas con `python3 tools/stats.py`. Ver [ROADMAP.md](ROADMAP.md) para detalle.
 
 > Incluye 2 cursos estructurados (Chaos Lab, Platonic Lab) y Euler Lab (100 problemas en submodule).
 > Portal unificado con Knowledge Graph interactivo (167 nodos) y 12 caminos de aprendizaje.
@@ -68,6 +69,8 @@ EigenLab/
 │   ├── simulation-2d.html      # Base para simulaciones Canvas 2D
 │   ├── simulation-3d.html      # Base para simulaciones Three.js
 │   └── styles-base.css         # Variables CSS y utilidades
+│
+├── tools/                      # check_links.py (enlaces rotos) · stats.py (cifras)
 │
 ├── _wasm/                      # Binarios WebAssembly compartidos
 │   ├── eigenlab-core.js        # Glue code Emscripten
