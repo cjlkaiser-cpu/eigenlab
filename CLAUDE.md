@@ -22,7 +22,7 @@
 - **SVG** - Diagramas y gráficos vectoriales
 
 ### Interfaces
-- **Tailwind CSS** (Play CDN) - Índices y ~63% de las simulaciones (pendiente de sustituir: no apto para producción)
+- **Tailwind CSS v3 compilado** - `tailwind.css` por laboratorio (generado por `tools/build_css.py`; nunca volver a usar el Play CDN `cdn.tailwindcss.com`)
 - **Custom CSS** - Controles y layouts de simulaciones
 
 ### Audio (Sound Labs)
@@ -512,13 +512,16 @@ git push origin main
 - **167 nodos** en Knowledge Graph
 - **12 caminos** de aprendizaje
 
-**Mantenimiento:** antes de cada commit ejecutar `tools/update.sh` (requiere beautifulsoup4). Hace:
+**Mantenimiento:** antes de cada commit ejecutar `tools/update.sh` (requiere beautifulsoup4 y Node). Hace:
+0. `build_css.py` → migra páginas nuevas del Play CDN y recompila el `tailwind.css` de cada lab con las clases que usan sus páginas
 1. `build_catalog.py` → `_portal/catalog.json` + `catalog.js` (buscador ⌘K del portal) y sincroniza las insignias «N sims» del portal
 2. `add_meta.py` → bloque `<!-- eigenlab:meta -->` (description + Open Graph) en cada página publicable; imágenes en `_portal/og/` (`_promo/og_images.py`)
 3. `check_links.py` → 0 enlaces rotos (un destino ignorado por git cuenta como roto: no se publica)
 4. `stats.py` → cifras reales
 
 Al añadir una simulación nueva basta con su tarjeta en el `index.html` del lab (título `h3`, descripción `p`, `category-tag`, `equation`) y ejecutar `tools/update.sh`.
+**Móvil:** las simulaciones usan Pointer Events (`pointerdown/move/up`, nunca `mouse*`) y `touch-action` en el canvas. Las que tienen barra lateral fija llevan el bloque `eigenlab:mobile` (la barra pasa debajo en < 768 px).
+**WASM + Embind:** los `value_object` (p. ej. `MandelbulbConfig`) se pasan como objeto literal con todos los campos; `new Module.XConfig()` y `config.delete()` no existen para ellos.
 El motor WASM compartido está en `_wasm/` (nunca enlazar a `eigenlab-core/build/`, que no se publica).
 Las guías en `Lab/guides/` enlazan a otros labs con `../../../Disciplina/Lab/archivo.html` (tres niveles).
 

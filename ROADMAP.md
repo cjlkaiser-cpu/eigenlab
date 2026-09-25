@@ -435,6 +435,11 @@ Formato sugerido para propuestas de nuevas simulaciones:
 - ✅ **Vídeo promocional** (40 s y 2 min) generado en `_promo/`
 - ✅ **Fase 2:** catálogo único `_portal/catalog.json` (231 entradas), buscador ⌘K en el portal, metadatos Open Graph en 381 páginas con imagen por laboratorio (`_portal/og/`), insignias del portal sincronizadas, `tools/update.sh`
 - 🔧 **Hotfix:** 5 sims WASM volvían a cargar el motor desde `_wasm/` tras sacar `eigenlab-core/build/` de git
+- ✅ **Tarjetas:** las 198 simulaciones tienen tarjeta en el índice de su lab (23 WASM y Magmatismo Global solo eran accesibles desde wasm-labs); vistas previas en `thumbs/`
+- ✅ **Fase 3 · Móvil:** Pointer Events en 39 sims solo-ratón; 66 sims con barra lateral fija se apilan bajo el canvas en pantallas < 768 px
+- ✅ **Fase 3 · Tailwind:** Play CDN sustituido por CSS compilado en 234 páginas (24 archivos de 5–42 KB); 220 páginas idénticas píxel a píxel y 14 solo difieren en contenido dinámico
+- 🐛 **Corregidos:** 5 sims WASM que nunca arrancaban (Mandelbulb, Autómata 3D, Plegamiento, Plasma, Epidemiología: `value_object` de Embind mal usado) y Membrana Fluida (ReferenceError al iniciar)
+- ⚠️ **Pendiente:** Formación de Galaxias desborda la pila en el motor C++ (Barnes-Hut) con viewport de móvil
 
 ### Marzo 2026
 
