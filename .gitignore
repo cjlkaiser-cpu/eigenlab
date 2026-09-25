@@ -3,3 +3,11 @@
 node_modules/
 .claude/
 eigenlab-core/build/
+
+# Promo: vídeos, audio y renders intermedios (se regeneran con los scripts)
+_promo/*.mp4
+_promo/*.wav
+_promo/seg/
+_promo/seg2/
+_promo/__pycache__/
+__pycache__/
