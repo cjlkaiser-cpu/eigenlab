@@ -433,6 +433,8 @@ Formato sugerido para propuestas de nuevas simulaciones:
 - ✅ **Cifras unificadas** en README, ROADMAP, CLAUDE.md y portal (198 sims, 154/164 guías, 21 labs y cursos)
 - ✅ **Repo:** `eigenlab-core/build/` fuera del control de versiones, Chaos Lab registrado como submódulo, vídeos de `_promo/` ignorados
 - ✅ **Vídeo promocional** (40 s y 2 min) generado en `_promo/`
+- ✅ **Fase 2:** catálogo único `_portal/catalog.json` (231 entradas), buscador ⌘K en el portal, metadatos Open Graph en 381 páginas con imagen por laboratorio (`_portal/og/`), insignias del portal sincronizadas, `tools/update.sh`
+- 🔧 **Hotfix:** 5 sims WASM volvían a cargar el motor desde `_wasm/` tras sacar `eigenlab-core/build/` de git
 
 ### Marzo 2026
 

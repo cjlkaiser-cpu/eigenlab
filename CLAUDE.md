@@ -39,7 +39,7 @@ EigenLab/
 │   ├── knowledge-graph.html    # Mapa de conexiones (D3.js)
 │   └── paths/                  # 12 caminos de aprendizaje interdisciplinarios
 ├── _promo/                     # Vídeo promocional generado por código (video.py, promo2.py, music*.py)
-├── tools/                      # check_links.py (enlaces rotos) · stats.py (cifras reales)
+├── tools/                      # update.sh · build_catalog · add_meta · check_links · stats
 ├── _templates/                 # Plantillas base
 │   ├── simulation-2d.html
 │   └── simulation-3d.html
@@ -512,7 +512,14 @@ git push origin main
 - **167 nodos** en Knowledge Graph
 - **12 caminos** de aprendizaje
 
-**Mantenimiento:** antes de cada commit, `python3 tools/check_links.py` debe dar 0 enlaces rotos.
+**Mantenimiento:** antes de cada commit ejecutar `tools/update.sh` (requiere beautifulsoup4). Hace:
+1. `build_catalog.py` → `_portal/catalog.json` + `catalog.js` (buscador ⌘K del portal) y sincroniza las insignias «N sims» del portal
+2. `add_meta.py` → bloque `<!-- eigenlab:meta -->` (description + Open Graph) en cada página publicable; imágenes en `_portal/og/` (`_promo/og_images.py`)
+3. `check_links.py` → 0 enlaces rotos (un destino ignorado por git cuenta como roto: no se publica)
+4. `stats.py` → cifras reales
+
+Al añadir una simulación nueva basta con su tarjeta en el `index.html` del lab (título `h3`, descripción `p`, `category-tag`, `equation`) y ejecutar `tools/update.sh`.
+El motor WASM compartido está en `_wasm/` (nunca enlazar a `eigenlab-core/build/`, que no se publica).
 Las guías en `Lab/guides/` enlazan a otros labs con `../../../Disciplina/Lab/archivo.html` (tres niveles).
 
 **Laboratorios más recientes:**

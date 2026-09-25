@@ -70,7 +70,7 @@ EigenLab/
 │   ├── simulation-3d.html      # Base para simulaciones Three.js
 │   └── styles-base.css         # Variables CSS y utilidades
 │
-├── tools/                      # check_links.py (enlaces rotos) · stats.py (cifras)
+├── tools/                      # update.sh: catálogo, metadatos, enlaces y cifras (ver CLAUDE.md)
 │
 ├── _wasm/                      # Binarios WebAssembly compartidos
 │   ├── eigenlab-core.js        # Glue code Emscripten
