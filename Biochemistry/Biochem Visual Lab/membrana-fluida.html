@@ -154,7 +154,6 @@
             H = canvas.height = window.innerHeight;
             initLipids();
         }
-        resize();
         window.addEventListener('resize', resize);
 
         // Lipids
@@ -449,7 +448,7 @@
             mouseY = e.clientY;
         });
 
-        initLipids();
+        resize();   // tras declarar lipids y la clase Lipid (antes lanzaba ReferenceError y la simulación no arrancaba)
         draw();
     </script>
 </body>
