@@ -660,7 +660,7 @@ def scene_graph2():
     f_big = font(FONT_SERIF, 60, 'Regular')
     f_small = font(FONT_SANS, 20, 'Medium')
     f_path = font(FONT_SERIF, 54, 'Regular')
-    stats = [('16', 'laboratorios'), ('~200', 'simulaciones'), ('132', 'guías teóricas'), ('12', 'caminos')]
+    stats = [('21', 'labs y cursos'), ('~200', 'simulaciones'), ('154', 'guías teóricas'), ('12', 'caminos')]
     # caminos de aprendizaje (índices de DISCIPLINES)
     paths = [('Caos y atractores', [5, 0, 3, 6]),
              ('Emergencia y autoorganización', [3, 7, 8, 2]),

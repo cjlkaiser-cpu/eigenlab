@@ -569,7 +569,7 @@ def scene_graph():
     f_lab = font(FONT_SANS, 21, 'Medium')
     f_big = font(FONT_SERIF, 60, 'Regular')
     f_small = font(FONT_SANS, 20, 'Medium')
-    stats = [('16', 'laboratorios'), ('~200', 'simulaciones'), ('10', 'disciplinas')]
+    stats = [('21', 'labs y cursos'), ('~200', 'simulaciones'), ('10', 'disciplinas')]
     CX, CY = W / 2, H / 2 - 40
     for fi in range(int(dur * FPS)):
         t = fi / FPS
@@ -684,7 +684,7 @@ def scene_logo(dur=None):
                 x += ws[i] + gap
             a_url = ease((t - 3.4) / 0.8) * fade_out
             if a_url > 0:
-                spaced_text(d, (W / 2, H - 90), '16 LABORATORIOS  ·  ~200 SIMULACIONES INTERACTIVAS  ·  CÓDIGO ABIERTO', f_url,
+                spaced_text(d, (W / 2, H - 90), '21 LABORATORIOS Y CURSOS  ·  ~200 SIMULACIONES INTERACTIVAS  ·  CÓDIGO ABIERTO', f_url,
                             rgba(C['muted'], a_url * 0.8), 3, anchor='m')
         yield overlay(img, fn)
 
