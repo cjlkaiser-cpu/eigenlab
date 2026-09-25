@@ -466,7 +466,21 @@
 
         // === SIMULATION ===
         function createSimulation() {
-            const config = new Module.ProteinConfig();
+            const config = { // value_object de Embind: objeto literal con todos los campos (valores por defecto de C++)
+                sequenceLength: 20,
+                bondLength: 1.0,
+                bondStiffness: 100.0,
+                hhContactEnergy: -1.0,
+                hpContactEnergy: 0.0,
+                ppContactEnergy: 0.0,
+                contactRadius: 1.5,
+                temperature: 1.0,
+                coolingRate: 0.995,
+                dt: 0.01,
+                use3D: false,
+                ljEpsilon: 1.0,
+                ljSigma: 0.8,
+            };
             config.sequenceLength = CONFIG.sequenceLength;
             config.temperature = parseFloat(document.getElementById('temp').value);
             config.hhContactEnergy = parseFloat(document.getElementById('hhEnergy').value);
@@ -475,7 +489,6 @@
 
             if (protein) protein.delete();
             protein = new Module.ProteinFolding(config);
-            config.delete();
 
             updateSequenceDisplay();
         }

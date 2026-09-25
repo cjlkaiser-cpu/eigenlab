@@ -505,7 +505,22 @@
 
         // === SIMULATION ===
         function createSimulation() {
-            const config = new Module.EpidemiologyConfig();
+            const config = { // value_object de Embind: objeto literal con todos los campos (valores por defecto de C++)
+                numAgents: 500,
+                worldSize: 100.0,
+                transmissionRate: 0.3,
+                infectionRadius: 2.0,
+                recoveryRate: 0.05,
+                mortalityRate: 0.01,
+                incubationPeriod: 0,
+                initialInfected: 5,
+                vaccinationRate: 0.0,
+                enableQuarantine: false,
+                quarantineProbability: 0.5,
+                socialDistancingFactor: 1.0,
+                baseSpeed: 1.0,
+                dt: 0.1,
+            };
             config.numAgents = CONFIG.numAgents;
             config.worldSize = CONFIG.worldSize;
             config.transmissionRate = parseFloat(document.getElementById('transmission').value);
@@ -517,7 +532,6 @@
 
             if (epidemic) epidemic.delete();
             epidemic = new Module.Epidemiology(config);
-            config.delete();
         }
 
         function draw() {
