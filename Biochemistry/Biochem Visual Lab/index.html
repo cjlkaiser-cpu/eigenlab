@@ -287,6 +287,30 @@
             </div>
         </section>
 
+        <!-- Alto rendimiento (motor WASM): tarjetas añadidas para que todas las simulaciones del lab sean accesibles -->
+        <section id="wasm" class="mb-16">
+            <h2 class="text-2xl font-light mb-2">⚡ Alto rendimiento · Motor WASM</h2>
+            <p class="text-gray-500 text-sm mb-6">Simulaciones con el motor C++ de EigenLab compilado a WebAssembly: miles de partículas en tiempo real, en el navegador.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="electroforesis-gel.html" class="card card-metabolism rounded-lg p-4">
+                    <img src="thumbs/electroforesis-gel.webp" alt="" loading="lazy" class="preview-canvas w-full h-28 mb-3 object-cover rounded">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-pink-500/20 text-pink-400">WASM</span>
+                        <span class="text-white font-bold text-sm">Electroforesis en Gel</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Separacion de DNA/proteinas por tamano en campo electrico. Ladders, muestras.</p>
+                </a>
+                <a href="plegamiento-proteinas.html" class="card card-metabolism rounded-lg p-4">
+                    <img src="thumbs/plegamiento-proteinas.webp" alt="" loading="lazy" class="preview-canvas w-full h-28 mb-3 object-cover rounded">
+                    <div class="flex items-center gap-2 mb-1">
+                        <span class="tag bg-pink-500/20 text-pink-400">WASM</span>
+                        <span class="text-white font-bold text-sm">Plegamiento de Proteínas</span>
+                    </div>
+                    <p class="text-slate-500 text-xs">Modelo HP simplificado. Monte Carlo, Simulated Annealing, Dinámica Molecular.</p>
+                </a>
+            </div>
+        </section>
+
         <!-- Footer -->
         <footer class="text-center pt-8 border-t border-slate-800">
             <p class="text-slate-600 text-xs">

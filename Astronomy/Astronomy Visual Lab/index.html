@@ -251,6 +251,74 @@
 
         </section>
 
+        <!-- Alto rendimiento (motor WASM): tarjetas añadidas para que todas las simulaciones del lab sean accesibles -->
+        <section id="wasm" class="mb-16">
+            <h2 class="text-2xl font-light mb-2">⚡ Alto rendimiento · Motor WASM</h2>
+            <p class="text-gray-500 text-sm mb-6">Simulaciones con el motor C++ de EigenLab compilado a WebAssembly: miles de partículas en tiempo real, en el navegador.</p>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <a href="formacion-galaxias.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <img src="thumbs/formacion-galaxias.webp" alt="" loading="lazy" class="preview-canvas w-full h-40 object-cover bg-black mb-4 rounded-lg">
+                            <span class="category-tag bg-indigo-500/20 text-indigo-400">N-cuerpos</span> <span class="text-xs text-gray-500 ml-1">WASM</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Formación de Galaxias</h3>
+                            <p class="text-gray-500 text-sm mb-3">Barnes-Hut O(n log n). Hasta 20,000 estrellas, agujeros negros, colisiones galácticas.</p>
+                            <div class="equation text-indigo-400/70 text-sm mb-4">Barnes-Hut · O(n log n)</div>
+                            <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                                Colapsar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="colision-galaxias.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <img src="thumbs/colision-galaxias.webp" alt="" loading="lazy" class="preview-canvas w-full h-40 object-cover bg-black mb-4 rounded-lg">
+                            <span class="category-tag bg-indigo-500/20 text-indigo-400">Dinámica galáctica</span> <span class="text-xs text-gray-500 ml-1">WASM</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Colisión de Galaxias</h3>
+                            <p class="text-gray-500 text-sm mb-3">50K+ estrellas, colas de marea, presets Milkdromeda/Antennae/Mice. Tracking de agujeros negros.</p>
+                            <div class="equation text-indigo-400/70 text-sm mb-4">F = G m₁m₂ / r²</div>
+                            <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                                Colisionar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="anillos-saturno.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <img src="thumbs/anillos-saturno.webp" alt="" loading="lazy" class="preview-canvas w-full h-40 object-cover bg-black mb-4 rounded-lg">
+                            <span class="category-tag bg-indigo-500/20 text-indigo-400">Mecánica orbital</span> <span class="text-xs text-gray-500 ml-1">WASM</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Anillos de Saturno</h3>
+                            <p class="text-gray-500 text-sm mb-3">Orbitas Keplerianas de particulas de hielo. Division de Cassini, gaps, lunas pastoras.</p>
+                            <div class="equation text-indigo-400/70 text-sm mb-4">Ω(r) = √(GM / r³)</div>
+                            <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                                Orbitar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+                <a href="disco-acrecion.html" class="card-link">
+                    <div class="card relative bg-gray-950 border border-gray-900 rounded-2xl overflow-hidden">
+                        <div class="card-border"></div>
+                        <div class="p-4">
+                            <img src="thumbs/disco-acrecion.webp" alt="" loading="lazy" class="preview-canvas w-full h-40 object-cover bg-black mb-4 rounded-lg">
+                            <span class="category-tag bg-indigo-500/20 text-indigo-400">Astrofísica</span> <span class="text-xs text-gray-500 ml-1">WASM</span>
+                            <h3 class="text-lg font-medium mb-1 mt-2">Disco de Acreción</h3>
+                            <p class="text-gray-500 text-sm mb-3">Materia orbitando objeto masivo, viscosidad, temperatura radial, emision continua.</p>
+                            <div class="equation text-indigo-400/70 text-sm mb-4">T(r) ∝ r<sup>−3/4</sup></div>
+                            <span class="block w-full text-center py-2 bg-indigo-500/10 text-indigo-400 rounded-lg hover:bg-indigo-500/20 transition text-sm font-medium">
+                                Acretar →
+                            </span>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </section>
+
         <!-- Info Section -->
         <section class="text-center text-gray-600 text-sm">
             <p>Parte del ecosistema <a href="../../_portal/index.html" class="text-indigo-400 hover:underline">EigenLab</a></p>

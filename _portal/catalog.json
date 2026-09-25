@@ -66,12 +66,14 @@
   {
    "type": "sim",
    "id": "difusion-calor-wasm",
-   "title": "Difusión de Calor",
+   "title": "Difusión de Calor · WASM",
    "desc": "Ecuación del calor en 2D. Grid de alta resolución, tiempo real.",
    "discipline": "Física",
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/difusion-calor-wasm.html",
+   "category": "Termodinámica",
+   "equation": "∂T/∂t = α∇²T",
    "guide": "Physics/Physics Visual Lab/guides/difusion-calor.html",
    "wasm": true
   },
@@ -136,6 +138,8 @@
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/fluidos-2d.html",
+   "category": "Navier-Stokes",
+   "equation": "∂u/∂t + (u·∇)u = −∇p + ν∇²u",
    "guide": "Physics/Physics Visual Lab/guides/fluidos-2d.html",
    "wasm": true
   },
@@ -155,12 +159,14 @@
   {
    "type": "sim",
    "id": "gas-ideal-wasm",
-   "title": "Gas Ideal WASM",
+   "title": "Gas Ideal · WASM",
    "desc": "Miles de partículas con colisiones elásticas. Distribución de Maxwell-Boltzmann.",
    "discipline": "Física",
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/gas-ideal-wasm.html",
+   "category": "Termodinámica",
+   "equation": "PV = NkT",
    "guide": "Physics/Physics Visual Lab/guides/gas-ideal.html",
    "wasm": true
   },
@@ -199,6 +205,8 @@
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/lattice-boltzmann.html",
+   "category": "Túnel de viento",
+   "equation": "fi(x+ci, t+1) = fi − (fi − fieq)/τ",
    "guide": "Physics/Physics Visual Lab/guides/lattice-boltzmann.html",
    "wasm": true
   },
@@ -218,12 +226,14 @@
   {
    "type": "sim",
    "id": "ondas-2d-wasm",
-   "title": "Ondas 2D",
+   "title": "Ondas 2D · WASM",
    "desc": "Ecuacion de onda 2D con diferencias finitas. Gotas interactivas, obstaculos, doble rendija.",
    "discipline": "Física",
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/ondas-2d-wasm.html",
+   "category": "Ondas",
+   "equation": "∂²u/∂t² = c²∇²u",
    "wasm": true
   },
   {
@@ -300,6 +310,8 @@
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/particulas-plasma.html",
+   "category": "Electromagnetismo",
+   "equation": "F = q(E + v × B)",
    "guide": "Physics/Physics Visual Lab/guides/particulas-plasma.html",
    "wasm": true
   },
@@ -364,6 +376,8 @@
    "color": "#22c55e",
    "lab": "Physics Visual Lab",
    "url": "Physics/Physics Visual Lab/simulacion-tela.html",
+   "category": "Masa-resorte",
+   "equation": "F = −k(|x| − L₀) x̂",
    "guide": "Physics/Physics Visual Lab/guides/simulacion-tela.html",
    "wasm": true
   },
@@ -628,12 +642,14 @@
   {
    "type": "sim",
    "id": "dinamica-molecular",
-   "title": "Dinamica Molecular",
+   "title": "Dinámica Molecular",
    "desc": "Potencial Lennard-Jones, transiciones de fase, termostatizacion Berendsen.",
    "discipline": "Química",
    "color": "#06b6d4",
    "lab": "Chemistry Visual Lab",
    "url": "Chemistry/Chemistry Visual Lab/dinamica-molecular.html",
+   "category": "WASM",
+   "equation": "V(r) = 4ε[(σ/r)12 − (σ/r)6]",
    "guide": "Chemistry/Chemistry Visual Lab/guides/dinamica-molecular.html",
    "wasm": true
   },
@@ -1049,6 +1065,8 @@
    "color": "#10b981",
    "lab": "Biology Visual Lab",
    "url": "Biology/Biology Visual Lab/epidemiologia-sir.html",
+   "category": "Epidemiología",
+   "equation": "dI/dt = βSI − γI",
    "guide": "Biology/Biology Visual Lab/guides/epidemiologia-sir.html",
    "wasm": true
   },
@@ -1120,12 +1138,14 @@
   {
    "type": "sim",
    "id": "red-neuronal-hh",
-   "title": "Red Neuronal HH",
+   "title": "Red Neuronal Hodgkin-Huxley",
    "desc": "Neuronas con canales ionicos Na+/K+, sinapsis, propagacion de potenciales de accion.",
    "discipline": "Biología",
    "color": "#10b981",
    "lab": "Biology Visual Lab",
    "url": "Biology/Biology Visual Lab/red-neuronal-hh.html",
+   "category": "Neurociencia",
+   "equation": "C·dV/dt = I − gNam³h(V−ENa) − …",
    "guide": "Biology/Biology Visual Lab/guides/red-neuronal-hh.html",
    "wasm": true
   },
@@ -1174,6 +1194,8 @@
    "color": "#d97706",
    "lab": "Geology Visual Lab",
    "url": "Geology/Geology Visual Lab/avalancha.html",
+   "category": "Materiales granulares",
+   "equation": "tan θreposo = μs",
    "guide": "Geology/Geology Visual Lab/guides/avalancha.html",
    "wasm": true
   },
@@ -1199,6 +1221,8 @@
    "color": "#d97706",
    "lab": "Geology Visual Lab",
    "url": "Geology/Geology Visual Lab/erosion-hidraulica.html",
+   "category": "Geomorfología",
+   "equation": "C = Kq · v · pendiente",
    "guide": "Geology/Geology Visual Lab/guides/erosion-hidraulica.html",
    "wasm": true
   },
@@ -1231,12 +1255,14 @@
   {
    "type": "sim",
    "id": "magmatismo-global-simplified",
-   "title": "Magmatismo Global",
+   "title": "Magmatismo Global · versión simplificada",
    "desc": "Simulación interactiva de tectónica de placas y generación de magma",
    "discipline": "Geología",
    "color": "#d97706",
    "lab": "Geology Visual Lab",
    "url": "Geology/Geology Visual Lab/magmatismo-global-simplified.html",
+   "category": "Petrología",
+   "equation": "Del manto al volcán",
    "guide": "Geology/Geology Visual Lab/guides/magmatismo-global.html"
   },
   {
@@ -1248,6 +1274,8 @@
    "color": "#d97706",
    "lab": "Geology Visual Lab",
    "url": "Geology/Geology Visual Lab/magmatismo-global.html",
+   "category": "Petrología",
+   "equation": "Descompresión · deshidratación · punto caliente",
    "guide": "Geology/Geology Visual Lab/guides/magmatismo-global.html"
   },
   {
@@ -1321,6 +1349,8 @@
    "color": "#f97316",
    "lab": "Math Visual Lab",
    "url": "Mathematics/Math Visual Lab/campos-vectoriales.html",
+   "category": "Cálculo vectorial",
+   "equation": "dx/dt = F(x)",
    "guide": "Mathematics/Math Visual Lab/guides/campos-vectoriales.html",
    "wasm": true
   },
@@ -1675,12 +1705,14 @@
   {
    "type": "sim",
    "id": "automata-celular-3d",
-   "title": "Automata Celular 3D",
+   "title": "Autómata Celular 3D",
    "desc": "3D Game of Life, crecimiento cristalino, amebas, piramides. Vecindad Moore y von Neumann.",
    "discipline": "Matemáticas",
    "color": "#f97316",
    "lab": "Math Generative Art Lab",
    "url": "Mathematics/Math Generative Art Lab/automata-celular-3d.html",
+   "category": "Vida 3D",
+   "equation": "B/S · vecindad de Moore",
    "wasm": true
   },
   {
@@ -1728,6 +1760,8 @@
    "color": "#f97316",
    "lab": "Math Generative Art Lab",
    "url": "Mathematics/Math Generative Art Lab/mandelbulb.html",
+   "category": "Fractal 3D",
+   "equation": "z ↦ zⁿ + c (álgebra triplex)",
    "wasm": true
   },
   {
@@ -1941,6 +1975,8 @@
    "color": "#6366f1",
    "lab": "Astronomy Visual Lab",
    "url": "Astronomy/Astronomy Visual Lab/anillos-saturno.html",
+   "category": "Mecánica orbital",
+   "equation": "Ω(r) = √(GM / r³)",
    "guide": "Astronomy/Astronomy Visual Lab/guides/anillos-saturno.html",
    "wasm": true
   },
@@ -1953,6 +1989,8 @@
    "color": "#6366f1",
    "lab": "Astronomy Visual Lab",
    "url": "Astronomy/Astronomy Visual Lab/colision-galaxias.html",
+   "category": "Dinámica galáctica",
+   "equation": "F = G m₁m₂ / r²",
    "guide": "Astronomy/Astronomy Visual Lab/guides/colision-galaxias.html",
    "wasm": true
   },
@@ -1972,12 +2010,14 @@
   {
    "type": "sim",
    "id": "disco-acrecion",
-   "title": "Disco de Acrecion",
+   "title": "Disco de Acreción",
    "desc": "Materia orbitando objeto masivo, viscosidad, temperatura radial, emision continua.",
    "discipline": "Astronomía",
    "color": "#6366f1",
    "lab": "Astronomy Visual Lab",
    "url": "Astronomy/Astronomy Visual Lab/disco-acrecion.html",
+   "category": "Astrofísica",
+   "equation": "T(r) ∝ r−3/4",
    "guide": "Astronomy/Astronomy Visual Lab/guides/disco-acrecion.html",
    "wasm": true
   },
@@ -2029,6 +2069,8 @@
    "color": "#6366f1",
    "lab": "Astronomy Visual Lab",
    "url": "Astronomy/Astronomy Visual Lab/formacion-galaxias.html",
+   "category": "N-cuerpos",
+   "equation": "Barnes-Hut · O(n log n)",
    "guide": "Astronomy/Astronomy Visual Lab/guides/formacion-galaxias.html",
    "wasm": true
   },
