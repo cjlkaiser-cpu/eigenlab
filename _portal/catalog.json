@@ -576,6 +576,19 @@
   },
   {
    "type": "sim",
+   "id": "aufbau",
+   "title": "Constructor de Configuraciones",
+   "desc": "Añade electrones uno a uno: Madelung, Pauli y Hund dibujan la tabla. Con las 19 excepciones y por qué ocurren.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/aufbau.html",
+   "category": "Periódica",
+   "equation": "n + l · 2(2l+1)",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/aufbau.html"
+  },
+  {
+   "type": "sim",
    "id": "calorimetria",
    "title": "Calorimetría",
    "desc": "Transferencia de calor y calor específico",
@@ -769,6 +782,19 @@
    "category": "Equilibrio",
    "equation": "Ksp = [A+]a[B-]b",
    "guide": "Chemistry/Chemistry Visual Lab/guides/solubilidad.html"
+  },
+  {
+   "type": "sim",
+   "id": "tabla-periodica",
+   "title": "Tabla Periódica Viva",
+   "desc": "Los 118 elementos con datos del NIST/IUPAC: familias, bloques, tendencias, estado según la temperatura e historia de los descubrimientos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/tabla-periodica.html",
+   "category": "Periódica",
+   "equation": "propiedades = f(Z)",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/tabla-periodica.html"
   },
   {
    "type": "sim",
