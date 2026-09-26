@@ -195,8 +195,30 @@ def portal_entries(known_urls):
     return out
 
 
+def course_entries():
+    """Cursos con estructura en <lab>/curso-*/course-data.js: el curso y cada lección."""
+    import glob
+    out = []
+    for f in sorted(glob.glob(os.path.join(ROOT, '*/*/curso-*/course-data.js'))):
+        raw = open(f, encoding='utf-8').read()
+        c = json.loads(raw[raw.index('{'):raw.rindex('}') + 1])
+        base = os.path.relpath(os.path.dirname(f), ROOT)
+        disc = next((d for d, lab, _ in LABS if base.startswith(lab)), None)
+        dname, color = DISCIPLINES.get(disc, ('', '#94a3b8'))
+        lab_name = os.path.basename(os.path.dirname(base))
+        out.append({'type': 'course', 'id': c['id'], 'title': c['titulo'], 'desc': shorten(c['subtitulo']),
+                    'discipline': dname, 'color': color, 'lab': lab_name, 'url': f'{base}/index.html'})
+        for m in c['modulos']:
+            for l in m['lecciones']:
+                out.append({'type': 'lesson', 'id': f"{c['id']}-{m['n']}-{l['n']}", 'title': f"{m['n']}.{l['n']} {l['titulo']}",
+                            'desc': shorten('Lección del curso «' + c['titulo'] + '». ' + '; '.join(l['objetivos']) + '.'),
+                            'discipline': dname, 'color': color, 'lab': c['titulo'],
+                            'url': f"{base}/modulo-{m['n']}/leccion-{l['n']}.html"})
+    return out
+
+
 def build():
-    entries = lab_entries()
+    entries = lab_entries() + course_entries()
     known = {e['url'] for e in entries}
     extra = portal_entries(known)
     seen = set()

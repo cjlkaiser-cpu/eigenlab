@@ -32,7 +32,8 @@ LABS = [
     ('AI', 'AI/AI Visual Lab', True),
     ('Music', 'Music/Music Theory Lab', True),
 ]
-COURSES = ['Mathematics/Chaos Lab', 'Mathematics/Platonic Lab', 'Mathematics/Euler Lab']
+COURSES = ['Mathematics/Chaos Lab', 'Mathematics/Platonic Lab', 'Mathematics/Euler Lab',
+           'Chemistry/Chemistry Visual Lab/curso-tabla-periodica']
 GUIDE_ALIAS = {  # simulación -> guía con otro nombre
     'bubble-sort-race': 'bubble-sort', 'logic-gates-sandbox': 'logic-gates',
     'perceptron-playground': 'perceptron', 'stack-heap-visualizer': 'stack-heap',

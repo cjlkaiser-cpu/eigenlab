@@ -520,6 +520,7 @@ git push origin main
 4. `stats.py` → cifras reales
 
 Al añadir una simulación nueva basta con su tarjeta en el `index.html` del lab (título `h3`, descripción `p`, `category-tag`, `equation`) y ejecutar `tools/update.sh`.
+**Cursos con motor propio:** `Chemistry/Chemistry Visual Lab/curso-tabla-periodica/` (ver su CLAUDE.md de lab). Cualquier `*/*/curso-*/course-data.js` entra en el catálogo y el buscador como curso + lecciones.
 **Móvil:** las simulaciones usan Pointer Events (`pointerdown/move/up`, nunca `mouse*`) y `touch-action` en el canvas. Las que tienen barra lateral fija llevan el bloque `eigenlab:mobile` (la barra pasa debajo en < 768 px).
 **WASM + Embind:** los `value_object` (p. ej. `MandelbulbConfig`) se pasan como objeto literal con todos los campos; `new Module.XConfig()` y `config.delete()` no existen para ellos.
 El motor WASM compartido está en `_wasm/` (nunca enlazar a `eigenlab-core/build/`, que no se publica).

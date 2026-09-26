@@ -439,6 +439,8 @@ Formato sugerido para propuestas de nuevas simulaciones:
 - ✅ **Fase 3 · Móvil:** Pointer Events en 39 sims solo-ratón; 66 sims con barra lateral fija se apilan bajo el canvas en pantallas < 768 px
 - ✅ **Fase 3 · Tailwind:** Play CDN sustituido por CSS compilado en 234 páginas (24 archivos de 5–42 KB); 220 páginas idénticas píxel a píxel y 14 solo difieren en contenido dinámico
 - 🐛 **Corregidos:** 5 sims WASM que nunca arrancaban (Mandelbulb, Autómata 3D, Plegamiento, Plasma, Epidemiología: `value_object` de Embind mal usado) y Membrana Fluida (ReferenceError al iniciar)
+- ✅ **Tabla periódica:** Tabla Periódica Viva (118 elementos, datos PubChem/NIST validados), Constructor Aufbau, Espectros Atómicos (NIST + CIE 1931 + modelo térmico) y El Reto de Mendeléyev
+- ✅ **Curso «La Tabla Periódica, de dentro afuera»** (Chemistry, `curso-tabla-periodica/`): módulos 1–3, 13 lecciones con predicción, simulación embebida, autoevaluación y progreso; módulos 4–6 pendientes (tendencias con Z_eff, familias, origen cósmico)
 - ⚠️ **Pendiente:** Formación de Galaxias desborda la pila en el motor C++ (Barnes-Hut) con viewport de móvil
 
 ### Marzo 2026

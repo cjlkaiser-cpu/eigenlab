@@ -2664,6 +2664,146 @@
   },
   {
    "type": "course",
+   "id": "tabla-periodica",
+   "title": "La Tabla Periódica, de dentro afuera",
+   "desc": "De Mendeléyev a la mecánica cuántica: por qué la tabla tiene esta forma y qué nos dice",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/index.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-1-1",
+   "title": "1.1 ¿Qué es un elemento?",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Distinguir elemento, átomo, isótopo y compuesto; Relacionar el número atómico Z con la identidad del elemento; Interpretar la masa atómica como media isotópica.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-1/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-1-2",
+   "title": "1.2 Buscando un orden",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Conocer las tríadas de Döbereiner y la ley de las octavas; Explicar qué hizo distinto Mendeléyev en 1869; Reconocer el valor científico de dejar huecos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-1/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-1-3",
+   "title": "1.3 Las predicciones de Mendeléyev",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Predecir propiedades de un elemento a partir de sus vecinos; Comparar las predicciones de 1871 con los valores reales; Entender por qué una predicción confirmada…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-1/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-1-4",
+   "title": "1.4 Moseley: el número atómico",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Explicar por qué la tabla se ordena por Z y no por masa; Identificar las inversiones de masa (Ar–K, Co–Ni, Te–I); Relacionar la ley de Moseley con la carga…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-1/leccion-4.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-1-5",
+   "title": "1.5 La tabla hoy",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Leer periodos, grupos y familias en la tabla actual; Conocer la recomendación IUPAC sobre el grupo 3; Saber cómo se crean y nombran los elementos superpesados.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-1/leccion-5.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-2-1",
+   "title": "2.1 La luz de los átomos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Distinguir espectro continuo y espectro de líneas; Relacionar cada línea con un salto entre niveles: E = hc/λ; Usar los espectros para identificar elementos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-2/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-2-2",
+   "title": "2.2 Niveles de energía: el hidrógeno",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Calcular longitudes de onda con la fórmula de Rydberg; Relacionar las series de Lyman, Balmer y Paschen con los niveles; Conocer el alcance y los límites del…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-2/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-2-3",
+   "title": "2.3 Orbitales y números cuánticos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Describir los números cuánticos n, l, mₗ y mₛ; Relacionar l con la forma de los orbitales s, p, d y f; Deducir la capacidad de cada subcapa: 2(2l + 1).",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-2/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-2-4",
+   "title": "2.4 Tres reglas: Madelung, Pauli y Hund",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Escribir configuraciones electrónicas con la regla n + l; Aplicar el principio de exclusión de Pauli; Aplicar la regla de Hund y contar electrones desapareados.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-2/leccion-4.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-2-5",
+   "title": "2.5 Las excepciones",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Identificar las excepciones de Cr y Cu; Explicar la estabilidad de las subcapas semillenas y llenas; Reconocer por qué la regla n + l es una aproximación.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-2/leccion-5.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-3-1",
+   "title": "3.1 Bloques s, p, d y f",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Relacionar la anchura de cada bloque con la capacidad de su subcapa; Localizar un elemento en la tabla a partir de su configuración; Explicar por qué el bloque f…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-3/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-3-2",
+   "title": "3.2 Electrones de valencia y grupos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Contar electrones de valencia en los bloques s y p; Explicar por qué los elementos de un grupo se parecen; Usar la notación de gas noble.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-3/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-3-3",
+   "title": "3.3 Iones y su configuración",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Escribir la configuración de cationes y aniones; Aplicar que los metales de transición pierden primero los electrones ns; Relacionar la carga habitual de un ion…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-3/leccion-3.html"
+  },
+  {
+   "type": "course",
    "id": "platonic-lab",
    "title": "Platonic Lab",
    "desc": "Sólidos platónicos interactivos, operadores de Conway, poliedros arquimedianos, politopos 4D, diagramas de Schlegel y sintetizador de Kepler.",

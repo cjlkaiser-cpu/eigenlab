@@ -94,6 +94,9 @@ def targets():
                             og_image(site, e['lab']))
         elif e['type'] == 'lab':
             pages[e['url']] = (f"{e['title']} · EigenLab", e['desc'], og_image(site, e['lab']))
+        elif e['type'] in ('course', 'lesson'):
+            t = f"{e['title']} · Curso" if e['type'] == 'lesson' else f"{e['title']} · Curso · EigenLab"
+            pages[e['url']] = (t, e['desc'], og_image(site, e['url'].split('/')[1]))
         elif e['type'] == 'path':
             pages[e['url']] = (f"{e['title']} · Caminos de aprendizaje · EigenLab", e['desc'], og_image(site, None))
     for url, (t, d) in PORTAL_PAGES.items():

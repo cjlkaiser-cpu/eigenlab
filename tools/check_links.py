@@ -20,7 +20,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SKIP_DIRS = {'.git', 'node_modules', 'target', 'build', 'pkg', '_promo', 'raw', '.claude',
              '_templates'}   # plantillas: sus rutas son para la ubicación final de la simulación
 SKIP_FILES = re.compile(r'PAPER_DRAFT|_draft', re.I)   # borradores locales, no se publican
-LINK_RE = re.compile(r'''(?:href|src)\s*=\s*["']([^"']+)["']''')
+LINK_RE = re.compile(r'''(?:href|src|data-src)\s*=\s*["']([^"']+)["']''')   # data-src: simulaciones embebidas del curso
 MD_LINK_RE = re.compile(r'\]\(([^)\s]+)\)')   # [texto](destino) en Markdown
 EXTERNAL_RE = re.compile(r'^(?:[a-z][a-z0-9+.-]*:|//|#)', re.I)
 

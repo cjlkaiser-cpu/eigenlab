@@ -13,7 +13,7 @@
     const script = document.currentScript;
     const HERE = script.src.replace(/[^/]*$/, '');          // .../_portal/
     const ROOT = new URL('../', HERE).href;                  // raíz del repo
-    const TYPE_LABEL = { sim: 'Simulación', lab: 'Laboratorio', course: 'Curso', project: 'Proyecto', path: 'Camino' };
+    const TYPE_LABEL = { sim: 'Simulación', lab: 'Laboratorio', course: 'Curso', lesson: 'Lección', project: 'Proyecto', path: 'Camino' };
     const MAX_RESULTS = 40;
 
     let catalog = null, loading = null, overlay, input, list, status, results = [], active = 0, lastFocus = null;
