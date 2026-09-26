@@ -27,7 +27,7 @@ Ecosistema de laboratorios virtuales que cubre Física, Química, Bioquímica, B
 | **AI** | [AI Visual Lab](AI/AI%20Visual%20Lab/) | 20 | Redes neuronales, transformers, difusión, RL, LLMs |
 | **Music** | [Music Theory Lab](Music/Music%20Theory%20Lab/) | 9 | Sistema Armónico Áureo: escalas, armonía y composición con φ |
 
-**Total: 204 simulaciones · 10 disciplinas · 21 laboratorios y cursos en el portal** (14 laboratorios de simulación + cursos Chaos, Platonic y Euler + proyectos satélite Sculpt Lab, Puzzle Lab, Generative Music Lab y Contrapunctus)
+**Total: 206 simulaciones · 10 disciplinas · 21 laboratorios y cursos en el portal** (14 laboratorios de simulación + cursos Chaos, Platonic y Euler + proyectos satélite Sculpt Lab, Puzzle Lab, Generative Music Lab y Contrapunctus)
 
 ### Guías Teóricas
 

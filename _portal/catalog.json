@@ -681,6 +681,19 @@
   },
   {
    "type": "sim",
+   "id": "efectos-relativistas",
+   "title": "Efectos Relativistas",
+   "desc": "Electrones al 58 % de la velocidad de la luz: por qué el oro es amarillo, el mercurio líquido y la batería de plomo funciona.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/efectos-relativistas.html",
+   "category": "Periódica",
+   "equation": "v/c ≈ Zα · γ = 1/√(1 − (Zα)²)",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/efectos-relativistas.html"
+  },
+  {
+   "type": "sim",
    "id": "enlaces",
    "title": "Tipos de Enlace",
    "desc": "Covalente, iónico y metálico según electronegatividad",
@@ -808,6 +821,19 @@
    "category": "Estructura",
    "equation": "Ψ² (Probabilidad radial)",
    "guide": "Chemistry/Chemistry Visual Lab/guides/orbitales.html"
+  },
+  {
+   "type": "sim",
+   "id": "origen-elementos",
+   "title": "Origen de los Elementos",
+   "desc": "Big Bang, estrellas, supernovas y fusiones de estrellas de neutrones: de dónde viene cada elemento del sistema solar y cuántos átomos hay de cada uno.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/origen-elementos.html",
+   "category": "Periódica",
+   "equation": "H, He → estrellas → procesos s y r",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/origen-elementos.html"
   },
   {
    "type": "sim",
@@ -2927,6 +2953,56 @@
    "color": "#06b6d4",
    "lab": "La Tabla Periódica, de dentro afuera",
    "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-5.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-6-1",
+   "title": "6.1 De dónde vienen los elementos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Identificar las fuentes de los elementos: Big Bang, estrellas, supernovas, rayos cósmicos; Explicar por qué la fusión estelar se detiene en el grupo del hierro…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-6/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-6-2",
+   "title": "6.2 Más allá del hierro: captura de neutrones",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Explicar la captura de neutrones y la desintegración β⁻; Distinguir los procesos s y r; Relacionar los picos de abundancia con los números mágicos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-6/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-6-3",
+   "title": "6.3 Efectos relativistas",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Estimar la velocidad del electrón 1s con v/c ≈ Zα; Explicar la contracción de los orbitales s y p; Relacionar la relatividad con el color del oro y el mercurio…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-6/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-6-4",
+   "title": "6.4 Los superpesados",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Describir cómo se sintetizan los elementos superpesados; Conocer los últimos elementos nombrados; Explicar qué es la isla de estabilidad.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-6/leccion-4.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-6-5",
+   "title": "6.5 Los elementos de la tecnología",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Identificar los elementos de un teléfono móvil y su función; Conocer el concepto de materia prima crítica; Relacionar la escasez y el reciclado con la química de…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-6/leccion-5.html"
   },
   {
    "type": "course",
