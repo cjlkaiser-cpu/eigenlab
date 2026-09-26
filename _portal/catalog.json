@@ -707,6 +707,19 @@
   },
   {
    "type": "sim",
+   "id": "familias",
+   "title": "Familias Químicas",
+   "desc": "Alcalinos, halógenos, gases nobles, transición, lantánidos y actínidos: cómo cambian sus propiedades de arriba abajo, con tendencias calculadas a partir de datos medidos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/familias.html",
+   "category": "Periódica",
+   "equation": "misma configuración externa → misma química",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/familias.html"
+  },
+  {
+   "type": "sim",
    "id": "gases-reales",
    "title": "Gases Ideales vs Real",
    "desc": "Van der Waals: volumen y atracción",
@@ -2864,6 +2877,56 @@
    "color": "#06b6d4",
    "lab": "La Tabla Periódica, de dentro afuera",
    "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-5.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-5-1",
+   "title": "5.1 Alcalinos y alcalinotérreos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Relacionar la configuración ns¹ y ns² con los iones M⁺ y M²⁺; Explicar por qué la reactividad crece al bajar en el grupo; Interpretar los colores de llama como…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-5-2",
+   "title": "5.2 Halógenos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Relacionar la configuración ns² np⁵ con el ion X⁻ y la molécula X₂; Explicar el paso de gas a sólido con las fuerzas de London; Predecir reacciones de…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-5-3",
+   "title": "5.3 Gases nobles",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Relacionar la capa completa con su baja reactividad; Conocer los compuestos de xenón y kriptón y su historia; Explicar por qué la reactividad crece al bajar.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-5-4",
+   "title": "5.4 Metales de transición",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Escribir la configuración de iones de transición; Explicar los estados de oxidación variables; Relacionar el color y el magnetismo con la subcapa d incompleta.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-4.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-5-5",
+   "title": "5.5 Lantánidos y actínidos",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Explicar la química uniforme de los lantánidos; Relacionar la contracción lantánida con su separación; Distinguir el comportamiento de los primeros actínidos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-5/leccion-5.html"
   },
   {
    "type": "course",

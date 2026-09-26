@@ -47,7 +47,7 @@ EigenLab/
 │   ├── Physics Visual Lab/     # 30 sims - Mecánica, ondas, termodinámica, WASM
 │   └── Physics Sound Lab/      # 14 sims - Metrónomos físicos + generativos (submódulo)
 ├── Chemistry/
-│   └── Chemistry Visual Lab/   # 23 sims + curso de la tabla periódica
+│   └── Chemistry Visual Lab/   # 24 sims + curso de la tabla periódica
 ├── Biochemistry/
 │   └── Biochem Visual Lab/     # 18 sims - Metabolismo, síntesis proteica
 ├── Biology/
@@ -82,7 +82,7 @@ EigenLab/
 | Disciplina | Labs | Simulaciones | Color | Estado |
 |------------|------|--------------|-------|--------|
 | **Physics** | Visual (30) + Sound (14) | 44 | Verde/Púrpura | ✅ Maduro |
-| **Chemistry** | Visual (23) + curso | 23 | Cyan | ✅ Maduro |
+| **Chemistry** | Visual (24) + curso | 24 | Cyan | ✅ Maduro |
 | **Biochemistry** | Visual (18) | 18 | Rosa | ✅ Maduro |
 | **Biology** | Visual (11) | 11 | Verde esmeralda | ✅ Completo |
 | **Geology** | Visual (10) | 10 | Ámbar | ✅ Completo |
@@ -92,7 +92,7 @@ EigenLab/
 | **AI** | Visual (20) | 20 | Rojo | ✅ Completo |
 | **Music** | Theory Lab (9) | 9 | Rosa/Magenta | ⭐ Nuevo |
 
-**Total:** 203 simulaciones · 159/169 con guía (94%). Fuente de verdad: `python3 tools/stats.py`
+**Total:** 204 simulaciones · 160/170 con guía (94%). Fuente de verdad: `python3 tools/stats.py`
 
 ### Math Sound Lab ⭐ (Nueva adición)
 
@@ -506,7 +506,7 @@ git push origin main
 **Última actualización:** 2026-09-25
 
 **Estadísticas** (regenerar con `python3 tools/stats.py`, no a mano):
-- **203 simulaciones** totales · **159/169 con guía** (94%)
+- **204 simulaciones** totales · **160/170 con guía** (94%)
 - **10 disciplinas** científicas
 - **21 laboratorios y cursos** en el portal (14 de simulación)
 - **167 nodos** en Knowledge Graph
