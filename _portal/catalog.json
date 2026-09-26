@@ -602,6 +602,19 @@
   },
   {
    "type": "sim",
+   "id": "carga-efectiva",
+   "title": "Carga Nuclear Efectiva",
+   "desc": "Apantallamiento con las reglas de Slater hasta el radón, paso a paso, y su relación con el radio y la energía de ionización.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/carga-efectiva.html",
+   "category": "Periódica",
+   "equation": "Zef = Z − S",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/carga-efectiva.html"
+  },
+  {
+   "type": "sim",
    "id": "celda-galvanica",
    "title": "Celda Galvánica",
    "desc": "Flujo de electrones y puente salino",
@@ -2801,6 +2814,56 @@
    "color": "#06b6d4",
    "lab": "La Tabla Periódica, de dentro afuera",
    "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-3/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-4-1",
+   "title": "4.1 Carga nuclear efectiva",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Explicar el apantallamiento de los electrones internos; Calcular Z_ef con las reglas de Slater; Usar Z_ef para explicar las tendencias dentro de un periodo y de…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-1.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-4-2",
+   "title": "4.2 El tamaño de los átomos y de los iones",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Describir la tendencia del radio en periodos y grupos; Distinguir radio covalente, metálico, de van der Waals e iónico; Ordenar por tamaño una serie…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-2.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-4-3",
+   "title": "4.3 Energía de ionización",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Relacionar la energía de ionización con Z_ef y la distancia al núcleo; Explicar las irregularidades Be–B y N–O; Deducir el grupo de un elemento con sus energías…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-3.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-4-4",
+   "title": "4.4 Afinidad electrónica y electronegatividad",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Distinguir afinidad electrónica (átomo aislado) y electronegatividad (átomo enlazado); Leer la escala de Pauling y su tendencia; Predecir el tipo de enlace con…",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-4.html"
+  },
+  {
+   "type": "lesson",
+   "id": "tabla-periodica-4-5",
+   "title": "4.5 Carácter metálico y dos sorpresas",
+   "desc": "Lección del curso «La Tabla Periódica, de dentro afuera». Describir la tendencia del carácter metálico; Explicar la contracción lantánida y sus consecuencias; Reconocer las relaciones diagonales.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "La Tabla Periódica, de dentro afuera",
+   "url": "Chemistry/Chemistry Visual Lab/curso-tabla-periodica/modulo-4/leccion-5.html"
   },
   {
    "type": "course",

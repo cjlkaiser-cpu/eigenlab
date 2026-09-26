@@ -28,7 +28,7 @@ Cifras generadas con `python3 tools/stats.py` (sep 2026). Sound Labs y Generativ
 | Music Theory Lab | 9 | 0 | 0% |
 | Contrapunctus | 3/5 species | 0 | — |
 
-**Total: 198 simulaciones · 154/164 con guía (93%) · 0 enlaces internos rotos** (`python3 tools/check_links.py`)
+**Total: 203 simulaciones · 159/169 con guía (94%) · 0 enlaces internos rotos** (`python3 tools/check_links.py`)
 
 > Nota: Excluidos Sound Labs y Generative Art del conteo de guías pendientes por naturaleza distinta. Labs en scope: 109 guías HTML + 20 MD (AI) + 5 MD parciales = 134/139 sims cubiertos = **96% en labs documentados**.
 
@@ -440,7 +440,8 @@ Formato sugerido para propuestas de nuevas simulaciones:
 - ✅ **Fase 3 · Tailwind:** Play CDN sustituido por CSS compilado en 234 páginas (24 archivos de 5–42 KB); 220 páginas idénticas píxel a píxel y 14 solo difieren en contenido dinámico
 - 🐛 **Corregidos:** 5 sims WASM que nunca arrancaban (Mandelbulb, Autómata 3D, Plegamiento, Plasma, Epidemiología: `value_object` de Embind mal usado) y Membrana Fluida (ReferenceError al iniciar)
 - ✅ **Tabla periódica:** Tabla Periódica Viva (118 elementos, datos PubChem/NIST validados), Constructor Aufbau, Espectros Atómicos (NIST + CIE 1931 + modelo térmico) y El Reto de Mendeléyev
-- ✅ **Curso «La Tabla Periódica, de dentro afuera»** (Chemistry, `curso-tabla-periodica/`): módulos 1–3, 13 lecciones con predicción, simulación embebida, autoevaluación y progreso; módulos 4–6 pendientes (tendencias con Z_eff, familias, origen cósmico)
+- ✅ **Curso «La Tabla Periódica, de dentro afuera»** (Chemistry, `curso-tabla-periodica/`): módulos 1–4, 18 lecciones con predicción, simulación embebida, autoevaluación y progreso; módulos 5–6 pendientes (familias, origen cósmico)
+- ✅ **Carga Nuclear Efectiva** (`carga-efectiva.html`): reglas de Slater paso a paso hasta Z = 86 y tendencias de Z_ef, radio y EI frente a Z; acierto de la estimación calculado a partir de los datos
 - ⚠️ **Pendiente:** Formación de Galaxias desborda la pila en el motor C++ (Barnes-Hut) con viewport de móvil
 
 ### Marzo 2026
