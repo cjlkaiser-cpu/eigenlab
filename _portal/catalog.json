@@ -681,6 +681,19 @@
   },
   {
    "type": "sim",
+   "id": "espectros",
+   "title": "Espectros Atómicos",
+   "desc": "Líneas del NIST de 23 elementos, color de lámpara calculado (CIE 1931), fórmula de Rydberg y espectro misterioso.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/espectros.html",
+   "category": "Periódica",
+   "equation": "1/λ = RH(1/n₁² − 1/n₂²)",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/espectros.html"
+  },
+  {
+   "type": "sim",
    "id": "gases-reales",
    "title": "Gases Ideales vs Real",
    "desc": "Van der Waals: volumen y atracción",
@@ -717,6 +730,19 @@
    "category": "Equilibrio",
    "equation": "Keq = [C]c[D]d/[A]a[B]b",
    "guide": "Chemistry/Chemistry Visual Lab/guides/le-chatelier.html"
+  },
+  {
+   "type": "sim",
+   "id": "mendeleyev",
+   "title": "El Reto de Mendeléyev",
+   "desc": "Predice el galio, el escandio y el germanio como en 1871, y comprueba en toda la tabla cuándo funciona el promedio de vecinos.",
+   "discipline": "Química",
+   "color": "#06b6d4",
+   "lab": "Chemistry Visual Lab",
+   "url": "Chemistry/Chemistry Visual Lab/mendeleyev.html",
+   "category": "Periódica",
+   "equation": "P(X) ≈ media de sus vecinos",
+   "guide": "Chemistry/Chemistry Visual Lab/guides/mendeleyev.html"
   },
   {
    "type": "sim",
